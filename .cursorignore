@@ -1,0 +1,5 @@
+# Secrets — Cursor must not read or index these
+keys/
+.env
+.env.*
+*.p8

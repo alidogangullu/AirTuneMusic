@@ -1,0 +1,15 @@
+---
+description: AirTune Music project context — stack, Apple Music API, TV remote, structure, localization
+alwaysApply: true
+---
+
+# AirTune Music — Project context
+
+- **Product**: Apple Music **Android TV client**.
+- **Stack**: TypeScript, React Native (Expo), [Apple Music API](https://developer.apple.com/documentation/applemusicapi/). For **all API usage and TypeScript types** (resources, attributes, responses, errors, query params), use the project reference: **docs/APPLE_MUSIC_API_REFERENCE.md**. That file is the single source of truth for request/response shapes, resource attributes (Artwork, PlayParams, Artists, Songs, Albums, etc.), pagination, search, and auth so types and API client stay consistent.
+- **UI**: Draft (non-final) designs are in **Google Stitch**; fetch design data via MCP when needed.
+- **Input**: Design and implement for **Android TV remote** usage: D-pad navigation, focus order, key events (select, back, etc.), and TV-safe layout (focusable elements, no hover-only interactions).
+- **Source layout**: `src/` — `api/` (including `api/apple-music/`), `components/`, `hooks/`, `screens/`, `assets/` (including `assets/stitch/`), `constants/`, `i18n/`, `navigation/`, `theme/`, `types/`, `utils/`. Entry: `App.tsx`. **Theme**: Use `src/theme/colors.ts` for colors and `src/theme/layout.ts` for border radius, spacing, and button min height (no hardcoded hex/rgba or magic numbers); see **docs/THEME_AND_COLORS.md**.
+- **Language**: All docs, rules, and code structure are in **English**. The app uses **localization** for user-facing strings; keep copy in i18n/locales, not hardcoded.
+- **Android**: Build with Java 17 via `scripts/with-java17.mjs`. Package: `media.com.adg.airtune.tv`.
+- **Code style**: Follow existing ESLint/Prettier and TypeScript strict mode; respect TV accessibility and focus behavior.
