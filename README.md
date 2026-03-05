@@ -6,8 +6,8 @@
 
 | Area | Technology |
 |------|------------|
-| Framework | React Native (Expo SDK 48) |
-| TV runtime | `react-native-tvos` (RN 0.71.x) |
+| Framework | React Native |
+| TV runtime | `react-native-tvos` |
 | Language | TypeScript |
 | Backend / catalog | Apple Music API |
 | Target platform | Android TV only |
