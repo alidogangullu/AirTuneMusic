@@ -28,7 +28,7 @@ export type AppColors = {
   messageErrorBorder: string;
   codeScreenBackground: string;
   accent: string;
-  textPrimary: string;
+  cardTitleText: string;
   textSecondary: string;
   textFooter: string;
   glassBg: string;
@@ -69,7 +69,7 @@ export const colors: AppColors = {
   messageErrorBorder: '#ff5555',
   codeScreenBackground: '#fff0f3',
   accent: '#FF4E6B',
-  textPrimary: '#1f2937',
+  cardTitleText: '#404040',
   textSecondary: '#6b7280',
   textFooter: 'rgba(107, 114, 128, 0.8)',
   glassBg: 'rgba(255, 255, 255, 0.7)',

@@ -5,9 +5,8 @@
 import {useQuery} from '@tanstack/react-query';
 import {
   fetchRecommendations,
-  type PersonalRecommendation,
-  type RecommendationContent,
 } from '../api/apple-music/recommendations';
+import { RecommendationContent, PersonalRecommendation } from '../types/recommendations';
 
 const QUERY_KEY = ['apple-music', 'recommendations'] as const;
 

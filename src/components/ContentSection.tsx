@@ -38,26 +38,25 @@ export function ContentSection({
 function useStyles(c: {textOnDark: string; textMuted: string}) {
   return StyleSheet.create({
     section: {
-      marginBottom: spacing.xxl,
+      marginBottom: spacing.xl,
     },
     header: {
-      marginBottom: spacing.lg,
+      marginBottom: spacing.md,
       paddingHorizontal: spacing.xl,
     },
     title: {
-      fontSize: 28,
+      fontSize: 20,
       fontWeight: '700',
       color: c.textOnDark,
+    },
+    rail: {
+      flexDirection: 'row',
+      paddingLeft: spacing.xl,
+      gap: spacing.xs,
     },
     subtitle: {
       fontSize: 16,
       color: c.textMuted,
-      marginTop: spacing.xs,
-    },
-    rail: {
-      flexDirection: 'row',
-      paddingHorizontal: spacing.xl,
-      gap: spacing.lg,
     },
   });
 }

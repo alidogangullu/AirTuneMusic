@@ -187,7 +187,7 @@ function makeStyles(c: AppColors) {
     logoTitle: {
       fontSize: 28,
       fontWeight: '700',
-      color: c.textPrimary,
+      color: c.cardTitleText,
       letterSpacing: -0.5,
     },
     glassCard: {
@@ -203,7 +203,7 @@ function makeStyles(c: AppColors) {
     glassCardTitle: {
       fontSize: 24,
       fontWeight: '700',
-      color: c.textPrimary,
+      color: c.cardTitleText,
       marginBottom: spacing.sm,
       textAlign: 'center',
     },
@@ -235,7 +235,7 @@ function makeStyles(c: AppColors) {
       fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
       fontSize: 42,
       fontWeight: '700',
-      color: c.textPrimary,
+      color: c.cardTitleText,
       letterSpacing: 10,
     },
     visitBlock: {marginBottom: spacing.md, alignItems: 'center'},

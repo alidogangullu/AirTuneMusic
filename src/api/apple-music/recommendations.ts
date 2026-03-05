@@ -3,59 +3,88 @@
  * GET /v1/me/recommendations — returns personal recommendations.
  */
 
+import type {AlbumDetailResponse, MusicVideoDetailResponse, PlaylistDetailResponse, SongDetailResponse, StationDetailResponse} from '../../types/catalog';
+import type {RecommendationsResponse} from '../../types/recommendations';
 import {appleMusicApi} from './client';
-
-export type RecommendationContentType =
-  | 'playlists'
-  | 'albums'
-  | 'stations'
-  | 'music-videos'
-  | 'songs';
-
-export type RecommendationContent = {
-  id: string;
-  type: RecommendationContentType;
-  attributes?: {
-    name?: string;
-    artistName?: string;
-    artwork?: {
-      url: string;
-      width?: number;
-      height?: number;
-    };
-    url?: string;
-    releaseDate?: string;
-    dateAdded?: string;
-    genreNames?: string[];
-    editorialNotes?: {short?: string};
-  };
-};
-
-export type PersonalRecommendation = {
-  id: string;
-  type: 'personal-recommendation';
-  attributes?: {
-    title?: {stringForDisplay: string};
-    resourceTypes?: string[];
-    kind?: string;
-  };
-  relationships?: {
-    contents?: {
-      data: RecommendationContent[];
-    };
-  };
-};
-
-export type RecommendationsResponse = {
-  data: PersonalRecommendation[];
-};
 
 export async function fetchRecommendations(): Promise<RecommendationsResponse> {
   const {data} = await appleMusicApi.get<RecommendationsResponse>(
     '/me/recommendations',
     {
-      params: {limit: 20},
+      //params: {limit: 20},
     },
+  );
+  return data;
+}
+
+/**
+ * Fetch full playlist details including tracks.
+ * GET /v1/catalog/{storefront}/playlists/{id}?include=tracks
+ */
+export async function fetchPlaylistDetail(
+  id: string,
+  storefront = 'tr',
+): Promise<PlaylistDetailResponse> {
+  const {data} = await appleMusicApi.get<PlaylistDetailResponse>(
+    `/catalog/${storefront}/playlists/${id}`,
+    {params: {include: 'tracks'}},
+  );
+  return data;
+}
+
+/**
+ * Fetch full album details including tracks.
+ * GET /v1/catalog/{storefront}/albums/{id}?include=tracks
+ */
+export async function fetchAlbumDetail(
+  id: string,
+  storefront = 'tr',
+): Promise<AlbumDetailResponse> {
+  const {data} = await appleMusicApi.get<AlbumDetailResponse>(
+    `/catalog/${storefront}/albums/${id}`,
+    {params: {include: 'tracks'}},
+  );
+  return data;
+}
+
+/**
+ * Fetch station details.
+ * GET /v1/catalog/{storefront}/stations/{id}
+ */
+export async function fetchStationDetail(
+  id: string,
+  storefront = 'tr',
+): Promise<StationDetailResponse> {
+  const {data} = await appleMusicApi.get<StationDetailResponse>(
+    `/catalog/${storefront}/stations/${id}`,
+  );
+  return data;
+}
+
+/**
+ * Fetch song details.
+ * GET /v1/catalog/{storefront}/songs/{id}
+ */
+export async function fetchSongDetail(
+  id: string,
+  storefront = 'tr',
+): Promise<SongDetailResponse> {
+  const {data} = await appleMusicApi.get<SongDetailResponse>(
+    `/catalog/${storefront}/songs/${id}`,
+  );
+  return data;
+}
+
+/**
+ * Fetch music video details.
+ * GET /v1/catalog/{storefront}/music-videos/{id}
+ */
+export async function fetchMusicVideoDetail(
+  id: string,
+  storefront = 'tr',
+): Promise<MusicVideoDetailResponse> {
+  const {data} = await appleMusicApi.get<MusicVideoDetailResponse>(
+    `/catalog/${storefront}/music-videos/${id}`,
   );
   return data;
 }

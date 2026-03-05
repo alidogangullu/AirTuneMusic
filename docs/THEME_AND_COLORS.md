@@ -16,7 +16,7 @@ App-wide colors and layout tokens (border radius, spacing) are defined in the th
 - **Import**: `import { useTheme, radius, spacing, buttonMinHeight } from '../theme';` (or from `../theme/colors` / `../theme/layout`).
 - **In components**: Call `const { colors } = useTheme()` and use `colors.*` in styles. Build styles from `colors` (e.g. `useMemo(() => makeStyles(colors), [colors])`).
 - **In styles**: Use `radius.sm` / `radius.lg`, `spacing.lg` etc.; get colors from `useTheme().colors`.
-- **New colors**: Add to `colors` in `src/theme/colors.ts` with a short comment. Prefer semantic names (e.g. `accent`, `textPrimary`) over raw descriptions.
+- **New colors**: Add to `colors` in `src/theme/colors.ts` with a short comment. Prefer semantic names (e.g. `accent`, `cardTitleText`) over raw descriptions.
 
 ## Layout tokens (radius, spacing)
 
@@ -41,17 +41,18 @@ The app uses official Apple Music brand colors for logo and primary UI:
 |-------|----------|-------------------------------------|
 | Pink  | `#FF4E6B` | Logo, accent, URL, Get New Code btn |
 | Red   | `#FF0436` | Primary buttons (e.g. sign in)      |
+| Low Pink | `#ffbfcaff` | Gradient start color for screens (home, detail overlay) |
 | White | `#FFFFFF` | Text on dark, icons on brand        |
 
-In code: `appleMusicPink`, `appleMusicRed`, `appleMusicWhite`. Semantic keys `accent` and `buttonPrimary` are mapped to Pink and Red.
+In code: `appleMusicPink`, `appleMusicRed`, `appleMusicLowPink`, `appleMusicWhite`. Semantic keys `accent` and `buttonPrimary` are mapped to Pink and Red.
 
 ## Color groups (current)
 
-- **Apple Music brand**: `appleMusicPink`, `appleMusicRed`, `appleMusicWhite`
+- **Apple Music brand**: `appleMusicPink`, `appleMusicRed`, `appleMusicLowPink`, `appleMusicWhite`
 - **Screen**: `screenBackground`, `textOnDark`, `textMuted`, `textSubtle`, `textMono`
 - **Buttons**: `buttonPrimary` (Red), `buttonSecondaryBg`, `borderMuted`
 - **Messages**: `messageSuccessBg`, `messageSuccessBorder`, `messageErrorBg`, `messageErrorBorder`
-- **Code/pairing screen**: `codeScreenBackground`, `accent` (Pink), `textPrimary`, `textSecondary`, `textFooter`
+- **Code/pairing screen**: `codeScreenBackground`, `accent` (Pink), `cardTitleText`, `textSecondary`, `textFooter`
 - **Glass surfaces**: `glassBg`, `glassBorder`, `glassCodeBg`, `glassButtonBg`, `glassButtonBorder`
 
 See `src/theme/colors.ts` for the full list and comments.

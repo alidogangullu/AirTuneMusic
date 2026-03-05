@@ -26,7 +26,7 @@ A **backend** is used for:
    - **POST** code + Music User Token (when the user signs in on the page).
    - **GET** token by code (so the TV app can poll and receive the token).
 
-For **local development** you can use the in-repo TV link server (`npm run tv-link:serve`), which reads the developer token from `.env.local` and provides these endpoints. For **production**, host the [tv-link-page](tv-link-page/) (or equivalent) and implement the same API on your backend. See [tv-link-page/README.md](tv-link-page/README.md) for the exact contract.
+For **local development** you can use the in-repo TV link server (`npm run tv-link:serve` which simply runs `node tv-link-page/server.mjs`), or call the script directly without npm. It reads the developer token from `.env.local` and provides the necessary endpoints. For **production**, host the [tv-link-page](tv-link-page/) (or equivalent) and implement the same API on your backend. See [tv-link-page/README.md](tv-link-page/README.md) for the exact contract.
 
 ## Project structure
 

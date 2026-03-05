@@ -8,6 +8,11 @@ From the **project root** run:
 
 ```bash
 npm run tv-link:serve
+# (defined in the root package.json; it simply invokes
+# `node tv-link-page/server.mjs`)
+
+# or, if you prefer to bypass npm scripts, you can run:
+node tv-link-page/server.mjs
 ```
 
 Then open **http://localhost:8080/tv** in your browser. The server reads `EXPO_PUBLIC_APPLE_MUSIC_TOKEN` from `.env.local`, serves the page, and provides the two API endpoints. From the Android TV emulator use **http://10.0.2.2:8080/tv**. Different port: `TV_LINK_PORT=8081 npm run tv-link:serve`.

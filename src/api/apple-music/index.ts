@@ -1,10 +1,12 @@
 export {appleMusicApi} from './client';
 export {
   fetchRecommendations,
+  fetchPlaylistDetail,
+  fetchAlbumDetail,
+  fetchStationDetail,
+  fetchSongDetail,
+  fetchMusicVideoDetail,
   getArtworkUrl,
-  type PersonalRecommendation,
-  type RecommendationContent,
-  type RecommendationsResponse,
 } from './recommendations';
 export {getDeveloperToken} from './getDeveloperToken';
 export {

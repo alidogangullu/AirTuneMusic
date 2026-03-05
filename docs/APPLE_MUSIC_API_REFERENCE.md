@@ -190,11 +190,57 @@ Use these when defining TypeScript interfaces for API responses.
 
 ### Playlists (catalog)
 
-- Use Playlists resource; has relationships (e.g. tracks). See official Playlists API for full attribute list.
+- **attributes:** `name`, `curatorName`, `description` (EditorialNotes), `artwork` (Artwork), `lastModifiedDate`, `playlistType`, `url`, `playParams` (PlayParams), `isChart` (boolean).
+- **relationships:** `tracks` (array of Song resources), `curator`.
+- **Fetch with tracks:** `GET /v1/catalog/{storefront}/playlists/{id}?include=tracks`
+
+### Stations (catalog)
+
+- **attributes:** `name`, `artwork` (Artwork), `url`, `playParams` (PlayParams), `durationInMillis`, `episodeNumber`, `mediaKind` (`'audio' | 'video'`), `isLive` (boolean), `notes` (EditorialNotes).
+- **Fetch:** `GET /v1/catalog/{storefront}/stations/{id}`
+- Stations do **not** have a tracks relationship. Duration/episodeNumber appear for radio episodes; live stations have `isLive: true`.
+
+### Music Videos (catalog)
+
+- **attributes:** `name`, `artistName`, `artwork` (Artwork), `durationInMillis`, `genreNames` (string[]), `releaseDate`, `has4K` (boolean), `hasHDR` (boolean), `isrc`, `url`, `previews` (array of `{url?, hlsUrl?, artwork?}`), `playParams` (PlayParams).
+- **relationships:** `albums`, `artists`.
+- **Fetch:** `GET /v1/catalog/{storefront}/music-videos/{id}`
 
 ### Storefronts
 
 - **attributes:** `name`, `defaultLanguageTag`, `supportedLanguageTags` (string[]).
+
+---
+
+## Endpoints used in this app
+
+| Function | Method + Path | Auth required |
+|----------|---------------|---------------|
+| `fetchRecommendations` | `GET /v1/me/recommendations` | Developer + User token |
+| `fetchPlaylistDetail` | `GET /v1/catalog/{sf}/playlists/{id}?include=tracks` | Developer token |
+| `fetchAlbumDetail` | `GET /v1/catalog/{sf}/albums/{id}?include=tracks` | Developer token |
+| `fetchStationDetail` | `GET /v1/catalog/{sf}/stations/{id}` | Developer token |
+| `fetchSongDetail` | `GET /v1/catalog/{sf}/songs/{id}` | Developer token |
+| `fetchMusicVideoDetail` | `GET /v1/catalog/{sf}/music-videos/{id}` | Developer token |
+
+All functions live in `src/api/apple-music/recommendations.ts` and are re-exported from `src/api/apple-music/index.ts`.
+
+### TypeScript types (`src/types/recommendations.ts`)
+
+| Type | Corresponds to |
+|------|----------------|
+| `PlaylistDetail` | `/catalog/{sf}/playlists/{id}` resource |
+| `AlbumDetail` | `/catalog/{sf}/albums/{id}` resource |
+| `StationDetail` | `/catalog/{sf}/stations/{id}` resource |
+| `SongDetail` | `/catalog/{sf}/songs/{id}` resource |
+| `MusicVideoDetail` | `/catalog/{sf}/music-videos/{id}` resource |
+| `ContentDetailItem` | Union of all 5 types above |
+| `ContentDetailResponse` | `{ data: ContentDetailItem[] }` |
+| `RecommendationContentType` | `'playlists' \| 'albums' \| 'stations' \| 'music-videos' \| 'songs'` |
+| `RecommendationContent` | Single item inside a recommendation row |
+| `PersonalRecommendation` | One row returned by `/me/recommendations` |
+
+Use `useContentDetail(id, type, storefront)` (`src/hooks/useContentDetail.ts`) to fetch and cache any content type via TanStack Query. The hook dispatches to the correct fetch function based on `type`.
 
 ---
 

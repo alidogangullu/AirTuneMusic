@@ -6,9 +6,9 @@
 import React from 'react';
 import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
 import {getArtworkUrl} from '../api/apple-music/recommendations';
-import type {RecommendationContent} from '../api/apple-music/recommendations';
 import {radius, spacing} from '../theme/layout';
 import {useTheme} from '../theme';
+import { RecommendationContent } from '../types/recommendations';
 
 const CARD_WIDTH = 180;
 const ARTWORK_SIZE = 160;
@@ -76,15 +76,15 @@ function useStyles(c: {
   textOnDark: string;
   textMuted: string;
   navBarCardBg: string;
+  cardTitleText: string;
 }) {
   return StyleSheet.create({
     card: {
       width: CARD_WIDTH,
-      marginRight: spacing.lg,
     },
     cardFocused: {
       opacity: 1,
-      transform: [{scale: 1.05}],
+      transform: [{scale: 1.1}], // scale from center — paddingVertical in rail handles overflow
     },
     cardInner: {
       width: CARD_WIDTH,
@@ -109,18 +109,17 @@ function useStyles(c: {
       backgroundColor: c.navBarCardBg,
     },
     textContainer: {
-      marginTop: spacing.md,
+      marginTop: spacing.xs,
       paddingHorizontal: spacing.xs,
     },
     title: {
       fontSize: 15,
       fontWeight: '600',
-      color: c.textOnDark,
+      color: c.cardTitleText,
     },
     subtitle: {
       fontSize: 13,
       color: c.textMuted,
-      marginTop: spacing.xs,
     },
   });
 }

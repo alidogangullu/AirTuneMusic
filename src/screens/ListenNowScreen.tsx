@@ -17,30 +17,38 @@ import {
   flattenRecommendationContents,
   useRecommendations,
 } from '../hooks/useRecommendations';
+import {useContentNavigation} from '../navigation';
 import {spacing} from '../theme/layout';
 import {useTheme} from '../theme';
 
 export function ListenNowScreen(): React.JSX.Element {
   const {colors} = useTheme();
   const {data, isLoading, error, refetch} = useRecommendations();
+  const {pushContent} = useContentNavigation();
   const styles = useStyles(colors);
 
-  const items = data?.data
-    ? flattenRecommendationContents(data.data).slice(0, 12)
-    : [];
+  const allItems = data?.data ? flattenRecommendationContents(data.data) : [];
+
+  // split recommendations into the two main headings we care about
+  const madeForYouItems = allItems
+    .filter(i => i.recommendationTitle === 'Made for You')
+    .slice(0, 12);
+  const recentlyPlayedItems = allItems
+    .filter(i => i.recommendationTitle === 'Recently Played')
+    .slice(0, 12);
 
   const errorMessage =
     error instanceof Error ? error.message : 'Failed to load';
 
-  let topPicksContent: React.ReactNode;
+  let contentNode: React.ReactNode;
   if (isLoading) {
-    topPicksContent = (
+    contentNode = (
       <View style={styles.loading}>
         <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   } else if (error) {
-    topPicksContent = (
+    contentNode = (
       <View style={styles.error}>
         <Text style={styles.errorText}>{errorMessage}</Text>
         <Pressable style={styles.retryButton} onPress={() => refetch()}>
@@ -48,26 +56,52 @@ export function ListenNowScreen(): React.JSX.Element {
         </Pressable>
       </View>
     );
-  } else if (items.length === 0) {
-    topPicksContent = (
+  } else if (allItems.length === 0) {
+    contentNode = (
       <View style={styles.empty}>
         <Text style={styles.emptyText}>No recommendations yet</Text>
       </View>
     );
   } else {
-    topPicksContent = (
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.rail}>
-        {items.map(({recommendationTitle, content}) => (
-          <RecommendationCard
-            key={content.id}
-            category={recommendationTitle}
-            content={content}
-          />
-        ))}
-      </ScrollView>
+    contentNode = (
+      <>
+        {madeForYouItems.length > 0 && (
+          <ContentSection title="Made for You">
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.horizontalScroll}
+              contentContainerStyle={styles.rail}>
+              {madeForYouItems.map(({content}) => (
+                <RecommendationCard
+                  key={content.id}
+                  category=""
+                  content={content}
+                  onPress={() => pushContent(content)}
+                />
+              ))}
+            </ScrollView>
+          </ContentSection>
+        )}
+        {recentlyPlayedItems.length > 0 && (
+          <ContentSection title="Recently Played">
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.horizontalScroll}
+              contentContainerStyle={styles.rail}>
+              {recentlyPlayedItems.map(({content}) => (
+                <RecommendationCard
+                  key={content.id}
+                  category=""
+                  content={content}
+                  onPress={() => pushContent(content)}
+                />
+              ))}
+            </ScrollView>
+          </ContentSection>
+        )}
+      </>
     );
   }
 
@@ -76,7 +110,7 @@ export function ListenNowScreen(): React.JSX.Element {
       style={styles.scroll}
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}>
-      <ContentSection title="Top Picks">{topPicksContent}</ContentSection>
+      {contentNode}
     </ScrollView>
   );
 }
@@ -106,7 +140,10 @@ function useStyles(c: {textMuted: string; accent: string}) {
     rail: {
       flexDirection: 'row',
       paddingRight: spacing.xl,
-      gap: spacing.lg,
+      gap: spacing.sm,
+    },
+    horizontalScroll: {
+      overflow: 'visible', // hint to RN layout system
     },
     loading: {
       minHeight: 200,
