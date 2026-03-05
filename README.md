@@ -1,97 +1,74 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# AirTune Music
 
-# Getting Started
+**Apple Music Android TV client** built with TypeScript, React Native, and the [Apple Music API](https://developer.apple.com/documentation/applemusicapi/).
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Technical overview
 
-## Step 1: Start Metro
+| Area | Technology |
+|------|------------|
+| Framework | React Native (Expo SDK 48) |
+| TV runtime | `react-native-tvos` (RN 0.71.x) |
+| Language | TypeScript |
+| Backend / catalog | Apple Music API |
+| Target platform | Android TV only |
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+- **UI**: Draft (non-final) designs are in **Google Stitch**; design data can be fetched via MCP when needed.
+- **Input**: Development must account for **Android TV remote** (D-pad, focus, key events).
+- **Language**: All documentation, rules, and code are in **English**. The app uses **localization** for user-facing strings.
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+## Backend (your server)
 
-```sh
-# Using npm
-npm start
+A **backend** is used for:
 
-# OR using Yarn
-yarn start
+1. **Developer token** — The app (and the TV link page) must get the Apple Music API developer token (JWT) from your server, not from the client bundle. Today the app uses an injected token at build time (see [Developer token](#requirements)); in production the app and the TV link page should call your backend (e.g. `GET /api/apple-music/developer-token`) to obtain the token.
+2. **Apple Music user auth (TV link)** — For sign-in on Android TV, the user enters a code on a web page (phone/PC). Your backend stores the mapping **code ↔ Music User Token** and serves the TV link page and its API:
+   - **GET** developer token (for the TV link page to configure MusicKit JS).
+   - **POST** code + Music User Token (when the user signs in on the page).
+   - **GET** token by code (so the TV app can poll and receive the token).
+
+For **local development** you can use the in-repo TV link server (`npm run tv-link:serve`), which reads the developer token from `.env.local` and provides these endpoints. For **production**, host the [tv-link-page](tv-link-page/) (or equivalent) and implement the same API on your backend. See [tv-link-page/README.md](tv-link-page/README.md) for the exact contract.
+
+## Project structure
+
+The codebase follows a structure suited for React Native + TypeScript + Apple Music API:
+
+```
+├── App.tsx
+├── src/
+│   ├── api/                 # API layer
+│   │   ├── apple-music/     # Apple Music API client, types, endpoints
+│   │   └── mock/            # Mock data for development
+│   ├── assets/              # Images, fonts, static assets
+│   │   └── stitch/          # Stitch design assets
+│   ├── components/          # Reusable UI components (TV-friendly, focus-aware)
+│   ├── constants/           # App constants
+│   ├── hooks/               # Custom React hooks
+│   ├── i18n/                # Localization (translations, locale config)
+│   ├── navigation/          # Navigation / routing
+│   ├── screens/             # Screen components
+│   ├── theme/               # Theming (colors, typography)
+│   ├── types/               # Shared TypeScript types
+│   └── utils/               # Utilities
+├── android/                 # Android TV native project
+├── tv-link-page/            # TV link page (HTML + local server); production: host on your backend
+├── scripts/                 # Build/run helpers (e.g. Java 17 for Android)
+└── docs/                    # Project documentation
 ```
 
-## Step 2: Build and run your app
+See [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) for details.
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+## Requirements
 
-### Android
+- Node.js (see `.node-version`)
+- Apple Music API: developer token (JWT). See [docs/DEVELOPER_TOKEN_SETUP.md](docs/DEVELOPER_TOKEN_SETUP.md) for setup and `npm run token:apple-music` to generate a token. For **local dev**: set `EXPO_PUBLIC_APPLE_MUSIC_TOKEN` in `.env.local`; the app and TV link server use it. For **production**: the app and TV link page should fetch the token from your [backend](#backend-your-server).
+- Android: `ANDROID_HOME` or `ANDROID_SDK_ROOT`, **Java 17**, TV AVD (e.g. `Android_TV_API36`). For **user sign-in** (library, playlists): add the MusicKit for Android AAR to `android/app/libs/` — see [docs/APPLE_MUSIC_USER_AUTH.md](docs/APPLE_MUSIC_USER_AUTH.md) and `android/app/libs/README.md`.
 
-```sh
-# Using npm
-npm run android
+## Running the app
 
-# OR using Yarn
-yarn android
-```
+| Platform | Command |
+|----------|---------|
+| Android TV (choose device) | `npx react-native run-android` |
+| TV link server (for sign-in from browser) | `npm run tv-link:serve` |
 
-### iOS
+Detailed Android TV run/debug: [docs/ANDROID_TV_RUN_DEBUG.md](docs/ANDROID_TV_RUN_DEBUG.md).
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
