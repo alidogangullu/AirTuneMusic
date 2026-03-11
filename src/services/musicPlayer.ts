@@ -1,0 +1,185 @@
+import {NativeModules, NativeEventEmitter, Platform} from 'react-native';
+import {getDeveloperToken} from '../api/apple-music/getDeveloperToken';
+import {getMusicUserToken} from '../api/apple-music/musicUserToken';
+
+const {MusicPlayer} = NativeModules;
+
+if (!MusicPlayer) {
+  console.warn(
+    '[musicPlayer] NativeModules.MusicPlayer is undefined — playback will not work.',
+  );
+}
+
+// On Android, NativeEventEmitter uses DeviceEventEmitter under the hood;
+// pass undefined instead of a potentially-null module to avoid bridge issues.
+const emitter =
+  Platform.OS === 'android' ? new NativeEventEmitter() : null;
+
+// ── Types ───────────────────────────────────────────────────────
+
+export type PlaybackStateName = 'playing' | 'paused' | 'stopped' | 'unknown';
+
+export interface TrackInfo {
+  title: string | null;
+  artistName: string | null;
+  albumTitle: string | null;
+  artworkUrl: string | null;
+  duration: number;
+  trackIndex: number;
+}
+
+export interface PlaybackStateInfo {
+  state: PlaybackStateName;
+  position: number;
+  duration: number;
+  shuffleMode: number;
+  repeatMode: number;
+  queueCount: number;
+  queueIndex: number;
+  title?: string;
+  artistName?: string;
+  albumTitle?: string;
+  artworkUrl?: string;
+  trackDuration?: number;
+}
+
+export interface ProgressInfo {
+  position: number;
+  duration: number;
+  buffered: number;
+}
+
+// ── Shuffle / Repeat constants ──────────────────────────────────
+
+export const ShuffleMode = {
+  OFF: 0,
+  SONGS: 1,
+} as const;
+
+export const RepeatMode = {
+  NONE: 0,
+  ONE: 1,
+  ALL: 2,
+} as const;
+
+// ── Event listeners ─────────────────────────────────────────────
+
+type EventMap = {
+  onPlaybackStateChanged: {state: PlaybackStateName; previousState: PlaybackStateName};
+  onCurrentItemChanged: TrackInfo;
+  onPlaybackProgress: ProgressInfo;
+  onPlaybackError: {message: string};
+  onBufferingStateChanged: {buffering: boolean};
+  onPlaybackQueueChanged: {count: number};
+  onShuffleModeChanged: {shuffleMode: number};
+  onRepeatModeChanged: {repeatMode: number};
+  onItemEnded: {title: string; endPosition: number};
+};
+
+type EventName = keyof EventMap;
+
+export function addEventListener<E extends EventName>(
+  event: E,
+  handler: (data: EventMap[E]) => void,
+) {
+  if (!emitter) {
+    return {remove: () => {}};
+  }
+  const sub = emitter.addListener(event, handler);
+  return sub;
+}
+
+// ── Service methods ─────────────────────────────────────────────
+
+let configured = false;
+
+async function ensureConfigured(): Promise<void> {
+  if (!MusicPlayer) {
+    throw new Error('MusicPlayer native module is not available');
+  }
+  if (configured) {
+    return;
+  }
+  const devToken = await getDeveloperToken();
+  const usrToken = getMusicUserToken() ?? '';
+  await MusicPlayer.configure(devToken, usrToken);
+  configured = true;
+}
+
+export async function playAlbum(
+  albumId: string,
+  startIndex = 0,
+  shuffle = false,
+): Promise<void> {
+  await ensureConfigured();
+  await MusicPlayer.playAlbum(albumId, startIndex, shuffle);
+}
+
+export async function playPlaylist(
+  playlistId: string,
+  startIndex = 0,
+  shuffle = false,
+): Promise<void> {
+  await ensureConfigured();
+  await MusicPlayer.playPlaylist(playlistId, startIndex, shuffle);
+}
+
+export async function playStation(stationId: string): Promise<void> {
+  await ensureConfigured();
+  await MusicPlayer.playStation(stationId);
+}
+
+export async function playSong(songId: string): Promise<void> {
+  await ensureConfigured();
+  await MusicPlayer.playSong(songId);
+}
+
+export async function playMusicVideo(musicVideoId: string): Promise<void> {
+  await ensureConfigured();
+  await MusicPlayer.playMusicVideo(musicVideoId);
+}
+
+export function play(): void {
+  MusicPlayer?.play();
+}
+
+export function pause(): void {
+  MusicPlayer?.pause();
+}
+
+export function stop(): void {
+  MusicPlayer?.stop();
+}
+
+export function skipToNext(): void {
+  MusicPlayer?.skipToNext();
+}
+
+export function skipToPrevious(): void {
+  MusicPlayer?.skipToPrevious();
+}
+
+export function seekTo(positionMs: number): void {
+  MusicPlayer?.seekTo(positionMs);
+}
+
+export function setShuffleMode(mode: number): void {
+  MusicPlayer?.setShuffleMode(mode);
+}
+
+export function setRepeatMode(mode: number): void {
+  MusicPlayer?.setRepeatMode(mode);
+}
+
+export async function getPlaybackState(): Promise<PlaybackStateInfo | null> {
+  if (!MusicPlayer) {
+    return null;
+  }
+  await ensureConfigured();
+  return MusicPlayer.getPlaybackState();
+}
+
+export function release(): void {
+  MusicPlayer?.release();
+  configured = false;
+}

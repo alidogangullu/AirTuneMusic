@@ -15,6 +15,7 @@ import {clearMusicUserToken, loadMusicUserToken} from './src/api/apple-music';
 import {GradientBackground} from './src/components/GradientBackground';
 import {AppleMusicAuthTestScreen} from './src/screens/AppleMusicAuthTestScreen';
 import {HomeScreen} from './src/screens/HomeScreen';
+import {PlayerProvider} from './src/hooks/usePlayer';
 import {ThemeProvider, useTheme} from './src/theme';
 
 function AppContent(): React.JSX.Element {
@@ -73,7 +74,9 @@ function App(): React.JSX.Element {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AppContent />
+        <PlayerProvider>
+          <AppContent />
+        </PlayerProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

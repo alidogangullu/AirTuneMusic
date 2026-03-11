@@ -6,6 +6,7 @@
 import type {AlbumDetailResponse, MusicVideoDetailResponse, PlaylistDetailResponse, SongDetailResponse, StationDetailResponse} from '../../types/catalog';
 import type {RecommendationsResponse} from '../../types/recommendations';
 import {appleMusicApi} from './client';
+import {DEV_SERVER, CAN_REACH_INTERNET_DIRECTLY} from '../../config/devServer';
 
 export async function fetchRecommendations(): Promise<RecommendationsResponse> {
   const {data} = await appleMusicApi.get<RecommendationsResponse>(
@@ -89,7 +90,7 @@ export async function fetchMusicVideoDetail(
   return data;
 }
 
-const ARTWORK_PROXY = 'http://10.0.2.2:8080/api/apple-music-proxy/image';
+const ARTWORK_PROXY = `${DEV_SERVER}/api/apple-music-proxy/image`;
 
 /**
  * Build artwork URL with dimensions.
@@ -106,7 +107,7 @@ export function getArtworkUrl(
     .replace(/\{w\}/g, String(width))
     .replace(/\{h\}/g, String(height))
     .replace(/\{f\}/g, 'jpg');
-  if (__DEV__) {
+  if (__DEV__ && !CAN_REACH_INTERNET_DIRECTLY) {
     return `${ARTWORK_PROXY}?url=${encodeURIComponent(resolved)}`;
   }
   return resolved;

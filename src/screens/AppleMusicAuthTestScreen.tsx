@@ -25,7 +25,8 @@ import type {AppColors} from '../theme/colors';
 import {useTheme} from '../theme';
 import {radius, spacing, buttonMinHeight} from '../theme/layout';
 
-const TV_LINK_SERVER = 'http://10.0.2.2:8080';
+import {DEV_SERVER} from '../config/devServer';
+const TV_LINK_SERVER = DEV_SERVER;
 const TV_LINK_DISPLAY = 'airtune.music/tv';
 const POLL_INTERVAL_MS = 2500;
 

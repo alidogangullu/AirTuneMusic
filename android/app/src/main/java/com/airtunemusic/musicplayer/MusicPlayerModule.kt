@@ -1,0 +1,452 @@
+package com.airtunemusic.musicplayer
+
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import com.apple.android.music.playback.controller.MediaPlayerController
+import com.apple.android.music.playback.controller.MediaPlayerControllerFactory
+import com.apple.android.music.playback.model.MediaContainerType
+import com.apple.android.music.playback.model.MediaItemType
+import com.apple.android.music.playback.model.MediaPlayerException
+import com.apple.android.music.playback.model.PlaybackRepeatMode
+import com.apple.android.music.playback.model.PlaybackShuffleMode
+import com.apple.android.music.playback.model.PlaybackState
+import com.apple.android.music.playback.model.PlayerQueueItem
+import com.apple.android.music.playback.queue.CatalogPlaybackQueueItemProvider
+import com.apple.android.sdk.authentication.TokenProvider
+import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactContextBaseJavaModule
+import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.WritableMap
+import com.facebook.react.modules.core.DeviceEventManagerModule
+
+class MusicPlayerModule(
+    private val reactContext: ReactApplicationContext
+) : ReactContextBaseJavaModule(reactContext), MediaPlayerController.Listener {
+
+    companion object {
+        const val NAME = "MusicPlayer"
+        private const val TAG = "MusicPlayer"
+        private const val ARTWORK_SIZE = 600
+        private const val PROGRESS_INTERVAL_MS = 1000L
+        private var nativeLibLoaded = false
+
+        private fun ensureNativeLib() {
+            if (!nativeLibLoaded) {
+                System.loadLibrary("appleMusicSDK")
+                nativeLibLoaded = true
+            }
+        }
+    }
+
+    override fun getName(): String = NAME
+
+    private var player: MediaPlayerController? = null
+    private var storedDevToken: String? = null
+    private var storedUsrToken: String? = null
+
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var progressRunnable: Runnable? = null
+
+    // ── Configure ───────────────────────────────────────────────
+
+    @ReactMethod
+    fun configure(devToken: String, usrToken: String, promise: Promise) {
+        Log.d(TAG, "configure called, devToken=${devToken.take(20)}..., usrToken=${usrToken.take(20)}...")
+        storedDevToken = devToken
+        storedUsrToken = usrToken
+
+        if (player != null) {
+            promise.resolve(true)
+            return
+        }
+
+        // Must run on main thread — javacpp JNI init overflows the NativeModules thread stack
+        mainHandler.post {
+            try {
+                ensureNativeLib()
+
+                val tokenProvider = object : TokenProvider {
+                    override fun getDeveloperToken(): String = storedDevToken ?: ""
+                    override fun getUserToken(): String = storedUsrToken ?: ""
+                }
+
+                player = MediaPlayerControllerFactory.createLocalController(
+                    reactContext.applicationContext,
+                    mainHandler,
+                    tokenProvider
+                )
+                player?.addListener(this)
+
+                Log.d(TAG, "Player created successfully: ${player != null}")
+                promise.resolve(true)
+            } catch (e: Exception) {
+                promise.reject("CONFIGURE_ERROR", e.message, e)
+            }
+        }
+    }
+
+    @ReactMethod
+    fun updateTokens(devToken: String, usrToken: String) {
+        storedDevToken = devToken
+        storedUsrToken = usrToken
+    }
+
+    // ── Play content ────────────────────────────────────────────
+
+    @ReactMethod
+    fun playAlbum(albumId: String, startIndex: Int, shuffle: Boolean, promise: Promise) {
+        playContainer(MediaContainerType.ALBUM, albumId, startIndex, shuffle, promise)
+    }
+
+    @ReactMethod
+    fun playPlaylist(playlistId: String, startIndex: Int, shuffle: Boolean, promise: Promise) {
+        playContainer(MediaContainerType.PLAYLIST, playlistId, startIndex, shuffle, promise)
+    }
+
+    @ReactMethod
+    fun playStation(stationId: String, promise: Promise) {
+        // SDK has no RADIO_STATION container type; play as individual item
+        playItem(MediaItemType.SONG, stationId, promise)
+    }
+
+    @ReactMethod
+    fun playSong(songId: String, promise: Promise) {
+        playItem(MediaItemType.SONG, songId, promise)
+    }
+
+    @ReactMethod
+    fun playMusicVideo(musicVideoId: String, promise: Promise) {
+        // SDK doesn't expose MUSIC_VIDEO type; use SONG as fallback
+        playItem(MediaItemType.SONG, musicVideoId, promise)
+    }
+
+    private fun playContainer(
+        containerType: Int,
+        containerId: String,
+        startIndex: Int,
+        shuffle: Boolean,
+        promise: Promise
+    ) {
+        val p = player
+        if (p == null) {
+            promise.reject("NOT_CONFIGURED", "Call configure() first")
+            return
+        }
+        mainHandler.post {
+            try {
+                Log.d(TAG, "playContainer type=$containerType id=$containerId startIndex=$startIndex shuffle=$shuffle")
+                val builder = CatalogPlaybackQueueItemProvider.Builder()
+                    .containers(containerType, containerId)
+                    .startItemIndex(startIndex)
+                if (shuffle) {
+                    builder.shuffleMode(PlaybackShuffleMode.SHUFFLE_MODE_SONGS)
+                }
+                val queue = builder.build()
+                Log.d(TAG, "playContainer: queue built, calling prepare(queue, autoPlay=true)")
+                p.prepare(queue, true)
+                Log.d(TAG, "playContainer: prepare() returned, playbackState=${p.playbackState}")
+                promise.resolve(true)
+            } catch (e: Exception) {
+                promise.reject("PLAY_ERROR", e.message, e)
+            }
+        }
+    }
+
+    private fun playItem(itemType: Int, itemId: String, promise: Promise) {
+        val p = player
+        if (p == null) {
+            Log.e(TAG, "playItem: player is null!")
+            promise.reject("NOT_CONFIGURED", "Call configure() first")
+            return
+        }
+        mainHandler.post {
+            try {
+                Log.d(TAG, "playItem type=$itemType id=$itemId")
+                val queue = CatalogPlaybackQueueItemProvider.Builder()
+                    .items(itemType, itemId)
+                    .build()
+                Log.d(TAG, "playItem: queue built, calling prepare(queue, autoPlay=true)")
+                p.prepare(queue, true)
+                Log.d(TAG, "playItem: prepare() returned, playbackState=${p.playbackState}")
+                promise.resolve(true)
+            } catch (e: Exception) {
+                Log.e(TAG, "playItem error", e)
+                promise.reject("PLAY_ERROR", e.message, e)
+            }
+        }
+    }
+
+    // ── Transport controls ──────────────────────────────────────
+
+    @ReactMethod
+    fun play() {
+        player?.play()
+    }
+
+    @ReactMethod
+    fun pause() {
+        player?.pause()
+    }
+
+    @ReactMethod
+    fun stop() {
+        player?.stop()
+        stopProgressUpdates()
+    }
+
+    @ReactMethod
+    fun skipToNext() {
+        player?.skipToNextItem()
+    }
+
+    @ReactMethod
+    fun skipToPrevious() {
+        player?.skipToPreviousItem()
+    }
+
+    @ReactMethod
+    fun seekTo(positionMs: Double) {
+        player?.seekToPosition(positionMs.toLong())
+    }
+
+    @ReactMethod
+    fun setShuffleMode(mode: Int) {
+        player?.setShuffleMode(mode)
+    }
+
+    @ReactMethod
+    fun setRepeatMode(mode: Int) {
+        player?.setRepeatMode(mode)
+    }
+
+    // ── Query state ─────────────────────────────────────────────
+
+    @ReactMethod
+    fun getPlaybackState(promise: Promise) {
+        val p = player
+        if (p == null) {
+            promise.resolve(null)
+            return
+        }
+        val map = Arguments.createMap().apply {
+            putString("state", playbackStateName(p.playbackState))
+            putDouble("position", p.currentPosition.toDouble())
+            putDouble("duration", p.duration.toDouble())
+            putInt("shuffleMode", p.shuffleMode)
+            putInt("repeatMode", p.repeatMode)
+            putInt("queueCount", p.playbackQueueItemCount)
+            putInt("queueIndex", p.playbackQueueIndex)
+        }
+        val item = p.currentItem
+        if (item != null) {
+            val media = item.item
+            map.putString("title", media.title)
+            map.putString("artistName", media.artistName)
+            map.putString("albumTitle", media.albumTitle)
+            map.putString("artworkUrl", media.getArtworkUrl(ARTWORK_SIZE, ARTWORK_SIZE))
+            map.putDouble("trackDuration", media.duration.toDouble())
+        }
+        promise.resolve(map)
+    }
+
+    // ── Listener callbacks ──────────────────────────────────────
+
+    override fun onPlaybackStateChanged(
+        controller: MediaPlayerController,
+        previousState: Int,
+        currentState: Int
+    ) {
+        Log.d(TAG, "onPlaybackStateChanged: ${playbackStateName(previousState)} -> ${playbackStateName(currentState)}")
+        val map = Arguments.createMap().apply {
+            putString("state", playbackStateName(currentState))
+            putString("previousState", playbackStateName(previousState))
+        }
+        sendEvent("onPlaybackStateChanged", map)
+
+        if (currentState == PlaybackState.PLAYING) {
+            startProgressUpdates()
+        } else {
+            stopProgressUpdates()
+        }
+    }
+
+    override fun onCurrentItemChanged(
+        controller: MediaPlayerController,
+        previousItem: PlayerQueueItem?,
+        currentItem: PlayerQueueItem?
+    ) {
+        Log.d(TAG, "onCurrentItemChanged: prev=${previousItem?.item?.title} -> cur=${currentItem?.item?.title}")
+        val map = Arguments.createMap()
+        if (currentItem != null) {
+            val media = currentItem.item
+            map.putString("title", media.title)
+            map.putString("artistName", media.artistName)
+            map.putString("albumTitle", media.albumTitle)
+            map.putString("artworkUrl", media.getArtworkUrl(ARTWORK_SIZE, ARTWORK_SIZE))
+            map.putDouble("duration", media.duration.toDouble())
+            map.putInt("trackIndex", controller.playbackQueueIndex)
+            map.putLong("playbackQueueId", currentItem.playbackQueueId)
+        }
+        sendEvent("onCurrentItemChanged", map)
+    }
+
+    override fun onPlaybackStateUpdated(controller: MediaPlayerController) {
+        // Covered by progress timer
+    }
+
+    override fun onItemEnded(
+        controller: MediaPlayerController,
+        queueItem: PlayerQueueItem,
+        endPosition: Long
+    ) {
+        val map = Arguments.createMap().apply {
+            putString("title", queueItem.item.title)
+            putDouble("endPosition", endPosition.toDouble())
+        }
+        sendEvent("onItemEnded", map)
+    }
+
+    override fun onPlaybackError(
+        controller: MediaPlayerController,
+        error: MediaPlayerException
+    ) {
+        Log.e(TAG, "onPlaybackError: ${error.message}", error)
+        val map = Arguments.createMap().apply {
+            putString("message", error.message ?: "Unknown playback error")
+        }
+        sendEvent("onPlaybackError", map)
+    }
+
+    override fun onPlaybackQueueChanged(
+        controller: MediaPlayerController,
+        queueItems: MutableList<PlayerQueueItem>
+    ) {
+        Log.d(TAG, "onPlaybackQueueChanged: count=${queueItems.size}")
+        val map = Arguments.createMap().apply {
+            putInt("count", controller.playbackQueueItemCount)
+        }
+        sendEvent("onPlaybackQueueChanged", map)
+    }
+
+    override fun onPlaybackQueueItemsAdded(
+        controller: MediaPlayerController,
+        insertionType: Int,
+        containerType: Int,
+        itemType: Int
+    ) {}
+
+    override fun onPlaybackRepeatModeChanged(
+        controller: MediaPlayerController,
+        currentRepeatMode: Int
+    ) {
+        val map = Arguments.createMap().apply {
+            putInt("repeatMode", currentRepeatMode)
+        }
+        sendEvent("onRepeatModeChanged", map)
+    }
+
+    override fun onPlaybackShuffleModeChanged(
+        controller: MediaPlayerController,
+        currentShuffleMode: Int
+    ) {
+        val map = Arguments.createMap().apply {
+            putInt("shuffleMode", currentShuffleMode)
+        }
+        sendEvent("onShuffleModeChanged", map)
+    }
+
+    override fun onBufferingStateChanged(
+        controller: MediaPlayerController,
+        buffering: Boolean
+    ) {
+        Log.d(TAG, "onBufferingStateChanged: buffering=$buffering")
+        val map = Arguments.createMap().apply {
+            putBoolean("buffering", buffering)
+        }
+        sendEvent("onBufferingStateChanged", map)
+    }
+
+    override fun onMetadataUpdated(
+        controller: MediaPlayerController,
+        currentItem: PlayerQueueItem
+    ) {}
+
+    override fun onPlayerStateRestored(controller: MediaPlayerController) {}
+
+
+
+    // ── Progress updates ────────────────────────────────────────
+
+    private fun startProgressUpdates() {
+        stopProgressUpdates()
+        val runnable = object : Runnable {
+            override fun run() {
+                val p = player ?: return
+                if (p.playbackState == PlaybackState.PLAYING) {
+                    val pos = p.currentPosition
+                    val dur = p.duration
+                    val buf = p.bufferedPosition
+                    Log.d(TAG, "progress: pos=$pos dur=$dur buf=$buf state=${p.playbackState}")
+                    val map = Arguments.createMap().apply {
+                        putDouble("position", pos.toDouble())
+                        putDouble("duration", dur.toDouble())
+                        putDouble("buffered", buf.toDouble())
+                    }
+                    sendEvent("onPlaybackProgress", map)
+                    mainHandler.postDelayed(this, PROGRESS_INTERVAL_MS)
+                }
+            }
+        }
+        progressRunnable = runnable
+        mainHandler.post(runnable)
+    }
+
+    private fun stopProgressUpdates() {
+        progressRunnable?.let { mainHandler.removeCallbacks(it) }
+        progressRunnable = null
+    }
+
+    // ── Cleanup ─────────────────────────────────────────────────
+
+    @ReactMethod
+    fun release() {
+        stopProgressUpdates()
+        player?.removeListener(this)
+        player?.release()
+        player = null
+    }
+
+    override fun onCatalystInstanceDestroy() {
+        release()
+    }
+
+    // ── Helpers ─────────────────────────────────────────────────
+
+    private fun sendEvent(name: String, params: WritableMap) {
+        Log.d(TAG, "sendEvent: $name")
+        if (reactContext.hasActiveReactInstance()) {
+            reactContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                .emit(name, params)
+        } else {
+            Log.w(TAG, "sendEvent: no active react instance, dropping event $name")
+        }
+    }
+
+    private fun playbackStateName(state: Int): String = when (state) {
+        PlaybackState.PLAYING -> "playing"
+        PlaybackState.PAUSED -> "paused"
+        PlaybackState.STOPPED -> "stopped"
+        else -> "unknown"
+    }
+
+    // Required for NativeEventEmitter
+    @ReactMethod
+    fun addListener(@Suppress("UNUSED_PARAMETER") eventName: String) {}
+
+    @ReactMethod
+    fun removeListeners(@Suppress("UNUSED_PARAMETER") count: Int) {}
+}

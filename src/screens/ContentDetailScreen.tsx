@@ -17,6 +17,8 @@ import {
 } from 'react-native';
 import {getArtworkUrl} from '../api/apple-music/recommendations';
 import {useContentDetail} from '../hooks/useContentDetail';
+import {NowPlayingBars} from '../components/NowPlayingBars';
+import {usePlayer} from '../hooks/usePlayer';
 import {useTheme} from '../theme';
 import {radius, spacing} from '../theme/layout';
 import type {
@@ -30,7 +32,7 @@ import type {
 } from '../types/catalog';
 import type {RecommendationContentType} from '../types/recommendations';
 
-const ARTWORK_SIZE = 300;
+const ARTWORK_SIZE = 350;
 
 export type ContentDetailScreenProps = {
   contentId: string;
@@ -160,6 +162,18 @@ export function ContentDetailScreen({
   const {colors} = useTheme();
   const styles = useStyles(colors);
   const {data, isLoading, error} = useContentDetail(contentId, contentType);
+  const {
+    state: playerState,
+    playAlbum,
+    playPlaylist,
+    playStation,
+    playSong,
+    playMusicVideo,
+  } = usePlayer();
+
+  const isPlaying = playerState.playbackState === 'playing';
+  const isPaused = playerState.playbackState === 'paused';
+  const isThisContainer = playerState.containerId === contentId;
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -172,6 +186,62 @@ export function ContentDetailScreen({
   const item = data?.data?.[0];
   const normalized = normalizeDetail(item, contentType);
 
+  const handlePlay = useCallback(() => {
+    const action = async () => {
+      switch (contentType) {
+        case 'albums':
+          await playAlbum(contentId);
+          break;
+        case 'playlists':
+          await playPlaylist(contentId);
+          break;
+        case 'stations':
+          await playStation(contentId);
+          break;
+        case 'songs':
+          await playSong(contentId);
+          break;
+        case 'music-videos':
+          await playMusicVideo(contentId);
+          break;
+      }
+    };
+    action().catch(e => console.warn('[Play]', e));
+  }, [contentId, contentType, playAlbum, playPlaylist, playStation, playSong, playMusicVideo]);
+
+  const handleShuffle = useCallback(() => {
+    const action = async () => {
+      switch (contentType) {
+        case 'albums':
+          await playAlbum(contentId, 0, true);
+          break;
+        case 'playlists':
+          await playPlaylist(contentId, 0, true);
+          break;
+        default:
+          handlePlay();
+      }
+    };
+    action().catch(e => console.warn('[Shuffle]', e));
+  }, [contentId, contentType, playAlbum, playPlaylist, handlePlay]);
+
+  const handleTrackPress = useCallback(
+    (index: number) => {
+      const action = async () => {
+        switch (contentType) {
+          case 'albums':
+            await playAlbum(contentId, index);
+            break;
+          case 'playlists':
+            await playPlaylist(contentId, index);
+            break;
+        }
+      };
+      action().catch(e => console.warn('[TrackPress]', e));
+    },
+    [contentId, contentType, playAlbum, playPlaylist],
+  );
+
   const renderTrack = useCallback(
     (renderInfo: {item: PlaylistTrack; index: number}) => (
       <TrackRow
@@ -179,10 +249,17 @@ export function ContentDetailScreen({
         index={renderInfo.index}
         showArtist={contentType === 'playlists'}
         showThumb={contentType === 'playlists'}
+        onPress={() => handleTrackPress(renderInfo.index)}
+        isNowPlaying={
+          isThisContainer &&
+          (isPlaying || isPaused) &&
+          playerState.queueIndex === renderInfo.index
+        }
+        isPlaying={isPlaying}
         styles={styles}
       />
     ),
-    [styles, contentType],
+    [styles, contentType, handleTrackPress, isPlaying, isPaused, isThisContainer, playerState.queueIndex],
   );
 
   let rightContent: React.ReactNode;
@@ -209,6 +286,8 @@ export function ContentDetailScreen({
           <ContentHeader
             normalized={normalized}
             contentType={contentType}
+            onPlay={handlePlay}
+            onShuffle={handleShuffle}
             styles={styles}
           />
         }
@@ -221,6 +300,8 @@ export function ContentDetailScreen({
         <ContentHeader
           normalized={normalized}
           contentType={contentType}
+          onPlay={handlePlay}
+          onShuffle={handleShuffle}
           styles={styles}
         />
         {normalized.duration ? (
@@ -272,10 +353,14 @@ function subtitleStyle(
 function ContentHeader({
   normalized,
   contentType,
+  onPlay,
+  onShuffle,
   styles,
 }: Readonly<{
   normalized: NormalizedDetail;
   contentType: RecommendationContentType;
+  onPlay: () => void;
+  onShuffle: () => void;
   styles: ReturnType<typeof useStyles>;
 }>) {
   const showShuffle = normalized.kind === 'tracklist';
@@ -302,9 +387,9 @@ function ContentHeader({
 
       {/* [Play] [Shuffle?]        [•••] */}
       <View style={styles.actionRow}>
-        <ActionButton icon="▶" label="Play" grabFocus styles={styles} />
+        <ActionButton icon="▶" label="Play" grabFocus onPress={onPlay} styles={styles} />
         {showShuffle ? (
-          <ActionButton icon="⇌" label="Shuffle" styles={styles} />
+          <ActionButton icon="⇌" label="Shuffle" onPress={onShuffle} styles={styles} />
         ) : null}
         <View style={styles.actionSpacer} />
         <MoreButton styles={styles} />
@@ -318,12 +403,18 @@ function TrackRow({
   index,
   showArtist,
   showThumb,
+  onPress,
+  isNowPlaying,
+  isPlaying,
   styles,
 }: Readonly<{
   item: PlaylistTrack;
   index: number;
   showArtist: boolean;
   showThumb: boolean;
+  onPress: () => void;
+  isNowPlaying: boolean;
+  isPlaying: boolean;
   styles: ReturnType<typeof useStyles>;
 }>) {
   const [focused, setFocused] = useState(false);
@@ -335,10 +426,26 @@ function TrackRow({
     ? formatDuration(item.attributes.durationInMillis)
     : '';
 
+  const prefixContent = () => {
+    if (isNowPlaying && !focused) {
+      return (
+        <View style={styles.trackPrefixBars}>
+          <NowPlayingBars playing={isPlaying} size={14} />
+        </View>
+      );
+    }
+    return (
+      <Text style={[styles.trackPrefix, focused && styles.trackPrefixFocused]}>
+        {focused ? '▶' : String(index + 1)}
+      </Text>
+    );
+  };
+
   return (
     <Pressable
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
+      onPress={onPress}
       style={[styles.trackRow, focused && styles.trackRowFocused]}
       focusable>
       {showThumb ? (
@@ -350,13 +457,15 @@ function TrackRow({
           )}
         </View>
       ) : (
-        <Text style={[styles.trackPrefix, focused && styles.trackPrefixFocused]}>
-          {focused ? '···' : String(index + 1)}
-        </Text>
+        prefixContent()
       )}
       <View style={styles.trackInfo}>
         <Text
-          style={[styles.trackName, focused && styles.trackNameFocused]}
+          style={[
+            styles.trackName,
+            focused && styles.trackNameFocused,
+            isNowPlaying && !focused && styles.trackNamePlaying,
+          ]}
           numberOfLines={1}>
           {item.attributes?.name ?? ''}
         </Text>
@@ -377,17 +486,20 @@ function ActionButton({
   icon,
   label,
   grabFocus,
+  onPress,
   styles,
 }: Readonly<{
   icon: string;
   label: string;
   grabFocus?: boolean;
+  onPress?: () => void;
   styles: ReturnType<typeof useStyles>;
 }>) {
   return (
     <Pressable
       style={({focused}) => [styles.actionBtn, focused && styles.actionBtnFocused]}
       hasTVPreferredFocus={grabFocus}
+      onPress={onPress}
       focusable>
       <Text style={styles.actionBtnText}>{icon}  {label}</Text>
     </Pressable>
@@ -590,6 +702,11 @@ function useStyles(c: {
       fontSize: 14,
       color: c.textMuted,
     },
+    trackPrefixBars: {
+      width: 28,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     trackPrefixFocused: {
       color: c.textOnDark,
       fontWeight: '600',
@@ -618,6 +735,9 @@ function useStyles(c: {
     },
     trackNameFocused: {
       fontWeight: '700',
+    },
+    trackNamePlaying: {
+      color: '#fa243c',
     },
     trackArtist: {
       fontSize: 13,
