@@ -10,6 +10,7 @@ import {LibraryScreen} from '../screens/LibraryScreen';
 import {ListenNowScreen} from '../screens/ListenNowScreen';
 import {NowPlayingScreen} from '../screens/NowPlayingScreen';
 import {RadioScreen} from '../screens/RadioScreen';
+import {SearchScreen} from '../screens/SearchScreen';
 import {VideosScreen} from '../screens/VideosScreen';
 
 export type MainLayoutProps = {
@@ -26,6 +27,7 @@ const SCREENS: Record<NavTabId, React.ComponentType> = {
   radio: RadioScreen,
   library: LibraryScreen,
   'now-playing': NowPlayingScreen,
+  search: SearchScreen,
 };
 
 export function MainLayout({

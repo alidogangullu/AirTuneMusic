@@ -16,3 +16,4 @@ export {
   loadMusicUserToken,
 } from './musicUserToken';
 export {startAppleMusicAuth} from './startAppleMusicAuth';
+export {searchCatalog, fetchSearchHints} from './search';

@@ -72,7 +72,8 @@ export type NavTabId =
   | 'videos'
   | 'radio'
   | 'library'
-  | 'now-playing';
+  | 'now-playing'
+  | 'search';
 
 const NAV_TABS: {id: NavTabId; label: string}[] = [
   {id: 'listen-now', label: 'Listen Now'},
@@ -254,9 +255,7 @@ function useStyles(c: {
     searchPillFocused: {
       backgroundColor: c.navTabFocusedBg,
       paddingHorizontal: spacing.lg,
-      paddingVertical: 6,
       transform: [{scale: 1.18}],
-      borderRadius: 999,
       ...tabFocusedShadow,
     },
     searchIcon: {

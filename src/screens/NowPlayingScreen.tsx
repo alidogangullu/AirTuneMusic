@@ -170,7 +170,6 @@ const styles = StyleSheet.create({
   artwork: {
     width: ARTWORK_SIZE,
     height: ARTWORK_SIZE,
-    borderRadius: radius.md,
   },
   artworkPlaceholder: {
     backgroundColor: 'rgba(255,255,255,0.1)',

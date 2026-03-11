@@ -58,7 +58,7 @@ export function HomeScreen({
           activeTab={activeTab}
           onTabPress={setActiveTab}
           onAvatarPress={onSignOut}
-          onSearchPress={() => {}}
+          onSearchPress={() => setActiveTab('search')}
         />
 
         {/* Modal ensures OS-level focus trapping — Android creates a new Window,
