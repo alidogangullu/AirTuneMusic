@@ -12,8 +12,8 @@
 export type AppColors = {
   appleMusicPink: string;
   appleMusicRed: string;
-  appleMusicLowPink: string;
-  appleMusicWhite: string;
+  gradientStart: string;
+  gradientEnd: string;
   screenBackground: string;
   textOnDark: string;
   textMuted: string;
@@ -53,8 +53,8 @@ export type AppColors = {
 export const colors: AppColors = {
   appleMusicPink: '#FF4E6B',
   appleMusicRed: '#FF0436',
-  appleMusicLowPink: '#ffbfcaff',
-  appleMusicWhite: '#FFFFFF',
+  gradientStart: '#c1d5f3',
+  gradientEnd: '#bfc0c6',
   screenBackground: '#FFFFFF',
   textOnDark: '#111111',
   textMuted: '#666666',

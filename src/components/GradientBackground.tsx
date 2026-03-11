@@ -1,5 +1,5 @@
 /**
- * Gradient background — Apple Music pink (top-left) to white (bottom-right).
+ * Gradient background — #c1d5f3 (top-left) to #bfc0c6 (bottom-right).
  * Uses react-native-linear-gradient (AGP 8 + Java 17).
  */
 

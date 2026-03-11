@@ -31,8 +31,8 @@ function AppContent(): React.JSX.Element {
   if (hasToken === null) {
     return (
       <GradientBackground
-        startColor={colors.appleMusicLowPink}
-        endColor={colors.appleMusicWhite}>
+        startColor={colors.gradientStart}
+        endColor={colors.gradientEnd}>
         <StatusBar barStyle="dark-content" backgroundColor="transparent" />
         <SafeAreaView style={[styles.container, styles.centered]}>
           <ActivityIndicator size="large" color={colors.accent} />
@@ -43,8 +43,8 @@ function AppContent(): React.JSX.Element {
 
   return (
     <GradientBackground
-      startColor={colors.appleMusicLowPink}
-      endColor={colors.appleMusicWhite}>
+      startColor={colors.gradientStart}
+      endColor={colors.gradientEnd}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" />
       <SafeAreaView style={styles.container}>
         {hasToken ? (

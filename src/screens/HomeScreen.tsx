@@ -69,8 +69,8 @@ export function HomeScreen({
           onRequestClose={popContent}>
           {selectedContent !== null && (
             <GradientBackground
-              startColor={colors.appleMusicLowPink}
-              endColor={colors.appleMusicWhite}>
+              startColor={colors.gradientStart}
+              endColor={colors.gradientEnd}>
               <ContentDetailScreen
                 contentId={selectedContent.id}
                 contentType={selectedContent.type}

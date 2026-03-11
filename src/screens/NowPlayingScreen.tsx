@@ -9,7 +9,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import {NowPlayingBars} from '../components/NowPlayingBars';
 import {useImageColors} from '../hooks/useImageColors';
 import {usePlayer} from '../hooks/usePlayer';
-import {spacing, radius} from '../theme/layout';
+import {spacing} from '../theme/layout';
 
 // ── Helpers ──────────────────────────────────────────────────────
 
