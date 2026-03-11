@@ -4,7 +4,7 @@
 
 export type PlaylistTrack = {
   id: string;
-  type: 'songs';
+  type: 'songs' | 'library-songs';
   href?: string;
   attributes?: {
     name?: string;
@@ -12,12 +12,15 @@ export type PlaylistTrack = {
     albumName?: string;
     durationInMillis?: number;
     artwork?: {url: string; width?: number; height?: number; bgColor?: string};
-    playParams?: {id: string; kind: string};
+    playParams?: {id: string; kind: string; catalogId?: string};
     previews?: {url: string}[];
     trackNumber?: number;
     releaseDate?: string;
     genreNames?: string[];
     hasLyrics?: boolean;
+  };
+  relationships?: {
+    catalog?: {data: Array<{id: string; type: string}>};
   };
 };
 

@@ -35,6 +35,20 @@ import type {RecommendationContentType} from '../types/recommendations';
 
 const ARTWORK_SIZE = 350;
 
+/**
+ * Extract the catalog song ID from a track.
+ * For library tracks we check: playParams.catalogId → catalog relationship → playParams.id.
+ * Falls back to track.id (which may be a library ID — won't play but avoids crash).
+ */
+function getCatalogSongId(track: PlaylistTrack): string {
+  return (
+    track.attributes?.playParams?.catalogId ??
+    track.relationships?.catalog?.data?.[0]?.id ??
+    track.attributes?.playParams?.id ??
+    track.id
+  );
+}
+
 export type ContentDetailScreenProps = {
   contentId: string;
   contentType: RecommendationContentType;
@@ -163,6 +177,7 @@ export function ContentDetailScreen({
   const {colors} = useTheme();
   const styles = useStyles(colors);
   const {data, isLoading, error} = useContentDetail(contentId, contentType);
+  const isLibrary = contentId.startsWith('p.') || contentId.startsWith('l.') || contentId.startsWith('i.');
   const {
     state: playerState,
     playAlbum,
@@ -191,6 +206,11 @@ export function ContentDetailScreen({
 
   const handlePlay = useCallback(() => {
     const action = async () => {
+      if (isLibrary && normalized) {
+        const firstTrack = normalized.tracks[0];
+        if (firstTrack) await playSong(getCatalogSongId(firstTrack));
+        return;
+      }
       switch (contentType) {
         case 'albums':
           await playAlbum(contentId);
@@ -211,10 +231,17 @@ export function ContentDetailScreen({
     };
     action().catch(e => console.warn('[Play]', e));
     openNowPlayingFullscreen();
-  }, [contentId, contentType, playAlbum, playPlaylist, playStation, playSong, playMusicVideo, openNowPlayingFullscreen]);
+  }, [contentId, contentType, isLibrary, normalized, playAlbum, playPlaylist, playStation, playSong, playMusicVideo, openNowPlayingFullscreen]);
 
   const handleShuffle = useCallback(() => {
     const action = async () => {
+      if (isLibrary && normalized) {
+        const tracks = normalized.tracks;
+        const randomIndex = Math.floor(Math.random() * tracks.length);
+        const track = tracks[randomIndex];
+        if (track) await playSong(getCatalogSongId(track));
+        return;
+      }
       switch (contentType) {
         case 'albums':
           await playAlbum(contentId, 0, true);
@@ -228,11 +255,16 @@ export function ContentDetailScreen({
     };
     action().catch(e => console.warn('[Shuffle]', e));
     openNowPlayingFullscreen();
-  }, [contentId, contentType, playAlbum, playPlaylist, handlePlay, openNowPlayingFullscreen]);
+  }, [contentId, contentType, isLibrary, normalized, playAlbum, playPlaylist, playSong, handlePlay, openNowPlayingFullscreen]);
 
   const handleTrackPress = useCallback(
     (index: number) => {
       const action = async () => {
+        if (isLibrary && normalized) {
+          const track = normalized.tracks[index];
+          if (track) await playSong(getCatalogSongId(track));
+          return;
+        }
         switch (contentType) {
           case 'albums':
             await playAlbum(contentId, index);
@@ -245,7 +277,7 @@ export function ContentDetailScreen({
       action().catch(e => console.warn('[TrackPress]', e));
       openNowPlayingFullscreen();
     },
-    [contentId, contentType, playAlbum, playPlaylist, openNowPlayingFullscreen],
+    [contentId, contentType, isLibrary, normalized, playAlbum, playPlaylist, playSong, openNowPlayingFullscreen],
   );
 
   const renderTrack = useCallback(

@@ -17,3 +17,4 @@ export {
 } from './musicUserToken';
 export {startAppleMusicAuth} from './startAppleMusicAuth';
 export {searchCatalog, fetchSearchHints} from './search';
+export {fetchLibraryItems, fetchLibraryPlaylistDetail, fetchLibraryAlbumDetail} from './library';

@@ -1,6 +1,8 @@
 import {useQuery} from '@tanstack/react-query';
 import {
   fetchAlbumDetail,
+  fetchLibraryAlbumDetail,
+  fetchLibraryPlaylistDetail,
   fetchMusicVideoDetail,
   fetchPlaylistDetail,
   fetchSongDetail,
@@ -8,6 +10,11 @@ import {
 } from '../api/apple-music';
 import type {ContentDetailResponse} from '../types/catalog';
 import type {RecommendationContentType} from '../types/recommendations';
+
+/** Library IDs start with p. (playlists) or l. (albums/songs). */
+function isLibraryId(id: string): boolean {
+  return id.startsWith('p.') || id.startsWith('l.') || id.startsWith('i.');
+}
 
 export function useContentDetail(
   id: string | null,
@@ -20,13 +27,20 @@ export function useContentDetail(
       if (!id || !type) {
         throw new Error('id and type are required');
       }
+
+      const library = isLibraryId(id);
+
       switch (type) {
         case 'playlists': {
-          const r = await fetchPlaylistDetail(id, storefront);
+          const r = library
+            ? await fetchLibraryPlaylistDetail(id)
+            : await fetchPlaylistDetail(id, storefront);
           return {data: r.data};
         }
         case 'albums': {
-          const r = await fetchAlbumDetail(id, storefront);
+          const r = library
+            ? await fetchLibraryAlbumDetail(id)
+            : await fetchAlbumDetail(id, storefront);
           return {data: r.data};
         }
         case 'stations': {
