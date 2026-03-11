@@ -115,6 +115,33 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     };
   }, []);
 
+  // Sync current state on mount (covers hot reload & late mount)
+  useEffect(() => {
+    musicPlayer.getPlaybackState().then(info => {
+      if (!info) return;
+      setState(s => ({
+        ...s,
+        playbackState: info.state,
+        position: info.position,
+        duration: info.duration,
+        shuffleMode: info.shuffleMode,
+        repeatMode: info.repeatMode,
+        queueCount: info.queueCount,
+        queueIndex: info.queueIndex,
+        track: info.title
+          ? {
+              title: info.title,
+              artistName: info.artistName ?? null,
+              albumTitle: info.albumTitle ?? null,
+              artworkUrl: info.artworkUrl ?? null,
+              duration: info.trackDuration ?? info.duration,
+              trackIndex: info.queueIndex,
+            }
+          : s.track,
+      }));
+    });
+  }, []);
+
   const playAlbum = useCallback(
     (albumId: string, startIndex = 0, shuffle = false) => {
       setState(s => ({...s, containerId: albumId}));

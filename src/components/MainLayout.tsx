@@ -38,14 +38,18 @@ export function MainLayout({
 
   return (
     <View style={styles.root}>
-      <TopBar
-        activeTab={activeTab}
-        onTabPress={onTabPress}
-        onAvatarPress={onAvatarPress}
-        onSearchPress={onSearchPress}
-      />
-      <View style={styles.content}>
+      <View style={styles.contentFull}>
         <Screen />
+      </View>
+      <View style={styles.topBarOverlay}>
+        <TopBar
+          activeTab={activeTab}
+          onTabPress={onTabPress}
+          onAvatarPress={onAvatarPress}
+          onSearchPress={onSearchPress}
+          transparent
+          dark={activeTab !== 'now-playing'}
+        />
       </View>
     </View>
   );
@@ -55,7 +59,17 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  content: {
-    flex: 1,
+  contentFull: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  topBarOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
   },
 });

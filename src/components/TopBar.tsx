@@ -88,6 +88,8 @@ export type TopBarProps = {
   onTabPress: (tab: NavTabId) => void;
   onAvatarPress?: () => void;
   onSearchPress?: () => void;
+  transparent?: boolean;
+  dark?: boolean;
 };
 
 export function TopBar({
@@ -95,9 +97,11 @@ export function TopBar({
   onTabPress,
   onAvatarPress,
   onSearchPress,
+  transparent = false,
+  dark = false,
 }: Readonly<TopBarProps>): React.JSX.Element {
   const {colors} = useTheme();
-  const styles = useStyles(colors);
+  const styles = useStyles(colors, transparent, dark);
 
   return (
     <View style={styles.wrap} focusable={false}>
@@ -160,7 +164,25 @@ function useStyles(c: {
   navTabText: string;
   navTabTextFocused: string;
   navAvatarBg: string;
-}) {
+}, transparent: boolean, dark: boolean) {
+  const cardBg = transparent
+    ? dark
+      ? 'rgba(0,0,0,0.35)'
+      : 'rgba(255,255,255,0.12)'
+    : c.navBarCardBg;
+  const avatarBg = transparent
+    ? dark
+      ? 'rgba(0,0,0,0.3)'
+      : 'rgba(255,255,255,0.15)'
+    : c.navAvatarBg;
+  const avatarFocusBg = transparent
+    ? dark
+      ? 'rgba(0,0,0,0.5)'
+      : 'rgba(255,255,255,0.3)'
+    : c.navTabFocusedBg;
+  const textColor = transparent ? 'rgba(255,255,255,0.7)' : c.navTabText;
+  const avatarTextColor = transparent ? 'rgba(255,255,255,0.8)' : c.navTabText;
+
   const tabFocusedShadow =
     Platform.OS === 'ios'
       ? {
@@ -187,18 +209,18 @@ function useStyles(c: {
       width: TOP_BAR_HEIGHT,
       height: TOP_BAR_HEIGHT,
       borderRadius: TOP_BAR_HEIGHT / 2,
-      backgroundColor: c.navAvatarBg,
+      backgroundColor: avatarBg,
       alignItems: 'center',
       justifyContent: 'center',
     },
     avatarFocused: {
-      backgroundColor: c.navTabFocusedBg,
+      backgroundColor: avatarFocusBg,
       transform: [{scale: 1.05}],
     },
     avatarText: {
       fontSize: 18,
       fontWeight: '600',
-      color: c.navTabText,
+      color: avatarTextColor,
     },
     tabPill: {
       paddingHorizontal: spacing.md,
@@ -217,7 +239,7 @@ function useStyles(c: {
     tabText: {
       fontSize: 15,
       fontWeight: '500',
-      color: c.navTabText,
+      color: textColor,
     },
     tabTextFocused: {
       color: c.navTabTextFocused,
@@ -239,7 +261,7 @@ function useStyles(c: {
     },
     searchIcon: {
       fontSize: 20,
-      color: c.navTabText,
+      color: textColor,
       fontWeight: '600',
     },
     card: {
@@ -247,7 +269,7 @@ function useStyles(c: {
       alignItems: 'center',
       alignSelf: 'center',
       borderRadius: 999,
-      backgroundColor: c.navBarCardBg,
+      backgroundColor: cardBg,
       paddingHorizontal: 0,
       paddingVertical: 0,
       minHeight: TOP_BAR_HEIGHT,

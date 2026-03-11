@@ -114,6 +114,9 @@ dependencies {
     // Apple MusicKit for Android — auth + playback AARs
     implementation fileTree(dir: 'libs', include: ['*.aar'])
 
+    // Android Palette — extract dominant colors from artwork
+    implementation("androidx.palette:palette:1.0.0")
+
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {

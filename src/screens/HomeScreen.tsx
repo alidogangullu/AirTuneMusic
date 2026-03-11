@@ -10,6 +10,7 @@ import {GradientBackground} from '../components/GradientBackground';
 import {MainLayout} from '../components/MainLayout';
 import {ContentNavigationContext} from '../navigation';
 import {ContentDetailScreen} from './ContentDetailScreen';
+import {NowPlayingScreen} from './NowPlayingScreen';
 import type {NavTabId} from '../components/TopBar';
 import type {RecommendationContent} from '../types/recommendations';
 import {useTheme} from '../theme';
@@ -25,6 +26,7 @@ export function HomeScreen({
   const [activeTab, setActiveTab] = useState<NavTabId>('listen-now');
   const [selectedContent, setSelectedContent] =
     useState<RecommendationContent | null>(null);
+  const [nowPlayingFullscreen, setNowPlayingFullscreen] = useState(false);
 
   const pushContent = useCallback((content: RecommendationContent) => {
     setSelectedContent(content);
@@ -34,7 +36,18 @@ export function HomeScreen({
     setSelectedContent(null);
   }, []);
 
-  const ctxValue = useMemo(() => ({pushContent}), [pushContent]);
+  const openNowPlayingFullscreen = useCallback(() => {
+    setNowPlayingFullscreen(true);
+  }, []);
+
+  const closeNowPlayingFullscreen = useCallback(() => {
+    setNowPlayingFullscreen(false);
+  }, []);
+
+  const ctxValue = useMemo(
+    () => ({pushContent, openNowPlayingFullscreen}),
+    [pushContent, openNowPlayingFullscreen],
+  );
 
   const isDetailOpen = selectedContent !== null;
 
@@ -65,6 +78,14 @@ export function HomeScreen({
               />
             </GradientBackground>
           )}
+        </Modal>
+
+        {/* Fullscreen Now Playing — opened when a track is played */}
+        <Modal
+          visible={nowPlayingFullscreen}
+          animationType="none"
+          onRequestClose={closeNowPlayingFullscreen}>
+          <NowPlayingScreen onBack={closeNowPlayingFullscreen} />
         </Modal>
       </View>
     </ContentNavigationContext.Provider>

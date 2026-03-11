@@ -3,11 +3,13 @@ import type {RecommendationContent} from '../types/recommendations';
 
 type ContentNavigationContextValue = {
   pushContent: (content: RecommendationContent) => void;
+  openNowPlayingFullscreen: () => void;
 };
 
 export const ContentNavigationContext =
   createContext<ContentNavigationContextValue>({
     pushContent: () => {},
+    openNowPlayingFullscreen: () => {},
   });
 
 export function useContentNavigation() {

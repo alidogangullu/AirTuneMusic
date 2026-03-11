@@ -24,6 +24,7 @@ function useStyles(c: {textOnDark: string; textMuted: string}) {
     root: {
       flex: 1,
       padding: spacing.xl,
+      paddingTop: 70,
     },
     title: {
       fontSize: 28,

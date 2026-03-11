@@ -19,6 +19,7 @@ import {getArtworkUrl} from '../api/apple-music/recommendations';
 import {useContentDetail} from '../hooks/useContentDetail';
 import {NowPlayingBars} from '../components/NowPlayingBars';
 import {usePlayer} from '../hooks/usePlayer';
+import {useContentNavigation} from '../navigation';
 import {useTheme} from '../theme';
 import {radius, spacing} from '../theme/layout';
 import type {
@@ -171,6 +172,8 @@ export function ContentDetailScreen({
     playMusicVideo,
   } = usePlayer();
 
+  const {openNowPlayingFullscreen} = useContentNavigation();
+
   const isPlaying = playerState.playbackState === 'playing';
   const isPaused = playerState.playbackState === 'paused';
   const isThisContainer = playerState.containerId === contentId;
@@ -207,7 +210,8 @@ export function ContentDetailScreen({
       }
     };
     action().catch(e => console.warn('[Play]', e));
-  }, [contentId, contentType, playAlbum, playPlaylist, playStation, playSong, playMusicVideo]);
+    openNowPlayingFullscreen();
+  }, [contentId, contentType, playAlbum, playPlaylist, playStation, playSong, playMusicVideo, openNowPlayingFullscreen]);
 
   const handleShuffle = useCallback(() => {
     const action = async () => {
@@ -223,7 +227,8 @@ export function ContentDetailScreen({
       }
     };
     action().catch(e => console.warn('[Shuffle]', e));
-  }, [contentId, contentType, playAlbum, playPlaylist, handlePlay]);
+    openNowPlayingFullscreen();
+  }, [contentId, contentType, playAlbum, playPlaylist, handlePlay, openNowPlayingFullscreen]);
 
   const handleTrackPress = useCallback(
     (index: number) => {
@@ -238,8 +243,9 @@ export function ContentDetailScreen({
         }
       };
       action().catch(e => console.warn('[TrackPress]', e));
+      openNowPlayingFullscreen();
     },
-    [contentId, contentType, playAlbum, playPlaylist],
+    [contentId, contentType, playAlbum, playPlaylist, openNowPlayingFullscreen],
   );
 
   const renderTrack = useCallback(
@@ -553,7 +559,8 @@ function useStyles(c: {
     root: {
       flex: 1,
       flexDirection: 'row',
-      padding: spacing.xl,
+      paddingTop: spacing.xl,
+      paddingHorizontal: spacing.xl,
       gap: spacing.xxl,
     },
     // ── Artwork panel (left) ──────────────────────────
@@ -590,7 +597,8 @@ function useStyles(c: {
       fontSize: 16,
     },
     trackListContent: {
-      paddingBottom: spacing.xxxl,
+      paddingBottom: 0,
+      paddingTop: 0,
     },
     // ── Header ────────────────────────────────────────
     headerBlock: {

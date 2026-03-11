@@ -134,7 +134,7 @@ function useStyles(c: {textMuted: string; accent: string}) {
       flex: 1,
     },
     scrollContent: {
-      paddingTop: spacing.xl,
+      paddingTop: 70,
       paddingBottom: spacing.xxxl,
     },
     rail: {
