@@ -49,16 +49,20 @@ function AppContent(): React.JSX.Element {
         <SafeAreaView style={styles.container}>
         {hasToken ? (
           <HomeScreen
-            onSignOut={() => {
-              clearMusicUserToken();
+            onSignOut={async () => {
+              const {handleLogout} = await import('./src/services/musicPlayer');
+              await handleLogout();
+              queryClient.clear();
               setHasToken(false);
             }}
           />
         ) : (
           <AppleMusicAuthScreen
             onAuthSuccess={() => setHasToken(true)}
-            onSignOut={() => {
-              clearMusicUserToken();
+            onSignOut={async () => {
+              const {handleLogout} = await import('./src/services/musicPlayer');
+              await handleLogout();
+              queryClient.clear();
               setHasToken(false);
             }}
           />

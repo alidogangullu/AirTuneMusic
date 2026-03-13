@@ -9,9 +9,21 @@ const storage = createMMKV();
 const STORAGE_KEY = '@AirTuneMusic/music_user_token';
 
 let musicUserToken: string | null = null;
+let isInitialized = false;
+let initPromise: Promise<string | null> | null = null;
 
 export function getMusicUserToken(): string | null {
   return musicUserToken;
+}
+
+export function isTokenReady(): boolean {
+  return isInitialized;
+}
+
+export async function waitForToken(): Promise<string | null> {
+  if (isInitialized) return musicUserToken;
+  if (initPromise) return initPromise;
+  return loadMusicUserToken();
 }
 
 export function setMusicUserToken(token: string | null): void {
@@ -25,6 +37,8 @@ export function setMusicUserToken(token: string | null): void {
 
 export function clearMusicUserToken(): void {
   musicUserToken = null;
+  isInitialized = false;
+  initPromise = null;
   storage.remove(STORAGE_KEY);
 }
 
@@ -33,14 +47,21 @@ export function clearMusicUserToken(): void {
  * @returns The token if found, null otherwise.
  */
 export async function loadMusicUserToken(): Promise<string | null> {
-  try {
-    const stored = storage.getString(STORAGE_KEY);
-    if (stored) {
-      musicUserToken = stored;
-      return stored;
+  if (initPromise) return initPromise;
+
+  initPromise = (async () => {
+    try {
+      const stored = storage.getString(STORAGE_KEY);
+      if (stored) {
+        musicUserToken = stored;
+      }
+    } catch {
+      // ignore
+    } finally {
+      isInitialized = true;
     }
-  } catch {
-    // ignore
-  }
-  return null;
+    return musicUserToken;
+  })();
+
+  return initPromise;
 }

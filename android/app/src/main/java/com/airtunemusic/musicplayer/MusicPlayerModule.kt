@@ -71,7 +71,10 @@ class MusicPlayerModule(
 
                 val tokenProvider = object : TokenProvider {
                     override fun getDeveloperToken(): String = storedDevToken ?: ""
-                    override fun getUserToken(): String = storedUsrToken ?: ""
+                    override fun getUserToken(): String {
+                        val token = storedUsrToken
+                        return if (token.isNullOrEmpty()) "" else token
+                    }
                 }
 
                 player = MediaPlayerControllerFactory.createLocalController(
@@ -91,6 +94,7 @@ class MusicPlayerModule(
 
     @ReactMethod
     fun updateTokens(devToken: String, usrToken: String) {
+        Log.d(TAG, "updateTokens called, devToken=${devToken.take(20)}..., usrToken=${usrToken.take(20)}...")
         storedDevToken = devToken
         storedUsrToken = usrToken
     }
@@ -314,9 +318,17 @@ class MusicPlayerModule(
         controller: MediaPlayerController,
         error: MediaPlayerException
     ) {
-        Log.e(TAG, "onPlaybackError: ${error.message}", error)
+        val msg = error.message ?: "Unknown playback error"
+        Log.e(TAG, "onPlaybackError: $msg", error)
+        
+        var friendlyMessage = msg
+        if (msg.contains("v1/me/storefront")) {
+            friendlyMessage = "Failed to resolve storefront. Please check your Apple Music subscription or sign in again."
+        }
+
         val map = Arguments.createMap().apply {
-            putString("message", error.message ?: "Unknown playback error")
+            putString("message", friendlyMessage)
+            putString("rawMessage", msg)
         }
         sendEvent("onPlaybackError", map)
     }

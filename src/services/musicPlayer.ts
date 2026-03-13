@@ -1,6 +1,6 @@
 import {NativeModules, NativeEventEmitter, Platform} from 'react-native';
 import {getDeveloperToken} from '../api/apple-music/getDeveloperToken';
-import {getMusicUserToken} from '../api/apple-music/musicUserToken';
+import {waitForToken} from '../api/apple-music/musicUserToken';
 
 const {MusicPlayer} = NativeModules;
 
@@ -101,9 +101,31 @@ export async function ensureConfigured(): Promise<void> {
     return;
   }
   const devToken = await getDeveloperToken();
-  const usrToken = getMusicUserToken() ?? '';
+  const usrToken = (await waitForToken()) ?? '';
   await MusicPlayer.configure(devToken, usrToken);
   configured = true;
+}
+
+export async function clearTokens(): Promise<void> {
+  if (MusicPlayer) {
+    await MusicPlayer.updateTokens('', '');
+  }
+}
+
+export async function syncTokens(): Promise<void> {
+  if (!MusicPlayer) return;
+  const devToken = await getDeveloperToken();
+  const usrToken = (await waitForToken()) ?? '';
+  await MusicPlayer.updateTokens(devToken, usrToken);
+}
+
+export async function handleLogout(): Promise<void> {
+  const {clearMusicUserToken} = await import('../api/apple-music/musicUserToken');
+  const {clearRecentSearchesGlobal} = await import('../hooks/useRecentSearches');
+  clearMusicUserToken();
+  clearRecentSearchesGlobal();
+  await clearTokens();
+  configured = false;
 }
 
 export async function playAlbum(

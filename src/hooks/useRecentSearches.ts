@@ -6,6 +6,10 @@ const storage = createMMKV();
 const RECENT_SEARCHES_KEY = 'recent_searches_v1';
 const MAX_RECENT_SEARCHES = 20;
 
+export function clearRecentSearchesGlobal() {
+  storage.remove(RECENT_SEARCHES_KEY);
+}
+
 export function useRecentSearches() {
   const [recentSearches, setRecentSearches] = useState<SearchResultItem[]>([]);
 
@@ -41,7 +45,7 @@ export function useRecentSearches() {
   }, []);
 
   const clearRecentSearches = useCallback(() => {
-    storage.remove(RECENT_SEARCHES_KEY);
+    clearRecentSearchesGlobal();
     setRecentSearches([]);
   }, []);
 

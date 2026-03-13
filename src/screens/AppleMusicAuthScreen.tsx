@@ -61,6 +61,9 @@ function startPolling(
             pollRef.current = null;
           }
           setMusicUserToken(data.musicUserToken);
+          // Sync new token to native player immediately
+          import('../services/musicPlayer').then(mp => mp.syncTokens());
+          
           // For development: log full Music User Token so it can be copied
           // to Postman or other tools. Remove before production if needed.
           console.log('Music User Token received:', data.musicUserToken);
