@@ -1,10 +1,13 @@
 import {useQuery} from '@tanstack/react-query';
 import {fetchAlbumDetail} from '../api/apple-music';
+import {useStorefront} from './useStorefront';
 
-export function useAlbumDetail(id: string | null, storefront = 'tr') {
+export function useAlbumDetail(id: string | null) {
+  const {storefrontId} = useStorefront();
+
   return useQuery({
-    queryKey: ['album-detail', id, storefront],
-    queryFn: () => fetchAlbumDetail(id ?? '', storefront),
+    queryKey: ['album-detail', id, storefrontId],
+    queryFn: () => fetchAlbumDetail(id ?? '', storefrontId),
     enabled: id !== null,
     staleTime: 5 * 60 * 1000,
   });

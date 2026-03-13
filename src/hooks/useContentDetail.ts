@@ -10,6 +10,7 @@ import {
 } from '../api/apple-music';
 import type {ContentDetailResponse} from '../types/catalog';
 import type {RecommendationContentType} from '../types/recommendations';
+import {useStorefront} from './useStorefront';
 
 /** Library IDs start with p. (playlists) or l. (albums/songs). */
 function isLibraryId(id: string): boolean {
@@ -19,10 +20,11 @@ function isLibraryId(id: string): boolean {
 export function useContentDetail(
   id: string | null,
   type: RecommendationContentType | null,
-  storefront = 'tr',
 ) {
+  const {storefrontId} = useStorefront();
+
   return useQuery({
-    queryKey: ['content-detail', type, id, storefront],
+    queryKey: ['content-detail', type, id, storefrontId],
     queryFn: async (): Promise<ContentDetailResponse> => {
       if (!id || !type) {
         throw new Error('id and type are required');
@@ -34,25 +36,25 @@ export function useContentDetail(
         case 'playlists': {
           const r = library
             ? await fetchLibraryPlaylistDetail(id)
-            : await fetchPlaylistDetail(id, storefront);
+            : await fetchPlaylistDetail(id, storefrontId);
           return {data: r.data};
         }
         case 'albums': {
           const r = library
             ? await fetchLibraryAlbumDetail(id)
-            : await fetchAlbumDetail(id, storefront);
+            : await fetchAlbumDetail(id, storefrontId);
           return {data: r.data};
         }
         case 'stations': {
-          const r = await fetchStationDetail(id, storefront);
+          const r = await fetchStationDetail(id, storefrontId);
           return {data: r.data};
         }
         case 'songs': {
-          const r = await fetchSongDetail(id, storefront);
+          const r = await fetchSongDetail(id, storefrontId);
           return {data: r.data};
         }
         case 'music-videos': {
-          const r = await fetchMusicVideoDetail(id, storefront);
+          const r = await fetchMusicVideoDetail(id, storefrontId);
           return {data: r.data};
         }
         default:

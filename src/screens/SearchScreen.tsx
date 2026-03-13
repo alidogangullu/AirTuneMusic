@@ -22,6 +22,7 @@ import { searchCatalog } from '../api/apple-music/search';
 import { getArtworkUrl } from '../api/apple-music/recommendations';
 import { useContentNavigation } from '../navigation';
 import { useRecentSearches } from '../hooks/useRecentSearches';
+import { useStorefront } from '../hooks/useStorefront';
 import type { SearchResultItem } from '../types/search';
 
 // ── Keyboard layout ──────────────────────────────────────────────
@@ -43,6 +44,7 @@ export function SearchScreen(): React.JSX.Element {
 
   const { recentSearches, addRecentSearch, clearRecentSearches } =
     useRecentSearches();
+  const { storefrontId } = useStorefront();
 
   // Debounced search
   useEffect(() => {
@@ -66,7 +68,7 @@ export function SearchScreen(): React.JSX.Element {
     }
     searchTimeoutRef.current = setTimeout(() => {
       if (!searchTerm.trim()) return;
-      searchCatalog(searchTerm, 'tr', 25)
+      searchCatalog(searchTerm, storefrontId, 25)
         .then(res => {
           const results: SearchResultItem[] = [];
           const r = res.results;

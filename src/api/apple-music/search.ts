@@ -7,11 +7,9 @@
 import type {SearchResponse, SearchHintsResponse} from '../../types/search';
 import {appleMusicApi} from './client';
 
-const DEFAULT_STOREFRONT = 'tr';
-
 export async function searchCatalog(
   term: string,
-  storefront = DEFAULT_STOREFRONT,
+  storefront: string,
   limit = 10,
 ): Promise<SearchResponse> {
   const {data} = await appleMusicApi.get<SearchResponse>(
@@ -29,7 +27,7 @@ export async function searchCatalog(
 
 export async function fetchSearchHints(
   term: string,
-  storefront = DEFAULT_STOREFRONT,
+  storefront: string,
   limit = 10,
 ): Promise<string[]> {
   const {data} = await appleMusicApi.get<SearchHintsResponse>(

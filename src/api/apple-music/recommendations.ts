@@ -24,7 +24,7 @@ export async function fetchRecommendations(): Promise<RecommendationsResponse> {
  */
 export async function fetchPlaylistDetail(
   id: string,
-  storefront = 'tr',
+  storefront: string,
 ): Promise<PlaylistDetailResponse> {
   const {data} = await appleMusicApi.get<PlaylistDetailResponse>(
     `/catalog/${storefront}/playlists/${id}`,
@@ -39,7 +39,7 @@ export async function fetchPlaylistDetail(
  */
 export async function fetchAlbumDetail(
   id: string,
-  storefront = 'tr',
+  storefront: string,
 ): Promise<AlbumDetailResponse> {
   const {data} = await appleMusicApi.get<AlbumDetailResponse>(
     `/catalog/${storefront}/albums/${id}`,
@@ -54,7 +54,7 @@ export async function fetchAlbumDetail(
  */
 export async function fetchArtistDetail(
   id: string,
-  storefront = 'tr',
+  storefront: string,
 ): Promise<ArtistDetailResponse> {
   const {data} = await appleMusicApi.get<ArtistDetailResponse>(
     `/catalog/${storefront}/artists/${id}`,
@@ -69,7 +69,7 @@ export async function fetchArtistDetail(
  */
 export async function fetchStationDetail(
   id: string,
-  storefront = 'tr',
+  storefront: string,
 ): Promise<StationDetailResponse> {
   const {data} = await appleMusicApi.get<StationDetailResponse>(
     `/catalog/${storefront}/stations/${id}`,
@@ -83,7 +83,7 @@ export async function fetchStationDetail(
  */
 export async function fetchSongDetail(
   id: string,
-  storefront = 'tr',
+  storefront: string,
 ): Promise<SongDetailResponse> {
   const {data} = await appleMusicApi.get<SongDetailResponse>(
     `/catalog/${storefront}/songs/${id}`,
@@ -97,7 +97,7 @@ export async function fetchSongDetail(
  */
 export async function fetchMusicVideoDetail(
   id: string,
-  storefront = 'tr',
+  storefront: string,
 ): Promise<MusicVideoDetailResponse> {
   const {data} = await appleMusicApi.get<MusicVideoDetailResponse>(
     `/catalog/${storefront}/music-videos/${id}`,
