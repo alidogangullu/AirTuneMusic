@@ -266,7 +266,6 @@ function SearchResultsContent({
 function RecentSearchesRow({
   items,
   onPress,
-  onClear,
   styles,
 }: Readonly<{
   items: SearchResultItem[];
@@ -557,7 +556,6 @@ function useStyles(c: {
       fontSize: 22,
       fontWeight: '700',
       color: c.textOnDark,
-      marginBottom: spacing.md,
     },
     recentSearchesList: {
       marginHorizontal: -spacing.xxl,
@@ -577,6 +575,7 @@ function useStyles(c: {
       overflow: 'hidden',
       padding: spacing.sm,
       gap: spacing.sm,
+      marginTop: spacing.sm,
     },
     recentSearchCardFocused: {
       backgroundColor: '#ffffff',

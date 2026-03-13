@@ -18,8 +18,8 @@ import { useContentNavigation } from '../navigation';
 import { ContentDetailScreen } from './ContentDetailScreen';
 import { GradientBackground } from '../components/GradientBackground';
 import { useTheme } from '../theme';
-import { radius, spacing } from '../theme/layout';
-import type { AlbumDetail, PlaylistTrack, SongDetail } from '../types/catalog';
+import { spacing } from '../theme/layout';
+import type { AlbumDetail, SongDetail } from '../types/catalog';
 
 export type ArtistDetailScreenProps = {
   artistId: string;
@@ -34,7 +34,7 @@ export function ArtistDetailScreen({
   const styles = useStyles(colors);
   const { data, isLoading, error } = useArtistDetail(artistId);
 
-  const { playSong, playAlbum } = usePlayer();
+  const { playSong } = usePlayer();
   const { openNowPlayingFullscreen } = useContentNavigation();
 
   const [selectedAlbumParams, setSelectedAlbumParams] = React.useState<{ id: string, type: 'albums' } | null>(null);
@@ -54,7 +54,7 @@ export function ArtistDetailScreen({
 
   const artist = data?.data?.[0];
   const attrs = artist?.attributes;
-  const topSongs = artist?.views?.['top-songs']?.data ?? [];
+  const topSongs = React.useMemo(() => artist?.views?.['top-songs']?.data ?? [], [artist]);
   const latestRelease = artist?.views?.['latest-release']?.data?.[0];
   const essentialAlbums = artist?.views?.['full-albums']?.data ?? [];
 
@@ -318,7 +318,7 @@ function EssentialAlbumCard({
         <Text style={styles.essentialAlbumYear}>{year}</Text>
         {album.attributes?.editorialNotes?.short ? (
           <Text style={styles.essentialAlbumDesc} numberOfLines={4}>
-            {album.attributes.editorialNotes.short.replace(/<[^>]*>?/gm, '')}
+            {album.attributes.editorialNotes.short.replaceAll(/<[^>]*>?/gm, '')}
           </Text>
         ) : null}
       </View>
@@ -342,9 +342,9 @@ function useStyles(c: {
       flex: 1,
     },
     scrollContent: {
-      paddingTop: spacing.xl,
-      paddingLeft: spacing.xl,
-      paddingBottom: spacing.xxxl,
+      marginTop: spacing.xl,
+      marginLeft: spacing.xl,
+      marginBottom: spacing.xxxl,
     },
     center: {
       justifyContent: 'center',
@@ -394,7 +394,6 @@ function useStyles(c: {
       fontSize: 22,
       fontWeight: '600',
       color: c.textMuted,
-      marginBottom: spacing.md,
     },
     topRow: {
       flexDirection: 'row',
@@ -411,7 +410,8 @@ function useStyles(c: {
     },
     topSongsList: {
       gap: spacing.md,
-      paddingRight: spacing.xl,
+      marginTop: spacing.sm,
+      marginLeft: spacing.sm,
     },
     topSongsColumn: {
       flexDirection: 'column',
@@ -430,11 +430,6 @@ function useStyles(c: {
     // ── Cards ────────────────────────
     cardFocused: {
       transform: [{ scale: 1.02 }],
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.3,
-      shadowRadius: 15,
-      elevation: 10,
       backgroundColor: '#fff', // Solid white on focus
     },
 
@@ -445,6 +440,8 @@ function useStyles(c: {
       borderRadius: 4,
       overflow: 'hidden',
       height: 152,
+      marginTop: spacing.sm,
+      marginLeft: spacing.sm,
     },
     latestReleaseArtworkContainer: {
       width: 152,
@@ -495,7 +492,7 @@ function useStyles(c: {
     },
     topSongInfo: {
       flex: 1,
-      paddingHorizontal: spacing.md,
+      marginLeft: spacing.md,
       justifyContent: 'center',
     },
     topSongName: {
@@ -515,12 +512,14 @@ function useStyles(c: {
       backgroundColor: 'rgba(255, 255, 255, 0.7)',
       borderRadius: 4,
       overflow: 'hidden',
-      width: 500,
-      height: 250,
+      width: 400,
+      height: 200,
+      marginTop: spacing.sm,
+      marginLeft: spacing.sm,
     },
     essentialAlbumArtworkContainer: {
-      width: 250,
-      height: 250,
+      width: 200,
+      height: 200,
     },
     essentialAlbumArtwork: {
       width: '100%',
