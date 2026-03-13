@@ -1,15 +1,31 @@
 /**
  * Now Playing screen — full-screen player with artwork, progress bar,
  * and dynamic gradient background extracted from artwork colors.
+ *
+ * Progress bar is fully interactive via Android TV remote:
+ *   - OK/Select   → play/pause toggle (or confirm seek when scrubbing)
+ *   - D-pad Left  → scrub -5 s
+ *   - D-pad Right → scrub +5 s
  */
 
-import React, {useEffect, useRef} from 'react';
-import {Animated, BackHandler, Image, StyleSheet, Text, View} from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  BackHandler,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  useTVEventHandler,
+  View,
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {NowPlayingBars} from '../components/NowPlayingBars';
-import {useImageColors} from '../hooks/useImageColors';
-import {usePlayer} from '../hooks/usePlayer';
-import {spacing} from '../theme/layout';
+import { NowPlayingBars } from '../components/NowPlayingBars';
+import { useImageColors } from '../hooks/useImageColors';
+import { usePlayer } from '../hooks/usePlayer';
+import { spacing } from '../theme/layout';
+
+const SEEK_STEP_MS = 5000;
 
 // ── Helpers ──────────────────────────────────────────────────────
 
@@ -27,13 +43,92 @@ interface NowPlayingScreenProps {
   onBack?: () => void;
 }
 
-export function NowPlayingScreen({onBack}: Readonly<NowPlayingScreenProps>): React.JSX.Element {
-  const {state} = usePlayer();
-  const {track, position, duration, playbackState} = state;
+export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): React.JSX.Element {
+  const { state, play, pause, seekTo } = usePlayer();
+  const { track, position, duration, playbackState } = state;
   const isPlaying = playbackState === 'playing';
   const hasTrack = track !== null && playbackState !== 'stopped';
   const palette = useImageColors(track?.artworkUrl);
   const paletteLoading = track?.artworkUrl && !palette;
+
+  // ── Interactive progress bar state ──────────────────────────────
+  const [isFocused, setIsFocused] = useState(false);
+  const [isScrubbing, setIsScrubbing] = useState(false);
+  const [pendingSeekMs, setPendingSeekMs] = useState(0);
+
+  // Animated values for focus feedback
+  const barHeightAnim = useRef(new Animated.Value(3)).current;
+  const knobSizeAnim = useRef(new Animated.Value(10)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(barHeightAnim, {
+        toValue: isFocused ? 6 : 3,
+        duration: 150,
+        useNativeDriver: false,
+      }),
+      Animated.timing(knobSizeAnim, {
+        toValue: isFocused ? 16 : 10,
+        duration: 150,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  }, [isFocused, barHeightAnim, knobSizeAnim]);
+
+  // Keep latest scrubbing state in refs so useTVEventHandler callback doesn't go stale
+  const isFocusedRef = useRef(false);
+  const isScrubbingRef = useRef(false);
+  const pendingSeekMsRef = useRef(0);
+  const positionRef = useRef(position);
+  const durationRef = useRef(duration);
+
+  positionRef.current = position;
+  durationRef.current = duration;
+
+  const handleFocus = useCallback(() => {
+    setIsFocused(true);
+    isFocusedRef.current = true;
+  }, []);
+
+  const handleBlur = useCallback(() => {
+    setIsFocused(false);
+    isFocusedRef.current = false;
+    setIsScrubbing(false);
+    isScrubbingRef.current = false;
+    setPendingSeekMs(0);
+    pendingSeekMsRef.current = 0;
+  }, []);
+
+  const handlePress = useCallback(() => {
+    if (isScrubbingRef.current) {
+      // Confirm seek
+      seekTo(pendingSeekMsRef.current);
+      setIsScrubbing(false);
+      isScrubbingRef.current = false;
+      setPendingSeekMs(0);
+      pendingSeekMsRef.current = 0;
+    } else {
+      // Toggle play/pause
+      if (isPlaying) {
+        pause();
+      } else {
+        play();
+      }
+    }
+  }, [isPlaying, seekTo, play, pause]);
+
+  // D-pad left/right: scrub ±5 s when progress bar is focused
+  useTVEventHandler(useCallback((evt: { eventType: string }) => {
+    if (!isFocusedRef.current) return;
+    if (evt.eventType !== 'left' && evt.eventType !== 'right') return;
+    const base = isScrubbingRef.current ? pendingSeekMsRef.current : positionRef.current;
+    const delta = evt.eventType === 'right' ? SEEK_STEP_MS : -SEEK_STEP_MS;
+    const next = Math.max(0, Math.min(durationRef.current, base + delta));
+    pendingSeekMsRef.current = next;
+    isScrubbingRef.current = true;
+    setPendingSeekMs(next);
+    setIsScrubbing(true);
+  }, []));
 
   // Handle back button (remote) in fullscreen mode
   useEffect(() => {
@@ -70,17 +165,20 @@ export function NowPlayingScreen({onBack}: Readonly<NowPlayingScreenProps>): Rea
   const progress = duration > 0 ? position / duration : 0;
   const remainingMs = duration > 0 ? duration - position : 0;
 
+  // Scrub indicator progress (pending seek position)
+  const scrubProgress = duration > 0 ? pendingSeekMs / duration : 0;
+
   if (!track) {
     // Select music warning
     return (
       <LinearGradient
         colors={["#c1d5f3", "#bfc0c6"]}
-        start={{x: 0, y: 0}}
-        end={{x: 1, y: 1}}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={styles.root}
       >
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-          <Text style={{fontSize: 20, color: '#333', fontWeight: '600'}}>Select a song to play.</Text>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ fontSize: 20, color: '#333', fontWeight: '600' }}>Select a song to play.</Text>
         </View>
       </LinearGradient>
     );
@@ -90,8 +188,8 @@ export function NowPlayingScreen({onBack}: Readonly<NowPlayingScreenProps>): Rea
     return (
       <LinearGradient
         colors={["#c1d5f3", "#bfc0c6"]}
-        start={{x: 0, y: 0}}
-        end={{x: 1, y: 1}}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={styles.root}
       >
         <LoadingIndicator />
@@ -102,15 +200,15 @@ export function NowPlayingScreen({onBack}: Readonly<NowPlayingScreenProps>): Rea
   return (
     <LinearGradient
       colors={[bg1, bg2]}
-      start={{x: 0, y: 0}}
-      end={{x: 1, y: 1}}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={styles.root}>
       {/* Centered content: artwork + track info */}
       <View style={styles.content}>
-        <Animated.View style={[styles.artworkShadow, {transform: [{scale: scaleAnim}]}]}>
+        <Animated.View style={[styles.artworkShadow, { transform: [{ scale: scaleAnim }] }]}>
           {track?.artworkUrl ? (
             <Image
-              source={{uri: track.artworkUrl}}
+              source={{ uri: track.artworkUrl }}
               style={styles.artwork}
               resizeMode="cover"
             />
@@ -134,26 +232,86 @@ export function NowPlayingScreen({onBack}: Readonly<NowPlayingScreenProps>): Rea
       </View>
 
       {/* Progress bar — full width at screen bottom */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressTrack}>
-          <View
-            style={[
-              styles.progressFill,
-              {width: `${progress * 100}%`, backgroundColor: accentColor},
-            ]}
-          />
-          <View
-            style={[
-              styles.progressKnob,
-              {left: `${progress * 100}%`, backgroundColor: '#fff'},
-            ]}
-          />
-        </View>
-        <View style={styles.timeRow}>
-          <Text style={styles.timeText}>{formatTime(position)}</Text>
-          <Text style={styles.timeText}>-{formatTime(remainingMs)}</Text>
-        </View>
-      </View>
+      <Pressable
+        style={styles.progressContainer}
+        focusable={true}
+        hasTVPreferredFocus={false}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onPress={handlePress}
+        accessibilityLabel="Progress bar"
+        accessibilityRole="adjustable">
+        {({ focused }) => (
+          <>
+            <Animated.View
+              style={[
+                styles.progressTrack,
+                { height: barHeightAnim },
+                focused && styles.progressTrackFocused,
+              ]}>
+              {/* Playback fill */}
+              <View
+                style={[
+                  styles.progressFill,
+                  { width: `${progress * 100}%`, backgroundColor: accentColor },
+                ]}
+              />
+              {/* Scrub indicator (only when scrubbing) */}
+              {isScrubbing && (
+                <View
+                  style={[
+                    styles.progressFill,
+                    styles.scrubFill,
+                    { width: `${scrubProgress * 100}%` },
+                  ]}
+                />
+              )}
+              {/* Playback knob */}
+              <Animated.View
+                style={[
+                  styles.progressKnob,
+                  {
+                    left: `${progress * 100}%` as unknown as number,
+                    backgroundColor: accentColor,
+                    width: knobSizeAnim,
+                    height: knobSizeAnim,
+                    borderRadius: Animated.divide(knobSizeAnim, 2) as unknown as number,
+                    marginLeft: Animated.multiply(knobSizeAnim, -0.5) as unknown as number,
+                    top: Animated.multiply(Animated.subtract(knobSizeAnim, barHeightAnim), -0.5) as unknown as number,
+                  },
+                ]}
+              />
+              {/* Scrub knob (pending position) */}
+              {isScrubbing && (
+                <Animated.View
+                  style={[
+                    styles.progressKnob,
+                    {
+                      left: `${scrubProgress * 100}%` as unknown as number,
+                      backgroundColor: '#fff',
+                      width: knobSizeAnim,
+                      height: knobSizeAnim,
+                      borderRadius: Animated.divide(knobSizeAnim, 2) as unknown as number,
+                      marginLeft: Animated.multiply(knobSizeAnim, -0.5) as unknown as number,
+                      top: Animated.multiply(Animated.subtract(knobSizeAnim, barHeightAnim), -0.5) as unknown as number,
+                    },
+                  ]}
+                />
+              )}
+            </Animated.View>
+            <View style={styles.timeRow}>
+              <Text style={styles.timeText}>
+                {isScrubbing ? formatTime(pendingSeekMs) : formatTime(position)}
+              </Text>
+              <Text style={[styles.timeText, isScrubbing && styles.timeTextScrubbing]}>
+                {isScrubbing
+                  ? `→ ${formatTime(pendingSeekMs)}`
+                  : `-${formatTime(remainingMs)}`}
+              </Text>
+            </View>
+          </>
+        )}
+      </Pressable>
     </LinearGradient>
   );
 }
@@ -184,7 +342,7 @@ const styles = StyleSheet.create({
   // Artwork
   artworkShadow: {
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 12},
+    shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.5,
     shadowRadius: 24,
     elevation: 20,
@@ -221,25 +379,34 @@ const styles = StyleSheet.create({
   // Progress — full width at bottom
   progressContainer: {
     paddingHorizontal: spacing.xxl,
-    paddingBottom: spacing.sm,
+    paddingBottom: spacing.md,
+    // Extra vertical padding so the focus highlight / knob are not clipped
+    paddingTop: spacing.lg,
   },
   progressTrack: {
-    height: 3,
     backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 1.5,
+    borderRadius: 3,
     overflow: 'visible',
   },
+  progressTrackFocused: {
+    backgroundColor: 'rgba(255,255,255,0.3)',
+  },
   progressFill: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
     height: '100%',
-    borderRadius: 1.5,
+    borderRadius: 3,
+  },
+  scrubFill: {
+    backgroundColor: 'rgba(255,255,255,0.55)',
   },
   progressKnob: {
     position: 'absolute',
-    top: -3.5,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginLeft: -5,
+  },
+  timeTextScrubbing: {
+    color: '#fff',
+    fontWeight: '700',
   },
   timeRow: {
     flexDirection: 'row',

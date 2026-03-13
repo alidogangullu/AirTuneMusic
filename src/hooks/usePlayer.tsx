@@ -182,6 +182,11 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     [],
   );
 
+  const seekTo = useCallback((positionMs: number) => {
+    setState(s => ({...s, position: positionMs}));
+    musicPlayer.seekTo(positionMs);
+  }, []);
+
   const value: PlayerContextValue = {
     state,
     playAlbum,
@@ -194,7 +199,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     stop: musicPlayer.stop,
     skipToNext: musicPlayer.skipToNext,
     skipToPrevious: musicPlayer.skipToPrevious,
-    seekTo: musicPlayer.seekTo,
+    seekTo,
     setShuffleMode: musicPlayer.setShuffleMode,
     setRepeatMode: musicPlayer.setRepeatMode,
     isPlaying: state.playbackState === 'playing',
