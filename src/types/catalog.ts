@@ -80,6 +80,7 @@ export type AlbumDetail = {
     isComplete?: boolean;
     url?: string;
     playParams?: {id: string; kind: string};
+    editorialNotes?: {standard?: string; short?: string};
   };
   relationships?: {
     tracks?: {href?: string; data: PlaylistTrack[]};
@@ -203,6 +204,55 @@ export type MusicVideoDetailResponse = {
   data: MusicVideoDetail[];
 };
 
+// ── Artist Detail ───────────────────────────────────────────────
+
+export type ArtistDetail = {
+  id: string;
+  type: 'artists';
+  href?: string;
+  attributes?: {
+    name?: string;
+    url?: string;
+    genreNames?: string[];
+    artwork?: {
+      url: string;
+      width?: number;
+      height?: number;
+      bgColor?: string;
+      textColor1?: string;
+    };
+    editorialNotes?: {
+      standard?: string;
+      short?: string;
+      name?: string;
+    };
+  };
+  relationships?: {
+    albums?: {href?: string; data: AlbumDetail[]};
+    genres?: {href?: string; data: unknown[]};
+    musicVideos?: {href?: string; data: MusicVideoDetail[]};
+    playlists?: {href?: string; data: PlaylistDetail[]};
+    station?: {href?: string; data: StationDetail[]};
+  };
+  views?: {
+    ['top-songs']?: {href?: string; data: SongDetail[]};
+    ['top-music-videos']?: {href?: string; data: MusicVideoDetail[]};
+    ['latest-release']?: {href?: string; data: AlbumDetail[]};
+    ['full-albums']?: {href?: string; data: AlbumDetail[]};
+    singles?: {href?: string; data: AlbumDetail[]};
+    ['live-albums']?: {href?: string; data: AlbumDetail[]};
+    ['compilation-albums']?: {href?: string; data: AlbumDetail[]};
+    ['appears-on-albums']?: {href?: string; data: AlbumDetail[]};
+    ['featured-albums']?: {href?: string; data: AlbumDetail[]};
+    ['featured-playlists']?: {href?: string; data: PlaylistDetail[]};
+    ['similar-artists']?: {href?: string; data: ArtistDetail[]};
+  };
+};
+
+export type ArtistDetailResponse = {
+  data: ArtistDetail[];
+};
+
 // ── Unified content detail ──────────────────────────────────────
 
 export type ContentDetailItem =
@@ -210,7 +260,8 @@ export type ContentDetailItem =
   | AlbumDetail
   | StationDetail
   | SongDetail
-  | MusicVideoDetail;
+  | MusicVideoDetail
+  | ArtistDetail;
 
 export type ContentDetailResponse = {
   data: ContentDetailItem[];

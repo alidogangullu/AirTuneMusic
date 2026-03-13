@@ -6,6 +6,7 @@
 export type RecommendationContentType =
   | 'playlists'
   | 'albums'
+  | 'artists'
   | 'stations'
   | 'music-videos'
   | 'songs';

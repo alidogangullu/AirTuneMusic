@@ -31,6 +31,9 @@ export async function fetchLibraryItems(
   if (offset) {
     params.offset = offset;
   }
+  if (category === 'artists') {
+    params.include = 'catalog';
+  }
   const {data} = await appleMusicApi.get<LibraryResponse>(endpoint, {params});
   return data;
 }

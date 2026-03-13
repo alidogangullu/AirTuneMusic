@@ -52,8 +52,12 @@ function LibraryGridItem({
   styles: ReturnType<typeof useStyles>;
   onPress: (item: LibraryItem) => void;
 }>) {
+  // Merge item attributes with its catalog counterpart (if included)
+  const catalogItem = item.relationships?.catalog?.data?.[0];
+  const itemArtworkUrl = item.attributes?.artwork?.url ?? catalogItem?.attributes?.artwork?.url;
+
   const artworkUrl = getArtworkUrl(
-    item.attributes?.artwork?.url,
+    itemArtworkUrl,
     ARTWORK_SIZE * 2,
     ARTWORK_SIZE * 2,
   );
@@ -170,15 +174,18 @@ export function LibraryScreen(): React.JSX.Element {
         'library-songs': 'songs',
         'library-music-videos': 'music-videos',
       };
-      const catalogId = item.attributes?.playParams?.catalogId ?? item.id;
+      const catalogItem = item.relationships?.catalog?.data?.[0];
+      const catalogId = item.attributes?.playParams?.catalogId ?? catalogItem?.id ?? item.id;
+      const artworkObj = item.attributes?.artwork ?? catalogItem?.attributes?.artwork;
+      
       pushContent({
         id: catalogId,
         type: (typeMap[item.type] ?? 'albums') as any,
         attributes: {
           name: item.attributes?.name,
           artistName: item.attributes?.artistName,
-          artwork: item.attributes?.artwork
-            ? {url: item.attributes.artwork.url}
+          artwork: artworkObj
+            ? {url: artworkObj.url}
             : undefined,
         },
       });

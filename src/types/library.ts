@@ -24,6 +24,11 @@ export type LibraryItem = {
     playParams?: {id: string; kind: string; catalogId?: string};
     contentRating?: string;
   };
+  relationships?: {
+    catalog?: {
+      data?: any[];
+    };
+  };
 };
 
 export type LibraryResponse = {

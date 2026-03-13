@@ -9,6 +9,7 @@ import {Modal, StyleSheet, View} from 'react-native';
 import {GradientBackground} from '../components/GradientBackground';
 import {MainLayout} from '../components/MainLayout';
 import {ContentNavigationContext} from '../navigation';
+import {ArtistDetailScreen} from './ArtistDetailScreen';
 import {ContentDetailScreen} from './ContentDetailScreen';
 import {NowPlayingScreen} from './NowPlayingScreen';
 import type {NavTabId} from '../components/TopBar';
@@ -71,11 +72,18 @@ export function HomeScreen({
             <GradientBackground
               startColor={colors.gradientStart}
               endColor={colors.gradientEnd}>
-              <ContentDetailScreen
-                contentId={selectedContent.id}
-                contentType={selectedContent.type}
-                onBack={popContent}
-              />
+              {selectedContent.type === 'artists' ? (
+                <ArtistDetailScreen
+                  artistId={selectedContent.id}
+                  onBack={popContent}
+                />
+              ) : (
+                <ContentDetailScreen
+                  contentId={selectedContent.id}
+                  contentType={selectedContent.type}
+                  onBack={popContent}
+                />
+              )}
             </GradientBackground>
           )}
         </Modal>

@@ -6,7 +6,7 @@
  * When user types, shows search results instead of categories.
  */
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -16,29 +16,33 @@ import {
   Text,
   View,
 } from 'react-native';
-import {useTheme} from '../theme';
-import {radius, spacing} from '../theme/layout';
-import {searchCatalog} from '../api/apple-music/search';
-import {getArtworkUrl} from '../api/apple-music/recommendations';
-import {useContentNavigation} from '../navigation';
-import type {SearchResultItem} from '../types/search';
+import { useTheme } from '../theme';
+import { radius, spacing } from '../theme/layout';
+import { searchCatalog } from '../api/apple-music/search';
+import { getArtworkUrl } from '../api/apple-music/recommendations';
+import { useContentNavigation } from '../navigation';
+import { useRecentSearches } from '../hooks/useRecentSearches';
+import type { SearchResultItem } from '../types/search';
 
 // ── Keyboard layout ──────────────────────────────────────────────
 const ALPHA_KEYS = 'abcdefghijklmnopqrstuvwxyz'.split('');
-const SPECIAL_KEYS = [{id: '123', label: '123'}, {id: 'SPACE', label: 'SPACE'}];
+const SPECIAL_KEYS = [{ id: '123', label: '123' }, { id: 'SPACE', label: 'SPACE' }];
 
 // ── Main component ───────────────────────────────────────────────
 
 export function SearchScreen(): React.JSX.Element {
-  const {colors} = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles(colors);
-  const {pushContent} = useContentNavigation();
+  const { pushContent } = useContentNavigation();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
   const [searching, setSearching] = useState(false);
   const [showNumbers, setShowNumbers] = useState(false);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const { recentSearches, addRecentSearch, clearRecentSearches } =
+    useRecentSearches();
 
   // Debounced search
   useEffect(() => {
@@ -64,7 +68,7 @@ export function SearchScreen(): React.JSX.Element {
         })
         .catch(e => console.warn('[Search] search error:', e))
         .finally(() => setSearching(false));
-    }, 400);
+    }, 750);
     return () => {
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
@@ -93,6 +97,8 @@ export function SearchScreen(): React.JSX.Element {
       'music-videos': 'music-videos',
     };
     const contentType = typeMap[item.type] ?? item.type;
+    addRecentSearch(item);
+
     pushContent({
       id: item.id,
       type: contentType as any,
@@ -102,7 +108,7 @@ export function SearchScreen(): React.JSX.Element {
         artwork: item.attributes?.artwork,
       },
     });
-  }, [pushContent]);
+  }, [pushContent, addRecentSearch]);
 
   const hasSearch = searchTerm.trim().length > 0;
 
@@ -160,7 +166,18 @@ export function SearchScreen(): React.JSX.Element {
             accentColor={colors.accent}
           />
         </View>
-      ) : null}
+      ) : (
+        <View style={styles.resultsContainer}>
+          {recentSearches.length > 0 && (
+            <RecentSearchesRow
+              items={recentSearches}
+              onPress={handleResultPress}
+              onClear={clearRecentSearches}
+              styles={styles}
+            />
+          )}
+        </View>
+      )}
     </View>
   );
 }
@@ -229,7 +246,7 @@ function SearchResultsContent({
     <FlatList
       data={results}
       keyExtractor={item => `${item.type}-${item.id}`}
-      renderItem={({item}) => (
+      renderItem={({ item }) => (
         <SearchResultRow
           item={item}
           onPress={() => onResultPress(item)}
@@ -241,6 +258,98 @@ function SearchResultsContent({
       columnWrapperStyle={styles.resultColumns}
       contentContainerStyle={styles.resultListContent}
     />
+  );
+}
+
+// ── Recent Searches UI ───────────────────────────────────────────
+
+function RecentSearchesRow({
+  items,
+  onPress,
+  onClear,
+  styles,
+}: Readonly<{
+  items: SearchResultItem[];
+  onPress: (item: SearchResultItem) => void;
+  onClear: () => void;
+  styles: ReturnType<typeof useStyles>;
+}>) {
+  return (
+    <View style={styles.recentSearchesContainer}>
+      <Text style={styles.recentSearchesTitle}>Recently Searched</Text>
+      <FlatList
+        data={items}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.recentSearchesList}
+        contentContainerStyle={styles.recentSearchesListContent}
+        keyExtractor={item => `${item.type}-${item.id}`}
+        renderItem={({ item }) => (
+          <RecentSearchCard
+            item={item}
+            onPress={() => onPress(item)}
+            styles={styles}
+          />
+        )}
+      />
+    </View>
+  );
+}
+
+function RecentSearchCard({
+  item,
+  onPress,
+  styles,
+}: Readonly<{
+  item: SearchResultItem;
+  onPress: () => void;
+  styles: ReturnType<typeof useStyles>;
+}>) {
+  const [focused, setFocused] = useState(false);
+  const THUMB = 72;
+  const artworkUrl = getArtworkUrl(item.attributes?.artwork?.url, THUMB * 2, THUMB * 2);
+  const TYPE_LABELS: Record<string, string> = {
+    artists: 'Artist',
+    songs: 'Song',
+    albums: 'Album',
+    playlists: 'Playlist',
+  };
+  const typeLabel = TYPE_LABELS[item.type] ?? item.type;
+  const subtitle = item.attributes?.artistName
+    ? `${typeLabel} · ${item.attributes.artistName}`
+    : typeLabel;
+
+  return (
+    <Pressable
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      onPress={onPress}
+      style={[styles.recentSearchCard, focused && styles.recentSearchCardFocused]}
+      focusable>
+      {artworkUrl ? (
+        <Image
+          source={{ uri: artworkUrl }}
+          style={[
+            styles.recentSearchThumb,
+            item.type === 'artists' && styles.recentSearchThumbRound,
+          ]}
+          resizeMode="cover"
+        />
+      ) : (
+        <View style={[styles.recentSearchThumb, styles.resultThumbPlaceholder,
+        item.type === 'artists' && styles.recentSearchThumbRound]} />
+      )}
+      <View style={styles.recentSearchInfo}>
+        <Text
+          style={[styles.recentSearchName, focused && styles.resultNameFocused]}
+          numberOfLines={1}>
+          {item.attributes?.name ?? ''}
+        </Text>
+        <Text style={styles.recentSearchSubtitle} numberOfLines={1}>
+          {subtitle}
+        </Text>
+      </View>
+    </Pressable>
   );
 }
 
@@ -274,7 +383,7 @@ function SearchResultRow({
       style={[styles.resultCard, focused && styles.resultCardFocused]}
       focusable>
       {artworkUrl ? (
-        <Image source={{uri: artworkUrl}} style={styles.resultThumb} resizeMode="cover" />
+        <Image source={{ uri: artworkUrl }} style={styles.resultThumb} resizeMode="cover" />
       ) : (
         <View style={[styles.resultThumb, styles.resultThumbPlaceholder]} />
       )}
@@ -339,7 +448,7 @@ function useStyles(c: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.sm,
-      marginBottom: spacing.lg,
+      marginBottom: spacing.xl,
       flexWrap: 'nowrap',
     },
     letterKey: {
@@ -360,7 +469,7 @@ function useStyles(c: {
     },
     keyFocused: {
       backgroundColor: 'rgba(0,0,0,0.15)',
-      transform: [{scale: 1.15}],
+      transform: [{ scale: 1.15 }],
     },
     keyText: {
       fontSize: 20,
@@ -373,8 +482,8 @@ function useStyles(c: {
     // ── Divider ───────────────────────────────────────
     divider: {
       height: 1,
-      backgroundColor: c.borderMuted,
-      marginBottom: spacing.lg,
+      backgroundColor: c.textMuted,
+      marginBottom: spacing.md,
     },
     // ── Search results ────────────────────────────────
     resultsContainer: {
@@ -439,6 +548,63 @@ function useStyles(c: {
     emptyText: {
       fontSize: 18,
       color: c.textMuted,
+    },
+    // ── Recently Searched ─────────────────────────────
+    recentSearchesContainer: {
+      marginTop: spacing.xs,
+    },
+    recentSearchesTitle: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: c.textOnDark,
+      marginBottom: spacing.md,
+    },
+    recentSearchesList: {
+      marginHorizontal: -spacing.xxl,
+    },
+    recentSearchesListContent: {
+      gap: spacing.md,
+      paddingBottom: spacing.sm,
+      paddingHorizontal: spacing.xxl,
+    },
+    recentSearchCard: {
+      flexDirection: 'row',
+      backgroundColor: 'rgba(255, 255, 255, 0.75)',
+      borderRadius: radius.sm,
+      width: 290,
+      height: 88,
+      alignItems: 'center',
+      overflow: 'hidden',
+      padding: spacing.sm,
+      gap: spacing.sm,
+    },
+    recentSearchCardFocused: {
+      backgroundColor: '#ffffff',
+      transform: [{ scale: 1.05 }],
+    },
+    recentSearchThumb: {
+      width: 72,
+      height: 72,
+      borderRadius: radius.xs,
+      flexShrink: 0,
+    },
+    recentSearchThumbRound: {
+      borderRadius: 36,
+    },
+    recentSearchInfo: {
+      flex: 1,
+      paddingVertical: spacing.xs,
+      justifyContent: 'center',
+    },
+    recentSearchName: {
+      fontSize: 15,
+      fontWeight: '500',
+      color: '#000000',
+      marginBottom: 1,
+    },
+    recentSearchSubtitle: {
+      fontSize: 13,
+      color: 'rgba(0,0,0,0.5)',
     },
   });
 }

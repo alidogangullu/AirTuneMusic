@@ -5,8 +5,9 @@
  * See docs/THEME_AND_COLORS.md.
  */
 
-/** Corner radius scale — Apple-style rounded corners (pt). */
 export const radius = {
+  /** Extra small */
+  xs: 4,
   /** Small: chips, tags, small buttons. */
   sm: 8,
   /** Medium: buttons, inputs, small cards. */

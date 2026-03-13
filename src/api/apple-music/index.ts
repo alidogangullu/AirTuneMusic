@@ -3,6 +3,7 @@ export {
   fetchRecommendations,
   fetchPlaylistDetail,
   fetchAlbumDetail,
+  fetchArtistDetail,
   fetchStationDetail,
   fetchSongDetail,
   fetchMusicVideoDetail,

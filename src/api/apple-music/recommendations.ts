@@ -3,7 +3,7 @@
  * GET /v1/me/recommendations — returns personal recommendations.
  */
 
-import type {AlbumDetailResponse, MusicVideoDetailResponse, PlaylistDetailResponse, SongDetailResponse, StationDetailResponse} from '../../types/catalog';
+import type {AlbumDetailResponse, ArtistDetailResponse, MusicVideoDetailResponse, PlaylistDetailResponse, SongDetailResponse, StationDetailResponse} from '../../types/catalog';
 import type {RecommendationsResponse} from '../../types/recommendations';
 import {appleMusicApi} from './client';
 import {DEV_SERVER, CAN_REACH_INTERNET_DIRECTLY} from '../../config/devServer';
@@ -44,6 +44,21 @@ export async function fetchAlbumDetail(
   const {data} = await appleMusicApi.get<AlbumDetailResponse>(
     `/catalog/${storefront}/albums/${id}`,
     {params: {include: 'tracks'}},
+  );
+  return data;
+}
+
+/**
+ * Fetch artist details with top songs, latest release, and full albums.
+ * GET /v1/catalog/{storefront}/artists/{id}?views=top-songs,latest-release,full-albums
+ */
+export async function fetchArtistDetail(
+  id: string,
+  storefront = 'tr',
+): Promise<ArtistDetailResponse> {
+  const {data} = await appleMusicApi.get<ArtistDetailResponse>(
+    `/catalog/${storefront}/artists/${id}`,
+    {params: {views: 'top-songs,latest-release,full-albums'}},
   );
   return data;
 }
