@@ -94,7 +94,6 @@ export function SearchScreen(): React.JSX.Element {
       albums: 'albums',
       artists: 'artists',
       playlists: 'playlists',
-      'music-videos': 'music-videos',
     };
     const contentType = typeMap[item.type] ?? item.type;
     addRecentSearch(item);

@@ -27,6 +27,7 @@ export interface PlayerState {
   queueCount: number;
   queueIndex: number;
   containerId: string | null;
+  isLoading: boolean;
 }
 
 const initialState: PlayerState = {
@@ -41,6 +42,7 @@ const initialState: PlayerState = {
   queueCount: 0,
   queueIndex: 0,
   containerId: null,
+  isLoading: false,
 };
 
 // ── Context ─────────────────────────────────────────────────────
@@ -75,7 +77,12 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
   useEffect(() => {
     const subs = [
       musicPlayer.addEventListener('onPlaybackStateChanged', data => {
-        setState(s => ({...s, playbackState: data.state}));
+        setState(s => ({
+          ...s,
+          playbackState: data.state,
+          // If we transition to anything other than stopped, we're done with the initial "loading"
+          isLoading: data.state === 'stopped' ? s.isLoading : false,
+        }));
       }),
       musicPlayer.addEventListener('onCurrentItemChanged', data => {
         setState(s => ({
@@ -83,6 +90,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
           track: data,
           duration: data.duration ?? 0,
           position: 0,
+          isLoading: false, // Track received, stop initial loading
         }));
       }),
       musicPlayer.addEventListener('onPlaybackProgress', (data: ProgressInfo) => {
@@ -91,6 +99,9 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
           position: data.position,
           duration: data.duration,
           buffered: data.buffered,
+          isLoading: false, // Progress received, definitely not loading anymore
+          // If we are progressing, we shouldn't be "stuck" in a buffering state visual
+          buffering: data.position > 0 ? false : s.buffering,
         }));
       }),
       musicPlayer.addEventListener('onBufferingStateChanged', data => {
@@ -115,10 +126,17 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     };
   }, []);
 
-  // Sync current state on mount (covers hot reload & late mount)
+  // Sync current state and pre-configure native module on mount
   useEffect(() => {
+    let mounted = true;
+
+    // Pre-configure the Native SDK in the background so the first playback is instant
+    musicPlayer.ensureConfigured().catch(err => {
+      console.warn('Failed to pre-configure music player:', err);
+    });
+
     musicPlayer.getPlaybackState().then(info => {
-      if (!info) return;
+      if (!mounted || !info) return;
       setState(s => ({
         ...s,
         playbackState: info.state,
@@ -140,11 +158,18 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
           : s.track,
       }));
     });
+
+    return () => {
+      mounted = false;
+      // Stop playback and clear state on unmount / reload
+      musicPlayer.stop();
+      setState(initialState);
+    };
   }, []);
 
   const playAlbum = useCallback(
     (albumId: string, startIndex = 0, shuffle = false) => {
-      setState(s => ({...s, containerId: albumId}));
+      setState(s => ({...s, containerId: albumId, isLoading: true}));
       return musicPlayer.playAlbum(albumId, startIndex, shuffle);
     },
     [],
@@ -152,7 +177,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
 
   const playPlaylist = useCallback(
     (playlistId: string, startIndex = 0, shuffle = false) => {
-      setState(s => ({...s, containerId: playlistId}));
+      setState(s => ({...s, containerId: playlistId, isLoading: true}));
       return musicPlayer.playPlaylist(playlistId, startIndex, shuffle);
     },
     [],
@@ -160,7 +185,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
 
   const playStation = useCallback(
     (stationId: string) => {
-      setState(s => ({...s, containerId: stationId}));
+      setState(s => ({...s, containerId: stationId, isLoading: true}));
       return musicPlayer.playStation(stationId);
     },
     [],
@@ -168,7 +193,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
 
   const playSong = useCallback(
     (songId: string) => {
-      setState(s => ({...s, containerId: songId}));
+      setState(s => ({...s, containerId: songId, isLoading: true}));
       return musicPlayer.playSong(songId);
     },
     [],
@@ -176,7 +201,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
 
   const playMusicVideo = useCallback(
     (musicVideoId: string) => {
-      setState(s => ({...s, containerId: musicVideoId}));
+      setState(s => ({...s, containerId: musicVideoId, isLoading: true}));
       return musicPlayer.playMusicVideo(musicVideoId);
     },
     [],

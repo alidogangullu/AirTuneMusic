@@ -5,7 +5,7 @@
  * D-pad navigable: sidebar ↔ grid focus management.
  */
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {
   FlatList,
   Image,
@@ -14,15 +14,15 @@ import {
   Text,
   View,
 } from 'react-native';
-import { LoadingIndicator } from '../components/LoadingIndicator';
+import {LoadingIndicator} from '../components/LoadingIndicator';
 import {useTheme} from '../theme';
 import type {AppColors} from '../theme/colors';
 import {radius, spacing} from '../theme/layout';
-import {fetchLibraryItems} from '../api/apple-music/library';
 import {getArtworkUrl} from '../api/apple-music/recommendations';
 import {getMusicUserToken} from '../api/apple-music/musicUserToken';
 import {useContentNavigation} from '../navigation';
 import type {LibraryCategoryId, LibraryItem} from '../types/library';
+import {useLibraryInfiniteItems} from '../hooks/useLibraryItems';
 
 // ── Sidebar categories ───────────────────────────────────────────
 type SidebarCategory = {
@@ -109,61 +109,25 @@ export function LibraryScreen(): React.JSX.Element {
 
   const [activeCategory, setActiveCategory] =
     useState<LibraryCategoryId>('recently-added');
-  const [items, setItems] = useState<LibraryItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [nextOffset, setNextOffset] = useState<string | undefined>();
-  const isLoadingMore = useRef(false);
+  
   const hasUserToken = !!getMusicUserToken();
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    error,
+    fetchNextPage,
+    hasNextPage,
+  } = useLibraryInfiniteItems(activeCategory);
 
-  // Fetch items when category changes
-  useEffect(() => {
-    if (!hasUserToken) {
-      setError('Sign in to Apple Music to see your library.');
-      setItems([]);
-      return;
-    }
-
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    setItems([]);
-    setNextOffset(undefined);
-
-    fetchLibraryItems(activeCategory, 25)
-      .then(res => {
-        if (cancelled) return;
-        setItems(res.data ?? []);
-        setNextOffset(res.next ? extractOffset(res.next) : undefined);
-      })
-      .catch(e => {
-        if (cancelled) return;
-        console.warn('[Library] fetch error:', e.message);
-        setError('Could not load library.');
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeCategory, hasUserToken]);
+  const items = data?.pages.flatMap((page: any) => page.data) ?? [];
+  const loading = isLoading && items.length === 0;
 
   // Load more (pagination)
   const handleLoadMore = useCallback(() => {
-    if (!nextOffset || isLoadingMore.current || loading) return;
-    isLoadingMore.current = true;
-    fetchLibraryItems(activeCategory, 25, nextOffset)
-      .then(res => {
-        setItems(prev => [...prev, ...(res.data ?? [])]);
-        setNextOffset(res.next ? extractOffset(res.next) : undefined);
-      })
-      .catch(e => console.warn('[Library] load more error:', e.message))
-      .finally(() => {
-        isLoadingMore.current = false;
-      });
-  }, [activeCategory, nextOffset, loading]);
+    if (!hasNextPage || isFetchingNextPage) return;
+    fetchNextPage();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleItemPress = useCallback(
     (item: LibraryItem) => {
@@ -207,13 +171,20 @@ export function LibraryScreen(): React.JSX.Element {
   const keyExtractor = useCallback((item: LibraryItem) => item.id, []);
 
   const renderContent = useCallback(() => {
-    if (loading && items.length === 0) {
+    if (loading) {
       return <LoadingIndicator />;
+    }
+    if (!hasUserToken) {
+      return (
+        <View style={styles.centered}>
+          <Text style={styles.errorText}>Sign in to Apple Music to see your library.</Text>
+        </View>
+      );
     }
     if (error) {
       return (
         <View style={styles.centered}>
-          <Text style={styles.errorText}>{error}</Text>
+          <Text style={styles.errorText}>Could not load library.</Text>
         </View>
       );
     }
@@ -237,7 +208,7 @@ export function LibraryScreen(): React.JSX.Element {
         showsVerticalScrollIndicator={false}
       />
     );
-  }, [loading, items, error, styles, renderGridItem, keyExtractor, handleLoadMore]);
+  }, [loading, hasUserToken, error, items, styles, renderGridItem, keyExtractor, handleLoadMore]);
 
   return (
     <View style={styles.root}>
@@ -273,14 +244,6 @@ export function LibraryScreen(): React.JSX.Element {
       </View>
     </View>
   );
-}
-
-// ── Helpers ──────────────────────────────────────────────────────
-
-/** Extract offset value from Apple Music "next" URL path */
-function extractOffset(nextPath: string): string | undefined {
-  const match = /offset=(\d+)/.exec(nextPath);
-  return match?.[1];
 }
 
 // ── Styles ───────────────────────────────────────────────────────

@@ -38,6 +38,7 @@ export function flattenRecommendationContents(
       rec.attributes?.title?.stringForDisplay ?? rec.attributes?.kind ?? '';
 
     for (const content of contents) {
+      if (content.type === 'music-videos') continue;
       result.push({recommendationTitle: title, content});
     }
   }

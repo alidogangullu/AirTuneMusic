@@ -5,7 +5,7 @@
  */
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {Modal, StyleSheet, View} from 'react-native';
+import {Alert, Modal, StyleSheet, View} from 'react-native';
 import {GradientBackground} from '../components/GradientBackground';
 import {MainLayout} from '../components/MainLayout';
 import {ContentNavigationContext} from '../navigation';
@@ -52,14 +52,33 @@ export function HomeScreen({
 
   const isDetailOpen = selectedContent !== null;
 
+  const handleSignOut = useCallback(() => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: onSignOut,
+        },
+      ],
+      {cancelable: true},
+    );
+  }, [onSignOut]);
+
   return (
     <ContentNavigationContext.Provider value={ctxValue}>
       <View style={styles.root}>
         <MainLayout
           activeTab={activeTab}
           onTabPress={setActiveTab}
-          onAvatarPress={onSignOut}
+          onAvatarPress={handleSignOut}
           onSearchPress={() => setActiveTab('search')}
+          onSettingsPress={() => {
+            Alert.alert('Settings', 'Settings screen coming soon!');
+          }}
         />
 
         {/* Modal ensures OS-level focus trapping — Android creates a new Window,

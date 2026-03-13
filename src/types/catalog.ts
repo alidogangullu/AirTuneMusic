@@ -4,7 +4,7 @@
 
 export type PlaylistTrack = {
   id: string;
-  type: 'songs' | 'library-songs';
+  type: 'songs' | 'library-songs' | 'music-videos' | 'library-music-videos';
   href?: string;
   attributes?: {
     name?: string;

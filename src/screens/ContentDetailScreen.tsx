@@ -79,7 +79,7 @@ function normalizePlaylists(item: PlaylistDetail): NormalizedDetail {
     meta: formattedDate ? `Updated ${formattedDate}` : undefined,
     description: attrs?.description?.standard,
     artworkUrl: getArtworkUrl(attrs?.artwork?.url, ARTWORK_SIZE, ARTWORK_SIZE),
-    tracks: item.relationships?.tracks?.data ?? [],
+    tracks: (item.relationships?.tracks?.data ?? []).filter(t => t.type !== 'music-videos' && t.type !== 'library-music-videos'),
     kind: 'tracklist',
   };
 }
@@ -97,7 +97,7 @@ function normalizeAlbum(item: AlbumDetail): NormalizedDetail {
     subtitle: attrs?.artistName,
     meta: metaParts.join(' · '),
     artworkUrl: getArtworkUrl(attrs?.artwork?.url, ARTWORK_SIZE, ARTWORK_SIZE),
-    tracks: item.relationships?.tracks?.data ?? [],
+    tracks: (item.relationships?.tracks?.data ?? []).filter(t => t.type !== 'music-videos' && t.type !== 'library-music-videos'),
     kind: 'tracklist',
   };
 }

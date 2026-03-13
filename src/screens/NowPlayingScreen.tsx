@@ -59,6 +59,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
   // Animated values for focus feedback
   const barHeightAnim = useRef(new Animated.Value(3)).current;
   const knobSizeAnim = useRef(new Animated.Value(10)).current;
+  const shimmerAnim = useRef(new Animated.Value(-1)).current; // -1 to 1 (left to right)
 
   useEffect(() => {
     Animated.parallel([
@@ -73,7 +74,24 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
         useNativeDriver: false,
       }),
     ]).start();
-  }, [isFocused, barHeightAnim, knobSizeAnim]);
+  }, [isFocused]);
+
+  // Shimmer animation loop
+  useEffect(() => {
+    const isBuffering = state.buffering || state.isLoading;
+    if (isBuffering) {
+      Animated.loop(
+        Animated.timing(shimmerAnim, {
+          toValue: 1,
+          duration: 1200,
+          useNativeDriver: true,
+        })
+      ).start();
+    } else {
+      shimmerAnim.stopAnimation();
+      shimmerAnim.setValue(-1);
+    }
+  }, [state.buffering, state.isLoading, shimmerAnim]);
 
   // Keep latest scrubbing state in refs so useTVEventHandler callback doesn't go stale
   const isFocusedRef = useRef(false);
@@ -169,6 +187,20 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
   const scrubProgress = duration > 0 ? pendingSeekMs / duration : 0;
 
   if (!track) {
+    if (state.isLoading) {
+      // Something is loading but track info isn't available yet
+      const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
+      return (
+        <LinearGradient
+          colors={["#c1d5f3", "#bfc0c6"]}
+          start={{x: 0, y: 0}}
+          end={{x: 1, y: 1}}
+          style={styles.root}
+        >
+          <LoadingIndicator />
+        </LinearGradient>
+      );
+    }
     // Select music warning
     return (
       <LinearGradient
@@ -220,7 +252,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
         {/* Track info below artwork, aligned with artwork width */}
         <View style={styles.meta}>
           <View style={styles.titleRow}>
-            <NowPlayingBars playing={isPlaying} color={accentColor} size={16} />
+            <NowPlayingBars playing={isPlaying && !state.isLoading && !state.buffering} color={accentColor} size={16} />
             <Text style={styles.title} numberOfLines={1}>
               {track?.title ?? ''}
             </Text>
@@ -246,27 +278,56 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
             <Animated.View
               style={[
                 styles.progressTrack,
-                { height: barHeightAnim },
+                { height: barHeightAnim, overflow: 'visible' },
                 focused && styles.progressTrackFocused,
               ]}>
-              {/* Playback fill */}
-              <View
-                style={[
-                  styles.progressFill,
-                  { width: `${progress * 100}%`, backgroundColor: accentColor },
-                ]}
-              />
-              {/* Scrub indicator (only when scrubbing) */}
-              {isScrubbing && (
+              {/* Clipped content wrapper */}
+              <View style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 3 }]}>
+                {/* Playback fill */}
                 <View
                   style={[
                     styles.progressFill,
-                    styles.scrubFill,
-                    { width: `${scrubProgress * 100}%` },
+                    { width: `${progress * 100}%`, backgroundColor: accentColor },
                   ]}
                 />
-              )}
-              {/* Playback knob */}
+                {/* Scrub indicator (only when scrubbing) */}
+                {isScrubbing && (
+                  <View
+                    style={[
+                      styles.progressFill,
+                      styles.scrubFill,
+                      { width: `${scrubProgress * 100}%` },
+                    ]}
+                  />
+                )}
+                {/* Shimmer effect for buffering */}
+                {(state.buffering || state.isLoading) && (
+                  <Animated.View
+                    style={[
+                      styles.shimmerContainer,
+                      {
+                        transform: [
+                          {
+                            translateX: shimmerAnim.interpolate({
+                              inputRange: [-1, 1],
+                              outputRange: [-250, 1200],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  >
+                    <LinearGradient
+                      colors={['transparent', 'rgba(255,255,255,0.4)', 'transparent']}
+                      start={{ x: 0, y: 0.5 }}
+                      end={{ x: 1, y: 0.5 }}
+                      style={styles.shimmerGradient}
+                    />
+                  </Animated.View>
+                )}
+              </View>
+
+              {/* Playback knob (Visible outside clipped track) */}
               <Animated.View
                 style={[
                   styles.progressKnob,
@@ -305,7 +366,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
               </Text>
               <Text style={[styles.timeText, isScrubbing && styles.timeTextScrubbing]}>
                 {isScrubbing
-                  ? `→ ${formatTime(pendingSeekMs)}`
+                  ? `${formatTime(pendingSeekMs)}`
                   : `-${formatTime(remainingMs)}`}
               </Text>
             </View>
@@ -386,7 +447,7 @@ const styles = StyleSheet.create({
   progressTrack: {
     backgroundColor: 'rgba(255,255,255,0.2)',
     borderRadius: 3,
-    overflow: 'visible',
+    overflow: 'hidden',
   },
   progressTrackFocused: {
     backgroundColor: 'rgba(255,255,255,0.3)',
@@ -400,6 +461,15 @@ const styles = StyleSheet.create({
   },
   scrubFill: {
     backgroundColor: 'rgba(255,255,255,0.55)',
+  },
+  shimmerContainer: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 200,
+  },
+  shimmerGradient: {
+    flex: 1,
   },
   progressKnob: {
     position: 'absolute',

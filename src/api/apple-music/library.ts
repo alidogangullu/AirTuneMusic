@@ -57,3 +57,8 @@ export async function fetchLibraryAlbumDetail(
   );
   return data;
 }
+
+export async function fetchStorefront(): Promise<any> {
+  const {data} = await appleMusicApi.get('/me/storefront');
+  return data;
+}

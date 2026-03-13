@@ -89,6 +89,7 @@ export type TopBarProps = {
   onTabPress: (tab: NavTabId) => void;
   onAvatarPress?: () => void;
   onSearchPress?: () => void;
+  onSettingsPress?: () => void;
   transparent?: boolean;
   dark?: boolean;
 };
@@ -98,6 +99,7 @@ export function TopBar({
   onTabPress,
   onAvatarPress,
   onSearchPress,
+  onSettingsPress,
   transparent = false,
   dark = false,
 }: Readonly<TopBarProps>): React.JSX.Element {
@@ -113,7 +115,10 @@ export function TopBar({
         hasTVPreferredFocus={false}
         accessibilityLabel="Profile"
         accessibilityRole="button">
-        <Text style={styles.avatarText}>U</Text>
+        <View style={styles.silhouetteContainer}>
+          <View style={styles.silhouetteHead} />
+          <View style={styles.silhouetteBody} />
+        </View>
       </NavPressable>
 
       <View style={styles.spacer} focusable={false} />
@@ -155,6 +160,19 @@ export function TopBar({
         </NavPressable>
       </View>
       <View style={styles.spacer} focusable={false} />
+      <NavPressable
+        style={({focused}) => [styles.avatar, focused && styles.avatarFocused]}
+        onPress={onSettingsPress}
+        focusable={true}
+        hasTVPreferredFocus={false}
+        accessibilityLabel="Settings"
+        accessibilityRole="button">
+        {({focused}) => (
+          <Text style={[styles.settingsIcon, focused && styles.tabTextFocused]}>
+            ⚙
+          </Text>
+        )}
+      </NavPressable>
     </View>
   );
 }
@@ -218,10 +236,27 @@ function useStyles(c: {
       backgroundColor: avatarFocusBg,
       transform: [{scale: 1.05}],
     },
-    avatarText: {
-      fontSize: 18,
-      fontWeight: '600',
-      color: avatarTextColor,
+    silhouetteContainer: {
+      width: '100%',
+      height: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      borderRadius: TOP_BAR_HEIGHT / 2,
+    },
+    silhouetteHead: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      backgroundColor: avatarTextColor,
+      marginTop: 4,
+    },
+    silhouetteBody: {
+      width: 22,
+      height: 18,
+      borderRadius: 10,
+      backgroundColor: avatarTextColor,
+      marginTop: 2,
     },
     tabPill: {
       paddingHorizontal: spacing.md,
@@ -275,6 +310,11 @@ function useStyles(c: {
       gap: spacing.xs,
       justifyContent: 'center',
       overflow: 'visible',
+    },
+    settingsIcon: {
+      fontSize: 20,
+      color: avatarTextColor,
+      fontWeight: '600',
     },
   });
 }
