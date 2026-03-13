@@ -424,7 +424,7 @@ function useStyles(c: {
   return StyleSheet.create({
     root: {
       flex: 1,
-      paddingTop: 70,
+      paddingTop: 85,
       paddingHorizontal: spacing.xxl,
     },
     // ── Search bar ────────────────────────────────────

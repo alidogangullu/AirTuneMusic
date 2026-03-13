@@ -3,12 +3,12 @@
  */
 
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
-import {spacing} from '../theme/layout';
-import {useTheme} from '../theme';
+import { StyleSheet, Text, View } from 'react-native';
+import { spacing } from '../theme/layout';
+import { useTheme } from '../theme';
 
 export function RadioScreen(): React.JSX.Element {
-  const {colors} = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles(colors);
 
   return (
@@ -19,12 +19,12 @@ export function RadioScreen(): React.JSX.Element {
   );
 }
 
-function useStyles(c: {textOnDark: string; textMuted: string}) {
+function useStyles(c: { textOnDark: string; textMuted: string }) {
   return StyleSheet.create({
     root: {
       flex: 1,
       padding: spacing.xl,
-      paddingTop: 70,
+      paddingTop: 85,
     },
     title: {
       fontSize: 28,

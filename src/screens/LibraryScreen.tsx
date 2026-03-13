@@ -5,7 +5,7 @@
  * D-pad navigable: sidebar ↔ grid focus management.
  */
 
-import React, {useCallback, useState} from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -14,15 +14,15 @@ import {
   Text,
   View,
 } from 'react-native';
-import {LoadingIndicator} from '../components/LoadingIndicator';
-import {useTheme} from '../theme';
-import type {AppColors} from '../theme/colors';
-import {radius, spacing} from '../theme/layout';
-import {getArtworkUrl} from '../api/apple-music/recommendations';
-import {getMusicUserToken} from '../api/apple-music/musicUserToken';
-import {useContentNavigation} from '../navigation';
-import type {LibraryCategoryId, LibraryItem} from '../types/library';
-import {useLibraryInfiniteItems} from '../hooks/useLibraryItems';
+import { LoadingIndicator } from '../components/LoadingIndicator';
+import { useTheme } from '../theme';
+import type { AppColors } from '../theme/colors';
+import { radius, spacing } from '../theme/layout';
+import { getArtworkUrl } from '../api/apple-music/recommendations';
+import { getMusicUserToken } from '../api/apple-music/musicUserToken';
+import { useContentNavigation } from '../navigation';
+import type { LibraryCategoryId, LibraryItem } from '../types/library';
+import { useLibraryInfiniteItems } from '../hooks/useLibraryItems';
 
 // ── Sidebar categories ───────────────────────────────────────────
 type SidebarCategory = {
@@ -31,11 +31,11 @@ type SidebarCategory = {
 };
 
 const CATEGORIES: SidebarCategory[] = [
-  {id: 'recently-added', label: 'Recently Added'},
-  {id: 'playlists', label: 'Playlists'},
-  {id: 'artists', label: 'Artists'},
-  {id: 'albums', label: 'Albums'},
-  {id: 'songs', label: 'Songs'},
+  { id: 'recently-added', label: 'Recently Added' },
+  { id: 'playlists', label: 'Playlists' },
+  { id: 'artists', label: 'Artists' },
+  { id: 'albums', label: 'Albums' },
+  { id: 'songs', label: 'Songs' },
 ];
 
 const GRID_COLUMNS = 4;
@@ -68,7 +68,7 @@ function LibraryGridItem({
 
   return (
     <Pressable
-      style={({focused}) => [
+      style={({ focused }) => [
         styles.gridItem,
         focused && styles.gridItemFocused,
       ]}
@@ -76,7 +76,7 @@ function LibraryGridItem({
       focusable>
       {artworkUrl ? (
         <Image
-          source={{uri: artworkUrl}}
+          source={{ uri: artworkUrl }}
           style={[
             styles.artwork,
             isArtist && styles.artworkRound,
@@ -103,13 +103,13 @@ function LibraryGridItem({
 // ── Main component ───────────────────────────────────────────────
 
 export function LibraryScreen(): React.JSX.Element {
-  const {colors} = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles(colors);
-  const {pushContent} = useContentNavigation();
+  const { pushContent } = useContentNavigation();
 
   const [activeCategory, setActiveCategory] =
     useState<LibraryCategoryId>('recently-added');
-  
+
   const hasUserToken = !!getMusicUserToken();
   const {
     data,
@@ -141,7 +141,7 @@ export function LibraryScreen(): React.JSX.Element {
       const catalogItem = item.relationships?.catalog?.data?.[0];
       const catalogId = item.attributes?.playParams?.catalogId ?? catalogItem?.id ?? item.id;
       const artworkObj = item.attributes?.artwork ?? catalogItem?.attributes?.artwork;
-      
+
       pushContent({
         id: catalogId,
         type: (typeMap[item.type] ?? 'albums') as any,
@@ -149,7 +149,7 @@ export function LibraryScreen(): React.JSX.Element {
           name: item.attributes?.name,
           artistName: item.attributes?.artistName,
           artwork: artworkObj
-            ? {url: artworkObj.url}
+            ? { url: artworkObj.url }
             : undefined,
         },
       });
@@ -162,7 +162,7 @@ export function LibraryScreen(): React.JSX.Element {
   }, []);
 
   const renderGridItem = useCallback(
-    (info: {item: LibraryItem}) => (
+    (info: { item: LibraryItem }) => (
       <LibraryGridItem item={info.item} styles={styles} onPress={handleItemPress} />
     ),
     [styles, handleItemPress],
@@ -217,14 +217,14 @@ export function LibraryScreen(): React.JSX.Element {
         {CATEGORIES.map(cat => (
           <Pressable
             key={cat.id}
-            style={({focused}) => [
+            style={({ focused }) => [
               styles.sidebarItem,
               activeCategory === cat.id && styles.sidebarItemActive,
               focused && styles.sidebarItemFocused,
             ]}
             onPress={() => handleCategoryPress(cat.id)}
             focusable>
-            {({focused}) => (
+            {({ focused }) => (
               <Text
                 style={[
                   styles.sidebarText,
@@ -253,7 +253,7 @@ function useStyles(c: AppColors) {
     root: {
       flex: 1,
       flexDirection: 'row',
-      paddingTop: 80,
+      paddingTop: 100,
     },
     // ── Sidebar ───────────────────────────────────
     sidebar: {
@@ -271,7 +271,7 @@ function useStyles(c: AppColors) {
     sidebarItemActive: {},
     sidebarItemFocused: {
       backgroundColor: 'rgba(255,255,255,0.85)',
-      transform: [{scale: 1.02}],
+      transform: [{ scale: 1.02 }],
     },
     sidebarText: {
       fontSize: 18,
@@ -305,7 +305,7 @@ function useStyles(c: AppColors) {
       alignItems: 'center',
     },
     gridItemFocused: {
-      transform: [{scale: 1.08}],
+      transform: [{ scale: 1.08 }],
     },
     artwork: {
       width: ARTWORK_SIZE,

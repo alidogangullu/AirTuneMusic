@@ -7,7 +7,7 @@
  * animation (not `pressed` state) because `pressed` does not fire for D-pad select.
  */
 
-import React, {useCallback, useRef} from 'react';
+import React, { useCallback, useRef } from 'react';
 import {
   Animated,
   Platform,
@@ -16,8 +16,8 @@ import {
   Text,
   View,
 } from 'react-native';
-import {useTheme} from '../theme';
-import {spacing} from '../theme/layout';
+import { useTheme } from '../theme';
+import { spacing } from '../theme/layout';
 
 /** TopBar row height — avatar and card align to this. */
 const TOP_BAR_HEIGHT = 38;
@@ -40,7 +40,7 @@ function usePressFeedback() {
       }),
     ]).start();
   }, [scale]);
-  return {scale, trigger};
+  return { scale, trigger };
 }
 
 function NavPressable({
@@ -49,7 +49,7 @@ function NavPressable({
   style,
   ...rest
 }: React.ComponentProps<typeof Pressable>) {
-  const {scale, trigger} = usePressFeedback();
+  const { scale, trigger } = usePressFeedback();
   const handlePress = useCallback(
     (e: unknown) => {
       trigger();
@@ -58,7 +58,7 @@ function NavPressable({
     [trigger, onPress],
   );
   return (
-    <Animated.View style={{transform: [{scale}]}}>
+    <Animated.View style={{ transform: [{ scale }] }}>
       <Pressable {...rest} style={style} onPress={handlePress}>
         {children}
       </Pressable>
@@ -75,13 +75,13 @@ export type NavTabId =
   | 'now-playing'
   | 'search';
 
-const NAV_TABS: {id: NavTabId; label: string}[] = [
-  {id: 'listen-now', label: 'Listen Now'},
-  {id: 'browse', label: 'Browse'},
-  {id: 'videos', label: 'Videos'},
-  {id: 'radio', label: 'Radio'},
-  {id: 'library', label: 'Library'},
-  {id: 'now-playing', label: 'Now Playing'},
+const NAV_TABS: { id: NavTabId; label: string }[] = [
+  { id: 'listen-now', label: 'Listen Now' },
+  { id: 'browse', label: 'Browse' },
+  { id: 'videos', label: 'Videos' },
+  { id: 'radio', label: 'Radio' },
+  { id: 'library', label: 'Library' },
+  { id: 'now-playing', label: 'Now Playing' },
 ];
 
 export type TopBarProps = {
@@ -103,13 +103,13 @@ export function TopBar({
   transparent = false,
   dark = false,
 }: Readonly<TopBarProps>): React.JSX.Element {
-  const {colors} = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles(colors, transparent, dark);
 
   return (
     <View style={styles.wrap} focusable={false}>
       <NavPressable
-        style={({focused}) => [styles.avatar, focused && styles.avatarFocused]}
+        style={({ focused }) => [styles.avatar, focused && styles.avatarFocused]}
         onPress={onAvatarPress}
         focusable={true}
         hasTVPreferredFocus={false}
@@ -126,7 +126,7 @@ export function TopBar({
         {NAV_TABS.map(tab => (
           <NavPressable
             key={tab.id}
-            style={({focused}) => [
+            style={({ focused }) => [
               styles.tabPill,
               focused && styles.tabPillFocused,
             ]}
@@ -135,7 +135,7 @@ export function TopBar({
             hasTVPreferredFocus={tab.id === activeTab}
             accessibilityLabel={tab.label}
             accessibilityRole="tab">
-            {({focused}) => (
+            {({ focused }) => (
               <Text style={[styles.tabText, focused && styles.tabTextFocused]}>
                 {tab.label}
               </Text>
@@ -143,7 +143,7 @@ export function TopBar({
           </NavPressable>
         ))}
         <NavPressable
-          style={({focused}) => [
+          style={({ focused }) => [
             styles.searchPill,
             focused && styles.searchPillFocused,
           ]}
@@ -152,7 +152,7 @@ export function TopBar({
           hasTVPreferredFocus={false}
           accessibilityLabel="Search"
           accessibilityRole="button">
-          {({focused}) => (
+          {({ focused }) => (
             <Text style={[styles.searchIcon, focused && styles.tabTextFocused]}>
               ⌕
             </Text>
@@ -161,13 +161,13 @@ export function TopBar({
       </View>
       <View style={styles.spacer} focusable={false} />
       <NavPressable
-        style={({focused}) => [styles.avatar, focused && styles.avatarFocused]}
+        style={({ focused }) => [styles.avatar, focused && styles.avatarFocused]}
         onPress={onSettingsPress}
         focusable={true}
         hasTVPreferredFocus={false}
         accessibilityLabel="Settings"
         accessibilityRole="button">
-        {({focused}) => (
+        {({ focused }) => (
           <Text style={[styles.settingsIcon, focused && styles.settingsIconFocused]}>
             ⚙
           </Text>
@@ -205,19 +205,18 @@ function useStyles(c: {
   const tabFocusedShadow =
     Platform.OS === 'ios'
       ? {
-          shadowColor: '#000',
-          shadowOffset: {width: 0, height: 1},
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-        }
-      : {elevation: 2};
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      }
+      : { elevation: 2 };
 
   return StyleSheet.create({
     wrap: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: spacing.xl,
-      paddingVertical: spacing.lg,
+      padding: spacing.xl,
       gap: spacing.md,
       overflow: 'visible',
     },
@@ -234,7 +233,7 @@ function useStyles(c: {
     },
     avatarFocused: {
       backgroundColor: avatarFocusBg,
-      transform: [{scale: 1.05}],
+      transform: [{ scale: 1.05 }],
     },
     silhouetteContainer: {
       width: '100%',
@@ -268,7 +267,7 @@ function useStyles(c: {
       backgroundColor: c.navTabFocusedBg,
       paddingHorizontal: spacing.md,
       paddingVertical: 6,
-      transform: [{scale: 1.18}],
+      transform: [{ scale: 1.18 }],
       borderRadius: 999,
       ...tabFocusedShadow,
     },
@@ -290,7 +289,7 @@ function useStyles(c: {
     searchPillFocused: {
       backgroundColor: c.navTabFocusedBg,
       paddingHorizontal: spacing.lg,
-      transform: [{scale: 1.18}],
+      transform: [{ scale: 1.18 }],
       ...tabFocusedShadow,
     },
     searchIcon: {

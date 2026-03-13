@@ -10,20 +10,20 @@ import {
   Text,
   View,
 } from 'react-native';
-import {ContentSection} from '../components/ContentSection';
-import {RecommendationCard} from '../components/RecommendationCard';
+import { ContentSection } from '../components/ContentSection';
+import { RecommendationCard } from '../components/RecommendationCard';
 import {
   flattenRecommendationContents,
   useRecommendations,
 } from '../hooks/useRecommendations';
-import {useContentNavigation} from '../navigation';
-import {spacing} from '../theme/layout';
-import {useTheme} from '../theme';
+import { useContentNavigation } from '../navigation';
+import { spacing } from '../theme/layout';
+import { useTheme } from '../theme';
 
 export function ListenNowScreen(): React.JSX.Element {
-  const {colors} = useTheme();
-  const {data, isLoading, error, refetch} = useRecommendations();
-  const {pushContent} = useContentNavigation();
+  const { colors } = useTheme();
+  const { data, isLoading, error, refetch } = useRecommendations();
+  const { pushContent } = useContentNavigation();
   const styles = useStyles(colors);
 
   const allItems = data?.data ? flattenRecommendationContents(data.data) : [];
@@ -40,9 +40,9 @@ export function ListenNowScreen(): React.JSX.Element {
     error instanceof Error ? error.message : 'Failed to load';
 
   let contentNode: React.ReactNode;
-    if (isLoading) {
-      const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
-      contentNode = <LoadingIndicator />;
+  if (isLoading) {
+    const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
+    contentNode = <LoadingIndicator />;
   } else if (error) {
     contentNode = (
       <View style={styles.error}>
@@ -68,7 +68,7 @@ export function ListenNowScreen(): React.JSX.Element {
               showsHorizontalScrollIndicator={false}
               style={styles.horizontalScroll}
               contentContainerStyle={styles.rail}>
-              {madeForYouItems.map(({content}) => (
+              {madeForYouItems.map(({ content }) => (
                 <RecommendationCard
                   key={content.id}
                   category=""
@@ -86,7 +86,7 @@ export function ListenNowScreen(): React.JSX.Element {
               showsHorizontalScrollIndicator={false}
               style={styles.horizontalScroll}
               contentContainerStyle={styles.rail}>
-              {recentlyPlayedItems.map(({content}) => (
+              {recentlyPlayedItems.map(({ content }) => (
                 <RecommendationCard
                   key={content.id}
                   category=""
@@ -111,7 +111,7 @@ export function ListenNowScreen(): React.JSX.Element {
   );
 }
 
-function useStyles(c: {textMuted: string; accent: string}) {
+function useStyles(c: { textMuted: string; accent: string }) {
   return StyleSheet.create({
     retryButton: {
       marginTop: 12,
@@ -130,7 +130,7 @@ function useStyles(c: {textMuted: string; accent: string}) {
       flex: 1,
     },
     scrollContent: {
-      paddingTop: 70,
+      paddingTop: 85,
       paddingBottom: spacing.xxxl,
     },
     rail: {

@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SettingsMenuItem } from '../components/SettingsMenuItem';
 import { GradientBackground } from '../components/GradientBackground';
 import { useTheme } from '../theme';
@@ -57,8 +57,13 @@ export function SettingsScreen({
           {/* Left — grey placeholder */}
           <View style={styles.leftColumn}>
             <View style={styles.placeholder}>
-              <Text style={styles.placeholderIcon}>♫</Text>
+              <Image
+                source={require('../assets/images/logo.png')}
+                style={styles.placeholderImage}
+                resizeMode="cover"
+              />
             </View>
+            <Text style={styles.appNameText}>AirTune Music</Text>
           </View>
 
           {/* Right — menu list */}
@@ -127,9 +132,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-  placeholderIcon: {
-    fontSize: 100,
-    color: 'rgba(0, 0, 0, 0.1)',
+  placeholderImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: radius.xl,
+  },
+  appNameText: {
+    marginTop: spacing.md,
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#f0535b',
+    textAlign: 'center',
   },
   rightColumn: {
     flex: 0.58,

@@ -1,6 +1,7 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Platform,
   Pressable,
   ScrollView,
@@ -9,17 +10,15 @@ import {
   View,
 } from 'react-native';
 import {
-  appleMusicApi,
   clearMusicUserToken,
-  getMusicUserToken,
   loadMusicUserToken,
   setMusicUserToken,
 } from '../api/apple-music';
-import type {AppColors} from '../theme/colors';
-import {useTheme} from '../theme';
-import {radius, spacing, buttonMinHeight} from '../theme/layout';
+import type { AppColors } from '../theme/colors';
+import { useTheme } from '../theme';
+import { radius, spacing, buttonMinHeight } from '../theme/layout';
 
-import {DEV_SERVER} from '../config/devServer';
+import { DEV_SERVER } from '../config/devServer';
 const TV_LINK_SERVER = DEV_SERVER;
 const TV_LINK_DISPLAY = 'airtune.music/tv';
 const POLL_INTERVAL_MS = 2500;
@@ -35,13 +34,7 @@ function formatCodeForDisplay(code: string): string {
   return code;
 }
 
-type Status =
-  | 'idle'
-  | 'success'
-  | 'error'
-  | 'library_loading'
-  | 'library_ok'
-  | 'library_error';
+type Status = 'idle' | 'success' | 'error';
 
 function startPolling(
   code: string,
@@ -61,7 +54,7 @@ function startPolling(
         `${TV_LINK_SERVER}/api/tv-link?code=${encodeURIComponent(code)}`,
       );
       if (res.ok) {
-        const data = (await res.json()) as {musicUserToken?: string};
+        const data = (await res.json()) as { musicUserToken?: string };
         if (data.musicUserToken) {
           if (pollRef.current) {
             clearInterval(pollRef.current);
@@ -90,8 +83,8 @@ function startPolling(
 
 function makeStyles(c: AppColors) {
   return StyleSheet.create({
-    scroll: {flex: 1, backgroundColor: c.screenBackground},
-    container: {padding: spacing.xl, paddingTop: spacing.xxxl},
+    scroll: { flex: 1, backgroundColor: c.screenBackground },
+    container: { padding: spacing.xl, paddingTop: spacing.xxxl },
     codeScreenRoot: {
       flex: 1,
       backgroundColor: c.codeScreenBackground,
@@ -126,16 +119,16 @@ function makeStyles(c: AppColors) {
       minHeight: buttonMinHeight,
       marginBottom: spacing.lg,
     },
-    buttonSecondary: {backgroundColor: c.buttonSecondaryBg},
+    buttonSecondary: { backgroundColor: c.buttonSecondaryBg },
     buttonOutline: {
       backgroundColor: 'transparent',
       borderWidth: 2,
       borderColor: c.borderMuted,
     },
-    buttonFocused: {opacity: 0.9, transform: [{scale: 1.02}]},
-    buttonText: {color: c.textOnDark, fontSize: 18, fontWeight: '600'},
-    buttonTextSecondary: {color: c.textOnDark, fontSize: 16},
-    buttonTextOutline: {color: c.textMuted, fontSize: 16},
+    buttonFocused: { opacity: 0.9, transform: [{ scale: 1.02 }] },
+    buttonText: { color: c.textOnDark, fontSize: 18, fontWeight: '600' },
+    buttonTextSecondary: { color: c.textOnDark, fontSize: 16 },
+    buttonTextOutline: { color: c.textMuted, fontSize: 16 },
     label: {
       fontSize: 12,
       color: c.textSubtle,
@@ -163,7 +156,7 @@ function makeStyles(c: AppColors) {
       borderWidth: 1,
       borderColor: c.messageErrorBorder,
     },
-    messageText: {color: c.textOnDark, fontSize: 14},
+    messageText: { color: c.textOnDark, fontSize: 14 },
     logoRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -171,14 +164,18 @@ function makeStyles(c: AppColors) {
       marginBottom: spacing.xxl,
     },
     logoIcon: {
-      width: 48,
-      height: 48,
+      width: 65,
+      height: 65,
       borderRadius: radius.lg,
-      backgroundColor: c.accent,
+      backgroundColor: 'transparent',
       alignItems: 'center',
       justifyContent: 'center',
     },
-    logoEmoji: {fontSize: 26, color: c.textOnDark},
+    logoImage: {
+      width: 65,
+      height: 65,
+      borderRadius: radius.lg,
+    },
     logoTitle: {
       fontSize: 28,
       fontWeight: '700',
@@ -233,7 +230,7 @@ function makeStyles(c: AppColors) {
       color: c.cardTitleText,
       letterSpacing: 10,
     },
-    visitBlock: {marginBottom: spacing.md, alignItems: 'center'},
+    visitBlock: { marginBottom: spacing.md, alignItems: 'center' },
     visitLabel: {
       fontSize: 12,
       fontWeight: '600',
@@ -244,7 +241,7 @@ function makeStyles(c: AppColors) {
     visitUrl: {
       fontSize: 20,
       fontWeight: '700',
-      color: c.accent,
+      color: '#f0535b',
       letterSpacing: -0.5,
     },
     getNewCodeBtn: {
@@ -261,14 +258,14 @@ function makeStyles(c: AppColors) {
       minWidth: 200,
     },
     getNewCodeBtnFocused: {
-      backgroundColor: c.accent,
-      borderColor: c.accent,
-      transform: [{scale: 1.05}],
+      backgroundColor: '#f0535b',
+      borderColor: '#f0535b',
+      transform: [{ scale: 1.05 }],
     },
-    getNewCodeBtnIcon: {fontSize: 20, color: c.accent},
-    getNewCodeBtnIconFocused: {color: c.textOnDark},
-    getNewCodeBtnText: {fontSize: 16, fontWeight: '700', color: c.accent},
-    getNewCodeBtnTextFocused: {color: c.textOnDark},
+    getNewCodeBtnIcon: { fontSize: 20, color: '#f0535b' },
+    getNewCodeBtnIconFocused: { color: '#FFFFFF' },
+    getNewCodeBtnText: { fontSize: 16, fontWeight: '700', color: '#f0535b' },
+    getNewCodeBtnTextFocused: { color: '#FFFFFF' },
   });
 }
 
@@ -281,7 +278,7 @@ export function AppleMusicAuthScreen({
   onAuthSuccess,
   onSignOut,
 }: AppleMusicAuthScreenProps = {}): React.JSX.Element {
-  const {colors} = useTheme();
+  const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [status, setStatus] = useState<Status>('idle');
   const [message, setMessage] = useState<string>('');
@@ -351,29 +348,7 @@ export function AppleMusicAuthScreen({
     startTvLink();
   };
 
-  const handleFetchLibrary = async () => {
-    if (!getMusicUserToken()) {
-      setStatus('error');
-      setMessage('Sign in first.');
-      return;
-    }
-    setStatus('library_loading');
-    setMessage('');
-    try {
-      const {data} = await appleMusicApi.get<{data?: unknown[]}>(
-        '/me/library/songs',
-        {
-          params: {limit: 5},
-        },
-      );
-      const count = Array.isArray(data?.data) ? data.data.length : 0;
-      setStatus('library_ok');
-      setMessage(`Fetched ${count} song(s) from your library. Token works.`);
-    } catch (e) {
-      setStatus('library_error');
-      setMessage(e instanceof Error ? e.message : String(e));
-    }
-  };
+
 
   const handleSignOut = () => {
     clearMusicUserToken();
@@ -391,7 +366,11 @@ export function AppleMusicAuthScreen({
         <View style={styles.codeScreenInner} focusable={false}>
           <View style={styles.logoRow} focusable={false}>
             <View style={styles.logoIcon} focusable={false}>
-              <Text style={styles.logoEmoji}>♪</Text>
+              <Image
+                source={require('../assets/images/logo.png')}
+                style={styles.logoImage}
+                resizeMode="cover"
+              />
             </View>
             <Text style={styles.logoTitle}>AirTune</Text>
           </View>
@@ -425,7 +404,7 @@ export function AppleMusicAuthScreen({
                   </Text>
                 </View>
                 <Pressable
-                  style={({focused}) => [
+                  style={({ focused }) => [
                     styles.getNewCodeBtn,
                     focused && styles.getNewCodeBtnFocused,
                   ]}
@@ -473,25 +452,9 @@ export function AppleMusicAuthScreen({
           <Text style={styles.mono} numberOfLines={1}>
             {tokenPreview}
           </Text>
+
           <Pressable
-            style={({focused}) => [
-              styles.button,
-              styles.buttonSecondary,
-              focused && styles.buttonFocused,
-            ]}
-            onPress={handleFetchLibrary}
-            disabled={status === 'library_loading'}
-            focusable={true}>
-            {status === 'library_loading' ? (
-              <ActivityIndicator color={colors.buttonSecondaryBg} />
-            ) : (
-              <Text style={styles.buttonTextSecondary}>
-                Fetch my library (first 5 songs)
-              </Text>
-            )}
-          </Pressable>
-          <Pressable
-            style={({focused}) => [
+            style={({ focused }) => [
               styles.button,
               styles.buttonOutline,
               focused && styles.buttonFocused,
@@ -507,9 +470,7 @@ export function AppleMusicAuthScreen({
         <View
           style={[
             styles.messageBox,
-            status === 'error' || status === 'library_error'
-              ? styles.messageError
-              : styles.messageOk,
+            status === 'error' ? styles.messageError : styles.messageOk,
           ]}>
           <Text style={styles.messageText}>{message}</Text>
         </View>
