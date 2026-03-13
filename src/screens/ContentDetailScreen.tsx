@@ -3,7 +3,7 @@
  * Two-column Apple TV layout: left = metadata + track list, right = artwork + actions.
  */
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   BackHandler,
   FlatList,
@@ -14,13 +14,13 @@ import {
   Text,
   View,
 } from 'react-native';
-import {getArtworkUrl} from '../api/apple-music/recommendations';
-import {useContentDetail} from '../hooks/useContentDetail';
-import {NowPlayingBars} from '../components/NowPlayingBars';
-import {usePlayer} from '../hooks/usePlayer';
-import {useContentNavigation} from '../navigation';
-import {useTheme} from '../theme';
-import {radius, spacing} from '../theme/layout';
+import { getArtworkUrl } from '../api/apple-music/recommendations';
+import { useContentDetail } from '../hooks/useContentDetail';
+import { NowPlayingBars } from '../components/NowPlayingBars';
+import { usePlayer } from '../hooks/usePlayer';
+import { useContentNavigation } from '../navigation';
+import { useTheme } from '../theme';
+import { radius, spacing } from '../theme/layout';
 import type {
   AlbumDetail,
   ContentDetailItem,
@@ -30,7 +30,7 @@ import type {
   SongDetail,
   StationDetail,
 } from '../types/catalog';
-import type {RecommendationContentType} from '../types/recommendations';
+import type { RecommendationContentType } from '../types/recommendations';
 
 const ARTWORK_SIZE = 350;
 
@@ -160,10 +160,10 @@ function normalizeDetail(
   contentType: RecommendationContentType,
 ): NormalizedDetail {
   if (!item) {
-    return {tracks: [], kind: 'tracklist'};
+    return { tracks: [], kind: 'tracklist' };
   }
   const fn = normalizers[contentType];
-  return fn ? fn(item) : {tracks: [], kind: 'tracklist'};
+  return fn ? fn(item) : { tracks: [], kind: 'tracklist' };
 }
 
 // ── Main component ───────────────────────────────────────────────
@@ -173,9 +173,9 @@ export function ContentDetailScreen({
   contentType,
   onBack,
 }: Readonly<ContentDetailScreenProps>): React.JSX.Element {
-  const {colors} = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles(colors);
-  const {data, isLoading, error} = useContentDetail(contentId, contentType);
+  const { data, isLoading, error } = useContentDetail(contentId, contentType);
   const isLibrary = contentId.startsWith('p.') || contentId.startsWith('l.') || contentId.startsWith('i.');
   const {
     state: playerState,
@@ -186,7 +186,7 @@ export function ContentDetailScreen({
     playMusicVideo,
   } = usePlayer();
 
-  const {openNowPlayingFullscreen} = useContentNavigation();
+  const { openNowPlayingFullscreen } = useContentNavigation();
 
   const isPlaying = playerState.playbackState === 'playing';
   const isPaused = playerState.playbackState === 'paused';
@@ -280,7 +280,7 @@ export function ContentDetailScreen({
   );
 
   const renderTrack = useCallback(
-    (renderInfo: {item: PlaylistTrack; index: number}) => (
+    (renderInfo: { item: PlaylistTrack; index: number }) => (
       <TrackRow
         item={renderInfo.item}
         index={renderInfo.index}
@@ -301,8 +301,8 @@ export function ContentDetailScreen({
 
   let rightContent: React.ReactNode;
   if (isLoading) {
-        const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
-        rightContent = <LoadingIndicator />;
+    const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
+    rightContent = <LoadingIndicator />;
   } else if (error) {
     rightContent = (
       <View style={styles.center}>
@@ -355,7 +355,7 @@ export function ContentDetailScreen({
         <View style={styles.artworkContainer}>
           {normalized.artworkUrl ? (
             <Image
-              source={{uri: normalized.artworkUrl}}
+              source={{ uri: normalized.artworkUrl }}
               style={styles.artwork}
               resizeMode="cover"
             />
@@ -485,7 +485,7 @@ function TrackRow({
       {showThumb ? (
         <View style={styles.trackThumbContainer}>
           {thumbUrl ? (
-            <Image source={{uri: thumbUrl}} style={styles.trackThumb} resizeMode="cover" />
+            <Image source={{ uri: thumbUrl }} style={styles.trackThumb} resizeMode="cover" />
           ) : (
             <View style={[styles.trackThumb, styles.trackThumbPlaceholder]} />
           )}
@@ -531,7 +531,7 @@ function ActionButton({
 }>) {
   return (
     <Pressable
-      style={({focused}) => [styles.actionBtn, focused && styles.actionBtnFocused]}
+      style={({ focused }) => [styles.actionBtn, focused && styles.actionBtnFocused]}
       hasTVPreferredFocus={grabFocus}
       onPress={onPress}
       focusable>
@@ -542,10 +542,10 @@ function ActionButton({
 
 function MoreButton({
   styles,
-}: Readonly<{styles: ReturnType<typeof useStyles>}>) {
+}: Readonly<{ styles: ReturnType<typeof useStyles> }>) {
   return (
     <Pressable
-      style={({focused}) => [styles.moreBtn, focused && styles.moreBtnFocused]}
+      style={({ focused }) => [styles.moreBtn, focused && styles.moreBtnFocused]}
       focusable>
       <Text style={styles.moreBtnText}>•••</Text>
     </Pressable>
@@ -568,7 +568,7 @@ function formatRelativeDate(isoDate: string): string {
   if (diffDays === 0) { return 'Today'; }
   if (diffDays === 1) { return 'Yesterday'; }
   if (diffDays < 7) { return `${diffDays} days ago`; }
-  return date.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 // ── Styles ───────────────────────────────────────────────────────
@@ -588,8 +588,7 @@ function useStyles(c: {
       flex: 1,
       flexDirection: 'row',
       paddingTop: spacing.xl,
-      paddingHorizontal: spacing.xl,
-      gap: spacing.xxl,
+      paddingLeft: spacing.xl,
     },
     // ── Artwork panel (left) ──────────────────────────
     artworkPanel: {
@@ -631,6 +630,7 @@ function useStyles(c: {
     // ── Header ────────────────────────────────────────
     headerBlock: {
       marginBottom: spacing.xs,
+      marginHorizontal: spacing.xxl,
     },
     contentTitle: {
       fontSize: 28,
@@ -689,11 +689,11 @@ function useStyles(c: {
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.lg,
       borderRadius: radius.md,
-      backgroundColor: c.buttonSecondaryBg,
+      backgroundColor: 'rgba(255, 255, 255, 0.5)',
     },
     actionBtnFocused: {
       backgroundColor: c.navBarCardBg,
-      transform: [{scale: 1.05}],
+      transform: [{ scale: 1.05 }],
     },
     actionBtnText: {
       fontSize: 15,
@@ -704,11 +704,11 @@ function useStyles(c: {
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.md,
       borderRadius: radius.md,
-      backgroundColor: c.buttonSecondaryBg,
+      backgroundColor: 'rgba(255, 255, 255, 0.5)',
     },
     moreBtnFocused: {
       backgroundColor: c.navBarCardBg,
-      transform: [{scale: 1.05}],
+      transform: [{ scale: 1.05 }],
     },
     moreBtnText: {
       fontSize: 16,
@@ -728,6 +728,7 @@ function useStyles(c: {
       paddingHorizontal: spacing.sm,
       borderRadius: radius.sm,
       gap: spacing.md,
+      marginHorizontal: spacing.xxl,
     },
     trackRowFocused: {
       backgroundColor: 'rgba(255, 255, 255, 0.90)',

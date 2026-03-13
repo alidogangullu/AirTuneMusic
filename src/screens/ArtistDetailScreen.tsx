@@ -117,18 +117,16 @@ export function ArtistDetailScreen({
 
         {/* ── Top Row (Latest Release + Top Songs) ────────── */}
         <View style={styles.topRow}>
-          <View style={styles.latestReleaseSection}>
-            <Text style={styles.sectionTitle}>Latest Release</Text>
-            {latestRelease ? (
+          {latestRelease && (
+            <View style={styles.latestReleaseSection}>
+              <Text style={styles.sectionTitle}>Latest Release</Text>
               <LatestReleaseCard
                 album={latestRelease}
                 onPress={() => handleAlbumPress(latestRelease)}
                 styles={styles}
               />
-            ) : (
-              <View style={[styles.latestReleaseCard, styles.placeholderBg]} />
-            )}
-          </View>
+            </View>
+          )}
 
           <View style={styles.topSongsSection}>
             <Text style={styles.sectionTitle}>Top Songs</Text>

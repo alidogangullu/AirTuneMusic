@@ -52,10 +52,20 @@ export function SearchScreen(): React.JSX.Element {
       return;
     }
     setSearching(true);
+    resetSearchTimer();
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchTerm]);
+
+  const resetSearchTimer = useCallback(() => {
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
     searchTimeoutRef.current = setTimeout(() => {
+      if (!searchTerm.trim()) return;
       searchCatalog(searchTerm, 'tr', 25)
         .then(res => {
           const results: SearchResultItem[] = [];
@@ -69,11 +79,6 @@ export function SearchScreen(): React.JSX.Element {
         .catch(e => console.warn('[Search] search error:', e))
         .finally(() => setSearching(false));
     }, 750);
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-    };
   }, [searchTerm]);
 
   const handleKeyPress = useCallback((key: string) => {
@@ -131,6 +136,7 @@ export function SearchScreen(): React.JSX.Element {
             key={k.id}
             label={k.id === '123' ? (showNumbers ? 'abc' : '123') : k.label}
             onPress={() => handleKeyPress(k.id)}
+            onInteraction={resetSearchTimer}
             styles={styles}
             isSpecial
           />
@@ -140,12 +146,14 @@ export function SearchScreen(): React.JSX.Element {
             key={letter}
             label={letter}
             onPress={() => handleKeyPress(letter)}
+            onInteraction={resetSearchTimer}
             styles={styles}
           />
         ))}
         <KeyButton
           label="⌫"
           onPress={() => handleKeyPress('DELETE')}
+          onInteraction={resetSearchTimer}
           styles={styles}
           isSpecial
         />
@@ -186,18 +194,23 @@ export function SearchScreen(): React.JSX.Element {
 function KeyButton({
   label,
   onPress,
+  onInteraction,
   styles,
   isSpecial,
 }: Readonly<{
   label: string;
   onPress: () => void;
+  onInteraction: () => void;
   styles: ReturnType<typeof useStyles>;
   isSpecial?: boolean;
 }>) {
   const [focused, setFocused] = useState(false);
   return (
     <Pressable
-      onFocus={() => setFocused(true)}
+      onFocus={() => {
+        setFocused(true);
+        onInteraction();
+      }}
       onBlur={() => setFocused(false)}
       onPress={onPress}
       style={[
