@@ -12,6 +12,7 @@ import {ContentNavigationContext} from '../navigation';
 import {ArtistDetailScreen} from './ArtistDetailScreen';
 import {ContentDetailScreen} from './ContentDetailScreen';
 import {NowPlayingScreen} from './NowPlayingScreen';
+import {SettingsScreen} from './SettingsScreen';
 import type {NavTabId} from '../components/TopBar';
 import type {RecommendationContent} from '../types/recommendations';
 import {useTheme} from '../theme';
@@ -28,6 +29,7 @@ export function HomeScreen({
   const [selectedContent, setSelectedContent] =
     useState<RecommendationContent | null>(null);
   const [nowPlayingFullscreen, setNowPlayingFullscreen] = useState(false);
+  const [settingsVisible, setSettingsVisible] = useState(false);
 
   const pushContent = useCallback((content: RecommendationContent) => {
     setSelectedContent(content);
@@ -76,9 +78,7 @@ export function HomeScreen({
           onTabPress={setActiveTab}
           onAvatarPress={handleSignOut}
           onSearchPress={() => setActiveTab('search')}
-          onSettingsPress={() => {
-            Alert.alert('Settings', 'Settings screen coming soon!');
-          }}
+          onSettingsPress={() => setSettingsVisible(true)}
         />
 
         {/* Modal ensures OS-level focus trapping — Android creates a new Window,
@@ -113,6 +113,20 @@ export function HomeScreen({
           animationType="none"
           onRequestClose={closeNowPlayingFullscreen}>
           <NowPlayingScreen onBack={closeNowPlayingFullscreen} />
+        </Modal>
+
+        {/* Settings screen */}
+        <Modal
+          visible={settingsVisible}
+          animationType="none"
+          onRequestClose={() => setSettingsVisible(false)}>
+          <SettingsScreen
+            onBack={() => setSettingsVisible(false)}
+            onSignOut={() => {
+              setSettingsVisible(false);
+              handleSignOut();
+            }}
+          />
         </Modal>
       </View>
     </ContentNavigationContext.Provider>

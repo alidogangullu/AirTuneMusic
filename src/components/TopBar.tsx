@@ -168,7 +168,7 @@ export function TopBar({
         accessibilityLabel="Settings"
         accessibilityRole="button">
         {({focused}) => (
-          <Text style={[styles.settingsIcon, focused && styles.tabTextFocused]}>
+          <Text style={[styles.settingsIcon, focused && styles.settingsIconFocused]}>
             ⚙
           </Text>
         )}
@@ -315,6 +315,9 @@ function useStyles(c: {
       fontSize: 20,
       color: avatarTextColor,
       fontWeight: '600',
+    },
+    settingsIconFocused: {
+      color: '#FFFFFF',
     },
   });
 }
