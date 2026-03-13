@@ -78,7 +78,7 @@
         id="code"
         type="text"
         inputmode="numeric"
-        pattern="[0-9]*"
+        pattern="[0-9-]*"
         maxlength="7"
         placeholder="000-000"
         autocomplete="one-time-code"
@@ -135,8 +135,12 @@
           body: JSON.stringify({ code: code.trim(), musicUserToken })
         });
         if (!res.ok) {
-          const err = await res.text();
-          throw new Error(err || 'Failed to link device');
+          let errMsg = 'Failed to link device';
+          try {
+            const errData = await res.json();
+            if (errData.error) errMsg = errData.error;
+          } catch (e) {}
+          throw new Error(errMsg);
         }
       }
 

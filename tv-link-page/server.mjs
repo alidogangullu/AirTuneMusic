@@ -38,6 +38,7 @@ const developerToken = process.env.EXPO_PUBLIC_APPLE_MUSIC_TOKEN || '';
 
 // In-memory store: code -> { musicUserToken, createdAt }
 const store = new Map();
+const activeCodes = new Map(); // code -> lastPolledAt
 const TTL_MS = 15 * 60 * 1000; // 15 min
 
 function send(res, status, body, contentType = 'application/json') {
@@ -104,6 +105,17 @@ const server = createServer(async (req, res) => {
           send(res, 400, {error: 'Missing code or musicUserToken'});
           return;
         }
+
+        const now = Date.now();
+        for (const [k, v] of activeCodes.entries()) {
+          if (now - v > 10000) activeCodes.delete(k); // Expire after 10s of no polling
+        }
+
+        if (!activeCodes.has(code.trim())) {
+          send(res, 400, {error: 'Invalid TV code. Please check the screen and try again.'});
+          return;
+        }
+
         store.set(code.trim(), {musicUserToken, createdAt: Date.now()});
         send(res, 200, {ok: true});
       } catch {
@@ -190,6 +202,10 @@ const server = createServer(async (req, res) => {
       send(res, 400, {error: 'Missing code'});
       return;
     }
+    
+    // Register the code as active since the TV app is trying to poll for it
+    activeCodes.set(code.trim(), Date.now());
+
     const entry = store.get(code.trim());
     if (!entry) {
       send(res, 404, {error: 'Code not found or expired'});
