@@ -90,6 +90,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
           track: data,
           duration: data.duration ?? 0,
           position: 0,
+          queueIndex: data.trackIndex ?? s.queueIndex,
           isLoading: false, // Track received, stop initial loading
         }));
       }),

@@ -279,6 +279,35 @@ export function ContentDetailScreen({
     [contentId, contentType, isLibrary, normalized, playAlbum, playPlaylist, playSong, openNowPlayingFullscreen],
   );
 
+  // Check if a track matches the currently playing item by comparing
+  // title + artist (robust for both library and catalog content).
+  const isTrackNowPlaying = useCallback(
+    (track: PlaylistTrack, index: number): boolean => {
+      if (!(isPlaying || isPaused)) { return false; }
+      const currentTrack = playerState.track;
+      if (!currentTrack) { return false; }
+
+      // Fast path: if container matches, compare queue index
+      if (isThisContainer && playerState.queueIndex === index) {
+        return true;
+      }
+
+      // Fallback: compare track title + artist name
+      const trackName = track.attributes?.name;
+      const trackArtist = track.attributes?.artistName;
+      if (trackName && currentTrack.title && trackName === currentTrack.title) {
+        // If both have artist info, also compare that to avoid false matches
+        if (trackArtist && currentTrack.artistName) {
+          return trackArtist === currentTrack.artistName;
+        }
+        return true;
+      }
+
+      return false;
+    },
+    [isPlaying, isPaused, isThisContainer, playerState.track, playerState.queueIndex],
+  );
+
   const renderTrack = useCallback(
     (renderInfo: { item: PlaylistTrack; index: number }) => (
       <TrackRow
@@ -287,16 +316,12 @@ export function ContentDetailScreen({
         showArtist={contentType === 'playlists'}
         showThumb={contentType === 'playlists'}
         onPress={() => handleTrackPress(renderInfo.index)}
-        isNowPlaying={
-          isThisContainer &&
-          (isPlaying || isPaused) &&
-          playerState.queueIndex === renderInfo.index
-        }
+        isNowPlaying={isTrackNowPlaying(renderInfo.item, renderInfo.index)}
         isPlaying={isPlaying}
         styles={styles}
       />
     ),
-    [styles, contentType, handleTrackPress, isPlaying, isPaused, isThisContainer, playerState.queueIndex],
+    [styles, contentType, handleTrackPress, isPlaying, isTrackNowPlaying],
   );
 
   let rightContent: React.ReactNode;
