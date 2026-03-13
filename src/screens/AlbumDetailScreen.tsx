@@ -5,7 +5,6 @@
 
 import React, {useCallback, useEffect} from 'react';
 import {
-  ActivityIndicator,
   BackHandler,
   FlatList,
   Image,
@@ -59,12 +58,9 @@ export function AlbumDetailScreen({
   );
 
   let leftContent: React.ReactNode;
-  if (isLoading) {
-    leftContent = (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
-    );
+    if (isLoading) {
+      const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
+      leftContent = <LoadingIndicator />;
   } else if (error) {
     leftContent = (
       <View style={styles.center}>

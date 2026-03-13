@@ -54,6 +54,7 @@ class MusicPlayerModule(
 
     @ReactMethod
     fun configure(devToken: String, usrToken: String, promise: Promise) {
+        ensureNativeLib() // Native kütüphaneyi açılışta yükle
         Log.d(TAG, "configure called, devToken=${devToken.take(20)}..., usrToken=${usrToken.take(20)}...")
         storedDevToken = devToken
         storedUsrToken = usrToken

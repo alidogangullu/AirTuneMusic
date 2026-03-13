@@ -33,6 +33,7 @@ export function NowPlayingScreen({onBack}: Readonly<NowPlayingScreenProps>): Rea
   const isPlaying = playbackState === 'playing';
   const hasTrack = track !== null && playbackState !== 'stopped';
   const palette = useImageColors(track?.artworkUrl);
+  const paletteLoading = track?.artworkUrl && !palette;
 
   // Handle back button (remote) in fullscreen mode
   useEffect(() => {
@@ -69,11 +70,32 @@ export function NowPlayingScreen({onBack}: Readonly<NowPlayingScreenProps>): Rea
   const progress = duration > 0 ? position / duration : 0;
   const remainingMs = duration > 0 ? duration - position : 0;
 
-  if (!hasTrack) {
+  if (!track) {
+    // Select music warning
     return (
-      <View style={styles.emptyRoot}>
-        <Text style={styles.emptyText}>Select a song to play</Text>
-      </View>
+      <LinearGradient
+        colors={["#c1d5f3", "#bfc0c6"]}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 1}}
+        style={styles.root}
+      >
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <Text style={{fontSize: 20, color: '#333', fontWeight: '600'}}>Select a song to play.</Text>
+        </View>
+      </LinearGradient>
+    );
+  }
+  if (!hasTrack || paletteLoading) {
+    const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
+    return (
+      <LinearGradient
+        colors={["#c1d5f3", "#bfc0c6"]}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 1}}
+        style={styles.root}
+      >
+        <LoadingIndicator />
+      </LinearGradient>
     );
   }
 

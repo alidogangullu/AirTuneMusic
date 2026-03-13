@@ -7,7 +7,6 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   Pressable,
@@ -15,6 +14,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { LoadingIndicator } from '../components/LoadingIndicator';
 import {useTheme} from '../theme';
 import type {AppColors} from '../theme/colors';
 import {radius, spacing} from '../theme/layout';
@@ -208,11 +208,7 @@ export function LibraryScreen(): React.JSX.Element {
 
   const renderContent = useCallback(() => {
     if (loading && items.length === 0) {
-      return (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.textMuted} />
-        </View>
-      );
+      return <LoadingIndicator />;
     }
     if (error) {
       return (
@@ -241,7 +237,7 @@ export function LibraryScreen(): React.JSX.Element {
         showsVerticalScrollIndicator={false}
       />
     );
-  }, [loading, items, error, styles, colors, renderGridItem, keyExtractor, handleLoadMore]);
+  }, [loading, items, error, styles, renderGridItem, keyExtractor, handleLoadMore]);
 
   return (
     <View style={styles.root}>

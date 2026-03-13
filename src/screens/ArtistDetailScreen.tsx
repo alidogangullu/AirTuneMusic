@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
 import {
-  ActivityIndicator,
   BackHandler,
   FlatList,
   Image,
@@ -84,11 +83,8 @@ export function ArtistDetailScreen({
   }, []);
 
   if (isLoading) {
-    return (
-      <View style={[styles.root, styles.center]}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
-    );
+    const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
+    return <LoadingIndicator />;
   }
 
   if (error || !artist) {

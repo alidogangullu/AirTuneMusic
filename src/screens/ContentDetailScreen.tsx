@@ -5,7 +5,6 @@
 
 import React, {useCallback, useEffect, useState} from 'react';
 import {
-  ActivityIndicator,
   BackHandler,
   FlatList,
   Image,
@@ -302,11 +301,8 @@ export function ContentDetailScreen({
 
   let rightContent: React.ReactNode;
   if (isLoading) {
-    rightContent = (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
-    );
+        const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
+        rightContent = <LoadingIndicator />;
   } else if (error) {
     rightContent = (
       <View style={styles.center}>
@@ -613,7 +609,7 @@ function useStyles(c: {
       height: '100%',
     },
     artworkPlaceholder: {
-      backgroundColor: c.navBarCardBg,
+      backgroundColor: 'rgba(0,0,0,0.1)',
     },
     // ── Content panel (right) ─────────────────────────
     contentPanel: {

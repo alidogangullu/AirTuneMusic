@@ -4,7 +4,6 @@
 
 import React from 'react';
 import {
-  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -41,12 +40,9 @@ export function ListenNowScreen(): React.JSX.Element {
     error instanceof Error ? error.message : 'Failed to load';
 
   let contentNode: React.ReactNode;
-  if (isLoading) {
-    contentNode = (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
-    );
+    if (isLoading) {
+      const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
+      contentNode = <LoadingIndicator />;
   } else if (error) {
     contentNode = (
       <View style={styles.error}>

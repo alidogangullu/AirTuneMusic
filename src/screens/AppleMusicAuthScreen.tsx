@@ -1,9 +1,3 @@
-/**
- * Test screen for Apple Music user sign-in (Music User Token).
- * Use this to verify startAppleMusicAuth() and /me/ API calls on Android TV.
- * On TV: use "Link with phone/computer" to see the code and open the link page on another device.
- */
-
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
   ActivityIndicator,
@@ -84,7 +78,7 @@ function startPolling(
           );
           setPairingMode(false);
           setStatus('success');
-          setMessage('Linked! Token received. You can test /me/ below.');
+          setMessage('Linked! Token received.');
           onAuthSuccess?.();
         }
       }
@@ -278,15 +272,15 @@ function makeStyles(c: AppColors) {
   });
 }
 
-export type AppleMusicAuthTestScreenProps = {
+export type AppleMusicAuthScreenProps = {
   onAuthSuccess?: () => void;
   onSignOut?: () => void;
 };
 
-export function AppleMusicAuthTestScreen({
+export function AppleMusicAuthScreen({
   onAuthSuccess,
   onSignOut,
-}: AppleMusicAuthTestScreenProps = {}): React.JSX.Element {
+}: AppleMusicAuthScreenProps = {}): React.JSX.Element {
   const {colors} = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [status, setStatus] = useState<Status>('idle');
@@ -468,9 +462,9 @@ export function AppleMusicAuthTestScreen({
       contentContainerStyle={styles.container}
       style={styles.scroll}
       contentInsetAdjustmentBehavior="automatic">
-      <Text style={styles.title}>Apple Music Auth Test</Text>
+      <Text style={styles.title}>Apple Music Auth</Text>
       <Text style={styles.subtitle}>
-        Android TV – sign in and test /me/ API
+        Android TV – sign in API
       </Text>
 
       {(status === 'success' || tokenPreview.length > 0) && (

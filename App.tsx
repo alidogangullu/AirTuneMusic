@@ -6,39 +6,38 @@
 import React, {useEffect, useState} from 'react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {
-  ActivityIndicator,
-  SafeAreaView,
   StatusBar,
   StyleSheet,
 } from 'react-native';
 import {clearMusicUserToken, loadMusicUserToken} from './src/api/apple-music';
 import {GradientBackground} from './src/components/GradientBackground';
-import {AppleMusicAuthTestScreen} from './src/screens/AppleMusicAuthTestScreen';
 import {HomeScreen} from './src/screens/HomeScreen';
 import {PlayerProvider} from './src/hooks/usePlayer';
 import {ThemeProvider, useTheme} from './src/theme';
+import { AppleMusicAuthScreen } from './src/screens/AppleMusicAuthScreen';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 function AppContent(): React.JSX.Element {
   const {colors} = useTheme();
   const [hasToken, setHasToken] = useState<boolean | null>(null);
 
   useEffect(() => {
+    // Token kontrolü
     loadMusicUserToken().then(token =>
       setHasToken(token !== null && token.length > 0),
     );
+
+    // MusicPlayer konfigürasyonunu başlat
+    import('./src/services/musicPlayer').then(mp => {
+      mp?.ensureConfigured?.().catch(e => {
+        console.warn('[App] MusicPlayer konfigürasyon hatası:', e);
+      });
+    });
   }, []);
 
   if (hasToken === null) {
-    return (
-      <GradientBackground
-        startColor={colors.gradientStart}
-        endColor={colors.gradientEnd}>
-        <StatusBar barStyle="dark-content" backgroundColor="transparent" />
-        <SafeAreaView style={[styles.container, styles.centered]}>
-          <ActivityIndicator size="large" color={colors.accent} />
-        </SafeAreaView>
-      </GradientBackground>
-    );
+    const LoadingIndicator = require('./src/components/LoadingIndicator').LoadingIndicator;
+    return <LoadingIndicator />;
   }
 
   return (
@@ -46,7 +45,8 @@ function AppContent(): React.JSX.Element {
       startColor={colors.gradientStart}
       endColor={colors.gradientEnd}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.container}>
         {hasToken ? (
           <HomeScreen
             onSignOut={() => {
@@ -55,7 +55,7 @@ function AppContent(): React.JSX.Element {
             }}
           />
         ) : (
-          <AppleMusicAuthTestScreen
+          <AppleMusicAuthScreen
             onAuthSuccess={() => setHasToken(true)}
             onSignOut={() => {
               clearMusicUserToken();
@@ -63,7 +63,8 @@ function AppContent(): React.JSX.Element {
             }}
           />
         )}
-      </SafeAreaView>
+        </SafeAreaView>
+      </SafeAreaProvider>
     </GradientBackground>
   );
 }

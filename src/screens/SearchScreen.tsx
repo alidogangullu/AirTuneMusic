@@ -8,7 +8,6 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   Pressable,
@@ -16,6 +15,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { LoadingIndicator } from '../components/LoadingIndicator';
 import { useTheme } from '../theme';
 import { radius, spacing } from '../theme/layout';
 import { searchCatalog } from '../api/apple-music/search';
@@ -220,7 +220,6 @@ function SearchResultsContent({
   results,
   onResultPress,
   styles,
-  accentColor,
 }: Readonly<{
   searching: boolean;
   results: SearchResultItem[];
@@ -229,11 +228,7 @@ function SearchResultsContent({
   accentColor: string;
 }>) {
   if (searching) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={accentColor} />
-      </View>
-    );
+    return <LoadingIndicator />;
   }
   if (results.length === 0) {
     return (

@@ -93,7 +93,7 @@ export function addEventListener<E extends EventName>(
 
 let configured = false;
 
-async function ensureConfigured(): Promise<void> {
+export async function ensureConfigured(): Promise<void> {
   if (!MusicPlayer) {
     throw new Error('MusicPlayer native module is not available');
   }
