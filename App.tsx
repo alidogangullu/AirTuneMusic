@@ -17,11 +17,20 @@ import {ThemeProvider, useTheme} from './src/theme';
 import { AppleMusicAuthScreen } from './src/screens/AppleMusicAuthScreen';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
+import { checkAppVersion, VersionCheckResult } from './src/services/versionService';
+import { ForceUpdateScreen } from './src/screens/ForceUpdateScreen';
+
 function AppContent(): React.JSX.Element {
   const {colors} = useTheme();
   const [hasToken, setHasToken] = useState<boolean | null>(null);
+  const [updateInfo, setUpdateInfo] = useState<VersionCheckResult | null>(null);
 
   useEffect(() => {
+    // Versiyon kontrolü
+    checkAppVersion().then(result => {
+      setUpdateInfo(result);
+    });
+
     // Token kontrolü
     loadMusicUserToken().then(token =>
       setHasToken(token !== null && token.length > 0),
@@ -35,9 +44,19 @@ function AppContent(): React.JSX.Element {
     });
   }, []);
 
-  if (hasToken === null) {
+  if (hasToken === null || updateInfo === null) {
     const LoadingIndicator = require('./src/components/LoadingIndicator').LoadingIndicator;
     return <LoadingIndicator />;
+  }
+
+  // Zorunlu güncelleme kontrolü
+  if (updateInfo.status === 'force_update') {
+    return (
+      <ForceUpdateScreen
+        storeUrl={updateInfo.storeUrl}
+        latestVersion={updateInfo.latestVersion}
+      />
+    );
   }
 
   return (
