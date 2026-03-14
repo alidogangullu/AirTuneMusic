@@ -274,34 +274,6 @@ export function ContentDetailScreen({
     action().catch(e => console.warn('[Shuffle]', e));
   }, [contentId, contentType, isLibrary, normalized, playAlbum, playPlaylist, playSong, playStation, playMusicVideo, openNowPlayingFullscreen]);
 
-  const handleTrackPress = useCallback(
-    (index: number) => {
-      const action = async () => {
-        let success = false;
-        if (isLibrary && normalized) {
-          const track = normalized.tracks[index];
-          if (track) {
-            success = await playSong(getCatalogSongId(track));
-          }
-        } else {
-          switch (contentType) {
-            case 'albums':
-              success = await playAlbum(contentId, index);
-              break;
-            case 'playlists':
-              success = await playPlaylist(contentId, index);
-              break;
-          }
-        }
-        if (success) {
-          openNowPlayingFullscreen();
-        }
-      };
-      action().catch(e => console.warn('[TrackPress]', e));
-    },
-    [contentId, contentType, isLibrary, normalized, playAlbum, playPlaylist, playSong, openNowPlayingFullscreen],
-  );
-
   // Check if a track matches the currently playing item by comparing
   // title + artist (robust for both library and catalog content).
   const isTrackNowPlaying = useCallback(
@@ -329,6 +301,40 @@ export function ContentDetailScreen({
       return false;
     },
     [isPlaying, isPaused, isThisContainer, playerState.track, playerState.queueIndex],
+  );
+
+  const handleTrackPress = useCallback(
+    (index: number) => {
+      const track = normalized.tracks[index];
+      if (!track) return;
+
+      // If this track is already now playing, just open the fullscreen player
+      if (isTrackNowPlaying(track, index)) {
+        openNowPlayingFullscreen();
+        return;
+      }
+
+      const action = async () => {
+        let success = false;
+        if (isLibrary && normalized) {
+          success = await playSong(getCatalogSongId(track));
+        } else {
+          switch (contentType) {
+            case 'albums':
+              success = await playAlbum(contentId, index);
+              break;
+            case 'playlists':
+              success = await playPlaylist(contentId, index);
+              break;
+          }
+        }
+        if (success) {
+          openNowPlayingFullscreen();
+        }
+      };
+      action().catch(e => console.warn('[TrackPress]', e));
+    },
+    [contentId, contentType, isLibrary, normalized, playAlbum, playPlaylist, playSong, openNowPlayingFullscreen, isTrackNowPlaying],
   );
 
   const renderTrack = useCallback(
@@ -546,7 +552,7 @@ function TrackRow({
           style={[
             styles.trackName,
             focused && styles.trackNameFocused,
-            isNowPlaying && !focused && styles.trackNamePlaying,
+            isNowPlaying && styles.trackNamePlaying,
           ]}
           numberOfLines={1}>
           {item.attributes?.name ?? ''}
