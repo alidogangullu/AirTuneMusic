@@ -4,10 +4,10 @@
  */
 
 import React from 'react';
-import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
-import {getArtworkUrl} from '../api/apple-music/recommendations';
-import {radius, spacing} from '../theme/layout';
-import {useTheme} from '../theme';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { getArtworkUrl } from '../api/apple-music/recommendations';
+import { radius, spacing } from '../theme/layout';
+import { useTheme } from '../theme';
 import { RecommendationContent } from '../types/recommendations';
 
 const CARD_WIDTH = 180;
@@ -24,7 +24,7 @@ export function RecommendationCard({
   content,
   onPress,
 }: Readonly<RecommendationCardProps>): React.JSX.Element {
-  const {colors} = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles(colors);
 
   const artworkUrl = getArtworkUrl(
@@ -37,7 +37,7 @@ export function RecommendationCard({
 
   return (
     <Pressable
-      style={({focused}) => [styles.card, focused && styles.cardFocused]}
+      style={({ focused }) => [styles.card, focused && styles.cardFocused]}
       onPress={onPress}
       focusable>
       <View style={styles.cardInner}>
@@ -49,7 +49,7 @@ export function RecommendationCard({
         <View style={styles.artworkContainer}>
           {artworkUrl ? (
             <Image
-              source={{uri: artworkUrl}}
+              source={{ uri: artworkUrl }}
               style={styles.artwork}
               resizeMode="cover"
             />
@@ -84,7 +84,7 @@ function useStyles(c: {
     },
     cardFocused: {
       opacity: 1,
-      transform: [{scale: 1.1}], // scale from center — paddingVertical in rail handles overflow
+      transform: [{ scale: 1.1 }], // scale from center — paddingVertical in rail handles overflow
     },
     cardInner: {
       width: CARD_WIDTH,

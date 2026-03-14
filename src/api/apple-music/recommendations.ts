@@ -3,13 +3,23 @@
  * GET /v1/me/recommendations — returns personal recommendations.
  */
 
-import type {AlbumDetailResponse, ArtistDetailResponse, MusicVideoDetailResponse, PlaylistDetailResponse, SongDetailResponse, StationDetailResponse} from '../../types/catalog';
-import type {RecommendationsResponse} from '../../types/recommendations';
-import {appleMusicApi} from './client';
-import {DEV_SERVER, CAN_REACH_INTERNET_DIRECTLY} from '../../config/devServer';
+import type {
+  AlbumDetailResponse,
+  ArtistDetailResponse,
+  MusicVideoDetailResponse,
+  PlaylistDetailResponse,
+  SongDetailResponse,
+  StationDetailResponse,
+} from '../../types/catalog';
+import type { RecommendationsResponse } from '../../types/recommendations';
+import { appleMusicApi } from './client';
+import {
+  DEV_SERVER,
+  CAN_REACH_INTERNET_DIRECTLY,
+} from '../../config/devServer';
 
 export async function fetchRecommendations(): Promise<RecommendationsResponse> {
-  const {data} = await appleMusicApi.get<RecommendationsResponse>(
+  const { data } = await appleMusicApi.get<RecommendationsResponse>(
     '/me/recommendations',
     {
       //params: {limit: 20},
@@ -26,9 +36,9 @@ export async function fetchPlaylistDetail(
   id: string,
   storefront: string,
 ): Promise<PlaylistDetailResponse> {
-  const {data} = await appleMusicApi.get<PlaylistDetailResponse>(
+  const { data } = await appleMusicApi.get<PlaylistDetailResponse>(
     `/catalog/${storefront}/playlists/${id}`,
-    {params: {include: 'tracks'}},
+    { params: { include: 'tracks' } },
   );
   return data;
 }
@@ -41,9 +51,9 @@ export async function fetchAlbumDetail(
   id: string,
   storefront: string,
 ): Promise<AlbumDetailResponse> {
-  const {data} = await appleMusicApi.get<AlbumDetailResponse>(
+  const { data } = await appleMusicApi.get<AlbumDetailResponse>(
     `/catalog/${storefront}/albums/${id}`,
-    {params: {include: 'tracks'}},
+    { params: { include: 'tracks' } },
   );
   return data;
 }
@@ -56,9 +66,9 @@ export async function fetchArtistDetail(
   id: string,
   storefront: string,
 ): Promise<ArtistDetailResponse> {
-  const {data} = await appleMusicApi.get<ArtistDetailResponse>(
+  const { data } = await appleMusicApi.get<ArtistDetailResponse>(
     `/catalog/${storefront}/artists/${id}`,
-    {params: {views: 'top-songs,latest-release,full-albums'}},
+    { params: { views: 'top-songs,latest-release,full-albums' } },
   );
   return data;
 }
@@ -71,7 +81,7 @@ export async function fetchStationDetail(
   id: string,
   storefront: string,
 ): Promise<StationDetailResponse> {
-  const {data} = await appleMusicApi.get<StationDetailResponse>(
+  const { data } = await appleMusicApi.get<StationDetailResponse>(
     `/catalog/${storefront}/stations/${id}`,
   );
   return data;
@@ -85,7 +95,7 @@ export async function fetchSongDetail(
   id: string,
   storefront: string,
 ): Promise<SongDetailResponse> {
-  const {data} = await appleMusicApi.get<SongDetailResponse>(
+  const { data } = await appleMusicApi.get<SongDetailResponse>(
     `/catalog/${storefront}/songs/${id}`,
   );
   return data;
@@ -99,11 +109,13 @@ export async function fetchMusicVideoDetail(
   id: string,
   storefront: string,
 ): Promise<MusicVideoDetailResponse> {
-  const {data} = await appleMusicApi.get<MusicVideoDetailResponse>(
+  const { data } = await appleMusicApi.get<MusicVideoDetailResponse>(
     `/catalog/${storefront}/music-videos/${id}`,
   );
   return data;
 }
+
+import { PixelRatio } from 'react-native';
 
 const ARTWORK_PROXY = `${DEV_SERVER}/api/apple-music-proxy/image`;
 
@@ -118,10 +130,17 @@ export function getArtworkUrl(
   height = 300,
 ): string | undefined {
   if (!url) return undefined;
+
+  // Scale dimensions based on device pixel density for higher quality
+  const scale = PixelRatio.get();
+  const scaledW = Math.round(width * scale);
+  const scaledH = Math.round(height * scale);
+
   const resolved = url
-    .replace(/\{w\}/g, String(width))
-    .replace(/\{h\}/g, String(height))
+    .replace(/\{w\}/g, String(scaledW))
+    .replace(/\{h\}/g, String(scaledH))
     .replace(/\{f\}/g, 'jpg');
+
   if (__DEV__ && !CAN_REACH_INTERNET_DIRECTLY) {
     return `${ARTWORK_PROXY}?url=${encodeURIComponent(resolved)}`;
   }

@@ -3,7 +3,7 @@
  * Left: metadata + scrollable track list. Right: artwork + action buttons.
  */
 
-import React, {useCallback, useEffect} from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
   BackHandler,
   FlatList,
@@ -13,11 +13,11 @@ import {
   Text,
   View,
 } from 'react-native';
-import {getArtworkUrl} from '../api/apple-music/recommendations';
-import {useAlbumDetail} from '../hooks/useAlbumDetail';
-import {useTheme} from '../theme';
-import {radius, spacing} from '../theme/layout';
-import type {PlaylistTrack} from '../types/catalog';
+import { getArtworkUrl } from '../api/apple-music/recommendations';
+import { useAlbumDetail } from '../hooks/useAlbumDetail';
+import { useTheme } from '../theme';
+import { radius, spacing } from '../theme/layout';
+import type { PlaylistTrack } from '../types/catalog';
 
 const ARTWORK_SIZE = 300;
 const TRACK_THUMB_SIZE = 52;
@@ -31,9 +31,9 @@ export function AlbumDetailScreen({
   albumId,
   onBack,
 }: Readonly<AlbumDetailScreenProps>): React.JSX.Element {
-  const {colors} = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles(colors);
-  const {data, isLoading, error} = useAlbumDetail(albumId);
+  const { data, isLoading, error } = useAlbumDetail(albumId);
 
   // Hardware back button support for Android TV remote
   useEffect(() => {
@@ -51,16 +51,16 @@ export function AlbumDetailScreen({
   const artworkUrl = getArtworkUrl(attrs?.artwork?.url, ARTWORK_SIZE, ARTWORK_SIZE);
 
   const renderTrack = useCallback(
-    (renderInfo: {item: PlaylistTrack; index: number}) => (
+    (renderInfo: { item: PlaylistTrack; index: number }) => (
       <TrackRow item={renderInfo.item} index={renderInfo.index} styles={styles} />
     ),
     [styles],
   );
 
   let leftContent: React.ReactNode;
-    if (isLoading) {
-      const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
-      leftContent = <LoadingIndicator />;
+  if (isLoading) {
+    const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
+    leftContent = <LoadingIndicator />;
   } else if (error) {
     leftContent = (
       <View style={styles.center}>
@@ -100,7 +100,7 @@ export function AlbumDetailScreen({
           <View style={styles.artworkContainer}>
             {artworkUrl ? (
               <Image
-                source={{uri: artworkUrl}}
+                source={{ uri: artworkUrl }}
                 style={styles.artwork}
                 resizeMode="cover"
               />
@@ -178,13 +178,13 @@ function TrackRow({
 
   return (
     <Pressable
-      style={({focused}) => [styles.trackRow, focused && styles.trackRowFocused]}
+      style={({ focused }) => [styles.trackRow, focused && styles.trackRowFocused]}
       focusable>
       <Text style={styles.trackNumber}>{index + 1}</Text>
       <View style={styles.trackThumbContainer}>
         {thumbUrl ? (
           <Image
-            source={{uri: thumbUrl}}
+            source={{ uri: thumbUrl }}
             style={styles.trackThumb}
             resizeMode="cover"
           />
@@ -216,7 +216,7 @@ function ActionButton({
 }>) {
   return (
     <Pressable
-      style={({focused}) => [styles.actionBtn, focused && styles.actionBtnFocused]}
+      style={({ focused }) => [styles.actionBtn, focused && styles.actionBtnFocused]}
       focusable>
       <Text style={styles.actionBtnIcon}>{icon}</Text>
       <Text style={styles.actionBtnLabel}>{label}</Text>
@@ -384,7 +384,7 @@ function useStyles(c: {
     },
     actionBtnFocused: {
       backgroundColor: c.navBarCardBg,
-      transform: [{scale: 1.05}],
+      transform: [{ scale: 1.05 }],
     },
     actionBtnIcon: {
       fontSize: 18,
