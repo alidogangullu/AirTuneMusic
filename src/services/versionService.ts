@@ -34,7 +34,7 @@ const compareVersions = (v1: string, v2: string): number => {
 
 export const checkAppVersion = async (): Promise<VersionCheckResult> => {
   try {
-    const response = await axios.get<VersionInfo>(VERSION_CHECK_URL, {
+    const response = await axios.get<VersionInfo>(`${VERSION_CHECK_URL}?t=${Date.now()}`, {
       timeout: 5000,
     });
     

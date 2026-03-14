@@ -193,8 +193,8 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
       return (
         <LinearGradient
           colors={["#c1d5f3", "#bfc0c6"]}
-          start={{x: 0, y: 0}}
-          end={{x: 1, y: 1}}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
           style={styles.root}
         >
           <LoadingIndicator />
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 40,
+    paddingTop: 50,
   },
   // Artwork
   artworkShadow: {

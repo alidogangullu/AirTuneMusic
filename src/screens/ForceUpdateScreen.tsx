@@ -8,7 +8,6 @@ import {
   Image,
 } from 'react-native';
 import { useTheme } from '../theme';
-import { GradientBackground } from '../components/GradientBackground';
 import { AppColors } from '../theme/colors';
 import { radius, spacing } from '../theme/layout';
 
@@ -36,7 +35,7 @@ function makeStyles(c: AppColors) {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.md,
-      marginBottom: spacing.xxxl,
+      marginBottom: spacing.xxl,
     },
     logoIcon: {
       width: 65,
@@ -158,7 +157,7 @@ export const ForceUpdateScreen: React.FC<ForceUpdateScreenProps> = ({
           <Text style={styles.subtitle}>
             A new version of AirTune Music is available. Please update to continue using the app with latest features and improvements.
           </Text>
-          
+
           <View style={styles.versionBadge}>
             <Text style={styles.versionText}>
               New Version: {latestVersion}
