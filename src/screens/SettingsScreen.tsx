@@ -9,6 +9,7 @@ import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'rea
 import { SettingsMenuItem } from '../components/SettingsMenuItem';
 import { GradientBackground } from '../components/GradientBackground';
 import { useTheme } from '../theme';
+import { QuotaService } from '../services/quotaService';
 import { spacing, radius } from '../theme/layout';
 
 export type SettingsScreenProps = {
@@ -16,7 +17,7 @@ export type SettingsScreenProps = {
   onSignOut?: () => void;
 };
 
-const MENU_ITEMS = ['Support', 'About'];
+const MENU_ITEMS = ['Subscription', 'Support', 'About'];
 
 export function SettingsScreen({
   onBack,
@@ -27,6 +28,25 @@ export function SettingsScreen({
   const handleItemPress = (item: string) => {
     if (item === 'Sign Out') {
       onSignOut?.();
+    } else if (item === 'Subscription') {
+      const usage = QuotaService.getUsageInfo();
+      const isPro = QuotaService.isProUser();
+      const remaining = QuotaService.getRemainingTimeFormatted();
+
+      Alert.alert(
+        'Subscription & Usage',
+        isPro
+          ? 'You have an active AirTune Pro subscription. Enjoy unlimited music!'
+          : `Usage: ${usage.used}/${usage.total} songs this hour.\n\n${
+              usage.used >= usage.total
+                ? `Limit reached. Next song available in: ${remaining}.`
+                : 'You are using the free version.'
+            }`,
+        [
+          { text: 'OK', style: 'default' },
+          !isPro ? { text: 'Get Pro', onPress: () => Alert.alert('Payment', 'In-app purchases coming soon!') } : undefined,
+        ].filter(Boolean) as any,
+      );
     } else if (item === 'Support') {
       Alert.alert('Support', 'Contact: gullualidogan@gmail.com');
     } else if (item === 'About') {

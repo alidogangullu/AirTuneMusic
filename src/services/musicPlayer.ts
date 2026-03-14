@@ -26,6 +26,7 @@ export interface TrackInfo {
   artworkUrl: string | null;
   duration: number;
   trackIndex: number;
+  playbackQueueId?: number;
 }
 
 export interface PlaybackStateInfo {

@@ -205,76 +205,99 @@ export function ContentDetailScreen({
 
   const handlePlay = useCallback(() => {
     const action = async () => {
+      let success = false;
       if (isLibrary && normalized) {
         const firstTrack = normalized.tracks[0];
-        if (firstTrack) await playSong(getCatalogSongId(firstTrack));
-        return;
+        if (firstTrack) {
+          success = await playSong(getCatalogSongId(firstTrack));
+        }
+      } else {
+        switch (contentType) {
+          case 'albums':
+            success = await playAlbum(contentId);
+            break;
+          case 'playlists':
+            success = await playPlaylist(contentId);
+            break;
+          case 'stations':
+            success = await playStation(contentId);
+            break;
+          case 'songs':
+            success = await playSong(contentId);
+            break;
+          case 'music-videos':
+            success = await playMusicVideo(contentId);
+            break;
+        }
       }
-      switch (contentType) {
-        case 'albums':
-          await playAlbum(contentId);
-          break;
-        case 'playlists':
-          await playPlaylist(contentId);
-          break;
-        case 'stations':
-          await playStation(contentId);
-          break;
-        case 'songs':
-          await playSong(contentId);
-          break;
-        case 'music-videos':
-          await playMusicVideo(contentId);
-          break;
+      if (success) {
+        openNowPlayingFullscreen();
       }
     };
     action().catch(e => console.warn('[Play]', e));
-    openNowPlayingFullscreen();
   }, [contentId, contentType, isLibrary, normalized, playAlbum, playPlaylist, playStation, playSong, playMusicVideo, openNowPlayingFullscreen]);
 
   const handleShuffle = useCallback(() => {
     const action = async () => {
+      let success = false;
       if (isLibrary && normalized) {
         const tracks = normalized.tracks;
         const randomIndex = Math.floor(Math.random() * tracks.length);
         const track = tracks[randomIndex];
-        if (track) await playSong(getCatalogSongId(track));
-        return;
+        if (track) {
+          success = await playSong(getCatalogSongId(track));
+        }
+      } else {
+        switch (contentType) {
+          case 'albums':
+            success = await playAlbum(contentId, 0, true);
+            break;
+          case 'playlists':
+            success = await playPlaylist(contentId, 0, true);
+            break;
+          default:
+            // This is effectively play
+            success = await (async () => {
+              switch (contentType) {
+                case 'stations': return playStation(contentId);
+                case 'songs': return playSong(contentId);
+                case 'music-videos': return playMusicVideo(contentId);
+                default: return false;
+              }
+            })();
+        }
       }
-      switch (contentType) {
-        case 'albums':
-          await playAlbum(contentId, 0, true);
-          break;
-        case 'playlists':
-          await playPlaylist(contentId, 0, true);
-          break;
-        default:
-          handlePlay();
+      if (success) {
+        openNowPlayingFullscreen();
       }
     };
     action().catch(e => console.warn('[Shuffle]', e));
-    openNowPlayingFullscreen();
-  }, [contentId, contentType, isLibrary, normalized, playAlbum, playPlaylist, playSong, handlePlay, openNowPlayingFullscreen]);
+  }, [contentId, contentType, isLibrary, normalized, playAlbum, playPlaylist, playSong, playStation, playMusicVideo, openNowPlayingFullscreen]);
 
   const handleTrackPress = useCallback(
     (index: number) => {
       const action = async () => {
+        let success = false;
         if (isLibrary && normalized) {
           const track = normalized.tracks[index];
-          if (track) await playSong(getCatalogSongId(track));
-          return;
+          if (track) {
+            success = await playSong(getCatalogSongId(track));
+          }
+        } else {
+          switch (contentType) {
+            case 'albums':
+              success = await playAlbum(contentId, index);
+              break;
+            case 'playlists':
+              success = await playPlaylist(contentId, index);
+              break;
+          }
         }
-        switch (contentType) {
-          case 'albums':
-            await playAlbum(contentId, index);
-            break;
-          case 'playlists':
-            await playPlaylist(contentId, index);
-            break;
+        if (success) {
+          openNowPlayingFullscreen();
         }
       };
       action().catch(e => console.warn('[TrackPress]', e));
-      openNowPlayingFullscreen();
     },
     [contentId, contentType, isLibrary, normalized, playAlbum, playPlaylist, playSong, openNowPlayingFullscreen],
   );

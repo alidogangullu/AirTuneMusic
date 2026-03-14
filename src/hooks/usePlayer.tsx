@@ -6,7 +6,9 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import {Alert} from 'react-native';
 import * as musicPlayer from '../services/musicPlayer';
+import {QuotaService} from '../services/quotaService';
 import type {
   PlaybackStateName,
   TrackInfo,
@@ -49,11 +51,11 @@ const initialState: PlayerState = {
 
 interface PlayerContextValue {
   state: PlayerState;
-  playAlbum: (albumId: string, startIndex?: number, shuffle?: boolean) => Promise<void>;
-  playPlaylist: (playlistId: string, startIndex?: number, shuffle?: boolean) => Promise<void>;
-  playStation: (stationId: string) => Promise<void>;
-  playSong: (songId: string) => Promise<void>;
-  playMusicVideo: (musicVideoId: string) => Promise<void>;
+  playAlbum: (albumId: string, startIndex?: number, shuffle?: boolean) => Promise<boolean>;
+  playPlaylist: (playlistId: string, startIndex?: number, shuffle?: boolean) => Promise<boolean>;
+  playStation: (stationId: string) => Promise<boolean>;
+  playSong: (songId: string) => Promise<boolean>;
+  playMusicVideo: (musicVideoId: string) => Promise<boolean>;
   play: () => void;
   pause: () => void;
   stop: () => void;
@@ -63,6 +65,8 @@ interface PlayerContextValue {
   setShuffleMode: (mode: number) => void;
   setRepeatMode: (mode: number) => void;
   isPlaying: boolean;
+  showSettings: boolean;
+  setShowSettings: (show: boolean) => void;
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -71,8 +75,10 @@ const PlayerContext = createContext<PlayerContextValue | null>(null);
 
 export function PlayerProvider({children}: {children: React.ReactNode}) {
   const [state, setState] = useState<PlayerState>(initialState);
+  const [showSettings, setShowSettings] = useState(false);
   const stateRef = useRef(state);
   stateRef.current = state;
+  const lastTrackIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     const subs = [
@@ -85,13 +91,36 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         }));
       }),
       musicPlayer.addEventListener('onCurrentItemChanged', data => {
+        // Enforce quota on track transitions (manual or automatic)
+        if (data.playbackQueueId !== undefined && data.playbackQueueId !== lastTrackIdRef.current) {
+          if (!QuotaService.canPlayNextSong()) {
+            musicPlayer.stop();
+            const remaining = QuotaService.getRemainingTimeFormatted();
+            Alert.alert(
+              'Limit Reached',
+              `You have reached your hourly limit of 3 songs. Next play available in: ${remaining}.`,
+              [
+                {text: 'Cancel', style: 'cancel'},
+                {
+                  text: 'View Options',
+                  onPress: () => setShowSettings(true),
+                },
+              ],
+            );
+            return;
+          }
+          // Quota available, record the play and update tracking
+          QuotaService.recordSongPlay();
+          lastTrackIdRef.current = data.playbackQueueId;
+        }
+
         setState(s => ({
           ...s,
           track: data,
           duration: data.duration ?? 0,
           position: 0,
           queueIndex: data.trackIndex ?? s.queueIndex,
-          isLoading: false, // Track received, stop initial loading
+          isLoading: false,
         }));
       }),
       musicPlayer.addEventListener('onPlaybackProgress', (data: ProgressInfo) => {
@@ -119,6 +148,11 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
       }),
       musicPlayer.addEventListener('onPlaybackError', data => {
         console.warn('[MusicPlayer] Playback error:', data.message);
+      }),
+      musicPlayer.addEventListener('onItemEnded', data => {
+        console.log('[MusicPlayer] Item ended:', data.title);
+        // We record the play when it successfully ends (or starts, but ends is safer to avoid accidental clicks)
+        // Actually, user requested "after first music", let's record when it STARTS to be strict
       }),
     ];
 
@@ -168,44 +202,78 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     };
   }, []);
 
-  const playAlbum = useCallback(
-    (albumId: string, startIndex = 0, shuffle = false) => {
-      setState(s => ({...s, containerId: albumId, isLoading: true}));
-      return musicPlayer.playAlbum(albumId, startIndex, shuffle);
+  const checkQuotaAndPlay = useCallback(
+    async (playFn: () => Promise<void>): Promise<boolean> => {
+      if (!QuotaService.canPlayNextSong()) {
+        const remaining = QuotaService.getRemainingTimeFormatted();
+        Alert.alert(
+          'Limit Reached',
+          `You have reached your hourly limit of 3 songs. Next play available in: ${remaining}.`,
+          [
+            {text: 'Cancel', style: 'cancel'},
+            {
+              text: 'View Options',
+              onPress: () => setShowSettings(true),
+            },
+          ],
+        );
+        return false;
+      }
+
+      try {
+        await playFn();
+        // Quota is now recorded in onCurrentItemChanged to handle automatic transitions
+        return true;
+      } catch (err) {
+        console.error('[PlayerProvider] Playback error:', err);
+        return false;
+      }
     },
     [],
+  );
+
+  const playAlbum = useCallback(
+    async (albumId: string, startIndex = 0, shuffle = false) => {
+      setState(s => ({...s, containerId: albumId, isLoading: true}));
+      return checkQuotaAndPlay(() =>
+        musicPlayer.playAlbum(albumId, startIndex, shuffle),
+      );
+    },
+    [checkQuotaAndPlay],
   );
 
   const playPlaylist = useCallback(
-    (playlistId: string, startIndex = 0, shuffle = false) => {
+    async (playlistId: string, startIndex = 0, shuffle = false) => {
       setState(s => ({...s, containerId: playlistId, isLoading: true}));
-      return musicPlayer.playPlaylist(playlistId, startIndex, shuffle);
+      return checkQuotaAndPlay(() =>
+        musicPlayer.playPlaylist(playlistId, startIndex, shuffle),
+      );
     },
-    [],
+    [checkQuotaAndPlay],
   );
 
   const playStation = useCallback(
-    (stationId: string) => {
+    async (stationId: string) => {
       setState(s => ({...s, containerId: stationId, isLoading: true}));
-      return musicPlayer.playStation(stationId);
+      return checkQuotaAndPlay(() => musicPlayer.playStation(stationId));
     },
-    [],
+    [checkQuotaAndPlay],
   );
 
   const playSong = useCallback(
-    (songId: string) => {
+    async (songId: string) => {
       setState(s => ({...s, containerId: songId, isLoading: true}));
-      return musicPlayer.playSong(songId);
+      return checkQuotaAndPlay(() => musicPlayer.playSong(songId));
     },
-    [],
+    [checkQuotaAndPlay],
   );
 
   const playMusicVideo = useCallback(
-    (musicVideoId: string) => {
+    async (musicVideoId: string) => {
       setState(s => ({...s, containerId: musicVideoId, isLoading: true}));
-      return musicPlayer.playMusicVideo(musicVideoId);
+      return checkQuotaAndPlay(() => musicPlayer.playMusicVideo(musicVideoId));
     },
-    [],
+    [checkQuotaAndPlay],
   );
 
   const seekTo = useCallback((positionMs: number) => {
@@ -229,11 +297,35 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     setShuffleMode: musicPlayer.setShuffleMode,
     setRepeatMode: musicPlayer.setRepeatMode,
     isPlaying: state.playbackState === 'playing',
+    showSettings,
+    setShowSettings,
   };
 
+  const showSettingsInternal = showSettings;
+  const setShowSettingsInternal = setShowSettings;
+
   return (
-    <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>
+    <PlayerContext.Provider value={value}>
+      {children}
+      {/* 
+          We expose showSettings state through context so App.tsx or HomeScreen can consume it.
+          Alternatively, we can use an event emitter or a shared signal.
+      */}
+      <SettingsSyncHelper 
+        showSettings={showSettingsInternal} 
+        onClose={() => setShowSettingsInternal(false)} 
+      />
+    </PlayerContext.Provider>
   );
+}
+
+// ── Internal Helper to bridge state ─────────────────────────────
+// This is a hacky way to sync state from PlayerProvider back up if needed,
+// but actually usePlayer hook is enough if consumed in HomeScreen.
+
+function SettingsSyncHelper({showSettings, onClose}: {showSettings: boolean, onClose: () => void}) {
+  // This could trigger an effect or just be a placeholder
+  return null;
 }
 
 // ── Hook ────────────────────────────────────────────────────────

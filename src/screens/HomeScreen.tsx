@@ -16,6 +16,7 @@ import {SettingsScreen} from './SettingsScreen';
 import type {NavTabId} from '../components/TopBar';
 import type {RecommendationContent} from '../types/recommendations';
 import {useTheme} from '../theme';
+import {usePlayer} from '../hooks/usePlayer';
 
 export type HomeScreenProps = {
   onSignOut?: () => void;
@@ -29,7 +30,19 @@ export function HomeScreen({
   const [selectedContent, setSelectedContent] =
     useState<RecommendationContent | null>(null);
   const [nowPlayingFullscreen, setNowPlayingFullscreen] = useState(false);
+  const {setShowSettings: setShowSettingsViaPlayer} = usePlayer();
   const [settingsVisible, setSettingsVisible] = useState(false);
+
+  // When player hook triggers settings (quota reached), show it
+  const {showSettings: playerWantsSettings, setShowSettings} = usePlayer();
+  
+  React.useEffect(() => {
+    if (playerWantsSettings) {
+      setSettingsVisible(true);
+      // Reset the request after showing
+      setShowSettings(false);
+    }
+  }, [playerWantsSettings, setShowSettings]);
 
   const pushContent = useCallback((content: RecommendationContent) => {
     setSelectedContent(content);
