@@ -17,6 +17,7 @@ import type {NavTabId} from '../components/TopBar';
 import type {RecommendationContent} from '../types/recommendations';
 import {useTheme} from '../theme';
 import {usePlayer} from '../hooks/usePlayer';
+import {IapService} from '../services/iapService';
 
 export type HomeScreenProps = {
   onSignOut?: () => void;
@@ -43,6 +44,19 @@ export function HomeScreen({
       setShowSettings(false);
     }
   }, [playerWantsSettings, setShowSettings]);
+
+  // Handle IAP initialization and check status
+  React.useEffect(() => {
+    IapService.init().then(() => {
+      IapService.checkSubscriptionStatus().catch(err => {
+        console.warn('[Home] Failed to check sub status', err);
+      });
+    });
+
+    return () => {
+      IapService.end();
+    };
+  }, []);
 
   const pushContent = useCallback((content: RecommendationContent) => {
     setSelectedContent(content);

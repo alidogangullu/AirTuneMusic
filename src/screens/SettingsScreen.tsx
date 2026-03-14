@@ -10,6 +10,7 @@ import { SettingsMenuItem } from '../components/SettingsMenuItem';
 import { GradientBackground } from '../components/GradientBackground';
 import { useTheme } from '../theme';
 import { QuotaService } from '../services/quotaService';
+import { IapService } from '../services/iapService';
 import { spacing, radius } from '../theme/layout';
 
 export type SettingsScreenProps = {
@@ -25,30 +26,47 @@ export function SettingsScreen({
 }: Readonly<SettingsScreenProps>): React.JSX.Element {
   const { colors } = useTheme();
 
+  const handleSubscriptionPress = async () => {
+    const isPro = QuotaService.isProUser();
+
+    if (isPro) {
+      Alert.alert('AirTune Pro', 'You have an active AirTune Pro subscription. Enjoy unlimited music!');
+      return;
+    }
+
+    const usage = QuotaService.getUsageInfo();
+    const remaining = QuotaService.getRemainingTimeFormatted();
+
+    Alert.alert(
+      'AirTune Pro',
+      `Upgrade to Pro to remove the hourly limit (3 songs/hour).\n\nCurrent Usage: ${usage.used}/${usage.total} songs.\n\nLimit resets in: ${remaining}.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Get Pro (Monthly)',
+          onPress: async () => {
+            try {
+              await IapService.subscribe('pro_monthly');
+              // The purchaseUpdatedListener in HomeScreen will catch the success and update the status
+              Alert.alert('Processing', 'Your purchase is being processed.');
+            } catch (err: any) {
+              if (err.code !== 'E_USER_CANCELLED') {
+                Alert.alert('Error', 'Unable to initiate purchase. Please try again.');
+              }
+            }
+          }
+        },
+      ]
+    );
+  };
+
   const handleItemPress = (item: string) => {
     if (item === 'Sign Out') {
       onSignOut?.();
     } else if (item === 'Subscription') {
-      const usage = QuotaService.getUsageInfo();
-      const isPro = QuotaService.isProUser();
-      const remaining = QuotaService.getRemainingTimeFormatted();
-
-      Alert.alert(
-        'Subscription & Usage',
-        isPro
-          ? 'You have an active AirTune Pro subscription. Enjoy unlimited music!'
-          : `Usage: ${usage.used}/${usage.total} songs this hour.\n\n${
-              usage.used >= usage.total
-                ? `Limit reached. Next song available in: ${remaining}.`
-                : 'You are using the free version.'
-            }`,
-        [
-          { text: 'OK', style: 'default' },
-          !isPro ? { text: 'Get Pro', onPress: () => Alert.alert('Payment', 'In-app purchases coming soon!') } : undefined,
-        ].filter(Boolean) as any,
-      );
+      handleSubscriptionPress();
     } else if (item === 'Support') {
-      Alert.alert('Support', 'Contact: gullualidogan@gmail.com');
+      Alert.alert('Support', 'gullualidogan@gmail.com');
     } else if (item === 'About') {
       Alert.alert(
         'About AirTune Music',

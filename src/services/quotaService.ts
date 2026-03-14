@@ -1,6 +1,6 @@
-import {createMMKV} from 'react-native-mmkv';
+import { createMMKV } from 'react-native-mmkv';
 
-const storage = createMMKV({id: 'quota-storage'});
+const storage = createMMKV({ id: 'quota-storage' });
 
 const KEYS = {
   PLAY_TIMESTAMPS: 'play_timestamps',
@@ -12,8 +12,7 @@ const HOUR_MS = 60 * 60 * 1000;
 
 export class QuotaService {
   /**
-   * Check if user has active Pro subscription.
-   * For now, this is a local flag.
+   * Check if user has active Pro subscription
    */
   static isProUser(): boolean {
     return storage.getBoolean(KEYS.IS_PRO) ?? false;
@@ -32,7 +31,7 @@ export class QuotaService {
   private static getRecentPlayTimestamps(): number[] {
     const raw = storage.getString(KEYS.PLAY_TIMESTAMPS);
     if (!raw) return [];
-    
+
     try {
       const timestamps: number[] = JSON.parse(raw);
       const now = Date.now();
@@ -61,7 +60,7 @@ export class QuotaService {
 
     const recentPlays = this.getRecentPlayTimestamps();
     recentPlays.push(Date.now());
-    
+
     // We only need to keep up to HOURLY_LIMIT timestamps
     const toSave = recentPlays.slice(-HOURLY_LIMIT);
     storage.set(KEYS.PLAY_TIMESTAMPS, JSON.stringify(toSave));
@@ -81,7 +80,7 @@ export class QuotaService {
     const oldestPlay = recentPlays[0];
     const now = Date.now();
     const waitTime = HOUR_MS - (now - oldestPlay);
-    
+
     return Math.max(0, waitTime);
   }
 
@@ -100,9 +99,9 @@ export class QuotaService {
   /**
    * Returns how many slots are used out of the limit.
    */
-  static getUsageInfo(): {used: number; total: number} {
-    if (this.isProUser()) return {used: 0, total: HOURLY_LIMIT};
+  static getUsageInfo(): { used: number; total: number } {
+    if (this.isProUser()) return { used: 0, total: HOURLY_LIMIT };
     const recentPlays = this.getRecentPlayTimestamps();
-    return {used: recentPlays.length, total: HOURLY_LIMIT};
+    return { used: recentPlays.length, total: HOURLY_LIMIT };
   }
 }
