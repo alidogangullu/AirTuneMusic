@@ -17,34 +17,14 @@ import {ThemeProvider, useTheme} from './src/theme';
 import { AppleMusicAuthScreen } from './src/screens/AppleMusicAuthScreen';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
-import { checkAppVersion, VersionCheckResult } from './src/services/versionService';
 import { ForceUpdateScreen } from './src/screens/ForceUpdateScreen';
+import {AppStartupProvider, useAppStartup} from './src/components/AppStartupProvider';
 
 function AppContent(): React.JSX.Element {
   const {colors} = useTheme();
-  const [hasToken, setHasToken] = useState<boolean | null>(null);
-  const [updateInfo, setUpdateInfo] = useState<VersionCheckResult | null>(null);
+  const {isInitialized, hasToken, setHasToken, updateInfo} = useAppStartup();
 
-  useEffect(() => {
-    // Versiyon kontrolü
-    checkAppVersion().then(result => {
-      setUpdateInfo(result);
-    });
-
-    // Token kontrolü
-    loadMusicUserToken().then(token =>
-      setHasToken(token !== null && token.length > 0),
-    );
-
-    // MusicPlayer konfigürasyonunu başlat
-    import('./src/services/musicPlayer').then(mp => {
-      mp?.ensureConfigured?.().catch(e => {
-        console.warn('[App] MusicPlayer konfigürasyon hatası:', e);
-      });
-    });
-  }, []);
-
-  if (hasToken === null || updateInfo === null) {
+  if (!isInitialized || updateInfo === null) {
     const LoadingIndicator = require('./src/components/LoadingIndicator').LoadingIndicator;
     return <LoadingIndicator />;
   }
@@ -98,9 +78,11 @@ function App(): React.JSX.Element {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <PlayerProvider>
-          <AppContent />
-        </PlayerProvider>
+        <AppStartupProvider>
+          <PlayerProvider>
+            <AppContent />
+          </PlayerProvider>
+        </AppStartupProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
