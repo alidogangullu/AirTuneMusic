@@ -7,10 +7,12 @@ const KEYS = {
   IS_PRO: 'is_pro',
 };
 
-const HOURLY_LIMIT = 100; // reduce to 3 songs
 const HOUR_MS = 60 * 60 * 1000;
+const DEFAULT_LIMIT = 10;
 
 export class QuotaService {
+  static HOURLY_LIMIT = DEFAULT_LIMIT;
+
   /**
    * Check if user has active Pro subscription
    */
@@ -49,7 +51,9 @@ export class QuotaService {
     if (this.isProUser()) return true;
 
     const recentPlays = this.getRecentPlayTimestamps();
-    return recentPlays.length < HOURLY_LIMIT;
+    const canPlay = recentPlays.length < this.HOURLY_LIMIT;
+    console.log(`[QuotaService] canPlayNextSong: ${recentPlays.length}/${this.HOURLY_LIMIT} -> ${canPlay}`);
+    return canPlay;
   }
 
   /**
@@ -62,7 +66,7 @@ export class QuotaService {
     recentPlays.push(Date.now());
 
     // We only need to keep up to HOURLY_LIMIT timestamps
-    const toSave = recentPlays.slice(-HOURLY_LIMIT);
+    const toSave = recentPlays.slice(-this.HOURLY_LIMIT);
     storage.set(KEYS.PLAY_TIMESTAMPS, JSON.stringify(toSave));
   }
 
@@ -100,8 +104,8 @@ export class QuotaService {
    * Returns how many slots are used out of the limit.
    */
   static getUsageInfo(): { used: number; total: number } {
-    if (this.isProUser()) return { used: 0, total: HOURLY_LIMIT };
+    if (this.isProUser()) return { used: 0, total: this.HOURLY_LIMIT };
     const recentPlays = this.getRecentPlayTimestamps();
-    return { used: recentPlays.length, total: HOURLY_LIMIT };
+    return { used: recentPlays.length, total: this.HOURLY_LIMIT };
   }
 }

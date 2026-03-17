@@ -98,7 +98,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
             const remaining = QuotaService.getRemainingTimeFormatted();
             Alert.alert(
               'Limit Reached',
-              `You have reached your hourly limit of 3 songs. Next play available in: ${remaining}.`,
+              `You have reached your hourly limit of ${QuotaService.HOURLY_LIMIT} songs. Next play available in: ${remaining}.`,
               [
                 {text: 'Cancel', style: 'cancel'},
                 {
@@ -208,7 +208,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         const remaining = QuotaService.getRemainingTimeFormatted();
         Alert.alert(
           'Limit Reached',
-          `You have reached your hourly limit of 3 songs. Next play available in: ${remaining}.`,
+          `You have reached your hourly limit of ${QuotaService.HOURLY_LIMIT} songs. Next play available in: ${remaining}.`,
           [
             {text: 'Cancel', style: 'cancel'},
             {

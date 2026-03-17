@@ -39,7 +39,7 @@ export function SettingsScreen({
 
     Alert.alert(
       'AirTune Pro',
-      `Upgrade to Pro to remove the hourly limit (3 songs/hour).\n\nCurrent Usage: ${usage.used}/${usage.total} songs.\n\nLimit resets in: ${remaining}.`,
+      `Upgrade to Pro to remove the hourly limit (${QuotaService.HOURLY_LIMIT} songs/hour).\n\nCurrent Usage: ${usage.used}/${usage.total} songs.\n\nLimit resets in: ${remaining}.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
