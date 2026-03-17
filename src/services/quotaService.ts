@@ -7,7 +7,7 @@ const KEYS = {
   IS_PRO: 'is_pro',
 };
 
-const HOURLY_LIMIT = 3;
+const HOURLY_LIMIT = 100; // reduce to 3 songs
 const HOUR_MS = 60 * 60 * 1000;
 
 export class QuotaService {

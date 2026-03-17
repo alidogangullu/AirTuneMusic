@@ -28,6 +28,7 @@ export async function waitForToken(): Promise<string | null> {
 
 export function setMusicUserToken(token: string | null): void {
   musicUserToken = token;
+  isInitialized = true; // Mark as initialized so waitForToken doesn't reload
   if (token) {
     storage.set(STORAGE_KEY, token);
   } else {

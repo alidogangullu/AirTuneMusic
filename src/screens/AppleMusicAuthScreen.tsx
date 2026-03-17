@@ -331,7 +331,10 @@ export function AppleMusicAuthScreen({
     const unsubscribe = TVLinkServer.onTokenReceived((event) => {
       if (event.code === linkCode) {
         setMusicUserToken(event.musicUserToken);
-        import('../services/musicPlayer').then(mp => mp.syncTokens());
+        import('../services/musicPlayer').then(mp => {
+          mp.release(); // Force recreation of player with new token
+          mp.syncTokens();
+        });
         setTokenPreview(
           event.musicUserToken.length > 20
             ? `${event.musicUserToken.slice(0, 20)}...`
@@ -406,14 +409,22 @@ export function AppleMusicAuthScreen({
     startTvLink();
   };
 
-
-
   const handleSignOut = () => {
-    clearMusicUserToken();
-    onSignOut?.();
-    setMessage('');
-    setTokenPreview('');
-    startTvLink();
+    setRestoring(true);
+    setTimeout(async () => {
+      const mp = await import('../services/musicPlayer');
+      await mp.handleLogout();
+      onSignOut?.();
+      setMessage('');
+      setTokenPreview('');
+      startTvLink();
+      // startTvLink will set pairingMode(true), which keeps the loading screen visible 
+      // until startPolling/initServer settle.
+      // But we need to ensure restoring is false at the end if we want to see the QR.
+      // startPolling usually doesn't set restoring(false), initServer does on mount.
+      // Let's manually set restoring(false) after a short delay for the visual.
+      setRestoring(false);
+    }, 800);
   };
 
   const isCodeScreen = restoring || pairingMode;

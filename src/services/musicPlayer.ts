@@ -123,6 +123,11 @@ export async function syncTokens(): Promise<void> {
 export async function handleLogout(): Promise<void> {
   const {clearMusicUserToken} = await import('../api/apple-music/musicUserToken');
   const {clearRecentSearchesGlobal} = await import('../hooks/useRecentSearches');
+  try {
+    stop();
+  } catch (e) {
+    console.warn('Failed to stop music during logout:', e);
+  }
   clearMusicUserToken();
   clearRecentSearchesGlobal();
   await clearTokens();
