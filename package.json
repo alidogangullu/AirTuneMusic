@@ -22,7 +22,9 @@
     "react-native-linear-gradient": "^2.8.3",
     "react-native-mmkv": "^4.2.0",
     "react-native-nitro-modules": "^0.35.0",
-    "react-native-safe-area-context": "^5.5.2"
+    "react-native-qrcode-svg": "^6.3.21",
+    "react-native-safe-area-context": "^5.5.2",
+    "react-native-svg": "^15.15.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

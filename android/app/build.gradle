@@ -117,9 +117,19 @@ dependencies {
     // Android Palette — extract dominant colors from artwork
     implementation("androidx.palette:palette:1.0.0")
 
+
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {
         implementation jscFlavor
     }
 }
+
+// Custom task to copy tv-link-page to assets
+task copyTVLinkAssets(type: Copy) {
+    from "../../tv-link-page"
+    exclude "server.mjs"
+    into "src/main/assets/tv-link-page"
+}
+
+preBuild.dependsOn(copyTVLinkAssets)

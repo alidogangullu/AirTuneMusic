@@ -9,11 +9,14 @@ import {
   Text,
   View,
 } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 import {
   clearMusicUserToken,
   loadMusicUserToken,
   setMusicUserToken,
+  getDeveloperToken,
 } from '../api/apple-music';
+import * as TVLinkServer from '../services/tvLinkServer';
 import type { AppColors } from '../theme/colors';
 import { useTheme } from '../theme';
 import { radius, spacing, buttonMinHeight } from '../theme/layout';
@@ -35,6 +38,8 @@ function formatCodeForDisplay(code: string): string {
 }
 
 type Status = 'idle' | 'success' | 'error';
+
+const LOCAL_SERVER_PORT = 8080;
 
 function startPolling(
   code: string,
@@ -63,7 +68,7 @@ function startPolling(
           setMusicUserToken(data.musicUserToken);
           // Sync new token to native player immediately
           import('../services/musicPlayer').then(mp => mp.syncTokens());
-          
+
           // For development: log full Music User Token so it can be copied
           // to Postman or other tools. Remove before production if needed.
           console.log('Music User Token received:', data.musicUserToken);
@@ -96,7 +101,7 @@ function makeStyles(c: AppColors) {
     },
     codeScreenInner: {
       width: '100%',
-      maxWidth: 520,
+      maxWidth: 700,
       flexShrink: 1,
       alignItems: 'center',
       paddingHorizontal: spacing.xxl,
@@ -242,10 +247,11 @@ function makeStyles(c: AppColors) {
       marginBottom: spacing.xs,
     },
     visitUrl: {
-      fontSize: 20,
-      fontWeight: '700',
-      color: '#f0535b',
-      letterSpacing: -0.5,
+      fontSize: 14,
+      fontWeight: '500',
+      color: c.textSecondary,
+      letterSpacing: -0.2,
+      opacity: 0.8,
     },
     getNewCodeBtn: {
       flexDirection: 'row',
@@ -269,6 +275,22 @@ function makeStyles(c: AppColors) {
     getNewCodeBtnIconFocused: { color: '#FFFFFF' },
     getNewCodeBtnText: { fontSize: 16, fontWeight: '700', color: '#f0535b' },
     getNewCodeBtnTextFocused: { color: '#FFFFFF' },
+    qrContainer: {
+      backgroundColor: '#FFFFFF',
+      padding: spacing.md,
+      borderRadius: radius.md,
+      marginBottom: spacing.xl,
+    },
+    authContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xl,
+      marginTop: spacing.md,
+    },
+    textColumns: {
+      flex: 1,
+      alignItems: 'center',
+    },
   });
 }
 
@@ -290,11 +312,40 @@ export function AppleMusicAuthScreen({
   const [linkCode, setLinkCode] = useState<string>(() => generateLinkCode());
   const [restoring, setRestoring] = useState(true);
   const [newCodeBtnFocused, setNewCodeBtnFocused] = useState(false);
+  const [localServerIp, setLocalServerIp] = useState<string>('');
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+
+    const initServer = async () => {
+      try {
+        const devToken = await getDeveloperToken();
+        const ip = await TVLinkServer.startLocalServer(devToken, LOCAL_SERVER_PORT);
+        if (!cancelled) setLocalServerIp(ip);
+      } catch (err) {
+        console.error('Failed to start local server:', err);
+      }
+    };
+
+    const unsubscribe = TVLinkServer.onTokenReceived((event) => {
+      if (event.code === linkCode) {
+        setMusicUserToken(event.musicUserToken);
+        import('../services/musicPlayer').then(mp => mp.syncTokens());
+        setTokenPreview(
+          event.musicUserToken.length > 20
+            ? `${event.musicUserToken.slice(0, 20)}...`
+            : event.musicUserToken,
+        );
+        setPairingMode(false);
+        setStatus('success');
+        setMessage('Linked! Token received.');
+        onAuthSuccess?.();
+      }
+    });
+
     (async () => {
+      await initServer();
       const saved = await loadMusicUserToken();
       if (cancelled) {
         return;
@@ -307,6 +358,7 @@ export function AppleMusicAuthScreen({
         setMessage('');
         return;
       }
+      // Start polling as fallback
       startPolling(
         linkCode,
         pollRef,
@@ -319,9 +371,12 @@ export function AppleMusicAuthScreen({
     })();
     return () => {
       cancelled = true;
+      unsubscribe();
       if (pollRef.current) {
         clearInterval(pollRef.current);
       }
+      // We don't stop the server here to allow re-entry, 
+      // but we could stop it in componentWillUnmount if desired.
     };
     // Only run once on mount: restore saved token or start code polling.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -389,22 +444,34 @@ export function AppleMusicAuthScreen({
                   Connect to Apple Music
                 </Text>
                 <Text style={styles.glassCardSubtitle}>
-                  Open the URL on your phone or computer and enter the code
-                  below
+                  <Text style={{ color: '#f0535b', fontWeight: 'bold' }}>Scan the QR code</Text> to connect, or visit the URL and enter the code below
                 </Text>
-                <View style={styles.codeDisplayBox} focusable={false}>
-                  <Text
-                    style={styles.codeDisplayText}
-                    selectable={false}
-                    numberOfLines={1}>
-                    {formatCodeForDisplay(linkCode)}
-                  </Text>
-                </View>
-                <View style={styles.visitBlock} focusable={false}>
-                  <Text style={styles.visitLabel}>Visit</Text>
-                  <Text style={styles.visitUrl} selectable={false}>
-                    {TV_LINK_DISPLAY}
-                  </Text>
+                <View style={styles.authContainer} focusable={false}>
+                  <View style={styles.qrContainer} focusable={false}>
+                    <QRCode
+                      value={`http://${localServerIp || '127.0.0.1'}:${LOCAL_SERVER_PORT}/tv?code=${linkCode}`}
+                      size={180}
+                      backgroundColor="white"
+                      color="black"
+                    />
+                  </View>
+
+                  <View style={styles.textColumns} focusable={false}>
+                    <View style={styles.codeDisplayBox} focusable={false}>
+                      <Text
+                        style={styles.codeDisplayText}
+                        selectable={false}
+                        numberOfLines={1}>
+                        {formatCodeForDisplay(linkCode)}
+                      </Text>
+                    </View>
+                    <View style={styles.visitBlock} focusable={false}>
+                      <Text style={styles.visitLabel}>Visit</Text>
+                      <Text style={styles.visitUrl} selectable={false}>
+                        {localServerIp ? `http://${localServerIp}:${LOCAL_SERVER_PORT}/tv` : TV_LINK_DISPLAY}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
                 <Pressable
                   style={({ focused }) => [
