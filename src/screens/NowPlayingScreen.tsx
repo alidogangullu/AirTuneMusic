@@ -13,6 +13,7 @@ import {
   Animated,
   BackHandler,
   Image,
+  Modal,
   Pressable,
   StyleSheet,
   Text,
@@ -23,7 +24,10 @@ import LinearGradient from 'react-native-linear-gradient';
 import { NowPlayingBars } from '../components/NowPlayingBars';
 import { useImageColors } from '../hooks/useImageColors';
 import { usePlayer } from '../hooks/usePlayer';
-import { spacing } from '../theme/layout';
+import { ContentNavigationContext } from '../navigation';
+import { radius, spacing } from '../theme/layout';
+import { useStorefront } from '../hooks/useStorefront';
+import { fetchSongDetail } from '../api/apple-music/recommendations';
 
 const SEEK_STEP_MS = 5000;
 
@@ -55,6 +59,10 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
   const [isFocused, setIsFocused] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [pendingSeekMs, setPendingSeekMs] = useState(0);
+  const [showInfo, setShowInfo] = useState(false);
+
+  const { pushContent } = React.useContext(ContentNavigationContext);
+  const { storefrontId } = useStorefront();
 
   // Animated values for focus feedback
   const barHeightAnim = useRef(new Animated.Value(3)).current;
@@ -156,7 +164,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
       return true;
     });
     return () => sub.remove();
-  }, [onBack]);
+  }, [onBack, showInfo]);
 
   // Animate artwork scale on track change
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -250,7 +258,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
         </Animated.View>
 
         {/* Track info below artwork, aligned with artwork width */}
-        <View style={styles.meta}>
+        <View style={[styles.meta, { opacity: showInfo ? 0 : 1 }]}>
           <View style={styles.titleRow}>
             <NowPlayingBars playing={isPlaying && !state.isLoading && !state.buffering} color={accentColor} size={16} />
             <Text style={styles.title} numberOfLines={1}>
@@ -263,107 +271,205 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
         </View>
       </View>
 
-      {/* Progress bar — full width at screen bottom */}
-      <Pressable
-        style={styles.progressContainer}
-        focusable={true}
-        hasTVPreferredFocus={false}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        onPress={handlePress}
-        accessibilityLabel="Progress bar"
-        accessibilityRole="adjustable">
-        {({ focused }) => (
-          <>
-            <Animated.View
-              style={[
-                styles.progressTrack,
-                { height: barHeightAnim, overflow: 'visible' },
-                focused && styles.progressTrackFocused,
-              ]}>
-              {/* Clipped content wrapper */}
-              <View style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 3 }]}>
-                {/* Playback fill */}
-                <View
-                  style={[
-                    styles.progressFill,
-                    { width: `${progress * 100}%`, backgroundColor: accentColor },
-                  ]}
-                />
-                {/* Scrub indicator (only when scrubbing) */}
-                {isScrubbing && (
-                  <View
-                    style={[
-                      styles.progressFill,
-                      styles.scrubFill,
-                      { width: `${scrubProgress * 100}%` },
-                    ]}
-                  />
-                )}
-                {/* Shimmer effect for buffering */}
-                {(state.buffering || state.isLoading) && (
-                  <Animated.View
-                    style={[
-                      styles.shimmerContainer,
-                      {
-                        transform: [
-                          {
-                            translateX: shimmerAnim.interpolate({
-                              inputRange: [-1, 1],
-                              outputRange: [-250, 1200],
-                            }),
-                          },
-                        ],
-                      },
-                    ]}
-                  >
-                    <LinearGradient
-                      colors={['transparent', 'rgba(255,255,255,0.4)', 'transparent']}
-                      start={{ x: 0, y: 0.5 }}
-                      end={{ x: 1, y: 0.5 }}
-                      style={styles.shimmerGradient}
-                    />
-                  </Animated.View>
-                )}
-              </View>
-
-              {/* Playback knob (Visible outside clipped track) */}
-              <Animated.View
-                style={[
-                  styles.progressKnob,
-                  {
-                    left: `${progress * 100}%` as unknown as number,
-                    backgroundColor: accentColor,
-                    width: knobSizeAnim,
-                    height: knobSizeAnim,
-                    borderRadius: Animated.divide(knobSizeAnim, 2) as unknown as number,
-                    marginLeft: Animated.multiply(knobSizeAnim, -0.5) as unknown as number,
-                    top: Animated.multiply(Animated.subtract(knobSizeAnim, barHeightAnim), -0.5) as unknown as number,
-                  },
-                ]}
+      {/* Info Modal Panel */}
+      <Modal
+        visible={showInfo}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowInfo(false)}>
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowInfo(false)}
+          focusable={false}>
+          <View style={styles.infoMenuContainer}>
+            <View style={styles.infoCard}>
+              <Image
+                source={{ uri: track.artworkUrl ?? '' }}
+                style={styles.infoArtwork}
               />
-              {/* Scrub knob (pending position) */}
-              {isScrubbing && (
+              <View style={styles.infoMeta}>
+                <Text style={styles.infoTitle} numberOfLines={1}>
+                  {track.title}
+                </Text>
+                <Text style={styles.infoArtistAlbum} numberOfLines={1}>
+                  {track.artistName} — {track.albumTitle}
+                </Text>
+                <Text style={styles.infoDuration}>
+                  {Math.floor(track.duration / 60000)} min, {Math.floor((track.duration % 60000) / 1000)} secs
+                </Text>
+              </View>
+              <Pressable
+                style={({ focused }) => [
+                  styles.gotoAlbumButton,
+                  focused && styles.gotoAlbumButtonFocused,
+                ]}
+                hasTVPreferredFocus={showInfo}
+                onPress={async () => {
+                  if (track?.id) {
+                    try {
+                      const detail = await fetchSongDetail(track.id, storefrontId);
+                      const albumId = detail.data[0]?.relationships?.albums?.data?.[0]?.id;
+
+                      if (albumId) {
+                        pushContent({
+                          id: albumId,
+                          type: 'albums',
+                          attributes: {
+                            name: track.albumTitle ?? '',
+                          },
+                        });
+                        setShowInfo(false); // Close the info card
+                      }
+                    } catch (e) {
+                      console.warn('NowPlayingScreen: Failed to fetch album ID:', e);
+                      // Fallback: try containerId if available
+                      if (state.containerId) {
+                        pushContent({
+                          id: state.containerId,
+                          type: 'albums',
+                          attributes: {
+                            name: track.albumTitle ?? '',
+                          },
+                        });
+                        setShowInfo(false);
+                      }
+                    }
+                  }
+                }}
+                focusable={true}>
+                {({ focused }) => (
+                  <Text style={[styles.gotoAlbumText, focused && styles.gotoAlbumTextFocused]}>
+                    Go to Album
+                  </Text>
+                )}
+              </Pressable>
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* Progress and Info footer — at screen bottom */}
+      <View style={styles.footerContainer}>
+        {/* We no longer render showInfo here directly; it's in the Modal above */}
+        {!showInfo && (
+          <>
+            <Pressable
+              style={styles.progressContainer}
+              focusable={true}
+              hasTVPreferredFocus={false}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              onPress={handlePress}
+              accessibilityLabel="Progress bar"
+              accessibilityRole="adjustable">
+              {({ focused }) => (
                 <Animated.View
                   style={[
-                    styles.progressKnob,
-                    {
-                      left: `${scrubProgress * 100}%` as unknown as number,
-                      backgroundColor: '#fff',
-                      width: knobSizeAnim,
-                      height: knobSizeAnim,
-                      borderRadius: Animated.divide(knobSizeAnim, 2) as unknown as number,
-                      marginLeft: Animated.multiply(knobSizeAnim, -0.5) as unknown as number,
-                      top: Animated.multiply(Animated.subtract(knobSizeAnim, barHeightAnim), -0.5) as unknown as number,
-                    },
-                  ]}
-                />
+                    styles.progressTrack,
+                    { height: barHeightAnim, overflow: 'visible' },
+                    focused && styles.progressTrackFocused,
+                  ]}>
+                  {/* Clipped content wrapper */}
+                  <View style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 3 }]}>
+                    {/* Playback fill */}
+                    <View
+                      style={[
+                        styles.progressFill,
+                        { width: `${progress * 100}%`, backgroundColor: accentColor },
+                      ]}
+                    />
+                    {/* Scrub indicator (only when scrubbing) */}
+                    {isScrubbing && (
+                      <View
+                        style={[
+                          styles.progressFill,
+                          styles.scrubFill,
+                          { width: `${scrubProgress * 100}%` },
+                        ]}
+                      />
+                    )}
+                    {/* Shimmer effect for buffering */}
+                    {(state.buffering || state.isLoading) && (
+                      <Animated.View
+                        style={[
+                          styles.shimmerContainer,
+                          {
+                            transform: [
+                              {
+                                translateX: shimmerAnim.interpolate({
+                                  inputRange: [-1, 1],
+                                  outputRange: [-250, 1200],
+                                }),
+                              },
+                            ],
+                          },
+                        ]}
+                      >
+                        <LinearGradient
+                          colors={['transparent', 'rgba(255,255,255,0.4)', 'transparent']}
+                          start={{ x: 0, y: 0.5 }}
+                          end={{ x: 1, y: 0.5 }}
+                          style={styles.shimmerGradient}
+                        />
+                      </Animated.View>
+                    )}
+                  </View>
+
+                  {/* Playback knob */}
+                  <Animated.View
+                    style={[
+                      styles.progressKnob,
+                      {
+                        left: `${progress * 100}%` as unknown as number,
+                        backgroundColor: accentColor,
+                        width: knobSizeAnim,
+                        height: knobSizeAnim,
+                        borderRadius: Animated.divide(knobSizeAnim, 2) as unknown as number,
+                        marginLeft: Animated.multiply(knobSizeAnim, -0.5) as unknown as number,
+                        top: Animated.multiply(Animated.subtract(knobSizeAnim, barHeightAnim), -0.5) as unknown as number,
+                      },
+                    ]}
+                  />
+                  {/* Scrub knob */}
+                  {isScrubbing && (
+                    <Animated.View
+                      style={[
+                        styles.progressKnob,
+                        {
+                          left: `${scrubProgress * 100}%` as unknown as number,
+                          backgroundColor: '#fff',
+                          width: knobSizeAnim,
+                          height: knobSizeAnim,
+                          borderRadius: Animated.divide(knobSizeAnim, 2) as unknown as number,
+                          marginLeft: Animated.multiply(knobSizeAnim, -0.5) as unknown as number,
+                          top: Animated.multiply(Animated.subtract(knobSizeAnim, barHeightAnim), -0.5) as unknown as number,
+                        },
+                      ]}
+                    />
+                  )}
+                </Animated.View>
               )}
-            </Animated.View>
+            </Pressable>
+
             <View style={styles.timeRow}>
-              <Text style={styles.timeText}>
-                {isScrubbing ? formatTime(pendingSeekMs) : formatTime(position)}
-              </Text>
+              <View style={styles.timeInfoColumn}>
+                <Text style={styles.timeText}>
+                  {isScrubbing ? formatTime(pendingSeekMs) : formatTime(position)}
+                </Text>
+                <Pressable
+                  style={({ focused }) => [
+                    styles.infoButton,
+                    focused && styles.infoButtonFocused,
+                  ]}
+                  onPress={() => setShowInfo(true)}
+                  focusable={true}>
+                  {({ focused }) => (
+                    <Text style={[styles.infoButtonText, focused && styles.infoButtonTextFocused]}>
+                      Info
+                    </Text>
+                  )}
+                </Pressable>
+              </View>
               <Text style={[styles.timeText, isScrubbing && styles.timeTextScrubbing]}>
                 {isScrubbing
                   ? `${formatTime(pendingSeekMs)}`
@@ -372,7 +478,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
             </View>
           </>
         )}
-      </Pressable>
+      </View>
     </LinearGradient>
   );
 }
@@ -398,7 +504,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 50,
+    paddingBottom: 25, // Match typical footer height to keep centering consistent
   },
   // Artwork
   artworkShadow: {
@@ -440,7 +546,7 @@ const styles = StyleSheet.create({
   // Progress — full width at bottom
   progressContainer: {
     paddingHorizontal: spacing.xxl,
-    paddingBottom: spacing.md,
+    paddingBottom: spacing.sm,
     // Extra vertical padding so the focus highlight / knob are not clipped
     paddingTop: spacing.lg,
   },
@@ -481,11 +587,117 @@ const styles = StyleSheet.create({
   timeRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: spacing.xs,
+    paddingHorizontal: spacing.xxl,
+  },
+  timeInfoColumn: {
+    alignItems: 'flex-start',
   },
   timeText: {
     fontSize: 12,
     color: 'rgba(255,255,255,0.5)',
     fontVariant: ['tabular-nums'],
+  },
+  footerContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingBottom: spacing.md,
+  },
+  infoButton: {
+    marginTop: spacing.xs,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.sm,
+    alignSelf: 'flex-start',
+    marginLeft: -spacing.sm, // Align text with time above
+  },
+  infoButtonFocused: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+  },
+  infoButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.7)',
+  },
+  infoButtonTextFocused: {
+    color: '#fff',
+  },
+  // Info Menu
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  infoMenuContainer: {
+    paddingHorizontal: spacing.xxl,
+    paddingBottom: spacing.md,
+  },
+  infoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    //borderWidth: 1,
+    //borderColor: 'rgba(255,255,255,0.1)',
+  },
+  infoArtwork: {
+    width: 100,
+    height: 100,
+    borderRadius: radius.md,
+  },
+  infoMeta: {
+    flex: 1,
+    marginLeft: spacing.lg,
+  },
+  infoTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  infoArtistAlbum: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 2,
+  },
+  infoDuration: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.6)',
+    marginTop: 8,
+  },
+  losslessBadge: {
+    marginTop: spacing.sm,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
+    alignSelf: 'flex-start',
+  },
+  losslessText: {
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.6)',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  gotoAlbumButton: {
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+    marginLeft: spacing.lg,
+  },
+  gotoAlbumButtonFocused: {
+    backgroundColor: '#fff',
+    transform: [{ scale: 1.05 }],
+  },
+  gotoAlbumText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000',
+  },
+  gotoAlbumTextFocused: {
+    color: '#000',
   },
 });

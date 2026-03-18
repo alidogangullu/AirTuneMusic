@@ -183,6 +183,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         queueIndex: info.queueIndex,
         track: info.title
           ? {
+              id: info.id ?? null,
               title: info.title,
               artistName: info.artistName ?? null,
               albumTitle: info.albumTitle ?? null,

@@ -20,6 +20,7 @@ const emitter =
 export type PlaybackStateName = 'playing' | 'paused' | 'stopped' | 'unknown';
 
 export interface TrackInfo {
+  id: string | null;
   title: string | null;
   artistName: string | null;
   albumTitle: string | null;
@@ -37,6 +38,7 @@ export interface PlaybackStateInfo {
   repeatMode: number;
   queueCount: number;
   queueIndex: number;
+  id?: string;
   title?: string;
   artistName?: string;
   albumTitle?: string;

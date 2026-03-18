@@ -8,7 +8,6 @@ import com.apple.android.music.playback.controller.MediaPlayerControllerFactory
 import com.apple.android.music.playback.model.MediaContainerType
 import com.apple.android.music.playback.model.MediaItemType
 import com.apple.android.music.playback.model.MediaPlayerException
-import com.apple.android.music.playback.model.PlaybackRepeatMode
 import com.apple.android.music.playback.model.PlaybackShuffleMode
 import com.apple.android.music.playback.model.PlaybackState
 import com.apple.android.music.playback.model.PlayerQueueItem
@@ -22,9 +21,8 @@ import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 
-class MusicPlayerModule(
-    private val reactContext: ReactApplicationContext
-) : ReactContextBaseJavaModule(reactContext), MediaPlayerController.Listener {
+class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
+        ReactContextBaseJavaModule(reactContext), MediaPlayerController.Listener {
 
     companion object {
         const val NAME = "MusicPlayer"
@@ -55,7 +53,10 @@ class MusicPlayerModule(
     @ReactMethod
     fun configure(devToken: String, usrToken: String, promise: Promise) {
         ensureNativeLib() // Native kütüphaneyi açılışta yükle
-        Log.d(TAG, "configure called, devToken=${devToken.take(20)}..., usrToken=${usrToken.take(20)}...")
+        Log.d(
+                TAG,
+                "configure called, devToken=${devToken.take(20)}..., usrToken=${usrToken.take(20)}..."
+        )
         storedDevToken = devToken
         storedUsrToken = usrToken
 
@@ -69,19 +70,21 @@ class MusicPlayerModule(
             try {
                 ensureNativeLib()
 
-                val tokenProvider = object : TokenProvider {
-                    override fun getDeveloperToken(): String = storedDevToken ?: ""
-                    override fun getUserToken(): String {
-                        val token = storedUsrToken
-                        return if (token.isNullOrEmpty()) "" else token
-                    }
-                }
+                val tokenProvider =
+                        object : TokenProvider {
+                            override fun getDeveloperToken(): String = storedDevToken ?: ""
+                            override fun getUserToken(): String {
+                                val token = storedUsrToken
+                                return if (token.isNullOrEmpty()) "" else token
+                            }
+                        }
 
-                player = MediaPlayerControllerFactory.createLocalController(
-                    reactContext.applicationContext,
-                    mainHandler,
-                    tokenProvider
-                )
+                player =
+                        MediaPlayerControllerFactory.createLocalController(
+                                reactContext.applicationContext,
+                                mainHandler,
+                                tokenProvider
+                        )
                 player?.addListener(this)
 
                 Log.d(TAG, "Player created successfully: ${player != null}")
@@ -94,7 +97,10 @@ class MusicPlayerModule(
 
     @ReactMethod
     fun updateTokens(devToken: String, usrToken: String) {
-        Log.d(TAG, "updateTokens called, devToken=${devToken.take(20)}..., usrToken=${usrToken.take(20)}...")
+        Log.d(
+                TAG,
+                "updateTokens called, devToken=${devToken.take(20)}..., usrToken=${usrToken.take(20)}..."
+        )
         storedDevToken = devToken
         storedUsrToken = usrToken
     }
@@ -129,11 +135,11 @@ class MusicPlayerModule(
     }
 
     private fun playContainer(
-        containerType: Int,
-        containerId: String,
-        startIndex: Int,
-        shuffle: Boolean,
-        promise: Promise
+            containerType: Int,
+            containerId: String,
+            startIndex: Int,
+            shuffle: Boolean,
+            promise: Promise
     ) {
         val p = player
         if (p == null) {
@@ -142,10 +148,14 @@ class MusicPlayerModule(
         }
         mainHandler.post {
             try {
-                Log.d(TAG, "playContainer type=$containerType id=$containerId startIndex=$startIndex shuffle=$shuffle")
-                val builder = CatalogPlaybackQueueItemProvider.Builder()
-                    .containers(containerType, containerId)
-                    .startItemIndex(startIndex)
+                Log.d(
+                        TAG,
+                        "playContainer type=$containerType id=$containerId startIndex=$startIndex shuffle=$shuffle"
+                )
+                val builder =
+                        CatalogPlaybackQueueItemProvider.Builder()
+                                .containers(containerType, containerId)
+                                .startItemIndex(startIndex)
                 if (shuffle) {
                     builder.shuffleMode(PlaybackShuffleMode.SHUFFLE_MODE_SONGS)
                 }
@@ -170,9 +180,8 @@ class MusicPlayerModule(
         mainHandler.post {
             try {
                 Log.d(TAG, "playItem type=$itemType id=$itemId")
-                val queue = CatalogPlaybackQueueItemProvider.Builder()
-                    .items(itemType, itemId)
-                    .build()
+                val queue =
+                        CatalogPlaybackQueueItemProvider.Builder().items(itemType, itemId).build()
                 Log.d(TAG, "playItem: queue built, calling prepare(queue, autoPlay=true)")
                 p.prepare(queue, true)
                 Log.d(TAG, "playItem: prepare() returned, playbackState=${p.playbackState}")
@@ -236,18 +245,20 @@ class MusicPlayerModule(
             promise.resolve(null)
             return
         }
-        val map = Arguments.createMap().apply {
-            putString("state", playbackStateName(p.playbackState))
-            putDouble("position", p.currentPosition.toDouble())
-            putDouble("duration", p.duration.toDouble())
-            putInt("shuffleMode", p.shuffleMode)
-            putInt("repeatMode", p.repeatMode)
-            putInt("queueCount", p.playbackQueueItemCount)
-            putInt("queueIndex", p.playbackQueueIndex)
-        }
+        val map =
+                Arguments.createMap().apply {
+                    putString("state", playbackStateName(p.playbackState))
+                    putDouble("position", p.currentPosition.toDouble())
+                    putDouble("duration", p.duration.toDouble())
+                    putInt("shuffleMode", p.shuffleMode)
+                    putInt("repeatMode", p.repeatMode)
+                    putInt("queueCount", p.playbackQueueItemCount)
+                    putInt("queueIndex", p.playbackQueueIndex)
+                }
         val item = p.currentItem
         if (item != null) {
             val media = item.item
+            map.putString("id", media.subscriptionStoreId)
             map.putString("title", media.title)
             map.putString("artistName", media.artistName)
             map.putString("albumTitle", media.albumTitle)
@@ -260,15 +271,19 @@ class MusicPlayerModule(
     // ── Listener callbacks ──────────────────────────────────────
 
     override fun onPlaybackStateChanged(
-        controller: MediaPlayerController,
-        previousState: Int,
-        currentState: Int
+            controller: MediaPlayerController,
+            previousState: Int,
+            currentState: Int
     ) {
-        Log.d(TAG, "onPlaybackStateChanged: ${playbackStateName(previousState)} -> ${playbackStateName(currentState)}")
-        val map = Arguments.createMap().apply {
-            putString("state", playbackStateName(currentState))
-            putString("previousState", playbackStateName(previousState))
-        }
+        Log.d(
+                TAG,
+                "onPlaybackStateChanged: ${playbackStateName(previousState)} -> ${playbackStateName(currentState)}"
+        )
+        val map =
+                Arguments.createMap().apply {
+                    putString("state", playbackStateName(currentState))
+                    putString("previousState", playbackStateName(previousState))
+                }
         sendEvent("onPlaybackStateChanged", map)
 
         if (currentState == PlaybackState.PLAYING) {
@@ -279,14 +294,18 @@ class MusicPlayerModule(
     }
 
     override fun onCurrentItemChanged(
-        controller: MediaPlayerController,
-        previousItem: PlayerQueueItem?,
-        currentItem: PlayerQueueItem?
+            controller: MediaPlayerController,
+            previousItem: PlayerQueueItem?,
+            currentItem: PlayerQueueItem?
     ) {
-        Log.d(TAG, "onCurrentItemChanged: prev=${previousItem?.item?.title} -> cur=${currentItem?.item?.title}")
+        Log.d(
+                TAG,
+                "onCurrentItemChanged: prev=${previousItem?.item?.title} -> cur=${currentItem?.item?.title}"
+        )
         val map = Arguments.createMap()
         if (currentItem != null) {
             val media = currentItem.item
+            map.putString("id", media.subscriptionStoreId)
             map.putString("title", media.title)
             map.putString("artistName", media.artistName)
             map.putString("albumTitle", media.albumTitle)
@@ -303,116 +322,108 @@ class MusicPlayerModule(
     }
 
     override fun onItemEnded(
-        controller: MediaPlayerController,
-        queueItem: PlayerQueueItem,
-        endPosition: Long
+            controller: MediaPlayerController,
+            queueItem: PlayerQueueItem,
+            endPosition: Long
     ) {
-        val map = Arguments.createMap().apply {
-            putString("title", queueItem.item.title)
-            putDouble("endPosition", endPosition.toDouble())
-        }
+        val map =
+                Arguments.createMap().apply {
+                    putString("title", queueItem.item.title)
+                    putDouble("endPosition", endPosition.toDouble())
+                }
         sendEvent("onItemEnded", map)
     }
 
-    override fun onPlaybackError(
-        controller: MediaPlayerController,
-        error: MediaPlayerException
-    ) {
+    override fun onPlaybackError(controller: MediaPlayerController, error: MediaPlayerException) {
         val msg = error.message ?: "Unknown playback error"
         Log.e(TAG, "onPlaybackError: $msg", error)
-        
+
         var friendlyMessage = msg
         if (msg.contains("v1/me/storefront")) {
-            friendlyMessage = "Failed to resolve storefront. Please check your Apple Music subscription or sign in again."
+            friendlyMessage =
+                    "Failed to resolve storefront. Please check your Apple Music subscription or sign in again."
         }
 
-        val map = Arguments.createMap().apply {
-            putString("message", friendlyMessage)
-            putString("rawMessage", msg)
-        }
+        val map =
+                Arguments.createMap().apply {
+                    putString("message", friendlyMessage)
+                    putString("rawMessage", msg)
+                }
         sendEvent("onPlaybackError", map)
     }
 
     override fun onPlaybackQueueChanged(
-        controller: MediaPlayerController,
-        queueItems: MutableList<PlayerQueueItem>
+            controller: MediaPlayerController,
+            queueItems: MutableList<PlayerQueueItem>
     ) {
         Log.d(TAG, "onPlaybackQueueChanged: count=${queueItems.size}")
-        val map = Arguments.createMap().apply {
-            putInt("count", controller.playbackQueueItemCount)
-        }
+        val map = Arguments.createMap().apply { putInt("count", controller.playbackQueueItemCount) }
         sendEvent("onPlaybackQueueChanged", map)
     }
 
     override fun onPlaybackQueueItemsAdded(
-        controller: MediaPlayerController,
-        insertionType: Int,
-        containerType: Int,
-        itemType: Int
+            controller: MediaPlayerController,
+            insertionType: Int,
+            containerType: Int,
+            itemType: Int
     ) {}
 
     override fun onPlaybackRepeatModeChanged(
-        controller: MediaPlayerController,
-        currentRepeatMode: Int
+            controller: MediaPlayerController,
+            currentRepeatMode: Int
     ) {
-        val map = Arguments.createMap().apply {
-            putInt("repeatMode", currentRepeatMode)
-        }
+        val map = Arguments.createMap().apply { putInt("repeatMode", currentRepeatMode) }
         sendEvent("onRepeatModeChanged", map)
     }
 
     override fun onPlaybackShuffleModeChanged(
-        controller: MediaPlayerController,
-        currentShuffleMode: Int
+            controller: MediaPlayerController,
+            currentShuffleMode: Int
     ) {
-        val map = Arguments.createMap().apply {
-            putInt("shuffleMode", currentShuffleMode)
-        }
+        val map = Arguments.createMap().apply { putInt("shuffleMode", currentShuffleMode) }
         sendEvent("onShuffleModeChanged", map)
     }
 
-    override fun onBufferingStateChanged(
-        controller: MediaPlayerController,
-        buffering: Boolean
-    ) {
+    override fun onBufferingStateChanged(controller: MediaPlayerController, buffering: Boolean) {
         Log.d(TAG, "onBufferingStateChanged: buffering=$buffering")
-        val map = Arguments.createMap().apply {
-            putBoolean("buffering", buffering)
-        }
+        val map = Arguments.createMap().apply { putBoolean("buffering", buffering) }
         sendEvent("onBufferingStateChanged", map)
     }
 
     override fun onMetadataUpdated(
-        controller: MediaPlayerController,
-        currentItem: PlayerQueueItem
+            controller: MediaPlayerController,
+            currentItem: PlayerQueueItem
     ) {}
 
     override fun onPlayerStateRestored(controller: MediaPlayerController) {}
-
-
 
     // ── Progress updates ────────────────────────────────────────
 
     private fun startProgressUpdates() {
         stopProgressUpdates()
-        val runnable = object : Runnable {
-            override fun run() {
-                val p = player ?: return
-                if (p.playbackState == PlaybackState.PLAYING) {
-                    val pos = p.currentPosition
-                    val dur = p.duration
-                    val buf = p.bufferedPosition
-                    Log.d(TAG, "progress: pos=$pos dur=$dur buf=$buf state=${p.playbackState}")
-                    val map = Arguments.createMap().apply {
-                        putDouble("position", pos.toDouble())
-                        putDouble("duration", dur.toDouble())
-                        putDouble("buffered", buf.toDouble())
+        val runnable =
+                object : Runnable {
+                    override fun run() {
+                        val p = player ?: return
+                        if (p.playbackState == PlaybackState.PLAYING) {
+                            val pos = p.currentPosition
+                            val dur = p.duration
+                            val buf = p.bufferedPosition
+                            Log.d(
+                                    TAG,
+                                    "progress: pos=$pos dur=$dur buf=$buf state=${p.playbackState}"
+                            )
+                            val map =
+                                    Arguments.createMap().apply {
+                                        putDouble("position", pos.toDouble())
+                                        putDouble("duration", dur.toDouble())
+                                        putDouble("buffered", buf.toDouble())
+                                    }
+                            sendEvent("onPlaybackProgress", map)
+                            mainHandler.postDelayed(this, PROGRESS_INTERVAL_MS)
+                        }
                     }
-                    sendEvent("onPlaybackProgress", map)
-                    mainHandler.postDelayed(this, PROGRESS_INTERVAL_MS)
                 }
-            }
-        }
         progressRunnable = runnable
         mainHandler.post(runnable)
     }
@@ -442,24 +453,23 @@ class MusicPlayerModule(
         Log.d(TAG, "sendEvent: $name")
         if (reactContext.hasActiveReactInstance()) {
             reactContext
-                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                .emit(name, params)
+                    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                    .emit(name, params)
         } else {
             Log.w(TAG, "sendEvent: no active react instance, dropping event $name")
         }
     }
 
-    private fun playbackStateName(state: Int): String = when (state) {
-        PlaybackState.PLAYING -> "playing"
-        PlaybackState.PAUSED -> "paused"
-        PlaybackState.STOPPED -> "stopped"
-        else -> "unknown"
-    }
+    private fun playbackStateName(state: Int): String =
+            when (state) {
+                PlaybackState.PLAYING -> "playing"
+                PlaybackState.PAUSED -> "paused"
+                PlaybackState.STOPPED -> "stopped"
+                else -> "unknown"
+            }
 
     // Required for NativeEventEmitter
-    @ReactMethod
-    fun addListener(@Suppress("UNUSED_PARAMETER") eventName: String) {}
+    @ReactMethod fun addListener(@Suppress("UNUSED_PARAMETER") eventName: String) {}
 
-    @ReactMethod
-    fun removeListeners(@Suppress("UNUSED_PARAMETER") count: Int) {}
+    @ReactMethod fun removeListeners(@Suppress("UNUSED_PARAMETER") count: Int) {}
 }

@@ -4,19 +4,19 @@
  * Provides ContentNavigationContext so child screens can push detail views.
  */
 
-import React, {useCallback, useMemo, useState} from 'react';
-import {Alert, Modal, StyleSheet, View} from 'react-native';
-import {GradientBackground} from '../components/GradientBackground';
-import {MainLayout} from '../components/MainLayout';
-import {ContentNavigationContext} from '../navigation';
-import {ArtistDetailScreen} from './ArtistDetailScreen';
-import {ContentDetailScreen} from './ContentDetailScreen';
-import {NowPlayingScreen} from './NowPlayingScreen';
-import {SettingsScreen} from './SettingsScreen';
-import type {NavTabId} from '../components/TopBar';
-import type {RecommendationContent} from '../types/recommendations';
-import {useTheme} from '../theme';
-import {usePlayer} from '../hooks/usePlayer';
+import React, { useCallback, useMemo, useState } from 'react';
+import { Alert, Modal, StyleSheet, View } from 'react-native';
+import { GradientBackground } from '../components/GradientBackground';
+import { MainLayout } from '../components/MainLayout';
+import { ContentNavigationContext } from '../navigation';
+import { ArtistDetailScreen } from './ArtistDetailScreen';
+import { ContentDetailScreen } from './ContentDetailScreen';
+import { NowPlayingScreen } from './NowPlayingScreen';
+import { SettingsScreen } from './SettingsScreen';
+import type { NavTabId } from '../components/TopBar';
+import type { RecommendationContent } from '../types/recommendations';
+import { useTheme } from '../theme';
+import { usePlayer } from '../hooks/usePlayer';
 
 export type HomeScreenProps = {
   onSignOut?: () => void;
@@ -25,17 +25,17 @@ export type HomeScreenProps = {
 export function HomeScreen({
   onSignOut,
 }: Readonly<HomeScreenProps>): React.JSX.Element {
-  const {colors} = useTheme();
+  const { colors } = useTheme();
   const [activeTab, setActiveTab] = useState<NavTabId>('listen-now');
   const [selectedContent, setSelectedContent] =
     useState<RecommendationContent | null>(null);
   const [nowPlayingFullscreen, setNowPlayingFullscreen] = useState(false);
-  const {setShowSettings: setShowSettingsViaPlayer} = usePlayer();
+  const { setShowSettings: setShowSettingsViaPlayer } = usePlayer();
   const [settingsVisible, setSettingsVisible] = useState(false);
 
   // When player hook triggers settings (quota reached), show it
-  const {showSettings: playerWantsSettings, setShowSettings} = usePlayer();
-  
+  const { showSettings: playerWantsSettings, setShowSettings } = usePlayer();
+
   React.useEffect(() => {
     if (playerWantsSettings) {
       setSettingsVisible(true);
@@ -61,7 +61,7 @@ export function HomeScreen({
   }, []);
 
   const ctxValue = useMemo(
-    () => ({pushContent, openNowPlayingFullscreen}),
+    () => ({ pushContent, openNowPlayingFullscreen }),
     [pushContent, openNowPlayingFullscreen],
   );
 
@@ -72,14 +72,14 @@ export function HomeScreen({
       'Sign Out',
       'Are you sure you want to sign out?',
       [
-        {text: 'Cancel', style: 'cancel'},
+        { text: 'Cancel', style: 'cancel' },
         {
           text: 'Sign Out',
           style: 'destructive',
           onPress: onSignOut,
         },
       ],
-      {cancelable: true},
+      { cancelable: true },
     );
   }, [onSignOut]);
 
@@ -93,6 +93,16 @@ export function HomeScreen({
           onSearchPress={() => setActiveTab('search')}
           onSettingsPress={() => setSettingsVisible(true)}
         />
+
+        {/* Modal ensures OS-level focus trapping — Android creates a new Window,
+            so D-pad key events never reach the MainLayout behind it. */}
+        {/* Fullscreen Now Playing — opened when a track is played */}
+        <Modal
+          visible={nowPlayingFullscreen && !isDetailOpen}
+          animationType="none"
+          onRequestClose={closeNowPlayingFullscreen}>
+          <NowPlayingScreen onBack={closeNowPlayingFullscreen} />
+        </Modal>
 
         {/* Modal ensures OS-level focus trapping — Android creates a new Window,
             so D-pad key events never reach the MainLayout behind it. */}
@@ -118,14 +128,6 @@ export function HomeScreen({
               )}
             </GradientBackground>
           )}
-        </Modal>
-
-        {/* Fullscreen Now Playing — opened when a track is played */}
-        <Modal
-          visible={nowPlayingFullscreen}
-          animationType="none"
-          onRequestClose={closeNowPlayingFullscreen}>
-          <NowPlayingScreen onBack={closeNowPlayingFullscreen} />
         </Modal>
 
         {/* Settings screen */}
