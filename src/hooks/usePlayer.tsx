@@ -62,6 +62,7 @@ interface PlayerContextValue {
   skipToNext: () => void;
   skipToPrevious: () => void;
   seekTo: (positionMs: number) => void;
+  getQueue: () => Promise<TrackInfo[]>;
   setShuffleMode: (mode: number) => void;
   setRepeatMode: (mode: number) => void;
   isPlaying: boolean;
@@ -190,6 +191,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
               artworkUrl: info.artworkUrl ?? null,
               duration: info.trackDuration ?? info.duration,
               trackIndex: info.queueIndex,
+              playbackQueueId: (info as any).playbackQueueId,
             }
           : s.track,
       }));
@@ -282,6 +284,10 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     musicPlayer.seekTo(positionMs);
   }, []);
 
+  const getQueue = useCallback(async () => {
+    return musicPlayer.getQueue();
+  }, []);
+
   const value: PlayerContextValue = {
     state,
     playAlbum,
@@ -295,6 +301,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     skipToNext: musicPlayer.skipToNext,
     skipToPrevious: musicPlayer.skipToPrevious,
     seekTo,
+    getQueue,
     setShuffleMode: musicPlayer.setShuffleMode,
     setRepeatMode: musicPlayer.setRepeatMode,
     isPlaying: state.playbackState === 'playing',

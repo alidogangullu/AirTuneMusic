@@ -47,6 +47,7 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private var progressRunnable: Runnable? = null
+    private var currentQueueItems: List<PlayerQueueItem> = emptyList()
 
     // ── Configure ───────────────────────────────────────────────
 
@@ -254,6 +255,7 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
                     putInt("repeatMode", p.repeatMode)
                     putInt("queueCount", p.playbackQueueItemCount)
                     putInt("queueIndex", p.playbackQueueIndex)
+                    p.currentItem?.let { putLong("playbackQueueId", it.playbackQueueId) }
                 }
         val item = p.currentItem
         if (item != null) {
@@ -266,6 +268,42 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
             map.putDouble("trackDuration", media.duration.toDouble())
         }
         promise.resolve(map)
+    }
+    @ReactMethod
+    fun getQueue(promise: Promise) {
+        val array = Arguments.createArray()
+        val p = player ?: run {
+            promise.resolve(array)
+            return
+        }
+        val items = p.getQueueItems() ?: currentQueueItems
+        val currentItem = p.currentItem
+        
+        val fullList = items.toMutableList()
+        if (currentItem != null) {
+            val alreadyInList = fullList.any { it.playbackQueueId == currentItem.playbackQueueId }
+            if (!alreadyInList) {
+                // If current item is not in the list provided by getQueueItems, 
+                // it might be an "Up Next" list, so we prepend the current item.
+                fullList.add(0, currentItem)
+            }
+        }
+
+        fullList.forEachIndexed { index, queueItem ->
+            val media = queueItem.item
+            val map = Arguments.createMap().apply {
+                putString("id", media.subscriptionStoreId)
+                putString("title", media.title)
+                putString("artistName", media.artistName)
+                putString("albumTitle", media.albumTitle)
+                putString("artworkUrl", media.getArtworkUrl(ARTWORK_SIZE, ARTWORK_SIZE))
+                putDouble("duration", media.duration.toDouble())
+                putInt("trackIndex", index)
+                putLong("playbackQueueId", queueItem.playbackQueueId)
+            }
+            array.pushMap(map)
+        }
+        promise.resolve(array)
     }
 
     // ── Listener callbacks ──────────────────────────────────────
@@ -357,6 +395,7 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
             queueItems: MutableList<PlayerQueueItem>
     ) {
         Log.d(TAG, "onPlaybackQueueChanged: count=${queueItems.size}")
+        currentQueueItems = queueItems
         val map = Arguments.createMap().apply { putInt("count", controller.playbackQueueItemCount) }
         sendEvent("onPlaybackQueueChanged", map)
     }

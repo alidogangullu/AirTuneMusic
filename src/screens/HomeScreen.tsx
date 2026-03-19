@@ -32,6 +32,7 @@ export function HomeScreen({
   const [nowPlayingFullscreen, setNowPlayingFullscreen] = useState(false);
   const { setShowSettings: setShowSettingsViaPlayer } = usePlayer();
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [lastOpened, setLastOpened] = useState<'detail' | 'now-playing' | null>(null);
 
   // When player hook triggers settings (quota reached), show it
   const { showSettings: playerWantsSettings, setShowSettings } = usePlayer();
@@ -46,6 +47,7 @@ export function HomeScreen({
 
   const pushContent = useCallback((content: RecommendationContent) => {
     setSelectedContent(content);
+    setLastOpened('detail');
   }, []);
 
   const popContent = useCallback(() => {
@@ -54,6 +56,7 @@ export function HomeScreen({
 
   const openNowPlayingFullscreen = useCallback(() => {
     setNowPlayingFullscreen(true);
+    setLastOpened('now-playing');
   }, []);
 
   const closeNowPlayingFullscreen = useCallback(() => {
@@ -98,7 +101,7 @@ export function HomeScreen({
             so D-pad key events never reach the MainLayout behind it. */}
         {/* Fullscreen Now Playing — opened when a track is played */}
         <Modal
-          visible={nowPlayingFullscreen && !isDetailOpen}
+          visible={nowPlayingFullscreen && (lastOpened === 'now-playing' || !isDetailOpen)}
           animationType="none"
           onRequestClose={closeNowPlayingFullscreen}>
           <NowPlayingScreen onBack={closeNowPlayingFullscreen} />
@@ -107,7 +110,7 @@ export function HomeScreen({
         {/* Modal ensures OS-level focus trapping — Android creates a new Window,
             so D-pad key events never reach the MainLayout behind it. */}
         <Modal
-          visible={isDetailOpen}
+          visible={isDetailOpen && (lastOpened === 'detail' || !nowPlayingFullscreen)}
           animationType="none"
           onRequestClose={popContent}>
           {selectedContent !== null && (

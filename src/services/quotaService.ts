@@ -8,7 +8,7 @@ const KEYS = {
 };
 
 const HOUR_MS = 60 * 60 * 1000;
-const DEFAULT_LIMIT = 10;
+const DEFAULT_LIMIT = 100;
 
 export class QuotaService {
   static HOURLY_LIMIT = DEFAULT_LIMIT;
@@ -52,7 +52,9 @@ export class QuotaService {
 
     const recentPlays = this.getRecentPlayTimestamps();
     const canPlay = recentPlays.length < this.HOURLY_LIMIT;
-    console.log(`[QuotaService] canPlayNextSong: ${recentPlays.length}/${this.HOURLY_LIMIT} -> ${canPlay}`);
+    console.log(
+      `[QuotaService] canPlayNextSong: ${recentPlays.length}/${this.HOURLY_LIMIT} -> ${canPlay}`,
+    );
     return canPlay;
   }
 

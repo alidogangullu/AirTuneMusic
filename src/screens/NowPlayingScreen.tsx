@@ -19,6 +19,8 @@ import {
   Text,
   useTVEventHandler,
   View,
+  FlatList,
+  Dimensions,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { NowPlayingBars } from '../components/NowPlayingBars';
@@ -28,6 +30,7 @@ import { ContentNavigationContext } from '../navigation';
 import { radius, spacing } from '../theme/layout';
 import { useStorefront } from '../hooks/useStorefront';
 import { fetchSongDetail } from '../api/apple-music/recommendations';
+import { TrackInfo } from '../services/musicPlayer';
 
 const SEEK_STEP_MS = 5000;
 
@@ -60,6 +63,9 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [pendingSeekMs, setPendingSeekMs] = useState(0);
   const [showInfo, setShowInfo] = useState(false);
+  const [showQueue, setShowQueue] = useState(false);
+  const [queueData, setQueueData] = useState<TrackInfo[]>([]);
+  const queueListRef = useRef<FlatList>(null);
 
   const { pushContent } = React.useContext(ContentNavigationContext);
   const { storefrontId } = useStorefront();
@@ -158,13 +164,23 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
 
   // Handle back button (remote) in fullscreen mode
   useEffect(() => {
-    if (!onBack) return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      onBack();
-      return true;
+      if (showQueue) {
+        setShowQueue(false);
+        return true;
+      }
+      if (showInfo) {
+        setShowInfo(false);
+        return true;
+      }
+      if (onBack) {
+        onBack();
+        return true;
+      }
+      return false;
     });
     return () => sub.remove();
-  }, [onBack, showInfo]);
+  }, [onBack, showInfo, showQueue]);
 
   // Animate artwork scale on track change
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -182,6 +198,23 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
       }),
     ]).start();
   }, [track?.title, scaleAnim]);
+
+  const activeIndex = queueData.findIndex(
+    item => item.playbackQueueId === (state.track as any)?.playbackQueueId
+  );
+
+  // Scroll to current item when queue opens
+  useEffect(() => {
+    if (showQueue && queueData.length > 0 && activeIndex >= 0) {
+      setTimeout(() => {
+        queueListRef.current?.scrollToIndex({
+          index: activeIndex,
+          animated: false,
+          viewPosition: 0.5,
+        });
+      }, 100);
+    }
+  }, [showQueue, queueData.length, activeIndex]);
 
   // Background colors derived from artwork
   const bg1 = palette?.darkMuted || palette?.dominant || '#1a1a2e';
@@ -243,21 +276,83 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.root}>
-      {/* Centered content: artwork + track info */}
-      <View style={styles.content}>
-        <Animated.View style={[styles.artworkShadow, { transform: [{ scale: scaleAnim }] }]}>
-          {track?.artworkUrl ? (
-            <Image
-              source={{ uri: track.artworkUrl }}
-              style={styles.artwork}
-              resizeMode="cover"
-            />
-          ) : (
-            <View style={[styles.artwork, styles.artworkPlaceholder]} />
-          )}
-        </Animated.View>
 
-        {/* Track info below artwork, aligned with artwork width */}
+      {/* Centered content: artwork OR queue + track info */}
+      <View style={styles.content}>
+        {!showQueue ? (
+          <><Animated.View style={[styles.artworkShadow, { transform: [{ scale: scaleAnim }] }]}>
+            {track?.artworkUrl ? (
+              <Image
+                source={{ uri: track.artworkUrl }}
+                style={styles.artwork}
+                resizeMode="cover" />
+            ) : (
+              <View style={[styles.artwork, styles.artworkPlaceholder]} />
+            )}
+          </Animated.View><View style={[styles.meta, { opacity: showInfo ? 0 : 1 }]}>
+              <View style={styles.titleRow}>
+                <NowPlayingBars playing={isPlaying && !state.isLoading && !state.buffering} color={accentColor} size={16} />
+                <Text style={styles.title} numberOfLines={1}>
+                  {track?.title ?? ''}
+                </Text>
+              </View>
+              <Text style={styles.artist} numberOfLines={1}>
+                {track?.artistName ?? ''}
+              </Text>
+            </View></>
+        ) : (
+          <View style={styles.integratedQueueContainer}>
+            <FlatList
+              ref={queueListRef}
+              data={queueData}
+              horizontal
+              keyExtractor={(item, index) => `${item.id}-${index}`}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={[styles.queueListContent, { paddingHorizontal: HORIZONTAL_PADDING }]}
+              initialScrollIndex={activeIndex >= 0 ? activeIndex : 0}
+              getItemLayout={(_, index) => ({
+                length: ARTWORK_SIZE + 20, // artwork width (260) + gap (20)
+                offset: (ARTWORK_SIZE + 20) * index,
+                index,
+              })}
+              onScrollToIndexFailed={(info) => {
+                setTimeout(() => {
+                  queueListRef.current?.scrollToIndex({ index: info.index, animated: false, viewPosition: 0.5 });
+                }, 100);
+              }}
+              renderItem={({ item }) => {
+                const isCurrent = item.playbackQueueId === (state.track as any)?.playbackQueueId;
+                return (
+                  <View style={styles.queueItemContainer}>
+                    <View style={styles.artworkShadow}>
+                      <View style={styles.artwork}>
+                        <Image
+                          source={{ uri: item.artworkUrl ?? '' }}
+                          style={styles.artwork}
+                        />
+                      </View>
+                    </View>
+                    <View style={[styles.meta, { opacity: showInfo ? 0 : 1 }]}>
+                      <View style={styles.titleRow}>
+                        {isCurrent && (
+                          <NowPlayingBars playing={isPlaying && !state.isLoading && !state.buffering} color={accentColor} size={16} />
+                        )}
+                        <Text style={styles.title} numberOfLines={1}>
+                          {item?.title ?? ''}
+                        </Text>
+                      </View>
+                      <Text style={styles.artist} numberOfLines={1}>
+                        {item?.artistName ?? ''}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              }}
+            />
+          </View>
+        )}
+
+        {/*
         <View style={[styles.meta, { opacity: showInfo ? 0 : 1 }]}>
           <View style={styles.titleRow}>
             <NowPlayingBars playing={isPlaying && !state.isLoading && !state.buffering} color={accentColor} size={16} />
@@ -269,7 +364,9 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
             {track?.artistName ?? ''}
           </Text>
         </View>
+        */}
       </View>
+
 
       {/* Info Modal Panel */}
       <Modal
@@ -350,7 +447,6 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
 
       {/* Progress and Info footer — at screen bottom */}
       <View style={styles.footerContainer}>
-        {/* We no longer render showInfo here directly; it's in the Modal above */}
         {!showInfo && (
           <>
             <Pressable
@@ -470,11 +566,33 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
                   )}
                 </Pressable>
               </View>
-              <Text style={[styles.timeText, isScrubbing && styles.timeTextScrubbing]}>
-                {isScrubbing
-                  ? `${formatTime(pendingSeekMs)}`
-                  : `-${formatTime(remainingMs)}`}
-              </Text>
+
+              <View style={styles.timeInfoColumnRight}>
+                <Text style={[styles.timeText, isScrubbing && styles.timeTextScrubbing]}>
+                  {isScrubbing
+                    ? `${formatTime(pendingSeekMs)}`
+                    : `-${formatTime(remainingMs)}`}
+                </Text>
+                <Pressable
+                  style={({ focused }) => [
+                    styles.infoButton,
+                    focused && styles.infoButtonFocused,
+                    { alignSelf: 'flex-end', marginRight: -spacing.sm },
+                  ]}
+                  onPress={async () => {
+                    const { getQueue } = require('../services/musicPlayer');
+                    const queue = await getQueue();
+                    setQueueData(queue);
+                    setShowQueue(!showQueue); // Use toggle
+                  }}
+                  focusable={true}>
+                  {({ focused }) => (
+                    <Text style={[styles.infoButtonText, focused && styles.infoButtonTextFocused]}>
+                      Up Next
+                    </Text>
+                  )}
+                </Pressable>
+              </View>
             </View>
           </>
         )}
@@ -484,8 +602,9 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
 }
 
 // ── Styles ────────────────────────────────────────────────────────
-
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ARTWORK_SIZE = 260;
+const HORIZONTAL_PADDING = (SCREEN_WIDTH - ARTWORK_SIZE) / 2;
 
 const styles = StyleSheet.create({
   root: {
@@ -505,6 +624,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingBottom: 25, // Match typical footer height to keep centering consistent
+  },
+  headerSection: {
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xxl,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.7)',
+    marginTop: spacing.xl,
   },
   // Artwork
   artworkShadow: {
@@ -591,6 +722,9 @@ const styles = StyleSheet.create({
   },
   timeInfoColumn: {
     alignItems: 'flex-start',
+  },
+  timeInfoColumnRight: {
+    alignItems: 'flex-end',
   },
   timeText: {
     fontSize: 12,
@@ -698,6 +832,26 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   gotoAlbumTextFocused: {
+    fontWeight: '700',
     color: '#000',
+  },
+  // Queue View
+  integratedQueueContainer: {
+    width: '100%',
+    height: ARTWORK_SIZE + 80,
+    justifyContent: 'center',
+  },
+  queueItemContainer: {
+    marginRight: 20,
+    alignItems: 'center',
+    width: ARTWORK_SIZE,
+  },
+  queueContainer: {
+    backgroundColor: 'rgba(0,0,0,0.8)',
+  },
+  // List content
+  queueListContent: {
+    // Center items vertically within the ARTWORK_SIZE container
+    justifyContent: 'center',
   },
 });

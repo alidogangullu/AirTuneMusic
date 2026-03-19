@@ -209,6 +209,14 @@ export async function getPlaybackState(): Promise<PlaybackStateInfo | null> {
   return MusicPlayer.getPlaybackState();
 }
 
+export async function getQueue(): Promise<TrackInfo[]> {
+  if (!MusicPlayer) {
+    return [];
+  }
+  await ensureConfigured();
+  return MusicPlayer.getQueue();
+}
+
 export function release(): void {
   MusicPlayer?.release();
   configured = false;
