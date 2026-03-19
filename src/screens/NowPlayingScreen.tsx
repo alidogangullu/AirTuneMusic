@@ -82,7 +82,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
         useNativeDriver: false,
       }),
     ]).start();
-  }, [isFocused]);
+  }, [isFocused, barHeightAnim, knobSizeAnim]);
 
   // Shimmer animation loop
   useEffect(() => {

@@ -8,16 +8,12 @@
 import axios, {AxiosError, AxiosInstance} from 'axios';
 import {getDeveloperToken} from './getDeveloperToken';
 import {clearMusicUserToken, getMusicUserToken} from './musicUserToken';
-import {DEV_SERVER, CAN_REACH_INTERNET_DIRECTLY} from '../../config/devServer';
 
 const APPLE_MUSIC_BASE = 'https://api.music.apple.com/v1';
-/** Emulator'da api.music.apple.com erişilemediği için __DEV__'de proxy kullan. */
-const PROXY_BASE = `${DEV_SERVER}/api/apple-music-proxy`;
-const BASE_URL = __DEV__ && !CAN_REACH_INTERNET_DIRECTLY ? PROXY_BASE : APPLE_MUSIC_BASE;
 
 function createClient(): AxiosInstance {
   const client = axios.create({
-    baseURL: BASE_URL,
+    baseURL: APPLE_MUSIC_BASE,
     timeout: 30000,
     headers: {
       'Content-Type': 'application/json',

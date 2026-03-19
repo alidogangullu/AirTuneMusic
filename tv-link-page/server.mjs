@@ -163,16 +163,25 @@ const server = createServer(async (req, res) => {
       'https://api.music.apple.com/v1' + applePath + (url.search || '');
     const musicUserToken = req.headers['music-user-token'] || '';
 
-    if (!developerToken) {
+    // Prefer forwarding caller Authorization; fallback to local .env token.
+    const incomingAuthorization = req.headers.authorization;
+    const authorizationHeader =
+      typeof incomingAuthorization === 'string' && incomingAuthorization.trim()
+        ? incomingAuthorization
+        : developerToken
+          ? `Bearer ${developerToken}`
+          : '';
+
+    if (!authorizationHeader) {
       send(res, 500, {
         error:
-          'Developer token not set. Set EXPO_PUBLIC_APPLE_MUSIC_TOKEN in .env.local.',
+          'Developer token missing. Provide Authorization header or set EXPO_PUBLIC_APPLE_MUSIC_TOKEN in .env.local.',
       });
       return;
     }
 
     const headers = {
-      Authorization: `Bearer ${developerToken}`,
+      Authorization: authorizationHeader,
       'Content-Type': 'application/json',
     };
     if (musicUserToken) {

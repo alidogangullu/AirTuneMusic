@@ -24,12 +24,5 @@ function isEmulator(): boolean {
 
 const HOST = isEmulator() ? EMULATOR_HOST : LAN_HOST;
 
-/** Base URL of the local dev server (tv-link, proxy, etc.) */
+/** Base URL of the local dev server (tv-link auth page, etc.) */
 export const DEV_SERVER = `http://${HOST}:${PORT}`;
-
-/**
- * Whether the current device can likely reach external hosts
- * (api.music.apple.com, mzstatic.com) directly.
- * Emulators often can't; real devices can.
- */
-export const CAN_REACH_INTERNET_DIRECTLY = !isEmulator();

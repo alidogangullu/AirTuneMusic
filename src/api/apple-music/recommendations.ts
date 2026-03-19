@@ -13,10 +13,6 @@ import type {
 } from '../../types/catalog';
 import type { RecommendationsResponse } from '../../types/recommendations';
 import { appleMusicApi } from './client';
-import {
-  DEV_SERVER,
-  CAN_REACH_INTERNET_DIRECTLY,
-} from '../../config/devServer';
 
 export async function fetchRecommendations(): Promise<RecommendationsResponse> {
   const { data } = await appleMusicApi.get<RecommendationsResponse>(
@@ -117,12 +113,10 @@ export async function fetchMusicVideoDetail(
 
 import { PixelRatio } from 'react-native';
 
-const ARTWORK_PROXY = `${DEV_SERVER}/api/apple-music-proxy/image`;
-
 /**
  * Build artwork URL with dimensions.
  * Apple Music URLs use {w}x{h}cc.jpg placeholders.
- * __DEV__: Emulator can't reach mzstatic.com, use proxy.
+ * Returns direct Apple-hosted artwork URL.
  */
 export function getArtworkUrl(
   url: string | undefined,
@@ -141,8 +135,5 @@ export function getArtworkUrl(
     .replace(/\{h\}/g, String(scaledH))
     .replace(/\{f\}/g, 'jpg');
 
-  if (__DEV__ && !CAN_REACH_INTERNET_DIRECTLY) {
-    return `${ARTWORK_PROXY}?url=${encodeURIComponent(resolved)}`;
-  }
   return resolved;
 }
