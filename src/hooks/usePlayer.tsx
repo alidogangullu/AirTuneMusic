@@ -29,7 +29,11 @@ export interface PlayerState {
   queueCount: number;
   queueIndex: number;
   queue: TrackInfo[];
+  containerTracks: TrackInfo[] | null; // Full ordered track list for current container
+  containerIndex: number;              // Current position in containerTracks
   containerId: string | null;
+  canSkipToPrevious: boolean;
+  canSkipToNext: boolean;
   isLoading: boolean;
   rating: number;
   autoplay: boolean;
@@ -47,7 +51,11 @@ const initialState: PlayerState = {
   queueCount: 0,
   queueIndex: 0,
   queue: [],
+  containerTracks: null,
+  containerIndex: 0,
   containerId: null,
+  canSkipToPrevious: false,
+  canSkipToNext: false,
   isLoading: false,
   rating: 0,
   autoplay: false,
@@ -57,8 +65,8 @@ const initialState: PlayerState = {
 
 interface PlayerContextValue {
   state: PlayerState;
-  playAlbum: (albumId: string, startIndex?: number, shuffle?: boolean) => Promise<boolean>;
-  playPlaylist: (playlistId: string, startIndex?: number, shuffle?: boolean) => Promise<boolean>;
+  playAlbum: (albumId: string, startIndex?: number, shuffle?: boolean, tracks?: TrackInfo[]) => Promise<boolean>;
+  playPlaylist: (playlistId: string, startIndex?: number, shuffle?: boolean, tracks?: TrackInfo[]) => Promise<boolean>;
   playStation: (stationId: string) => Promise<boolean>;
   playSong: (songId: string) => Promise<boolean>;
   playMusicVideo: (musicVideoId: string) => Promise<boolean>;
@@ -79,6 +87,24 @@ interface PlayerContextValue {
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
+
+// ── Queue builder ─────────────────────────────────────────────────
+/**
+ * Builds the full visual queue for NowPlayingScreen.
+ * - Non-shuffle: containerTracks[0..containerIndex-1] + SDK queue (current+upcoming)
+ * - Shuffle / no containerTracks: SDK queue as-is
+ */
+function buildVisualQueue(s: PlayerState, sdkQueue: TrackInfo[]): TrackInfo[] {
+  if (s.shuffleMode !== 0 || !s.containerTracks || s.containerTracks.length === 0) {
+    return sdkQueue;
+  }
+  // Tracks before current position in container order
+  const previous = s.containerTracks.slice(0, s.containerIndex);
+  // Combine: previous (from API list) + SDK queue (current+upcoming)
+  const sdkIds = new Set(sdkQueue.map(t => t.id).filter(Boolean));
+  const filteredPrevious = previous.filter(t => !sdkIds.has(t.id));
+  return [...filteredPrevious, ...sdkQueue];
+}
 
 // ── Provider ────────────────────────────────────────────────────
 
@@ -123,21 +149,39 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
           lastTrackIdRef.current = data.playbackQueueId;
         }
 
-        // Check if track is actually different to avoid progress bar jumps (e.g. on shuffle)
-        const isSameTrack =
-          data.playbackQueueId !== undefined &&
-          data.playbackQueueId === stateRef.current.track?.playbackQueueId;
+        if (data.playbackQueueId === undefined) return;
 
-        setState(s => ({
-          ...s,
-          track: data,
-          duration: data.duration ?? 0,
-          position: isSameTrack ? s.position : 0,
-          queueIndex: data.trackIndex ?? s.queueIndex,
-          isLoading: false,
-        }));
+        // Rebuild visual queue and update state atomically to prevent NowPlaying jitter
+        musicPlayer.getQueue().then(sdkQueue => {
+          setState(s => {
+            const newContainerId = (data as any).containerStoreId ?? s.containerId;
+            const newContainerIndex = (data as any).containerIndex ?? s.containerIndex;
+            const isSameTrack = data.playbackQueueId === s.track?.playbackQueueId;
+            
+            // Build the merged queue using the NEW state properties locally
+            const tempState = {
+              ...s,
+              track: data,
+              containerId: newContainerId,
+              containerIndex: newContainerIndex,
+              shuffleMode: s.shuffleMode, // explicit for buildVisualQueue
+            };
+            const merged = buildVisualQueue(tempState, sdkQueue);
 
-        // Fetch rating for the new track
+            return {
+              ...tempState,
+              duration: data.duration ?? 0,
+              position: isSameTrack ? s.position : 0,
+              queueIndex: data.trackIndex ?? s.queueIndex,
+              queue: merged,
+              canSkipToPrevious: (data as any).canSkipToPrevious ?? s.canSkipToPrevious,
+              canSkipToNext: (data as any).canSkipToNext ?? s.canSkipToNext,
+              isLoading: false,
+            };
+          });
+        });
+
+        // Fetch rating in background (doesn't affect layout)
         if (data.id) {
           musicPlayer.getRating(data.id).then(r => {
             setState(s => ({...s, rating: r}));
@@ -159,15 +203,20 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         setState(s => ({...s, buffering: data.buffering}));
       }),
       musicPlayer.addEventListener('onPlaybackQueueChanged', data => {
-        setState(s => ({...s, queueCount: data.count}));
-        musicPlayer.getQueue().then(queue => {
-          setState(s => ({...s, queue}));
+        musicPlayer.getQueue().then(sdkQueue => {
+          setState(s => {
+            const merged = buildVisualQueue(s, sdkQueue);
+            return {...s, queue: merged, queueCount: data.count};
+          });
         });
       }),
       musicPlayer.addEventListener('onShuffleModeChanged', data => {
-        setState(s => ({...s, shuffleMode: data.shuffleMode}));
-        musicPlayer.getQueue().then(queue => {
-          setState(s => ({...s, queue}));
+        // SDK rebuilds queue on shuffle change - re-fetch to get updated order
+        musicPlayer.getQueue().then(sdkQueue => {
+          setState(s => {
+            const merged = buildVisualQueue({...s, shuffleMode: data.shuffleMode}, sdkQueue);
+            return {...s, queue: merged, shuffleMode: data.shuffleMode};
+          });
         });
       }),
       musicPlayer.addEventListener('onRepeatModeChanged', data => {
@@ -178,8 +227,6 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
       }),
       musicPlayer.addEventListener('onItemEnded', data => {
         console.log('[MusicPlayer] Item ended:', data.title);
-        // We record the play when it successfully ends (or starts, but ends is safer to avoid accidental clicks)
-        // Actually, user requested "after first music", let's record when it STARTS to be strict
       }),
     ];
 
@@ -273,8 +320,14 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
   );
 
   const playAlbum = useCallback(
-    async (albumId: string, startIndex = 0, shuffle = false) => {
-      setState(s => ({...s, containerId: albumId, isLoading: true}));
+    async (albumId: string, startIndex = 0, shuffle = false, tracks?: TrackInfo[]) => {
+      setState(s => ({
+        ...s,
+        containerId: albumId,
+        containerTracks: tracks ?? null,
+        containerIndex: startIndex,
+        isLoading: true,
+      }));
       return checkQuotaAndPlay(() =>
         musicPlayer.playAlbum(albumId, startIndex, shuffle),
       );
@@ -283,8 +336,14 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
   );
 
   const playPlaylist = useCallback(
-    async (playlistId: string, startIndex = 0, shuffle = false) => {
-      setState(s => ({...s, containerId: playlistId, isLoading: true}));
+    async (playlistId: string, startIndex = 0, shuffle = false, tracks?: TrackInfo[]) => {
+      setState(s => ({
+        ...s,
+        containerId: playlistId,
+        containerTracks: tracks ?? null,
+        containerIndex: startIndex,
+        isLoading: true,
+      }));
       return checkQuotaAndPlay(() =>
         musicPlayer.playPlaylist(playlistId, startIndex, shuffle),
       );
@@ -363,31 +422,11 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     setShowSettings,
   };
 
-  const showSettingsInternal = showSettings;
-  const setShowSettingsInternal = setShowSettings;
-
   return (
     <PlayerContext.Provider value={value}>
       {children}
-      {/* 
-          We expose showSettings state through context so App.tsx or HomeScreen can consume it.
-          Alternatively, we can use an event emitter or a shared signal.
-      */}
-      <SettingsSyncHelper 
-        showSettings={showSettingsInternal} 
-        onClose={() => setShowSettingsInternal(false)} 
-      />
     </PlayerContext.Provider>
   );
-}
-
-// ── Internal Helper to bridge state ─────────────────────────────
-// This is a hacky way to sync state from PlayerProvider back up if needed,
-// but actually usePlayer hook is enough if consumed in HomeScreen.
-
-function SettingsSyncHelper({showSettings, onClose}: {showSettings: boolean, onClose: () => void}) {
-  // This could trigger an effect or just be a placeholder
-  return null;
 }
 
 // ── Hook ────────────────────────────────────────────────────────

@@ -314,20 +314,23 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
             promise.resolve(array)
             return
         }
-        val items = p.getQueueItems() ?: currentQueueItems
         val currentItem = p.currentItem
-        
-        val fullList = items.toMutableList()
+        val upcomingItems = p.getQueueItems() ?: currentQueueItems
+
+        // Build display queue: current item + upcoming items only.
+        // Previous items are derived on the JS side using containerTracks + containerIndex.
+        val displayList = mutableListOf<PlayerQueueItem>()
         if (currentItem != null) {
-            val alreadyInList = fullList.any { it.playbackQueueId == currentItem.playbackQueueId }
-            if (!alreadyInList) {
-                // If current item is not in the list provided by getQueueItems, 
-                // it might be an "Up Next" list, so we prepend the current item.
-                fullList.add(0, currentItem)
+            displayList.add(currentItem)
+        }
+        val existingIds = displayList.map { it.playbackQueueId }.toSet()
+        upcomingItems.forEach { item ->
+            if (item.playbackQueueId !in existingIds) {
+                displayList.add(item)
             }
         }
 
-        fullList.forEachIndexed { index, queueItem ->
+        displayList.forEachIndexed { index, queueItem ->
             val media = queueItem.item
             val map = Arguments.createMap().apply {
                 putString("id", media.subscriptionStoreId)
@@ -378,6 +381,8 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
                 TAG,
                 "onCurrentItemChanged: prev=${previousItem?.item?.title} -> cur=${currentItem?.item?.title}"
         )
+
+        val containerStoreId = controller.currentContainerStoreId
         val map = Arguments.createMap()
         if (currentItem != null) {
             val media = currentItem.item
@@ -388,8 +393,15 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
             map.putString("artworkUrl", media.getArtworkUrl(ARTWORK_SIZE, ARTWORK_SIZE))
             map.putDouble("duration", media.duration.toDouble())
             map.putInt("trackIndex", controller.playbackQueueIndex)
+            map.putInt("containerIndex", controller.currentContainerIndex)
             map.putLong("playbackQueueId", currentItem.playbackQueueId)
         }
+        // Always send container + capability info regardless of track
+        if (containerStoreId != null) {
+            map.putString("containerStoreId", containerStoreId)
+        }
+        map.putBoolean("canSkipToPrevious", controller.canSkipToPreviousItem())
+        map.putBoolean("canSkipToNext", controller.canSkipToNextItem())
         sendEvent("onCurrentItemChanged", map)
     }
 

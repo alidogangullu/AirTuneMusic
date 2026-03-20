@@ -48,6 +48,20 @@ function getCatalogSongId(track: PlaylistTrack): string {
   );
 }
 
+/** Convert API PlaylistTrack to the TrackInfo shape used by the player state. */
+function toTrackInfo(track: PlaylistTrack): import('../services/musicPlayer').TrackInfo {
+  const THUMB = 200;
+  return {
+    id: getCatalogSongId(track),
+    title: track.attributes?.name ?? null,
+    artistName: track.attributes?.artistName ?? null,
+    albumTitle: track.attributes?.albumName ?? null,
+    artworkUrl: getArtworkUrl(track.attributes?.artwork?.url, THUMB, THUMB) ?? null,
+    duration: track.attributes?.durationInMillis ?? 0,
+    trackIndex: 0, // will be overridden by SDK on playback
+  };
+}
+
 export type ContentDetailScreenProps = {
   contentId: string;
   contentType: RecommendationContentType;
@@ -212,12 +226,13 @@ export function ContentDetailScreen({
           success = await playSong(getCatalogSongId(firstTrack));
         }
       } else {
+        const trackInfos = normalized.tracks.map(toTrackInfo);
         switch (contentType) {
           case 'albums':
-            success = await playAlbum(contentId);
+            success = await playAlbum(contentId, 0, false, trackInfos);
             break;
           case 'playlists':
-            success = await playPlaylist(contentId);
+            success = await playPlaylist(contentId, 0, false, trackInfos);
             break;
           case 'stations':
             success = await playStation(contentId);
@@ -248,12 +263,13 @@ export function ContentDetailScreen({
           success = await playSong(getCatalogSongId(track));
         }
       } else {
+        const trackInfos = normalized.tracks.map(toTrackInfo);
         switch (contentType) {
           case 'albums':
-            success = await playAlbum(contentId, 0, true);
+            success = await playAlbum(contentId, 0, true, trackInfos);
             break;
           case 'playlists':
-            success = await playPlaylist(contentId, 0, true);
+            success = await playPlaylist(contentId, 0, true, trackInfos);
             break;
           default:
             // This is effectively play
@@ -282,8 +298,9 @@ export function ContentDetailScreen({
       const currentTrack = playerState.track;
       if (!currentTrack) { return false; }
 
-      // Fast path: if container matches, compare queue index
-      if (isThisContainer && playerState.queueIndex === index) {
+      // Fast path: Exact ID match
+      const trackId = getCatalogSongId(track);
+      if (currentTrack.id && trackId === currentTrack.id) {
         return true;
       }
 
@@ -300,7 +317,7 @@ export function ContentDetailScreen({
 
       return false;
     },
-    [isPlaying, isPaused, isThisContainer, playerState.track, playerState.queueIndex],
+    [isPlaying, isPaused, playerState.track],
   );
 
   const handleTrackPress = useCallback(
@@ -321,10 +338,10 @@ export function ContentDetailScreen({
         } else {
           switch (contentType) {
             case 'albums':
-              success = await playAlbum(contentId, index);
+              success = await playAlbum(contentId, index, false, normalized.tracks.map(toTrackInfo));
               break;
             case 'playlists':
-              success = await playPlaylist(contentId, index);
+              success = await playPlaylist(contentId, index, false, normalized.tracks.map(toTrackInfo));
               break;
           }
         }

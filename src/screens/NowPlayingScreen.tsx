@@ -21,6 +21,7 @@ import {
   View,
   FlatList,
   Dimensions,
+  findNodeHandle,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import LinearGradient from 'react-native-linear-gradient';
@@ -59,6 +60,17 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
   const hasTrack = track !== null && playbackState !== 'stopped';
   const palette = useImageColors(track?.artworkUrl);
   const paletteLoading = track?.artworkUrl && !palette;
+
+  // ── Focus & Navigation ──────────────────────────────────────────
+  const progressBarRef = useRef<View>(null);
+  const infoButtonRef = useRef<View>(null);
+  const queueButtonRef = useRef<View>(null);
+  const playbackControlsRef = useRef<View>(null);
+
+  const [progressBarNode, setProgressBarNode] = useState<number | null>(null);
+  const [playbackControlsNode, setPlaybackControlsNode] = useState<number | null>(null);
+  const [infoButtonNode, setInfoButtonNode] = useState<number | null>(null);
+  const [queueButtonNode, setQueueButtonNode] = useState<number | null>(null);
 
   // ── Interactive progress bar state ──────────────────────────────
   const [isFocused, setIsFocused] = useState(false);
@@ -206,18 +218,19 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
     item => item.playbackQueueId === (state.track as any)?.playbackQueueId
   );
 
-  // Scroll to current item when queue opens
+  // Keep queue centered on track/queue changes
+  const lastQueueRef = useRef(state.queue);
   useEffect(() => {
-    if (showQueue && state.queue.length > 0 && activeIndex >= 0) {
-      setTimeout(() => {
-        queueListRef.current?.scrollToIndex({
-          index: activeIndex,
-          animated: false,
-          viewPosition: 0.5,
-        });
-      }, 100);
+    if (showQueue && activeIndex >= 0 && queueListRef.current) {
+      const queueChanged = lastQueueRef.current !== state.queue;
+      lastQueueRef.current = state.queue;
+      
+      queueListRef.current.scrollToOffset({
+        offset: activeIndex * (ARTWORK_SIZE + 20),
+        animated: !queueChanged, // Instant on shuffle/queue updates, smooth on track skip
+      });
     }
-  }, [showQueue, state.queue.length, activeIndex]);
+  }, [activeIndex, state.queue, showQueue]);
 
   // Background colors derived from artwork
   const bg1 = palette?.darkMuted || palette?.dominant || '#1a1a2e';
@@ -306,33 +319,38 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
         ) : (
           <View style={styles.integratedQueueContainer}>
             <FlatList
+              key={`queue-${state.shuffleMode}`} // Force remount on shuffle to apply initialScrollIndex instantly
               ref={queueListRef}
               data={state.queue}
               horizontal
-              keyExtractor={(item, index) => `${item.id}-${index}`}
+              keyExtractor={(item) => item.playbackQueueId?.toString() ?? item.id}
               showsHorizontalScrollIndicator={false}
+              removeClippedSubviews={true}
+              initialNumToRender={5}
+              maxToRenderPerBatch={5}
+              windowSize={7}
               contentContainerStyle={[styles.queueListContent, { paddingHorizontal: HORIZONTAL_PADDING }]}
               initialScrollIndex={activeIndex >= 0 ? activeIndex : 0}
+              contentOffset={{ x: Math.max(0, activeIndex) * (ARTWORK_SIZE + 20), y: 0 }}
               getItemLayout={(_, index) => ({
                 length: ARTWORK_SIZE + 20, // artwork width (260) + gap (20)
                 offset: (ARTWORK_SIZE + 20) * index,
                 index,
               })}
-              onScrollToIndexFailed={(info) => {
-                setTimeout(() => {
-                  queueListRef.current?.scrollToIndex({ index: info.index, animated: false, viewPosition: 0.5 });
-                }, 100);
-              }}
               renderItem={({ item }) => {
                 const isCurrent = item.playbackQueueId === (state.track as any)?.playbackQueueId;
                 return (
                   <View style={styles.queueItemContainer}>
                     <View style={styles.artworkShadow}>
                       <View style={styles.artwork}>
-                        <Image
-                          source={{ uri: item.artworkUrl ?? '' }}
-                          style={styles.artwork}
-                        />
+                        {item.artworkUrl ? (
+                          <Image
+                            source={{ uri: item.artworkUrl }}
+                            style={styles.artwork}
+                          />
+                        ) : (
+                          <View style={[styles.artwork, styles.artworkPlaceholder]} />
+                        )}
                       </View>
                     </View>
                     <View style={[styles.meta, { opacity: showInfo ? 0 : 1 }]}>
@@ -452,9 +470,20 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
       <View style={styles.footerContainer}>
         {!showInfo && (
           <>
-            <PlaybackControls />
+            <View
+              ref={playbackControlsRef}
+              onLayout={() => setPlaybackControlsNode(findNodeHandle(playbackControlsRef.current))}>
+              <PlaybackControls 
+                nextFocusDown={progressBarNode} 
+                onLayoutButton={(node) => setPlaybackControlsNode(node)}
+              />
+            </View>
             <Pressable
+              ref={progressBarRef}
+              onLayout={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
               style={styles.progressContainer}
+              nextFocusUp={playbackControlsNode}
+              nextFocusDown={infoButtonNode}
               focusable={true}
               hasTVPreferredFocus={false}
               onFocus={handleFocus}
@@ -557,10 +586,13 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
                   {isScrubbing ? formatTime(pendingSeekMs) : formatTime(position)}
                 </Text>
                 <Pressable
+                  ref={infoButtonRef}
+                  onLayout={() => setInfoButtonNode(findNodeHandle(infoButtonRef.current))}
                   style={({ focused }) => [
                     styles.infoButton,
                     focused && styles.infoButtonFocused,
                   ]}
+                  nextFocusUp={progressBarNode}
                   onPress={() => setShowInfo(true)}
                   focusable={true}>
                   {({ focused }) => (
@@ -578,11 +610,14 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
                     : `-${formatTime(remainingMs)}`}
                 </Text>
                 <Pressable
+                  ref={queueButtonRef}
+                  onLayout={() => setQueueButtonNode(findNodeHandle(queueButtonRef.current))}
                   style={({ focused }) => [
                     styles.infoButton,
                     focused && styles.infoButtonFocused,
                     { alignSelf: 'flex-end', marginRight: -spacing.sm },
                   ]}
+                  nextFocusUp={progressBarNode}
                   onPress={() => setShowQueue(!showQueue)}
                   focusable={true}>
                   {({ focused }) => {
@@ -777,8 +812,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.3)',
     borderRadius: radius.lg,
     padding: spacing.lg,
-    //borderWidth: 1,
-    //borderColor: 'rgba(255,255,255,0.1)',
   },
   infoArtwork: {
     width: 100,
