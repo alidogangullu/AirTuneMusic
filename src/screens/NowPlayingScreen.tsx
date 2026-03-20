@@ -133,6 +133,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
   }, []);
 
   const handlePress = useCallback(() => {
+    if (state.buffering || state.isLoading) return; // Prevent interaction during track transition
     if (isScrubbingRef.current) {
       // Confirm seek
       seekTo(pendingSeekMsRef.current);
@@ -148,11 +149,12 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
         play();
       }
     }
-  }, [isPlaying, seekTo, play, pause]);
+  }, [isPlaying, seekTo, play, pause, state.buffering, state.isLoading]);
 
   // D-pad left/right: scrub ±5 s when progress bar is focused
   useTVEventHandler(useCallback((evt: { eventType: string }) => {
     if (!isFocusedRef.current) return;
+    if (state.buffering || state.isLoading) return; // Disable scrubbing during track transition
     if (evt.eventType !== 'left' && evt.eventType !== 'right') return;
     const base = isScrubbingRef.current ? pendingSeekMsRef.current : positionRef.current;
     const delta = evt.eventType === 'right' ? SEEK_STEP_MS : -SEEK_STEP_MS;
@@ -161,7 +163,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
     isScrubbingRef.current = true;
     setPendingSeekMs(next);
     setIsScrubbing(true);
-  }, []));
+  }, [state.buffering, state.isLoading]));
 
   // Handle back button (remote) in fullscreen mode
   useEffect(() => {

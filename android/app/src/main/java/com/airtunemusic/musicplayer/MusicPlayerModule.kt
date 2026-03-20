@@ -196,45 +196,83 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
 
     // ── Transport controls ──────────────────────────────────────
 
+    private fun isSafeForQueueModification(): Boolean {
+        val state = player?.playbackState
+        return state == PlaybackState.PLAYING || state == PlaybackState.PAUSED || state == PlaybackState.STOPPED
+    }
+
     @ReactMethod
     fun play() {
-        player?.play()
+        mainHandler.post { player?.play() }
     }
 
     @ReactMethod
     fun pause() {
-        player?.pause()
+        mainHandler.post { player?.pause() }
     }
 
     @ReactMethod
     fun stop() {
-        player?.stop()
-        stopProgressUpdates()
+        mainHandler.post {
+            player?.stop()
+            stopProgressUpdates()
+        }
     }
 
     @ReactMethod
     fun skipToNext() {
-        player?.skipToNextItem()
+        mainHandler.post { player?.skipToNextItem() }
     }
 
     @ReactMethod
     fun skipToPrevious() {
-        player?.skipToPreviousItem()
+        mainHandler.post { player?.skipToPreviousItem() }
     }
 
     @ReactMethod
     fun seekTo(positionMs: Double) {
-        player?.seekToPosition(positionMs.toLong())
+        val ms = positionMs.toLong()
+        mainHandler.post { player?.seekToPosition(ms) }
     }
 
     @ReactMethod
     fun setShuffleMode(mode: Int) {
-        player?.setShuffleMode(mode)
+        mainHandler.post { 
+            if (!isSafeForQueueModification()) {
+                Log.w(TAG, "Ignored setShuffleMode to prevent Apple Music SDK race condition during track transition")
+                return@post
+            }
+            val pos = player?.currentPosition ?: -1L
+            val dur = player?.duration ?: -1L
+            val remaining = if (dur > 0 && pos >= 0) dur - pos else Long.MAX_VALUE
+            if (remaining < 4000) {
+                val delay = remaining + 500
+                Log.w(TAG, "Deferring setShuffleMode for $delay ms to avoid gapless pre-buffering crash")
+                mainHandler.postDelayed({ player?.setShuffleMode(mode) }, delay)
+            } else {
+                player?.setShuffleMode(mode)
+            }
+        }
     }
 
     @ReactMethod
     fun setRepeatMode(mode: Int) {
-        player?.setRepeatMode(mode)
+        mainHandler.post { 
+            if (!isSafeForQueueModification()) {
+                Log.w(TAG, "Ignored setRepeatMode to prevent Apple Music SDK race condition during track transition")
+                return@post
+            }
+            val pos = player?.currentPosition ?: -1L
+            val dur = player?.duration ?: -1L
+            val remaining = if (dur > 0 && pos >= 0) dur - pos else Long.MAX_VALUE
+            if (remaining < 4000) {
+                val delay = remaining + 500
+                Log.w(TAG, "Deferring setRepeatMode for $delay ms to avoid gapless pre-buffering crash")
+                mainHandler.postDelayed({ player?.setRepeatMode(mode) }, delay)
+            } else {
+                player?.setRepeatMode(mode)
+            }
+        }
     }
 
     // ── Query state ─────────────────────────────────────────────
