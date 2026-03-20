@@ -43,14 +43,17 @@ export function SettingsScreen({
       [
         { text: 'Cancel', style: 'cancel' },
         {
+          text: 'Restore Purchases',
+          onPress: () => IapService.restorePurchases()
+        },
+        {
           text: 'Get Pro (Monthly)',
           onPress: async () => {
             try {
               await IapService.subscribe('pro_monthly');
               // The purchaseUpdatedListener in HomeScreen will catch the success and update the status
-              Alert.alert('Processing', 'Your purchase is being processed.');
             } catch (err: any) {
-              if (err.code !== 'E_USER_CANCELLED') {
+              if (err.code !== 'E_USER_CANCELLED' && err.code !== 'user-cancelled') {
                 Alert.alert('Error', 'Unable to initiate purchase. Please try again.');
               }
             }

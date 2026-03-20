@@ -8,8 +8,9 @@ import {
   finishTransaction,
   type Purchase,
   type PurchaseError,
+  ErrorCode,
 } from 'react-native-iap';
-import { Platform } from 'react-native';
+import { Platform, Alert } from 'react-native';
 import { QuotaService } from './quotaService';
 
 const itemSkus = Platform.select({
@@ -43,6 +44,10 @@ export const IapService = {
 
               // Unlock Pro features
               QuotaService.setProStatus(true);
+              Alert.alert(
+                'Approved',
+                'Your AirTune Pro subscription is now active! 🚀',
+              );
               console.log('[IAP] Purchase acknowledged and Pro status set');
             } catch (ackErr) {
               console.warn('[IAP] Acknowledge error', ackErr);
@@ -54,6 +59,17 @@ export const IapService = {
       purchaseErrorSubscription = purchaseErrorListener(
         (error: PurchaseError) => {
           console.warn('[IAP] Purchase error', error);
+          const errorCode = error.code as string;
+          if (
+            errorCode !== ErrorCode.UserCancelled &&
+            errorCode !== 'E_USER_CANCELLED' &&
+            errorCode !== 'user-cancelled'
+          ) {
+            Alert.alert(
+              'Declined',
+              'Your purchase was not successful. Please try again or check your account.',
+            );
+          }
         },
       );
     } catch (err) {
@@ -98,7 +114,8 @@ export const IapService = {
   },
 
   /**
-   * Verify if user currently has an active subscription
+   * Verify if user currently has an active subscription from the Store.
+   * This handles "Store-only" restoration without a backend.
    */
   async checkSubscriptionStatus(): Promise<boolean> {
     try {
@@ -110,6 +127,34 @@ export const IapService = {
       return isActive;
     } catch (err) {
       console.warn('[IAP] checkSubscriptionStatus error', err);
+      return false;
+    }
+  },
+
+  /**
+   * Explicitly request restoration of purchases (e.g., from a "Restore" button).
+   */
+  async restorePurchases(): Promise<boolean> {
+    try {
+      const isActive = await this.checkSubscriptionStatus();
+      if (isActive) {
+        Alert.alert(
+          'Restored',
+          'Your AirTune Pro status has been successfully restored! 🎉',
+        );
+      } else {
+        Alert.alert(
+          'Not Found',
+          'No active subscription was found for this account.',
+        );
+      }
+      return isActive;
+    } catch (err) {
+      console.warn('[IAP] restorePurchases error', err);
+      Alert.alert(
+        'Error',
+        'Failed to communicate with the Store. Please try again later.',
+      );
       return false;
     }
   },
