@@ -28,8 +28,11 @@ export interface PlayerState {
   repeatMode: number;
   queueCount: number;
   queueIndex: number;
+  queue: TrackInfo[];
   containerId: string | null;
   isLoading: boolean;
+  rating: number;
+  autoplay: boolean;
 }
 
 const initialState: PlayerState = {
@@ -43,8 +46,11 @@ const initialState: PlayerState = {
   repeatMode: 0,
   queueCount: 0,
   queueIndex: 0,
+  queue: [],
   containerId: null,
   isLoading: false,
+  rating: 0,
+  autoplay: false,
 };
 
 // ── Context ─────────────────────────────────────────────────────
@@ -65,6 +71,8 @@ interface PlayerContextValue {
   getQueue: () => Promise<TrackInfo[]>;
   setShuffleMode: (mode: number) => void;
   setRepeatMode: (mode: number) => void;
+  toggleRating: () => Promise<void>;
+  toggleAutoplay: () => void;
   isPlaying: boolean;
   showSettings: boolean;
   setShowSettings: (show: boolean) => void;
@@ -115,14 +123,26 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
           lastTrackIdRef.current = data.playbackQueueId;
         }
 
+        // Check if track is actually different to avoid progress bar jumps (e.g. on shuffle)
+        const isSameTrack =
+          data.playbackQueueId !== undefined &&
+          data.playbackQueueId === stateRef.current.track?.playbackQueueId;
+
         setState(s => ({
           ...s,
           track: data,
           duration: data.duration ?? 0,
-          position: 0,
+          position: isSameTrack ? s.position : 0,
           queueIndex: data.trackIndex ?? s.queueIndex,
           isLoading: false,
         }));
+
+        // Fetch rating for the new track
+        if (data.id) {
+          musicPlayer.getRating(data.id).then(r => {
+            setState(s => ({...s, rating: r}));
+          });
+        }
       }),
       musicPlayer.addEventListener('onPlaybackProgress', (data: ProgressInfo) => {
         setState(s => ({
@@ -140,9 +160,15 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
       }),
       musicPlayer.addEventListener('onPlaybackQueueChanged', data => {
         setState(s => ({...s, queueCount: data.count}));
+        musicPlayer.getQueue().then(queue => {
+          setState(s => ({...s, queue}));
+        });
       }),
       musicPlayer.addEventListener('onShuffleModeChanged', data => {
         setState(s => ({...s, shuffleMode: data.shuffleMode}));
+        musicPlayer.getQueue().then(queue => {
+          setState(s => ({...s, queue}));
+        });
       }),
       musicPlayer.addEventListener('onRepeatModeChanged', data => {
         setState(s => ({...s, repeatMode: data.repeatMode}));
@@ -182,6 +208,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         repeatMode: info.repeatMode,
         queueCount: info.queueCount,
         queueIndex: info.queueIndex,
+        queue: info.title ? s.queue : [], // Will be updated by getQueue() call below
         track: info.title
           ? {
               id: info.id ?? null,
@@ -195,6 +222,16 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
             }
           : s.track,
       }));
+
+      musicPlayer.getQueue().then(queue => {
+        setState(s => ({...s, queue}));
+      });
+
+      if (info.id) {
+        musicPlayer.getRating(info.id).then(r => {
+          setState(s => ({...s, rating: r}));
+        });
+      }
     });
 
     return () => {
@@ -304,6 +341,23 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     getQueue,
     setShuffleMode: musicPlayer.setShuffleMode,
     setRepeatMode: musicPlayer.setRepeatMode,
+    toggleRating: async () => {
+      const {track, rating} = stateRef.current;
+      if (!track?.id) return;
+      const newValue = rating === 1 ? 0 : 1;
+      setState(s => ({...s, rating: newValue}));
+      try {
+        await musicPlayer.setRating(track.id, newValue);
+      } catch (e) {
+        console.warn('Failed to set rating:', e);
+        setState(s => ({...s, rating})); // Rollback
+      }
+    },
+    toggleAutoplay: () => {
+      const newValue = !stateRef.current.autoplay;
+      setState(s => ({...s, autoplay: newValue}));
+      musicPlayer.setAutoplay(newValue);
+    },
     isPlaying: state.playbackState === 'playing',
     showSettings,
     setShowSettings,

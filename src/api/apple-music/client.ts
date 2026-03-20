@@ -57,12 +57,15 @@ function createClient(): AxiosInstance {
       }
 
       if (__DEV__) {
-        // Network errors: no response, log code + URL for debugging
-        const details =
-          !error.response && error.code
-            ? ` [${error.code}] ${fullUrl}`
-            : ` ${status ?? 'no-status'} ${url}`;
-        console.warn('[Apple Music API]', error.message, details);
+        const isRating404 = status === 404 && url.includes('/ratings/');
+        if (!isRating404) {
+          // Network errors: no response, log code + URL for debugging
+          const details =
+            !error.response && error.code
+              ? ` [${error.code}] ${fullUrl}`
+              : ` ${status ?? 'no-status'} ${url}`;
+          console.warn('[Apple Music API]', error.message, details);
+        }
       }
 
       return Promise.reject(error);

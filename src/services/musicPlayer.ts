@@ -1,6 +1,8 @@
 import {NativeModules, NativeEventEmitter, Platform} from 'react-native';
 import {getDeveloperToken} from '../api/apple-music/getDeveloperToken';
 import {waitForToken} from '../api/apple-music/musicUserToken';
+import * as ratings from '../api/apple-music/ratings';
+import {getMusicUserToken} from '../api/apple-music/musicUserToken';
 
 const {MusicPlayer} = NativeModules;
 
@@ -215,6 +217,24 @@ export async function getQueue(): Promise<TrackInfo[]> {
   }
   await ensureConfigured();
   return MusicPlayer.getQueue();
+}
+
+export async function getRating(songId: string): Promise<number> {
+  const userToken = getMusicUserToken();
+  if (!userToken) return 0;
+  return ratings.getRating(songId);
+}
+
+export async function setRating(songId: string, value: number): Promise<void> {
+  const userToken = getMusicUserToken();
+  if (!userToken) return;
+  await ratings.addRating(songId, value);
+}
+
+export function setAutoplay(enabled: boolean): void {
+  // Placeholder: Some SDKs handle this automatically or via a flag.
+  // We'll store it in a local variable or use a bridge method if found.
+  console.log('[musicPlayer] setAutoplay:', enabled);
 }
 
 export function release(): void {

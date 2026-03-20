@@ -22,10 +22,12 @@ import {
   FlatList,
   Dimensions,
 } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import LinearGradient from 'react-native-linear-gradient';
 import { NowPlayingBars } from '../components/NowPlayingBars';
 import { useImageColors } from '../hooks/useImageColors';
 import { usePlayer } from '../hooks/usePlayer';
+import { PlaybackControls } from '../components/PlaybackControls';
 import { ContentNavigationContext } from '../navigation';
 import { radius, spacing } from '../theme/layout';
 import { useStorefront } from '../hooks/useStorefront';
@@ -64,7 +66,6 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
   const [pendingSeekMs, setPendingSeekMs] = useState(0);
   const [showInfo, setShowInfo] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
-  const [queueData, setQueueData] = useState<TrackInfo[]>([]);
   const queueListRef = useRef<FlatList>(null);
 
   const { pushContent } = React.useContext(ContentNavigationContext);
@@ -199,13 +200,13 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
     ]).start();
   }, [track?.title, scaleAnim]);
 
-  const activeIndex = queueData.findIndex(
+  const activeIndex = state.queue.findIndex(
     item => item.playbackQueueId === (state.track as any)?.playbackQueueId
   );
 
   // Scroll to current item when queue opens
   useEffect(() => {
-    if (showQueue && queueData.length > 0 && activeIndex >= 0) {
+    if (showQueue && state.queue.length > 0 && activeIndex >= 0) {
       setTimeout(() => {
         queueListRef.current?.scrollToIndex({
           index: activeIndex,
@@ -214,7 +215,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
         });
       }, 100);
     }
-  }, [showQueue, queueData.length, activeIndex]);
+  }, [showQueue, state.queue.length, activeIndex]);
 
   // Background colors derived from artwork
   const bg1 = palette?.darkMuted || palette?.dominant || '#1a1a2e';
@@ -304,7 +305,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
           <View style={styles.integratedQueueContainer}>
             <FlatList
               ref={queueListRef}
-              data={queueData}
+              data={state.queue}
               horizontal
               keyExtractor={(item, index) => `${item.id}-${index}`}
               showsHorizontalScrollIndicator={false}
@@ -449,6 +450,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
       <View style={styles.footerContainer}>
         {!showInfo && (
           <>
+            <PlaybackControls />
             <Pressable
               style={styles.progressContainer}
               focusable={true}
@@ -579,18 +581,18 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
                     focused && styles.infoButtonFocused,
                     { alignSelf: 'flex-end', marginRight: -spacing.sm },
                   ]}
-                  onPress={async () => {
-                    const { getQueue } = require('../services/musicPlayer');
-                    const queue = await getQueue();
-                    setQueueData(queue);
-                    setShowQueue(!showQueue); // Use toggle
-                  }}
+                  onPress={() => setShowQueue(!showQueue)}
                   focusable={true}>
-                  {({ focused }) => (
-                    <Text style={[styles.infoButtonText, focused && styles.infoButtonTextFocused]}>
-                      Up Next
-                    </Text>
-                  )}
+                  {({ focused }) => {
+                    const iconColor = showQueue || focused ? '#fff' : 'rgba(255, 255, 255, 0.7)';
+                    return (
+                      <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <Path d="M3 12h18" />
+                        <Path d="M3 6h18" />
+                        <Path d="M3 18h18" />
+                      </Svg>
+                    );
+                  }}
                 </Pressable>
               </View>
             </View>
