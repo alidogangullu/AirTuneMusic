@@ -5,7 +5,7 @@
 
 import { createMMKV } from 'react-native-mmkv';
 
-const storage = createMMKV();
+const storage = createMMKV({ id: 'music-user-token' });
 const STORAGE_KEY = '@AirTuneMusic/music_user_token';
 
 let musicUserToken: string | null = null;

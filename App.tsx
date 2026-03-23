@@ -21,6 +21,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { ForceUpdateScreen } from './src/screens/ForceUpdateScreen';
 import { AppStartupProvider, useAppStartup } from './src/components/AppStartupProvider';
+import { handleLogout } from './src/services/musicPlayer';
 
 function AppContent(): React.JSX.Element {
   const { colors } = useTheme();
@@ -63,7 +64,6 @@ function AppContent(): React.JSX.Element {
           {hasToken ? (
             <HomeScreen
               onSignOut={async () => {
-                const { handleLogout } = await import('./src/services/musicPlayer');
                 await handleLogout();
                 queryClient.clear();
                 setHasToken(false);
@@ -73,7 +73,6 @@ function AppContent(): React.JSX.Element {
             <AppleMusicAuthScreen
               onAuthSuccess={() => setHasToken(true)}
               onSignOut={async () => {
-                const { handleLogout } = await import('./src/services/musicPlayer');
                 await handleLogout();
                 queryClient.clear();
                 setHasToken(false);

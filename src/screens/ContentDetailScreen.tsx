@@ -409,12 +409,14 @@ export function ContentDetailScreen({
           onShuffle={handleShuffle}
           styles={styles}
         />
-        {normalized.duration ? (
-          <Text style={styles.singleDetail}>{normalized.duration}</Text>
-        ) : null}
-        {normalized.genres && normalized.genres.length > 0 ? (
-          <Text style={styles.metaText}>{normalized.genres.join(' · ')}</Text>
-        ) : null}
+        <View style={styles.headerBlock}>
+          {normalized.duration ? (
+            <Text style={styles.singleDetail}>{normalized.duration}</Text>
+          ) : null}
+          {normalized.genres && normalized.genres.length > 0 ? (
+            <Text style={styles.metaText}>{normalized.genres.join(' · ')}</Text>
+          ) : null}
+        </View>
       </ScrollView>
     );
   }

@@ -3,6 +3,22 @@ apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
 /**
+ * Load environment variables from .env.local
+ */
+def env = [:]
+def envFile = rootProject.file("../.env.local")
+if (envFile.exists()) {
+    envFile.eachLine { line ->
+        if (line.trim() && !line.startsWith("#")) {
+            def parts = line.split("=", 2)
+            if (parts.length == 2) {
+                env[parts[0].trim()] = parts[1].trim()
+            }
+        }
+    }
+}
+
+/**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
  */
@@ -82,7 +98,7 @@ android {
         applicationId "com.airtunemusic"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 4
+        versionCode 5
         versionName "1.0"
     }
     signingConfigs {
@@ -93,10 +109,12 @@ android {
             keyPassword 'android'
         }
         release {
-            storeFile file('airtune.keystore')
-            storePassword 'airtune123'
-            keyAlias 'airtune-alias'
-            keyPassword 'airtune123'
+            if (env.ANDROID_RELEASE_STORE_FILE) {
+                storeFile file(env.ANDROID_RELEASE_STORE_FILE)
+                storePassword env.ANDROID_RELEASE_STORE_PASSWORD
+                keyAlias env.ANDROID_RELEASE_KEY_ALIAS
+                keyPassword env.ANDROID_RELEASE_KEY_PASSWORD
+            }
         }
     }
     buildTypes {

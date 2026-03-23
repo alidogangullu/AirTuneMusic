@@ -1,8 +1,8 @@
 import {NativeModules, NativeEventEmitter, Platform} from 'react-native';
 import {getDeveloperToken} from '../api/apple-music/getDeveloperToken';
-import {waitForToken} from '../api/apple-music/musicUserToken';
+import {waitForToken, getMusicUserToken, clearMusicUserToken} from '../api/apple-music/musicUserToken';
 import * as ratings from '../api/apple-music/ratings';
-import {getMusicUserToken} from '../api/apple-music/musicUserToken';
+import {clearRecentSearchesGlobal} from '../hooks/useRecentSearches';
 
 const {MusicPlayer} = NativeModules;
 
@@ -125,8 +125,6 @@ export async function syncTokens(): Promise<void> {
 }
 
 export async function handleLogout(): Promise<void> {
-  const {clearMusicUserToken} = await import('../api/apple-music/musicUserToken');
-  const {clearRecentSearchesGlobal} = await import('../hooks/useRecentSearches');
   try {
     stop();
   } catch (e) {

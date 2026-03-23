@@ -2,16 +2,17 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import {
-  clearMusicUserToken,
   loadMusicUserToken,
   setMusicUserToken,
   getDeveloperToken,
@@ -20,6 +21,7 @@ import * as TVLinkServer from '../services/tvLinkServer';
 import type { AppColors } from '../theme/colors';
 import { useTheme } from '../theme';
 import { radius, spacing, buttonMinHeight } from '../theme/layout';
+import * as musicPlayer from '../services/musicPlayer';
 
 import { DEV_SERVER } from '../config/devServer';
 const TV_LINK_SERVER = DEV_SERVER;
@@ -67,11 +69,8 @@ function startPolling(
           }
           setMusicUserToken(data.musicUserToken);
           // Sync new token to native player immediately
-          import('../services/musicPlayer').then(mp => mp.syncTokens());
+          musicPlayer.syncTokens();
 
-          // For development: log full Music User Token so it can be copied
-          // to Postman or other tools. Remove before production if needed.
-          console.log('Music User Token received:', data.musicUserToken);
           setTokenPreview(
             data.musicUserToken.length > 20
               ? `${data.musicUserToken.slice(0, 20)}...`
@@ -291,6 +290,50 @@ function makeStyles(c: AppColors) {
       flex: 1,
       alignItems: 'center',
     },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.9)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContent: {
+      width: '80%',
+      backgroundColor: '#2a2a2a',
+      borderRadius: radius.lg,
+      padding: spacing.xl,
+      borderWidth: 1,
+      borderColor: '#444',
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: '#fff',
+      marginBottom: spacing.lg,
+    },
+    textInput: {
+      backgroundColor: '#1a1a1a',
+      color: '#fff',
+      borderRadius: radius.md,
+      padding: spacing.md,
+      fontSize: 14,
+      minHeight: 100,
+      textAlignVertical: 'top',
+      marginBottom: spacing.xl,
+      borderWidth: 1,
+      borderColor: '#444',
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      gap: spacing.md,
+    },
+    modalButton: {
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.xl,
+      borderRadius: radius.md,
+      minWidth: 100,
+      alignItems: 'center',
+    },
   });
 }
 
@@ -314,6 +357,8 @@ export function AppleMusicAuthScreen({
   const [newCodeBtnFocused, setNewCodeBtnFocused] = useState(false);
   const [localServerIp, setLocalServerIp] = useState<string>('');
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [showManualInput, setShowManualInput] = useState(false);
+  const [manualToken, setManualToken] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -331,10 +376,8 @@ export function AppleMusicAuthScreen({
     const unsubscribe = TVLinkServer.onTokenReceived((event) => {
       if (event.code === linkCode) {
         setMusicUserToken(event.musicUserToken);
-        import('../services/musicPlayer').then(mp => {
-          mp.release(); // Force recreation of player with new token
-          mp.syncTokens();
-        });
+        musicPlayer.release(); // Force recreation of player with new token
+        musicPlayer.syncTokens();
         setTokenPreview(
           event.musicUserToken.length > 20
             ? `${event.musicUserToken.slice(0, 20)}...`
@@ -412,8 +455,7 @@ export function AppleMusicAuthScreen({
   const handleSignOut = () => {
     setRestoring(true);
     setTimeout(async () => {
-      const mp = await import('../services/musicPlayer');
-      await mp.handleLogout();
+      await musicPlayer.handleLogout();
       onSignOut?.();
       setMessage('');
       setTokenPreview('');
@@ -433,7 +475,10 @@ export function AppleMusicAuthScreen({
     return (
       <View style={styles.codeScreenRoot} focusable={false}>
         <View style={styles.codeScreenInner} focusable={false}>
-          <View style={styles.logoRow} focusable={false}>
+          <Pressable
+            onPress={() => setShowManualInput(true)}
+            focusable={false}
+            style={styles.logoRow}>
             <View style={styles.logoIcon} focusable={false}>
               <Image
                 source={require('../assets/images/logo.png')}
@@ -442,7 +487,7 @@ export function AppleMusicAuthScreen({
               />
             </View>
             <Text style={styles.logoTitle}>AirTune</Text>
-          </View>
+          </Pressable>
           <View style={styles.glassCard} focusable={false}>
             {restoring ? (
               <>
@@ -513,6 +558,46 @@ export function AppleMusicAuthScreen({
             )}
           </View>
         </View>
+        <Modal
+          visible={showManualInput}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowManualInput(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>
+                Manual Token Entry (Reviewer Mode)
+              </Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Paste Music User Token here..."
+                placeholderTextColor="rgba(255,255,255,0.4)"
+                value={manualToken}
+                onChangeText={setManualToken}
+                multiline
+                numberOfLines={4}
+              />
+              <View style={styles.modalButtons}>
+                <Pressable
+                  style={[styles.modalButton, { backgroundColor: '#444' }]}
+                  onPress={() => setShowManualInput(false)}>
+                  <Text style={{ color: '#fff' }}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.modalButton, { backgroundColor: '#f0535b' }]}
+                  onPress={() => {
+                    if (manualToken.trim()) {
+                      setMusicUserToken(manualToken.trim());
+                      musicPlayer.syncTokens();
+                      onAuthSuccess?.();
+                    }
+                  }}>
+                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>Connect</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </View>
     );
   }
@@ -556,6 +641,47 @@ export function AppleMusicAuthScreen({
           <Text style={styles.messageText}>{message}</Text>
         </View>
       ) : null}
+
+      <Modal
+        visible={showManualInput}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowManualInput(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              Manual Token Entry (Reviewer Mode)
+            </Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Paste Music User Token here..."
+              placeholderTextColor="rgba(255,255,255,0.4)"
+              value={manualToken}
+              onChangeText={setManualToken}
+              multiline
+              numberOfLines={4}
+            />
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={[styles.modalButton, { backgroundColor: '#444' }]}
+                onPress={() => setShowManualInput(false)}>
+                <Text style={{ color: '#fff' }}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalButton, { backgroundColor: '#f0535b' }]}
+                onPress={() => {
+                  if (manualToken.trim()) {
+                    setMusicUserToken(manualToken.trim());
+                    musicPlayer.syncTokens();
+                    onAuthSuccess?.();
+                  }
+                }}>
+                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Connect</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
