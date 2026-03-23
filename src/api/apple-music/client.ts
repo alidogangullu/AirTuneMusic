@@ -46,7 +46,8 @@ function createClient(): AxiosInstance {
       const isMeRequest = url.includes('/me/');
 
       if ((status === 401 || status === 403) && isMeRequest) {
-        clearMusicUserToken();
+        // clearMusicUserToken();
+        console.warn(`[Apple Music API] ${status} on ${url}, NOT clearing token automatically.`);
       }
 
       const apiMessage =

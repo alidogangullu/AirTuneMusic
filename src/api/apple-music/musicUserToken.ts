@@ -22,13 +22,13 @@ export function isTokenReady(): boolean {
 
 export async function waitForToken(): Promise<string | null> {
   if (isInitialized) return musicUserToken;
-  if (initPromise) return initPromise;
   return loadMusicUserToken();
 }
 
 export function setMusicUserToken(token: string | null): void {
   musicUserToken = token;
   isInitialized = true; // Mark as initialized so waitForToken doesn't reload
+  initPromise = Promise.resolve(token); // UPDATE CASHED PROMISE!
   if (token) {
     storage.set(STORAGE_KEY, token);
   } else {
