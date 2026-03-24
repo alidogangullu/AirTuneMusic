@@ -1,4 +1,5 @@
 import { createMMKV } from 'react-native-mmkv';
+import i18next from 'i18next';
 
 const storage = createMMKV({ id: 'quota-storage' });
 
@@ -95,11 +96,11 @@ export class QuotaService {
    */
   static getRemainingTimeFormatted(): string {
     const ms = this.getTimeUntilNextSlot();
-    if (ms <= 0) return 'Available now';
+    if (ms <= 0) return i18next.t('common.availableNow');
 
     const minutes = Math.ceil(ms / (60 * 1000));
-    if (minutes === 1) return '1 minute';
-    return `${minutes} minutes`;
+    if (minutes === 1) return i18next.t('common.minute');
+    return i18next.t('common.minutes', { count: minutes });
   }
 
   /**

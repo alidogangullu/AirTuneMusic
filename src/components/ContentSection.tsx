@@ -14,7 +14,7 @@ export type ContentSectionProps = {
   children: React.ReactNode;
 };
 
-export function ContentSection({
+export const ContentSection = React.memo(function ContentSection({
   title,
   subtitle,
   children,
@@ -33,7 +33,7 @@ export function ContentSection({
       <View style={styles.rail}>{children}</View>
     </View>
   );
-}
+});
 
 function useStyles(c: {textOnDark: string; textMuted: string}) {
   return StyleSheet.create({

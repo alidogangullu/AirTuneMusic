@@ -38,12 +38,25 @@ export function MainLayout({
   onSearchPress,
   onSettingsPress,
 }: Readonly<MainLayoutProps>): React.JSX.Element {
-  const Screen = SCREENS[activeTab];
-
   return (
     <View style={styles.root}>
       <View style={styles.contentFull}>
-        <Screen />
+        {(Object.keys(SCREENS) as NavTabId[]).map((tabId) => {
+          const Screen = SCREENS[tabId];
+          const isVisible = activeTab === tabId;
+          
+          return (
+            <View
+              key={tabId}
+              style={[
+                StyleSheet.absoluteFill,
+                { zIndex: isVisible ? 1 : 0, opacity: isVisible ? 1 : 0 },
+              ]}
+              pointerEvents={isVisible ? 'auto' : 'none'}>
+              <Screen />
+            </View>
+          );
+        })}
       </View>
       <View style={styles.topBarOverlay}>
         <TopBar

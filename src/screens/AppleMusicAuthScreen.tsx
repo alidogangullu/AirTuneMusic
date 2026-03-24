@@ -388,7 +388,7 @@ export function AppleMusicAuthScreen({
         );
         setPairingMode(false);
         setStatus('success');
-        setMessage('Linked! Token received.');
+        setMessage(t('auth.linkedMessage'));
         onAuthSuccess?.();
       }
     });
@@ -612,9 +612,9 @@ export function AppleMusicAuthScreen({
       contentContainerStyle={styles.container}
       style={styles.scroll}
       contentInsetAdjustmentBehavior="automatic">
-      <Text style={styles.title}>Apple Music Auth</Text>
+      <Text style={styles.title}>{t('auth.appleMusicAuth')}</Text>
       <Text style={styles.subtitle}>
-        Android TV – sign in API
+        {t('auth.androidTvSignIn')}
       </Text>
 
       {(status === 'success' || tokenPreview.length > 0) && (
@@ -654,11 +654,11 @@ export function AppleMusicAuthScreen({
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
-              Manual Token Entry (Reviewer Mode)
+              {t('auth.manualEntry')}
             </Text>
             <TextInput
               style={styles.textInput}
-              placeholder="Paste Music User Token here..."
+              placeholder={t('auth.manualEntryPlaceholder')}
               placeholderTextColor="rgba(255,255,255,0.4)"
               value={manualToken}
               onChangeText={setManualToken}
@@ -669,7 +669,7 @@ export function AppleMusicAuthScreen({
               <Pressable
                 style={[styles.modalButton, { backgroundColor: '#444' }]}
                 onPress={() => setShowManualInput(false)}>
-                <Text style={{ color: '#fff' }}>Cancel</Text>
+                <Text style={{ color: '#fff' }}>{t('common.cancel')}</Text>
               </Pressable>
               <Pressable
                 style={[styles.modalButton, { backgroundColor: '#f0535b' }]}
@@ -680,7 +680,7 @@ export function AppleMusicAuthScreen({
                     onAuthSuccess?.();
                   }
                 }}>
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Connect</Text>
+                <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t('auth.connect')}</Text>
               </Pressable>
             </View>
           </View>

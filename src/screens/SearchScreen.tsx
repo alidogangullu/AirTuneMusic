@@ -28,7 +28,7 @@ import type { SearchResultItem } from '../types/search';
 
 // ── Keyboard layout ──────────────────────────────────────────────
 const ALPHA_KEYS = 'abcdefghijklmnopqrstuvwxyz'.split('');
-const SPECIAL_KEYS = [{ id: '123', label: '123' }, { id: 'SPACE', label: 'SPACE' }];
+const SPECIAL_KEYS = [{ id: '123', label: '123' }, { id: 'SPACE', label: 'search.space' }];
 
 // ── Main component ───────────────────────────────────────────────
 
@@ -138,7 +138,7 @@ export function SearchScreen(): React.JSX.Element {
         {SPECIAL_KEYS.map(k => (
           <KeyButton
             key={k.id}
-            label={k.id === '123' ? (showNumbers ? 'abc' : '123') : k.label}
+            label={k.id === '123' ? (showNumbers ? 'abc' : '123') : (k.id === 'SPACE' ? t(k.label) : k.label)}
             onPress={() => handleKeyPress(k.id)}
             onInteraction={resetSearchTimer}
             styles={styles}
@@ -317,14 +317,15 @@ function RecentSearchCard({
   onPress: () => void;
   styles: ReturnType<typeof useStyles>;
 }>) {
+  const { t } = useTranslation();
   const [focused, setFocused] = useState(false);
   const THUMB = 72;
   const artworkUrl = getArtworkUrl(item.attributes?.artwork?.url, THUMB * 2, THUMB * 2);
   const TYPE_LABELS: Record<string, string> = {
-    artists: 'Artist',
-    songs: 'Song',
-    albums: 'Album',
-    playlists: 'Playlist',
+    artists: t('common.artist'),
+    songs: t('common.song'),
+    albums: t('common.album'),
+    playlists: t('common.playlist'),
   };
   const typeLabel = TYPE_LABELS[item.type] ?? item.type;
   const subtitle = item.attributes?.artistName

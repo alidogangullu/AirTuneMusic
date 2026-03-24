@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { getArtworkUrl } from '../api/apple-music';
+import { formatFullDate } from '../utils/dateUtils';
 import { useArtistDetail } from '../hooks/useArtistDetail';
 import { usePlayer } from '../hooks/usePlayer';
 import { useContentNavigation } from '../navigation';
@@ -217,7 +218,7 @@ function LatestReleaseCard({
   );
 
   const releaseDate = album.attributes?.releaseDate
-    ? new Date(album.attributes.releaseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()
+    ? formatFullDate(album.attributes.releaseDate).toUpperCase()
     : '';
 
   return (

@@ -18,30 +18,33 @@ export function useRecommendations() {
   });
 }
 
-export type FlattenedRecommendation = {
-  recommendationTitle: string;
-  content: RecommendationContent;
+export type RecommendationSection = {
+  title: string;
+  contents: RecommendationContent[];
 };
 
 /**
- * Flatten recommendations into content items for display.
- * Each recommendation can have multiple contents (playlists, albums, stations).
+ * Group recommendations into sections for display.
  */
-export function flattenRecommendationContents(
+export function groupRecommendations(
   recommendations: PersonalRecommendation[],
-): FlattenedRecommendation[] {
-  const result: FlattenedRecommendation[] = [];
+): RecommendationSection[] {
+  const sections: RecommendationSection[] = [];
 
   for (const rec of recommendations) {
-    const contents = rec.relationships?.contents?.data ?? [];
+    const contents = (rec.relationships?.contents?.data ?? []).filter(
+      c => c.type !== 'music-videos',
+    );
+    if (contents.length === 0) continue;
+
     const title =
       rec.attributes?.title?.stringForDisplay ?? rec.attributes?.kind ?? '';
 
-    for (const content of contents) {
-      if (content.type === 'music-videos') continue;
-      result.push({recommendationTitle: title, content});
-    }
+    sections.push({
+      title,
+      contents,
+    });
   }
 
-  return result;
+  return sections;
 }

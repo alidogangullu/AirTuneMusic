@@ -7,6 +7,7 @@ import React, {
   useState,
 } from 'react';
 import {Alert} from 'react-native';
+import {useTranslation} from 'react-i18next';
 import * as musicPlayer from '../services/musicPlayer';
 import {QuotaService} from '../services/quotaService';
 import type {
@@ -109,6 +110,7 @@ function buildVisualQueue(s: PlayerState, sdkQueue: TrackInfo[]): TrackInfo[] {
 // ── Provider ────────────────────────────────────────────────────
 
 export function PlayerProvider({children}: {children: React.ReactNode}) {
+  const {t} = useTranslation();
   const [state, setState] = useState<PlayerState>(initialState);
   const [showSettings, setShowSettings] = useState(false);
   const stateRef = useRef(state);
@@ -132,12 +134,15 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
             musicPlayer.stop();
             const remaining = QuotaService.getRemainingTimeFormatted();
             Alert.alert(
-              'Limit Reached',
-              `You have reached your hourly limit of ${QuotaService.HOURLY_LIMIT} songs. Next play available in: ${remaining}.`,
+              t('settings.pro.limitReached'),
+              t('settings.pro.limitReachedMessage', {
+                limit: QuotaService.HOURLY_LIMIT,
+                remaining: remaining,
+              }),
               [
-                {text: 'Cancel', style: 'cancel'},
+                {text: t('common.cancel'), style: 'cancel'},
                 {
-                  text: 'View Options',
+                  text: t('common.viewOptions'),
                   onPress: () => setShowSettings(true),
                 },
               ],
@@ -294,12 +299,15 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
       if (!QuotaService.canPlayNextSong()) {
         const remaining = QuotaService.getRemainingTimeFormatted();
         Alert.alert(
-          'Limit Reached',
-          `You have reached your hourly limit of ${QuotaService.HOURLY_LIMIT} songs. Next play available in: ${remaining}.`,
+          t('settings.pro.limitReached'),
+          t('settings.pro.limitReachedMessage', {
+            limit: QuotaService.HOURLY_LIMIT,
+            remaining: remaining,
+          }),
           [
-            {text: 'Cancel', style: 'cancel'},
+            {text: t('common.cancel'), style: 'cancel'},
             {
-              text: 'View Options',
+              text: t('common.viewOptions'),
               onPress: () => setShowSettings(true),
             },
           ],

@@ -3,6 +3,7 @@ import { initReactI18next } from 'react-i18next';
 import { createMMKV } from 'react-native-mmkv';
 import en from '../locales/en.json';
 import tr from '../locales/tr.json';
+import { queryClient } from '../api/queryClient';
 
 const storage = createMMKV({ id: 'i18n-storage' });
 const LANGUAGE_KEY = 'app_language';
@@ -33,6 +34,7 @@ i18n
       tr: { translation: tr },
     },
     fallbackLng: 'en',
+    debug: false,
     interpolation: {
       escapeValue: false, // React already docs escaping
     },
@@ -41,5 +43,9 @@ i18n
 export const changeLanguage = (lang: 'en' | 'tr') => {
   i18n.changeLanguage(lang);
 };
+
+i18n.on('languageChanged', () => {
+  queryClient.clear();
+});
 
 export default i18n;

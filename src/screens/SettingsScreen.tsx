@@ -37,7 +37,7 @@ export function SettingsScreen({
     const isPro = QuotaService.isProUser();
 
     if (isPro) {
-      Alert.alert('AirTune Pro', 'You have an active AirTune Pro subscription. Enjoy unlimited music!');
+      Alert.alert(t('settings.pro.title'), t('settings.pro.activeMessage'));
       return;
     }
 
@@ -45,23 +45,28 @@ export function SettingsScreen({
     const remaining = QuotaService.getRemainingTimeFormatted();
 
     Alert.alert(
-      'AirTune Pro',
-      `Upgrade to Pro to remove the hourly limit (${QuotaService.HOURLY_LIMIT} songs/hour).\n\nCurrent Usage: ${usage.used}/${usage.total} songs.\n\nLimit resets in: ${remaining}.`,
+      t('settings.pro.title'),
+      t('settings.pro.upgradeMessage', {
+        limit: QuotaService.HOURLY_LIMIT,
+        used: usage.used,
+        total: usage.total,
+        remaining: remaining,
+      }),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Restore Purchases',
+          text: t('settings.pro.restorePurchases'),
           onPress: () => IapService.restorePurchases()
         },
         {
-          text: 'Get Pro (Monthly)',
+          text: t('settings.pro.getProMonthly'),
           onPress: async () => {
             try {
               await IapService.subscribe('pro_monthly');
               // The purchaseUpdatedListener in HomeScreen will catch the success and update the status
             } catch (err: any) {
               if (err.code !== 'E_USER_CANCELLED' && err.code !== 'user-cancelled') {
-                Alert.alert('Error', 'Unable to initiate purchase. Please try again.');
+                Alert.alert(t('common.error'), t('iap.errorMessage'));
               }
             }
           }
@@ -76,11 +81,11 @@ export function SettingsScreen({
     } else if (item === 'Subscription') {
       handleSubscriptionPress();
     } else if (item === 'Support') {
-      Alert.alert('Support', 'gullualidogan@gmail.com');
+      Alert.alert(t('settings.support'), 'gullualidogan@gmail.com');
     } else if (item === 'About') {
       Alert.alert(
-        'About AirTune Music',
-        'AirTune Music is a third-party Apple Music client built exclusively using the official Apple Music API. We do not store any of your personal data; all information is fetched directly from Apple\'s servers to provide a seamless music experience.',
+        t('settings.aboutInfo.title'),
+        t('settings.aboutInfo.message'),
       );
     }
   };
@@ -129,19 +134,19 @@ export function SettingsScreen({
             ))}
             
             <View style={styles.divider} />
-            <Text style={styles.sectionTitle}>{t('settings.language')}</Text>
+            <Text style={styles.sectionTitle}>{t('settings.language.title')}</Text>
             <SettingsMenuItem
-              label={t('settings.language_en') + (i18n.language === 'en' ? ' ✓' : '')}
+              label={t('settings.language.english') + (i18n.language === 'en' ? ' ✓' : '')}
               onPress={() => changeLanguage('en')}
             />
             <SettingsMenuItem
-              label={t('settings.language_tr') + (i18n.language === 'tr' ? ' ✓' : '')}
+              label={t('settings.language.turkish') + (i18n.language === 'tr' ? ' ✓' : '')}
               onPress={() => changeLanguage('tr')}
             />
             
             <View style={styles.divider} />
             <SettingsMenuItem
-              label={t('settings.sign_out')}
+              label={t('settings.signOut')}
               onPress={() => handleItemPress('Sign Out')}
             />
           </ScrollView>

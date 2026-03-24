@@ -20,7 +20,7 @@ export type RecommendationCardProps = {
   onPress?: () => void;
 };
 
-export function RecommendationCard({
+export const RecommendationCard = React.memo(function RecommendationCard({
   category,
   content,
   onPress,
@@ -72,7 +72,7 @@ export function RecommendationCard({
       </View>
     </Pressable>
   );
-}
+});
 
 function useStyles(c: {
   textOnDark: string;

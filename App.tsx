@@ -4,7 +4,8 @@
  */
 
 import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './src/api/queryClient';
 import {
   StatusBar,
   StyleSheet,
@@ -12,6 +13,7 @@ import {
   Image,
   Text,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { GradientBackground } from './src/components/GradientBackground';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { PlayerProvider } from './src/hooks/usePlayer';
@@ -24,6 +26,7 @@ import { AppStartupProvider, useAppStartup } from './src/components/AppStartupPr
 import { handleLogout } from './src/services/musicPlayer';
 
 function AppContent(): React.JSX.Element {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const { isInitialized, hasToken, setHasToken, updateInfo } = useAppStartup();
 
@@ -38,7 +41,7 @@ function AppContent(): React.JSX.Element {
             style={styles.splashLogo}
             resizeMode="contain"
           />
-          <Text style={styles.splashText}>AirTune Music</Text>
+          <Text style={styles.splashText}>{t('common.appName')}</Text>
         </View>
       </GradientBackground>
     );
@@ -85,7 +88,7 @@ function AppContent(): React.JSX.Element {
   );
 }
 
-const queryClient = new QueryClient();
+
 
 function App(): React.JSX.Element {
   return (

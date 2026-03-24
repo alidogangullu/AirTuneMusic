@@ -7,7 +7,17 @@
     "cancel": "İptal",
     "ok": "Tamam",
     "unknown": "Bilinmiyor",
-    "noItems": "Öğe yok"
+    "noItems": "Öğe yok",
+    "appName": "AirTune Music",
+    "availableNow": "Şimdi mevcut",
+    "minute": "1 dakika",
+    "minutes": "{{count}} dakika",
+    "viewOptions": "Seçenekleri Görüntüle",
+    "comingSoon": "Yakında",
+    "artist": "Sanatçı",
+    "song": "Şarkı",
+    "album": "Albüm",
+    "playlist": "Çalma Listesi"
   },
   "topBar": {
     "listenNow": "Şimdi Dinle",
@@ -29,11 +39,13 @@
     "placeholder": "Sanatçılar, Şarkılar, Sözler ve Daha Fazlası",
     "recent": "Son Aramalar",
     "clearRecent": "Son Aramaları Temizle",
-    "results": "\"{{term}}\" için sonuçlar"
+    "results": "\"{{term}}\" için sonuçlar",
+    "space": "BOŞLUK"
   },
   "library": {
     "title": "Arşiv",
     "recentlyAdded": "Son Eklenenler",
+    "recentlyPlayed": "Son Çalınanlar",
     "playlists": "Çalma Listeleri",
     "artists": "Sanatçılar",
     "albums": "Albümler",
@@ -57,6 +69,7 @@
     "songsCount": "{{count}} şarkı",
     "updated": "{{date}} güncellendi",
     "playlistBy": "{{curator}} çalma listesi",
+    "noRecommendationsYet": "Henüz öneri yok",
     "today": "Bugün",
     "yesterday": "Dün",
     "daysAgo": "{{count}} gün önce",
@@ -70,7 +83,8 @@
     "latestRelease": "Son Çıkan",
     "essentialAlbums": "Temel Albümler",
     "failedToLoad": "Sanatçı yüklenemedi",
-    "single": "Tekli",
+    "madeForYou": "Senin İçin Hazırlandı",
+    "single": "Single",
     "album": "Albüm"
   },
   "auth": {
@@ -82,11 +96,18 @@
     "loading": "Yükleniyor...",
     "linked": "Bağlandı! Token alındı.",
     "manualEntry": "Manuel Token Girişi (İnceleme Modu)",
+    "manualEntryTitle": "Token'ı Manuel Gir",
+    "manualEntryPlaceholder": "Müzik Kullanıcı Token'ını buraya yapıştırın...",
     "pasteToken": "Music User Token'ı buraya yapıştırın...",
     "connect": "Bağlan",
     "signOut": "Token'ı temizle (oturumu kapat)",
     "appleMusicAuth": "Apple Music Kimlik Doğrulama",
-    "androidTvSignIn": "Android TV – giriş API'si"
+    "androidTvSignIn": "Android TV – giriş API'si",
+    "connectTitle": "Apple Music'e Bağlan",
+    "scanQR": "QR kodunu tarayın",
+    "orVisitURL": "veya URL'yi ziyaret edin ve aşağıdaki kodu girin",
+    "visitURL": "ZİYARET EDİLECEK URL",
+    "linkedMessage": "Bağlandı! Token alındı."
   },
   "settings": {
     "title": "Ayarlar",
@@ -96,9 +117,22 @@
       "turkish": "Türkçe"
     },
     "subscription": "Abonelik",
-    "support": "Destek",
     "about": "Hakkında",
-    "signOut": "Çıkış Yap"
+    "signOut": "Çıkış Yap",
+    "pro": {
+      "title": "AirTune Pro",
+      "activeMessage": "Aktif bir AirTune Pro aboneliğiniz var. Sınırsız müziğin tadını çıkarın!",
+      "upgradeMessage": "Saatlik sınırı ({{limit}} şarkı/saat) kaldırmak için Pro'ya yükseltin.\n\nMevcut Kullanım: {{used}}/{{total}} şarkı.\n\nSınır şu süre içinde sıfırlanacak: {{remaining}}.",
+      "limitReached": "Sınıra Ulaşıldı",
+      "limitReachedMessage": "Saatlik {{limit}} şarkı sınırınıza ulaştınız. Bir sonraki şarkı şurada mevcut: {{remaining}}.",
+      "restorePurchases": "Satın Almaları Geri Yükle",
+      "getProMonthly": "Pro Al (Aylık)"
+    },
+    "support": "Destek",
+    "aboutInfo": {
+      "title": "AirTune Music Hakkında",
+      "message": "AirTune Music, yalnızca resmi Apple Music API'si kullanılarak oluşturulmuş üçüncü taraf bir Apple Music istemcisidir. Kişisel verilerinizin hiçbirini saklamıyoruz; tüm bilgiler, kesintisiz bir müzik deneyimi sağlamak için doğrudan Apple sunucularından alınır."
+    }
   },
   "videos": {
     "title": "Videolar",

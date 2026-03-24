@@ -20,6 +20,8 @@ import { useContentDetail } from '../hooks/useContentDetail';
 import { NowPlayingBars } from '../components/NowPlayingBars';
 import { usePlayer } from '../hooks/usePlayer';
 import { useContentNavigation } from '../navigation';
+import i18n from '../i18n';
+import { formatDuration, formatFullDate, formatRelativeDate } from '../utils/dateUtils';
 import { useTheme } from '../theme';
 import { radius, spacing } from '../theme/layout';
 import type {
@@ -84,14 +86,15 @@ type NormalizedDetail = {
 };
 
 function normalizePlaylists(item: PlaylistDetail): NormalizedDetail {
+  const t = i18n.t.bind(i18n);
   const attrs = item.attributes;
   const formattedDate = attrs?.lastModifiedDate
     ? formatRelativeDate(attrs.lastModifiedDate)
     : null;
   return {
     name: attrs?.name,
-    subtitle: attrs?.curatorName ? `Playlist by ${attrs.curatorName}` : undefined,
-    meta: formattedDate ? `Updated ${formattedDate}` : undefined,
+    subtitle: attrs?.curatorName ? t('detail.playlistBy', { curator: attrs.curatorName }) : undefined,
+    meta: formattedDate ? t('detail.updated', { date: formattedDate }) : undefined,
     description: attrs?.description?.standard,
     artworkUrl: getArtworkUrl(attrs?.artwork?.url, ARTWORK_SIZE, ARTWORK_SIZE),
     tracks: (item.relationships?.tracks?.data ?? []).filter(t => t.type !== 'music-videos' && t.type !== 'library-music-videos'),
@@ -100,12 +103,13 @@ function normalizePlaylists(item: PlaylistDetail): NormalizedDetail {
 }
 
 function normalizeAlbum(item: AlbumDetail): NormalizedDetail {
+  const t = i18n.t.bind(i18n);
   const attrs = item.attributes;
   const year = attrs?.releaseDate ? new Date(attrs.releaseDate).getFullYear() : null;
   const metaParts = [
     year,
     attrs?.recordLabel,
-    attrs?.trackCount == null ? null : `${attrs.trackCount} songs`,
+    attrs?.trackCount == null ? null : t('detail.songsCount', { count: attrs.trackCount }),
   ].filter(Boolean);
   return {
     name: attrs?.name,
@@ -149,7 +153,7 @@ function normalizeMusicVideo(item: MusicVideoDetail): NormalizedDetail {
 }
 
 function normalizeStation(item: StationDetail): NormalizedDetail {
-  const { t } = require('i18next');
+  const t = i18n.t.bind(i18n);
   const attrs = item.attributes;
   return {
     name: attrs?.name,
@@ -627,26 +631,6 @@ function MoreButton({
       <Text style={styles.moreBtnText}>•••</Text>
     </Pressable>
   );
-}
-
-// ── Helpers ──────────────────────────────────────────────────────
-
-function formatDuration(ms: number): string {
-  const totalSecs = Math.floor(ms / 1000);
-  const mins = Math.floor(totalSecs / 60);
-  const secs = totalSecs % 60;
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-}
-
-function formatRelativeDate(isoDate: string): string {
-  const { t } = require('i18next');
-  const date = new Date(isoDate);
-  const now = new Date();
-  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) { return t('detail.today'); }
-  if (diffDays === 1) { return t('detail.yesterday'); }
-  if (diffDays < 7) { return t('detail.daysAgo', { count: diffDays }); }
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 // ── Styles ───────────────────────────────────────────────────────
