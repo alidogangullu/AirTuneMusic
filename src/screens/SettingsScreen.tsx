@@ -6,6 +6,8 @@
 
 import React from 'react';
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { changeLanguage } from '../i18n';
 import { SettingsMenuItem } from '../components/SettingsMenuItem';
 import { GradientBackground } from '../components/GradientBackground';
 import { useTheme } from '../theme';
@@ -18,13 +20,18 @@ export type SettingsScreenProps = {
   onSignOut?: () => void;
 };
 
-const MENU_ITEMS = ['Subscription', 'Support', 'About'];
-
 export function SettingsScreen({
   onBack,
   onSignOut,
 }: Readonly<SettingsScreenProps>): React.JSX.Element {
   const { colors } = useTheme();
+  const { t, i18n } = useTranslation();
+
+  const MENU_ITEMS = [
+    { id: 'Subscription', label: t('settings.subscription') },
+    { id: 'Support', label: t('settings.support') },
+    { id: 'About', label: t('settings.about') },
+  ];
 
   const handleSubscriptionPress = async () => {
     const isPro = QuotaService.isProUser();
@@ -91,7 +98,7 @@ export function SettingsScreen({
       />
       <View style={styles.container}>
         {/* Header */}
-        <Text style={styles.title}>Settings</Text>
+        <Text style={styles.title}>{t('settings.title')}</Text>
 
         {/* Two-column layout */}
         <View style={styles.columns}>
@@ -114,15 +121,27 @@ export function SettingsScreen({
             showsVerticalScrollIndicator={false}>
             {MENU_ITEMS.map((item, index) => (
               <SettingsMenuItem
-                key={item}
-                label={item}
+                key={item.id}
+                label={item.label}
                 hasTVPreferredFocus={index === 0}
-                onPress={() => handleItemPress(item)}
+                onPress={() => handleItemPress(item.id)}
               />
             ))}
+            
+            <View style={styles.divider} />
+            <Text style={styles.sectionTitle}>{t('settings.language')}</Text>
+            <SettingsMenuItem
+              label={t('settings.language_en') + (i18n.language === 'en' ? ' ✓' : '')}
+              onPress={() => changeLanguage('en')}
+            />
+            <SettingsMenuItem
+              label={t('settings.language_tr') + (i18n.language === 'tr' ? ' ✓' : '')}
+              onPress={() => changeLanguage('tr')}
+            />
+            
             <View style={styles.divider} />
             <SettingsMenuItem
-              label="Sign Out"
+              label={t('settings.sign_out')}
               onPress={() => handleItemPress('Sign Out')}
             />
           </ScrollView>
@@ -197,5 +216,14 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: spacing.md,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'rgba(0, 0, 0, 0.4)',
+    textTransform: 'uppercase',
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+    marginLeft: 24,
   },
 });

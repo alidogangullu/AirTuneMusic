@@ -7,6 +7,7 @@ import {
   Pressable,
   Image,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
 import { AppColors } from '../theme/colors';
 import { radius, spacing } from '../theme/layout';
@@ -126,6 +127,7 @@ export const ForceUpdateScreen: React.FC<ForceUpdateScreenProps> = ({
   storeUrl,
   latestVersion,
 }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [isFocused, setIsFocused] = useState(false);
@@ -153,14 +155,14 @@ export const ForceUpdateScreen: React.FC<ForceUpdateScreenProps> = ({
         </View>
 
         <View style={styles.glassCard}>
-          <Text style={styles.title}>Update Required</Text>
+          <Text style={styles.title}>{t('update.title')}</Text>
           <Text style={styles.subtitle}>
-            A new version of AirTune Music is available. Please update to continue using the app with latest features and improvements.
+            {t('update.message')}
           </Text>
 
           <View style={styles.versionBadge}>
             <Text style={styles.versionText}>
-              New Version: {latestVersion}
+              {t('update.newVersion', { version: latestVersion })}
             </Text>
           </View>
 
@@ -177,7 +179,7 @@ export const ForceUpdateScreen: React.FC<ForceUpdateScreenProps> = ({
             hasTVPreferredFocus={true}
           >
             <Text style={[styles.buttonText, isFocused && styles.buttonTextFocused]}>
-              Update Now
+              {t('update.button')}
             </Text>
           </Pressable>
         </View>

@@ -14,6 +14,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { getArtworkUrl } from '../api/apple-music/recommendations';
 import { useContentDetail } from '../hooks/useContentDetail';
 import { NowPlayingBars } from '../components/NowPlayingBars';
@@ -148,11 +149,12 @@ function normalizeMusicVideo(item: MusicVideoDetail): NormalizedDetail {
 }
 
 function normalizeStation(item: StationDetail): NormalizedDetail {
+  const { t } = require('i18next');
   const attrs = item.attributes;
   return {
     name: attrs?.name,
-    subtitle: 'Radio Station',
-    meta: attrs?.isLive ? '🔴 Live' : 'On Demand',
+    subtitle: t('detail.radioStation'),
+    meta: attrs?.isLive ? `🔴 ${t('detail.live')}` : t('detail.onDemand'),
     artworkUrl: getArtworkUrl(attrs?.artwork?.url, ARTWORK_SIZE, ARTWORK_SIZE),
     tracks: [],
     kind: 'radio',
@@ -187,6 +189,7 @@ export function ContentDetailScreen({
   contentType,
   onBack,
 }: Readonly<ContentDetailScreenProps>): React.JSX.Element {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useStyles(colors);
   const { data, isLoading, error } = useContentDetail(contentId, contentType);
@@ -470,6 +473,7 @@ function ContentHeader({
   onShuffle: () => void;
   styles: ReturnType<typeof useStyles>;
 }>) {
+  const { t } = useTranslation();
   const showShuffle = normalized.kind === 'tracklist';
 
   return (
@@ -494,9 +498,9 @@ function ContentHeader({
 
       {/* [Play] [Shuffle?]        [•••] */}
       <View style={styles.actionRow}>
-        <ActionButton icon="▶" label="Play" grabFocus onPress={onPlay} styles={styles} />
+        <ActionButton icon="▶" label={t('detail.play')} grabFocus onPress={onPlay} styles={styles} />
         {showShuffle ? (
-          <ActionButton icon="⇌" label="Shuffle" onPress={onShuffle} styles={styles} />
+          <ActionButton icon="⇌" label={t('detail.shuffle')} onPress={onShuffle} styles={styles} />
         ) : null}
         <View style={styles.actionSpacer} />
         <MoreButton styles={styles} />
@@ -635,12 +639,13 @@ function formatDuration(ms: number): string {
 }
 
 function formatRelativeDate(isoDate: string): string {
+  const { t } = require('i18next');
   const date = new Date(isoDate);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) { return 'Today'; }
-  if (diffDays === 1) { return 'Yesterday'; }
-  if (diffDays < 7) { return `${diffDays} days ago`; }
+  if (diffDays === 0) { return t('detail.today'); }
+  if (diffDays === 1) { return t('detail.yesterday'); }
+  if (diffDays < 7) { return t('detail.daysAgo', { count: diffDays }); }
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 

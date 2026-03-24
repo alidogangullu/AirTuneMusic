@@ -11,6 +11,7 @@ import {
   ErrorCode,
 } from 'react-native-iap';
 import { Platform, Alert } from 'react-native';
+import i18next from 'i18next';
 import { QuotaService } from './quotaService';
 
 const itemSkus = Platform.select({
@@ -45,8 +46,8 @@ export const IapService = {
               // Unlock Pro features
               QuotaService.setProStatus(true);
               Alert.alert(
-                'Approved',
-                'Your AirTune Pro subscription is now active! 🚀',
+                i18next.t('iap.approved'),
+                i18next.t('iap.activeMessage'),
               );
               console.log('[IAP] Purchase acknowledged and Pro status set');
             } catch (ackErr) {
@@ -66,8 +67,8 @@ export const IapService = {
             errorCode !== 'user-cancelled'
           ) {
             Alert.alert(
-              'Declined',
-              'Your purchase was not successful. Please try again or check your account.',
+              i18next.t('iap.declined'),
+              i18next.t('iap.declinedMessage'),
             );
           }
         },
@@ -139,21 +140,21 @@ export const IapService = {
       const isActive = await this.checkSubscriptionStatus();
       if (isActive) {
         Alert.alert(
-          'Restored',
-          'Your AirTune Pro status has been successfully restored! 🎉',
+          i18next.t('iap.restored'),
+          i18next.t('iap.restoredMessage'),
         );
       } else {
         Alert.alert(
-          'Not Found',
-          'No active subscription was found for this account.',
+          i18next.t('iap.notFound'),
+          i18next.t('iap.notFoundMessage'),
         );
       }
       return isActive;
     } catch (err) {
       console.warn('[IAP] restorePurchases error', err);
       Alert.alert(
-        'Error',
-        'Failed to communicate with the Store. Please try again later.',
+        i18next.t('iap.error'),
+        i18next.t('iap.errorMessage'),
       );
       return false;
     }

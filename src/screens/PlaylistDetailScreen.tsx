@@ -14,6 +14,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import {getArtworkUrl} from '../api/apple-music/recommendations';
 import {usePlaylistDetail} from '../hooks/usePlaylistDetail';
 import {useTheme} from '../theme';
@@ -32,6 +33,7 @@ export function PlaylistDetailScreen({
   playlistId,
   onBack,
 }: Readonly<PlaylistDetailScreenProps>): React.JSX.Element {
+  const { t } = useTranslation();
   const {colors} = useTheme();
   const styles = useStyles(colors);
   const {data, isLoading, error} = usePlaylistDetail(playlistId);
@@ -119,9 +121,9 @@ export function PlaylistDetailScreen({
           </View>
 
           <View style={styles.actionRow}>
-            <ActionButton label="Add" icon="+" styles={styles} />
-            <ActionButton label="Shuffle" icon="⇌" styles={styles} />
-            <ActionButton label="More" icon="•••" styles={styles} />
+            <ActionButton label={t('detail.add')} icon="+" styles={styles} />
+            <ActionButton label={t('detail.shuffle')} icon="⇌" styles={styles} />
+            <ActionButton label={t('detail.more')} icon="•••" styles={styles} />
           </View>
         </View>
       </View>
@@ -144,16 +146,17 @@ function PlaylistHeader({
   formattedDate: string | null;
   styles: ReturnType<typeof useStyles>;
 }>) {
+  const { t } = useTranslation();
   return (
     <View style={styles.headerBlock}>
       <Text style={styles.playlistTitle} numberOfLines={2}>
         {name ?? ''}
       </Text>
       {curatorName ? (
-        <Text style={styles.curatorName}>Playlist by {curatorName}</Text>
+        <Text style={styles.curatorName}>{t('detail.playlistBy', { curator: curatorName })}</Text>
       ) : null}
       {formattedDate ? (
-        <Text style={styles.updatedDate}>Updated {formattedDate}</Text>
+        <Text style={styles.updatedDate}>{t('detail.updated', { date: formattedDate })}</Text>
       ) : null}
       {description ? (
         <Text style={styles.description} numberOfLines={3}>
@@ -233,12 +236,13 @@ function formatDuration(ms: number): string {
 }
 
 function formatRelativeDate(isoDate: string): string {
+  const { t } = require('i18next');
   const date = new Date(isoDate);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays === 0) return t('detail.today');
+  if (diffDays === 1) return t('detail.yesterday');
+  if (diffDays < 7) return t('detail.daysAgo', { count: diffDays });
   return date.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
 }
 

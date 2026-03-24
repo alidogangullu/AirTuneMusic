@@ -15,6 +15,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { LoadingIndicator } from '../components/LoadingIndicator';
 import { useTheme } from '../theme';
 import { radius, spacing } from '../theme/layout';
@@ -35,6 +36,7 @@ export function SearchScreen(): React.JSX.Element {
   const { colors } = useTheme();
   const styles = useStyles(colors);
   const { pushContent } = useContentNavigation();
+  const { t } = useTranslation();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
@@ -127,7 +129,7 @@ export function SearchScreen(): React.JSX.Element {
       <View style={styles.searchBarContainer}>
         <Text style={styles.searchIcon}>⌕</Text>
         <Text style={searchTerm ? styles.searchText : styles.searchPlaceholder} numberOfLines={1}>
-          {searchTerm || 'Artists, Songs, Lyrics, and More'}
+          {searchTerm || t('search.placeholder')}
         </Text>
       </View>
 
@@ -241,13 +243,14 @@ function SearchResultsContent({
   styles: ReturnType<typeof useStyles>;
   accentColor: string;
 }>) {
+  const { t } = useTranslation();
   if (searching) {
     return <LoadingIndicator />;
   }
   if (results.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No Results</Text>
+        <Text style={styles.emptyText}>{t('common.noItems')}</Text>
       </View>
     );
   }
@@ -282,9 +285,10 @@ function RecentSearchesRow({
   onClear: () => void;
   styles: ReturnType<typeof useStyles>;
 }>) {
+  const { t } = useTranslation();
   return (
     <View style={styles.recentSearchesContainer}>
-      <Text style={styles.recentSearchesTitle}>Recently Searched</Text>
+      <Text style={styles.recentSearchesTitle}>{t('search.recent')}</Text>
       <FlatList
         data={items}
         horizontal
@@ -372,14 +376,15 @@ function SearchResultRow({
   onPress: () => void;
   styles: ReturnType<typeof useStyles>;
 }>) {
+  const { t } = useTranslation();
   const [focused, setFocused] = useState(false);
   const THUMB = 60;
   const artworkUrl = getArtworkUrl(item.attributes?.artwork?.url, THUMB, THUMB);
   const TYPE_LABELS: Record<string, string> = {
-    artists: 'Artist',
-    songs: 'Song',
-    albums: 'Album',
-    playlists: 'Playlist',
+    artists: t('library.artists'),
+    songs: t('library.songs'),
+    albums: t('library.albums'),
+    playlists: t('library.playlists'),
   };
   const typeLabel = TYPE_LABELS[item.type] ?? item.type;
 

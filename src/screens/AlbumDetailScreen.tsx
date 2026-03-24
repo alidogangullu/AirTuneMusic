@@ -13,6 +13,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { getArtworkUrl } from '../api/apple-music/recommendations';
 import { useAlbumDetail } from '../hooks/useAlbumDetail';
 import { useTheme } from '../theme';
@@ -31,6 +32,7 @@ export function AlbumDetailScreen({
   albumId,
   onBack,
 }: Readonly<AlbumDetailScreenProps>): React.JSX.Element {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useStyles(colors);
   const { data, isLoading, error } = useAlbumDetail(albumId);
@@ -64,7 +66,7 @@ export function AlbumDetailScreen({
   } else if (error) {
     leftContent = (
       <View style={styles.center}>
-        <Text style={styles.errorText}>Failed to load album</Text>
+        <Text style={styles.errorText}>{t('detail.failedToLoadAlbum')}</Text>
       </View>
     );
   } else {
@@ -110,9 +112,9 @@ export function AlbumDetailScreen({
           </View>
 
           <View style={styles.actionRow}>
-            <ActionButton label="Add" icon="+" styles={styles} />
-            <ActionButton label="Shuffle" icon="⇌" styles={styles} />
-            <ActionButton label="More" icon="•••" styles={styles} />
+            <ActionButton label={t('detail.add')} icon="+" styles={styles} />
+            <ActionButton label={t('detail.shuffle')} icon="⇌" styles={styles} />
+            <ActionButton label={t('detail.more')} icon="•••" styles={styles} />
           </View>
         </View>
       </View>
@@ -137,8 +139,9 @@ function AlbumHeader({
   trackCount?: number;
   styles: ReturnType<typeof useStyles>;
 }>) {
+  const { t } = useTranslation();
   const year = releaseDate ? new Date(releaseDate).getFullYear() : null;
-  const meta = [year, recordLabel, trackCount == null ? null : `${trackCount} songs`]
+  const meta = [year, recordLabel, trackCount == null ? null : t('detail.songsCount', { count: trackCount })]
     .filter(Boolean)
     .join(' · ');
 

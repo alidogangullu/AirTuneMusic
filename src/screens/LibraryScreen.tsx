@@ -14,6 +14,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { LoadingIndicator } from '../components/LoadingIndicator';
 import { useTheme } from '../theme';
 import type { AppColors } from '../theme/colors';
@@ -30,12 +31,12 @@ type SidebarCategory = {
   label: string;
 };
 
-const CATEGORIES: SidebarCategory[] = [
-  { id: 'recently-added', label: 'Recently Added' },
-  { id: 'playlists', label: 'Playlists' },
-  { id: 'artists', label: 'Artists' },
-  { id: 'albums', label: 'Albums' },
-  { id: 'songs', label: 'Songs' },
+const CATEGORIES_CONFIG: { id: LibraryCategoryId; labelKey: string }[] = [
+  { id: 'recently-added', labelKey: 'library.recentlyAdded' },
+  { id: 'playlists', labelKey: 'library.playlists' },
+  { id: 'artists', labelKey: 'library.artists' },
+  { id: 'albums', labelKey: 'library.albums' },
+  { id: 'songs', labelKey: 'library.songs' },
 ];
 
 const GRID_COLUMNS = 4;
@@ -61,7 +62,8 @@ function LibraryGridItem({
     ARTWORK_SIZE * 2,
     ARTWORK_SIZE * 2,
   );
-  const name = item.attributes?.name ?? 'Unknown';
+  const { t } = useTranslation();
+  const name = item.attributes?.name ?? t('common.unknown');
   const subtitle =
     item.attributes?.artistName ?? item.attributes?.albumName ?? '';
   const isArtist = item.type === 'library-artists';
@@ -103,6 +105,7 @@ function LibraryGridItem({
 // ── Main component ───────────────────────────────────────────────
 
 export function LibraryScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useStyles(colors);
   const { pushContent } = useContentNavigation();
@@ -177,21 +180,21 @@ export function LibraryScreen(): React.JSX.Element {
     if (!hasUserToken) {
       return (
         <View style={styles.centered}>
-          <Text style={styles.errorText}>Sign in to Apple Music to see your library.</Text>
+          <Text style={styles.errorText}>{t('library.signInPrompt')}</Text>
         </View>
       );
     }
     if (error) {
       return (
         <View style={styles.centered}>
-          <Text style={styles.errorText}>Could not load library.</Text>
+          <Text style={styles.errorText}>{t('library.loadError')}</Text>
         </View>
       );
     }
     if (items.length === 0) {
       return (
         <View style={styles.centered}>
-          <Text style={styles.emptyText}>No items</Text>
+          <Text style={styles.emptyText}>{t('common.noItems')}</Text>
         </View>
       );
     }
@@ -214,7 +217,7 @@ export function LibraryScreen(): React.JSX.Element {
     <View style={styles.root}>
       {/* ── Left sidebar ───────────────────────────── */}
       <View style={styles.sidebar}>
-        {CATEGORIES.map(cat => (
+        {CATEGORIES_CONFIG.map(cat => (
           <Pressable
             key={cat.id}
             style={({ focused }) => [
@@ -231,7 +234,7 @@ export function LibraryScreen(): React.JSX.Element {
                   activeCategory === cat.id && styles.sidebarTextActive,
                   focused && styles.sidebarTextFocused,
                 ]}>
-                {cat.label}
+                {t(cat.labelKey)}
               </Text>
             )}
           </Pressable>

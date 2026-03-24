@@ -7,6 +7,7 @@ import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { getArtworkUrl } from '../api/apple-music/recommendations';
 import { radius, spacing } from '../theme/layout';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
 import { RecommendationContent } from '../types/recommendations';
 
@@ -24,6 +25,7 @@ export function RecommendationCard({
   content,
   onPress,
 }: Readonly<RecommendationCardProps>): React.JSX.Element {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useStyles(colors);
 
@@ -32,7 +34,7 @@ export function RecommendationCard({
     ARTWORK_SIZE,
     ARTWORK_SIZE,
   );
-  const title = content.attributes?.name ?? 'Unknown';
+  const title = content.attributes?.name ?? t('common.unknown');
   const subtitle = content.attributes?.artistName ?? '';
 
   return (

@@ -1,0 +1,125 @@
+{
+  "common": {
+    "loading": "Yükleniyor...",
+    "error": "Hata",
+    "failedToLoad": "Yükleme başarısız",
+    "retry": "Tekrar Dene",
+    "cancel": "İptal",
+    "ok": "Tamam",
+    "unknown": "Bilinmiyor",
+    "noItems": "Öğe yok"
+  },
+  "topBar": {
+    "listenNow": "Şimdi Dinle",
+    "browse": "Göz At",
+    "videos": "Videolar",
+    "radio": "Radyo",
+    "library": "Arşiv",
+    "nowPlaying": "Şu An Çalınan",
+    "search": "Ara",
+    "profile": "Profil",
+    "settings": "Ayarlar"
+  },
+  "home": {
+    "signOutTitle": "Oturumu Kapat",
+    "signOutMessage": "Oturumu kapatmak istediğinize emin misiniz?",
+    "signOutConfirm": "Oturumu Kapat"
+  },
+  "search": {
+    "placeholder": "Sanatçılar, Şarkılar, Sözler ve Daha Fazlası",
+    "recent": "Son Aramalar",
+    "clearRecent": "Son Aramaları Temizle",
+    "results": "\"{{term}}\" için sonuçlar"
+  },
+  "library": {
+    "title": "Arşiv",
+    "recentlyAdded": "Son Eklenenler",
+    "playlists": "Çalma Listeleri",
+    "artists": "Sanatçılar",
+    "albums": "Albümler",
+    "songs": "Şarkılar",
+    "signInPrompt": "Arşivinizi görmek için Apple Music'e giriş yapın.",
+    "loadError": "Arşiv yüklenemedi."
+  },
+  "nowPlaying": {
+    "emptyState": "Çalmak için bir şarkı seçin.",
+    "goToAlbum": "Albüme Git",
+    "info": "Bilgi",
+    "progressBar": "İlerleme çubuğu",
+    "durationFormat": "{{mins}} dk, {{secs}} sn"
+  },
+  "detail": {
+    "failedToLoad": "İçerik yüklenemedi",
+    "add": "Ekle",
+    "shuffle": "Karıştır",
+    "more": "Daha Fazla",
+    "play": "Oynat",
+    "songsCount": "{{count}} şarkı",
+    "updated": "{{date}} güncellendi",
+    "playlistBy": "{{curator}} çalma listesi",
+    "today": "Bugün",
+    "yesterday": "Dün",
+    "daysAgo": "{{count}} gün önce",
+    "radioStation": "Radyo İstasyonu",
+    "live": "🔴 Canlı",
+    "onDemand": "İsteğe Bağlı",
+    "failedToLoadAlbum": "Albüm yüklenemedi"
+  },
+  "artist": {
+    "topSongs": "En Popüler Şarkılar",
+    "latestRelease": "Son Çıkan",
+    "essentialAlbums": "Temel Albümler",
+    "failedToLoad": "Sanatçı yüklenemedi",
+    "single": "Tekli",
+    "album": "Albüm"
+  },
+  "auth": {
+    "title": "Apple Music'e Bağlan",
+    "subtitle": "Bağlanmak için QR kodunu tarayın veya URL'yi ziyaret edip aşağıdaki kodu girin",
+    "scanPrompt": "QR kodunu tarayın",
+    "visit": "Ziyaret Et",
+    "getNewCode": "Yeni Kod Al",
+    "loading": "Yükleniyor...",
+    "linked": "Bağlandı! Token alındı.",
+    "manualEntry": "Manuel Token Girişi (İnceleme Modu)",
+    "pasteToken": "Music User Token'ı buraya yapıştırın...",
+    "connect": "Bağlan",
+    "signOut": "Token'ı temizle (oturumu kapat)",
+    "appleMusicAuth": "Apple Music Kimlik Doğrulama",
+    "androidTvSignIn": "Android TV – giriş API'si"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "language": {
+      "title": "Dil",
+      "english": "İngilizce",
+      "turkish": "Türkçe"
+    },
+    "subscription": "Abonelik",
+    "support": "Destek",
+    "about": "Hakkında",
+    "signOut": "Çıkış Yap"
+  },
+  "videos": {
+    "title": "Videolar",
+    "comingSoon": "Yakında"
+  },
+  "update": {
+    "title": "Güncelleme Gerekli",
+    "message": "AirTune Music'in yeni bir sürümü mevcut. En son özellikler ve iyileştirmelerle uygulamayı kullanmaya devam etmek için lütfen güncelleyin.",
+    "newVersion": "Yeni Sürüm: {{version}}",
+    "button": "Şimdi Güncelle"
+  },
+  "iap": {
+    "approved": "Onaylandı",
+    "activeMessage": "AirTune Pro aboneliğiniz artık aktif! 🚀",
+    "declined": "Reddedildi",
+    "declinedMessage": "Satın alma işleminiz başarılı olmadı. Lütfen tekrar deneyin veya hesabınızı kontrol edin.",
+    "restored": "Geri Yüklendi",
+    "restoredMessage": "AirTune Pro durumunuz başarıyla geri yüklendi! 🎉",
+    "notFound": "Bulunamadı",
+    "notFoundMessage": "Bu hesap için aktif bir abonelik bulunamadı.",
+    "error": "Hata",
+    "errorMessage": "Mağaza ile iletişim kurulamadı. Lütfen daha sonra tekrar deneyin."
+  }
+}

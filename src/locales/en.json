@@ -1,0 +1,125 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "failedToLoad": "Failed to load",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "ok": "OK",
+    "unknown": "Unknown",
+    "noItems": "No items"
+  },
+  "topBar": {
+    "listenNow": "Listen Now",
+    "browse": "Browse",
+    "videos": "Videos",
+    "radio": "Radio",
+    "library": "Library",
+    "nowPlaying": "Now Playing",
+    "search": "Search",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "home": {
+    "signOutTitle": "Sign Out",
+    "signOutMessage": "Are you sure you want to sign out?",
+    "signOutConfirm": "Sign Out"
+  },
+  "search": {
+    "placeholder": "Artists, Songs, Lyrics and More",
+    "recent": "Recent Searches",
+    "clearRecent": "Clear Recent Searches",
+    "results": "Results for \"{{term}}\""
+  },
+  "library": {
+    "title": "Library",
+    "recentlyAdded": "Recently Added",
+    "playlists": "Playlists",
+    "artists": "Artists",
+    "albums": "Albums",
+    "songs": "Songs",
+    "signInPrompt": "Sign in to Apple Music to see your library.",
+    "loadError": "Could not load library."
+  },
+  "nowPlaying": {
+    "emptyState": "Select a song to play.",
+    "goToAlbum": "Go to Album",
+    "info": "Info",
+    "progressBar": "Progress bar",
+    "durationFormat": "{{mins}} min, {{secs}} secs"
+  },
+  "detail": {
+    "failedToLoad": "Failed to load content",
+    "add": "Add",
+    "shuffle": "Shuffle",
+    "more": "More",
+    "play": "Play",
+    "songsCount": "{{count}} songs",
+    "updated": "Updated {{date}}",
+    "playlistBy": "Playlist by {{curator}}",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{count}} days ago",
+    "radioStation": "Radio Station",
+    "live": "🔴 Live",
+    "onDemand": "On Demand",
+    "failedToLoadAlbum": "Failed to load album"
+  },
+  "artist": {
+    "topSongs": "Top Songs",
+    "latestRelease": "Latest Release",
+    "essentialAlbums": "Essential Albums",
+    "failedToLoad": "Failed to load artist",
+    "single": "Single",
+    "album": "Album"
+  },
+  "auth": {
+    "title": "Connect to Apple Music",
+    "subtitle": "Scan the QR code to connect, or visit the URL and enter the code below",
+    "scanPrompt": "Scan the QR code",
+    "visit": "Visit",
+    "getNewCode": "Get New Code",
+    "loading": "Loading...",
+    "linked": "Linked! Token received.",
+    "manualEntry": "Manual Token Entry (Reviewer Mode)",
+    "pasteToken": "Paste Music User Token here...",
+    "connect": "Connect",
+    "signOut": "Clear token (sign out)",
+    "appleMusicAuth": "Apple Music Auth",
+    "androidTvSignIn": "Android TV – sign in API"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": {
+      "title": "Language",
+      "english": "English",
+      "turkish": "Turkish"
+    },
+    "subscription": "Subscription",
+    "support": "Support",
+    "about": "About",
+    "signOut": "Sign Out"
+  },
+  "videos": {
+    "title": "Videos",
+    "comingSoon": "Coming soon"
+  },
+  "update": {
+    "title": "Update Required",
+    "message": "A new version of AirTune Music is available. Please update to continue using the app with latest features and improvements.",
+    "newVersion": "New Version: {{version}}",
+    "button": "Update Now"
+  },
+  "iap": {
+    "approved": "Approved",
+    "activeMessage": "Your AirTune Pro subscription is now active! 🚀",
+    "declined": "Declined",
+    "declinedMessage": "Your purchase was not successful. Please try again or check your account.",
+    "restored": "Restored",
+    "restoredMessage": "Your AirTune Pro status has been successfully restored! 🎉",
+    "notFound": "Not Found",
+    "notFoundMessage": "No active subscription was found for this account.",
+    "error": "Error",
+    "errorMessage": "Failed to communicate with the Store. Please try again later."
+  }
+}
