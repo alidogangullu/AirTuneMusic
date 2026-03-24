@@ -6,6 +6,8 @@
 
 import React from 'react';
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { changeLanguage } from '../i18n';
 import { SettingsMenuItem } from '../components/SettingsMenuItem';
 import { GradientBackground } from '../components/GradientBackground';
 import { useTheme } from '../theme';
@@ -18,19 +20,24 @@ export type SettingsScreenProps = {
   onSignOut?: () => void;
 };
 
-const MENU_ITEMS = ['Subscription', 'Support', 'About'];
-
 export function SettingsScreen({
   onBack,
   onSignOut,
 }: Readonly<SettingsScreenProps>): React.JSX.Element {
   const { colors } = useTheme();
+  const { t, i18n } = useTranslation();
+
+  const MENU_ITEMS = [
+    { id: 'Subscription', label: t('settings.subscription') },
+    { id: 'Support', label: t('settings.support') },
+    { id: 'About', label: t('settings.about') },
+  ];
 
   const handleSubscriptionPress = async () => {
     const isPro = QuotaService.isProUser();
 
     if (isPro) {
-      Alert.alert('AirTune Pro', 'You have an active AirTune Pro subscription. Enjoy unlimited music!');
+      Alert.alert(t('settings.pro.title'), t('settings.pro.activeMessage'));
       return;
     }
 
@@ -38,23 +45,28 @@ export function SettingsScreen({
     const remaining = QuotaService.getRemainingTimeFormatted();
 
     Alert.alert(
-      'AirTune Pro',
-      `Upgrade to Pro to remove the hourly limit (${QuotaService.HOURLY_LIMIT} songs/hour).\n\nCurrent Usage: ${usage.used}/${usage.total} songs.\n\nLimit resets in: ${remaining}.`,
+      t('settings.pro.title'),
+      t('settings.pro.upgradeMessage', {
+        limit: QuotaService.HOURLY_LIMIT,
+        used: usage.used,
+        total: usage.total,
+        remaining: remaining,
+      }),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Restore Purchases',
+          text: t('settings.pro.restorePurchases'),
           onPress: () => IapService.restorePurchases()
         },
         {
-          text: 'Get Pro (Monthly)',
+          text: t('settings.pro.getProMonthly'),
           onPress: async () => {
             try {
               await IapService.subscribe('pro_monthly');
               // The purchaseUpdatedListener in HomeScreen will catch the success and update the status
             } catch (err: any) {
               if (err.code !== 'E_USER_CANCELLED' && err.code !== 'user-cancelled') {
-                Alert.alert('Error', 'Unable to initiate purchase. Please try again.');
+                Alert.alert(t('common.error'), t('iap.errorMessage'));
               }
             }
           }
@@ -69,11 +81,11 @@ export function SettingsScreen({
     } else if (item === 'Subscription') {
       handleSubscriptionPress();
     } else if (item === 'Support') {
-      Alert.alert('Support', 'gullualidogan@gmail.com');
+      Alert.alert(t('settings.support'), 'gullualidogan@gmail.com');
     } else if (item === 'About') {
       Alert.alert(
-        'About AirTune Music',
-        'AirTune Music is a third-party Apple Music client built exclusively using the official Apple Music API. We do not store any of your personal data; all information is fetched directly from Apple\'s servers to provide a seamless music experience.',
+        t('settings.aboutInfo.title'),
+        t('settings.aboutInfo.message'),
       );
     }
   };
@@ -91,7 +103,7 @@ export function SettingsScreen({
       />
       <View style={styles.container}>
         {/* Header */}
-        <Text style={styles.title}>Settings</Text>
+        <Text style={styles.title}>{t('settings.title')}</Text>
 
         {/* Two-column layout */}
         <View style={styles.columns}>
@@ -114,15 +126,27 @@ export function SettingsScreen({
             showsVerticalScrollIndicator={false}>
             {MENU_ITEMS.map((item, index) => (
               <SettingsMenuItem
-                key={item}
-                label={item}
+                key={item.id}
+                label={item.label}
                 hasTVPreferredFocus={index === 0}
-                onPress={() => handleItemPress(item)}
+                onPress={() => handleItemPress(item.id)}
               />
             ))}
+            
+            <View style={styles.divider} />
+            <Text style={styles.sectionTitle}>{t('settings.language.title')}</Text>
+            <SettingsMenuItem
+              label={t('settings.language.english') + (i18n.language === 'en' ? ' ✓' : '')}
+              onPress={() => changeLanguage('en')}
+            />
+            <SettingsMenuItem
+              label={t('settings.language.turkish') + (i18n.language === 'tr' ? ' ✓' : '')}
+              onPress={() => changeLanguage('tr')}
+            />
+            
             <View style={styles.divider} />
             <SettingsMenuItem
-              label="Sign Out"
+              label={t('settings.signOut')}
               onPress={() => handleItemPress('Sign Out')}
             />
           </ScrollView>
@@ -197,5 +221,14 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: spacing.md,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'rgba(0, 0, 0, 0.4)',
+    textTransform: 'uppercase',
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+    marginLeft: 24,
   },
 });

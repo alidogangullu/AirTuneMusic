@@ -16,6 +16,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
 import { spacing } from '../theme/layout';
 
@@ -75,13 +76,13 @@ export type NavTabId =
   | 'now-playing'
   | 'search';
 
-const NAV_TABS: { id: NavTabId; label: string }[] = [
-  { id: 'listen-now', label: 'Listen Now' },
-  { id: 'browse', label: 'Browse' },
-  { id: 'videos', label: 'Videos' },
-  { id: 'radio', label: 'Radio' },
-  { id: 'library', label: 'Library' },
-  { id: 'now-playing', label: 'Now Playing' },
+const NAV_TABS_CONFIG: { id: NavTabId; labelKey: string }[] = [
+  { id: 'listen-now', labelKey: 'topBar.listenNow' },
+  { id: 'browse', labelKey: 'topBar.browse' },
+  { id: 'videos', labelKey: 'topBar.videos' },
+  { id: 'radio', labelKey: 'topBar.radio' },
+  { id: 'library', labelKey: 'topBar.library' },
+  { id: 'now-playing', labelKey: 'topBar.nowPlaying' },
 ];
 
 export type TopBarProps = {
@@ -103,6 +104,7 @@ export function TopBar({
   transparent = false,
   dark = false,
 }: Readonly<TopBarProps>): React.JSX.Element {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useStyles(colors, transparent, dark);
 
@@ -113,7 +115,7 @@ export function TopBar({
         onPress={onAvatarPress}
         focusable={true}
         hasTVPreferredFocus={false}
-        accessibilityLabel="Profile"
+        accessibilityLabel={t('topBar.profile')}
         accessibilityRole="button">
         <View style={styles.silhouetteContainer}>
           <View style={styles.silhouetteHead} />
@@ -123,7 +125,7 @@ export function TopBar({
 
       <View style={styles.spacer} focusable={false} />
       <View style={styles.card} focusable={false}>
-        {NAV_TABS.map(tab => (
+        {NAV_TABS_CONFIG.map(tab => (
           <NavPressable
             key={tab.id}
             style={({ focused }) => [
@@ -133,11 +135,11 @@ export function TopBar({
             onPress={() => onTabPress(tab.id)}
             focusable={true}
             hasTVPreferredFocus={tab.id === activeTab}
-            accessibilityLabel={tab.label}
+            accessibilityLabel={t(tab.labelKey)}
             accessibilityRole="tab">
             {({ focused }) => (
               <Text style={[styles.tabText, focused && styles.tabTextFocused]}>
-                {tab.label}
+                {t(tab.labelKey)}
               </Text>
             )}
           </NavPressable>
@@ -150,7 +152,7 @@ export function TopBar({
           onPress={onSearchPress}
           focusable={true}
           hasTVPreferredFocus={false}
-          accessibilityLabel="Search"
+          accessibilityLabel={t('topBar.search')}
           accessibilityRole="button">
           {({ focused }) => (
             <Text style={[styles.searchIcon, focused && styles.tabTextFocused]}>
@@ -165,7 +167,7 @@ export function TopBar({
         onPress={onSettingsPress}
         focusable={true}
         hasTVPreferredFocus={false}
-        accessibilityLabel="Settings"
+        accessibilityLabel={t('topBar.settings')}
         accessibilityRole="button">
         {({ focused }) => (
           <Text style={[styles.settingsIcon, focused && styles.settingsIconFocused]}>

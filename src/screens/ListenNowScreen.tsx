@@ -10,34 +10,35 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { ContentSection } from '../components/ContentSection';
 import { RecommendationCard } from '../components/RecommendationCard';
 import {
-  flattenRecommendationContents,
+  groupRecommendations,
+  RecommendationSection,
   useRecommendations,
 } from '../hooks/useRecommendations';
+import { RecommendationContent } from '../types/recommendations';
 import { useContentNavigation } from '../navigation';
 import { spacing } from '../theme/layout';
 import { useTheme } from '../theme';
 
-export function ListenNowScreen(): React.JSX.Element {
+function _ListenNowScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const { data, isLoading, error, refetch } = useRecommendations();
   const { pushContent } = useContentNavigation();
-  const styles = useStyles(colors);
+  const styles = React.useMemo(() => useStyles(colors), [colors]);
 
-  const allItems = data?.data ? flattenRecommendationContents(data.data) : [];
+  const sections = React.useMemo(
+    () => (data?.data ? groupRecommendations(data.data) : []),
+    [data?.data],
+  );
 
-  // split recommendations into the two main headings we care about
-  const madeForYouItems = allItems
-    .filter(i => i.recommendationTitle === 'Made for You')
-    .slice(0, 12);
-  const recentlyPlayedItems = allItems
-    .filter(i => i.recommendationTitle === 'Recently Played')
-    .slice(0, 12);
-
-  const errorMessage =
-    error instanceof Error ? error.message : 'Failed to load';
+  const errorMessage = React.useMemo(
+    () => (error instanceof Error ? error.message : t('common.failedToLoad')),
+    [error, t],
+  );
 
   let contentNode: React.ReactNode;
   if (isLoading) {
@@ -48,27 +49,27 @@ export function ListenNowScreen(): React.JSX.Element {
       <View style={styles.error}>
         <Text style={styles.errorText}>{errorMessage}</Text>
         <Pressable style={styles.retryButton} onPress={() => refetch()}>
-          <Text style={styles.retryButtonText}>Yenile</Text>
+          <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
         </Pressable>
       </View>
     );
-  } else if (allItems.length === 0) {
+  } else if (sections.length === 0) {
     contentNode = (
       <View style={styles.empty}>
-        <Text style={styles.emptyText}>No recommendations yet</Text>
+        <Text style={styles.emptyText}>{t('detail.noRecommendationsYet')}</Text>
       </View>
     );
   } else {
     contentNode = (
       <>
-        {madeForYouItems.length > 0 && (
-          <ContentSection title="Made for You">
+        {sections.map((section: RecommendationSection, idx: number) => (
+          <ContentSection key={`${section.title}-${idx}`} title={section.title}>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               style={styles.horizontalScroll}
               contentContainerStyle={styles.rail}>
-              {madeForYouItems.map(({ content }) => (
+              {section.contents.map((content: RecommendationContent) => (
                 <RecommendationCard
                   key={content.id}
                   category=""
@@ -78,25 +79,7 @@ export function ListenNowScreen(): React.JSX.Element {
               ))}
             </ScrollView>
           </ContentSection>
-        )}
-        {recentlyPlayedItems.length > 0 && (
-          <ContentSection title="Recently Played">
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.horizontalScroll}
-              contentContainerStyle={styles.rail}>
-              {recentlyPlayedItems.map(({ content }) => (
-                <RecommendationCard
-                  key={content.id}
-                  category=""
-                  content={content}
-                  onPress={() => pushContent(content)}
-                />
-              ))}
-            </ScrollView>
-          </ContentSection>
-        )}
+        ))}
       </>
     );
   }
@@ -110,6 +93,8 @@ export function ListenNowScreen(): React.JSX.Element {
     </ScrollView>
   );
 }
+
+export const ListenNowScreen = React.memo(_ListenNowScreen);
 
 function useStyles(c: { textMuted: string; accent: string }) {
   return StyleSheet.create({

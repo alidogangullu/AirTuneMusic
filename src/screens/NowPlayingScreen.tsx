@@ -23,6 +23,7 @@ import {
   Dimensions,
   findNodeHandle,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Svg, { Path } from 'react-native-svg';
 import LinearGradient from 'react-native-linear-gradient';
 import { NowPlayingBars } from '../components/NowPlayingBars';
@@ -54,6 +55,7 @@ interface NowPlayingScreenProps {
 }
 
 export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): React.JSX.Element {
+  const { t } = useTranslation();
   const { state, play, pause, seekTo } = usePlayer();
   const { track, position, duration, playbackState } = state;
   const isPlaying = playbackState === 'playing';
@@ -267,7 +269,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
         style={styles.root}
       >
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ fontSize: 20, color: '#333', fontWeight: '600' }}>Select a song to play.</Text>
+          <Text style={{ fontSize: 20, color: '#333', fontWeight: '600' }}>{t('nowPlaying.emptyState')}</Text>
         </View>
       </LinearGradient>
     );
@@ -413,7 +415,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
                   {track.artistName} — {track.albumTitle}
                 </Text>
                 <Text style={styles.infoDuration}>
-                  {Math.floor(track.duration / 60000)} min, {Math.floor((track.duration % 60000) / 1000)} secs
+                  {t('nowPlaying.durationFormat', { mins: Math.floor(track.duration / 60000), secs: Math.floor((track.duration % 60000) / 1000) })}
                 </Text>
               </View>
               <Pressable
@@ -457,7 +459,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
                 focusable={true}>
                 {({ focused }) => (
                   <Text style={[styles.gotoAlbumText, focused && styles.gotoAlbumTextFocused]}>
-                    Go to Album
+                    {t('nowPlaying.goToAlbum')}
                   </Text>
                 )}
               </Pressable>
@@ -489,7 +491,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
               onFocus={handleFocus}
               onBlur={handleBlur}
               onPress={handlePress}
-              accessibilityLabel="Progress bar"
+              accessibilityLabel={t('nowPlaying.progressBar')}
               accessibilityRole="adjustable">
               {({ focused }) => (
                 <Animated.View
@@ -597,7 +599,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
                   focusable={true}>
                   {({ focused }) => (
                     <Text style={[styles.infoButtonText, focused && styles.infoButtonTextFocused]}>
-                      Info
+                      {t('nowPlaying.info')}
                     </Text>
                   )}
                 </Pressable>

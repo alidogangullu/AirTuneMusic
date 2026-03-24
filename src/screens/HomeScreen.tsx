@@ -15,6 +15,7 @@ import { NowPlayingScreen } from './NowPlayingScreen';
 import { SettingsScreen } from './SettingsScreen';
 import type { NavTabId } from '../components/TopBar';
 import type { RecommendationContent } from '../types/recommendations';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
 import { usePlayer } from '../hooks/usePlayer';
 
@@ -25,6 +26,7 @@ export type HomeScreenProps = {
 export function HomeScreen({
   onSignOut,
 }: Readonly<HomeScreenProps>): React.JSX.Element {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const [activeTab, setActiveTab] = useState<NavTabId>('listen-now');
   const [selectedContent, setSelectedContent] =
@@ -72,19 +74,19 @@ export function HomeScreen({
 
   const handleSignOut = useCallback(() => {
     Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
+      t('home.signOutTitle'),
+      t('home.signOutMessage'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Sign Out',
+          text: t('home.signOutConfirm'),
           style: 'destructive',
           onPress: onSignOut,
         },
       ],
       { cancelable: true },
     );
-  }, [onSignOut]);
+  }, [onSignOut, t]);
 
   return (
     <ContentNavigationContext.Provider value={ctxValue}>

@@ -10,7 +10,9 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { getArtworkUrl } from '../api/apple-music';
+import { formatFullDate } from '../utils/dateUtils';
 import { useArtistDetail } from '../hooks/useArtistDetail';
 import { usePlayer } from '../hooks/usePlayer';
 import { useContentNavigation } from '../navigation';
@@ -29,6 +31,7 @@ export function ArtistDetailScreen({
   artistId,
   onBack,
 }: Readonly<ArtistDetailScreenProps>): React.JSX.Element {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useStyles(colors);
   const { data, isLoading, error } = useArtistDetail(artistId);
@@ -90,7 +93,7 @@ export function ArtistDetailScreen({
   if (error || !artist) {
     return (
       <View style={[styles.root, styles.center]}>
-        <Text style={styles.errorText}>Failed to load artist</Text>
+        <Text style={styles.errorText}>{t('artist.failedToLoad')}</Text>
       </View>
     );
   }
@@ -119,7 +122,7 @@ export function ArtistDetailScreen({
         <View style={styles.topRow}>
           {latestRelease && (
             <View style={styles.latestReleaseSection}>
-              <Text style={styles.sectionTitle}>Latest Release</Text>
+              <Text style={styles.sectionTitle}>{t('artist.latestRelease')}</Text>
               <LatestReleaseCard
                 album={latestRelease}
                 onPress={() => handleAlbumPress(latestRelease)}
@@ -129,7 +132,7 @@ export function ArtistDetailScreen({
           )}
 
           <View style={styles.topSongsSection}>
-            <Text style={styles.sectionTitle}>Top Songs</Text>
+            <Text style={styles.sectionTitle}>{t('artist.topSongs')}</Text>
             <FlatList
               horizontal
               data={topSongsChunks}
@@ -156,7 +159,7 @@ export function ArtistDetailScreen({
         {/* ── Essential Albums ────────────────────────────── */}
         {essentialAlbums.length > 0 && (
           <View style={styles.albumsSection}>
-            <Text style={styles.sectionTitle}>Essential Albums</Text>
+            <Text style={styles.sectionTitle}>{t('artist.essentialAlbums')}</Text>
             <FlatList
               horizontal
               data={essentialAlbums}
@@ -207,6 +210,7 @@ function LatestReleaseCard({
   onPress: () => void;
   styles: ReturnType<typeof useStyles>;
 }>) {
+  const { t } = useTranslation();
   const artworkUrl = getArtworkUrl(
     album.attributes?.artwork?.url,
     300,
@@ -214,7 +218,7 @@ function LatestReleaseCard({
   );
 
   const releaseDate = album.attributes?.releaseDate
-    ? new Date(album.attributes.releaseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()
+    ? formatFullDate(album.attributes.releaseDate).toUpperCase()
     : '';
 
   return (
@@ -233,7 +237,7 @@ function LatestReleaseCard({
         <Text style={styles.latestReleaseDate}>{releaseDate}</Text>
         <Text style={styles.latestReleaseName} numberOfLines={2}>{album.attributes?.name}</Text>
         <Text style={styles.latestReleaseMeta}>
-          {album.attributes?.isSingle ? 'Single' : 'Album'} · {album.attributes?.trackCount} songs
+          {album.attributes?.isSingle ? t('artist.single') : t('artist.album')} · {t('detail.songsCount', { count: album.attributes?.trackCount })}
         </Text>
       </View>
     </Pressable>

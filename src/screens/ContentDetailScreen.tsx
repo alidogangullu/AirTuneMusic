@@ -14,11 +14,14 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { getArtworkUrl } from '../api/apple-music/recommendations';
 import { useContentDetail } from '../hooks/useContentDetail';
 import { NowPlayingBars } from '../components/NowPlayingBars';
 import { usePlayer } from '../hooks/usePlayer';
 import { useContentNavigation } from '../navigation';
+import i18n from '../i18n';
+import { formatDuration, formatFullDate, formatRelativeDate } from '../utils/dateUtils';
 import { useTheme } from '../theme';
 import { radius, spacing } from '../theme/layout';
 import type {
@@ -83,14 +86,15 @@ type NormalizedDetail = {
 };
 
 function normalizePlaylists(item: PlaylistDetail): NormalizedDetail {
+  const t = i18n.t.bind(i18n);
   const attrs = item.attributes;
   const formattedDate = attrs?.lastModifiedDate
     ? formatRelativeDate(attrs.lastModifiedDate)
     : null;
   return {
     name: attrs?.name,
-    subtitle: attrs?.curatorName ? `Playlist by ${attrs.curatorName}` : undefined,
-    meta: formattedDate ? `Updated ${formattedDate}` : undefined,
+    subtitle: attrs?.curatorName ? t('detail.playlistBy', { curator: attrs.curatorName }) : undefined,
+    meta: formattedDate ? t('detail.updated', { date: formattedDate }) : undefined,
     description: attrs?.description?.standard,
     artworkUrl: getArtworkUrl(attrs?.artwork?.url, ARTWORK_SIZE, ARTWORK_SIZE),
     tracks: (item.relationships?.tracks?.data ?? []).filter(t => t.type !== 'music-videos' && t.type !== 'library-music-videos'),
@@ -99,12 +103,13 @@ function normalizePlaylists(item: PlaylistDetail): NormalizedDetail {
 }
 
 function normalizeAlbum(item: AlbumDetail): NormalizedDetail {
+  const t = i18n.t.bind(i18n);
   const attrs = item.attributes;
   const year = attrs?.releaseDate ? new Date(attrs.releaseDate).getFullYear() : null;
   const metaParts = [
     year,
     attrs?.recordLabel,
-    attrs?.trackCount == null ? null : `${attrs.trackCount} songs`,
+    attrs?.trackCount == null ? null : t('detail.songsCount', { count: attrs.trackCount }),
   ].filter(Boolean);
   return {
     name: attrs?.name,
@@ -148,11 +153,12 @@ function normalizeMusicVideo(item: MusicVideoDetail): NormalizedDetail {
 }
 
 function normalizeStation(item: StationDetail): NormalizedDetail {
+  const t = i18n.t.bind(i18n);
   const attrs = item.attributes;
   return {
     name: attrs?.name,
-    subtitle: 'Radio Station',
-    meta: attrs?.isLive ? '🔴 Live' : 'On Demand',
+    subtitle: t('detail.radioStation'),
+    meta: attrs?.isLive ? `🔴 ${t('detail.live')}` : t('detail.onDemand'),
     artworkUrl: getArtworkUrl(attrs?.artwork?.url, ARTWORK_SIZE, ARTWORK_SIZE),
     tracks: [],
     kind: 'radio',
@@ -187,6 +193,7 @@ export function ContentDetailScreen({
   contentType,
   onBack,
 }: Readonly<ContentDetailScreenProps>): React.JSX.Element {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useStyles(colors);
   const { data, isLoading, error } = useContentDetail(contentId, contentType);
@@ -470,6 +477,7 @@ function ContentHeader({
   onShuffle: () => void;
   styles: ReturnType<typeof useStyles>;
 }>) {
+  const { t } = useTranslation();
   const showShuffle = normalized.kind === 'tracklist';
 
   return (
@@ -494,9 +502,9 @@ function ContentHeader({
 
       {/* [Play] [Shuffle?]        [•••] */}
       <View style={styles.actionRow}>
-        <ActionButton icon="▶" label="Play" grabFocus onPress={onPlay} styles={styles} />
+        <ActionButton icon="▶" label={t('detail.play')} grabFocus onPress={onPlay} styles={styles} />
         {showShuffle ? (
-          <ActionButton icon="⇌" label="Shuffle" onPress={onShuffle} styles={styles} />
+          <ActionButton icon="⇌" label={t('detail.shuffle')} onPress={onShuffle} styles={styles} />
         ) : null}
         <View style={styles.actionSpacer} />
         <MoreButton styles={styles} />
@@ -623,25 +631,6 @@ function MoreButton({
       <Text style={styles.moreBtnText}>•••</Text>
     </Pressable>
   );
-}
-
-// ── Helpers ──────────────────────────────────────────────────────
-
-function formatDuration(ms: number): string {
-  const totalSecs = Math.floor(ms / 1000);
-  const mins = Math.floor(totalSecs / 60);
-  const secs = totalSecs % 60;
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-}
-
-function formatRelativeDate(isoDate: string): string {
-  const date = new Date(isoDate);
-  const now = new Date();
-  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) { return 'Today'; }
-  if (diffDays === 1) { return 'Yesterday'; }
-  if (diffDays < 7) { return `${diffDays} days ago`; }
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 // ── Styles ───────────────────────────────────────────────────────

@@ -11,6 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import QRCode from 'react-native-qrcode-svg';
 import {
   loadMusicUserToken,
@@ -50,6 +51,7 @@ function startPolling(
   setPairingMode: (b: boolean) => void,
   setStatus: (s: Status) => void,
   setMessage: (s: string) => void,
+  t: any,
   onAuthSuccess?: () => void,
 ): void {
   if (pollRef.current) {
@@ -78,7 +80,7 @@ function startPolling(
           );
           setPairingMode(false);
           setStatus('success');
-          setMessage('Linked! Token received.');
+          setMessage(t('auth.linkedMessage'));
           onAuthSuccess?.();
         }
       }
@@ -346,6 +348,7 @@ export function AppleMusicAuthScreen({
   onAuthSuccess,
   onSignOut,
 }: AppleMusicAuthScreenProps = {}): React.JSX.Element {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [status, setStatus] = useState<Status>('idle');
@@ -385,7 +388,7 @@ export function AppleMusicAuthScreen({
         );
         setPairingMode(false);
         setStatus('success');
-        setMessage('Linked! Token received.');
+        setMessage(t('auth.linkedMessage'));
         onAuthSuccess?.();
       }
     });
@@ -412,6 +415,7 @@ export function AppleMusicAuthScreen({
         setPairingMode,
         setStatus,
         setMessage,
+        t,
         onAuthSuccess,
       );
     })();
@@ -440,6 +444,7 @@ export function AppleMusicAuthScreen({
       setPairingMode,
       setStatus,
       setMessage,
+      t,
       onAuthSuccess,
     );
   };
@@ -492,15 +497,15 @@ export function AppleMusicAuthScreen({
             {restoring ? (
               <>
                 <ActivityIndicator size="large" color={colors.accent} />
-                <Text style={styles.glassCardHint}>Loading…</Text>
+                <Text style={styles.glassCardHint}>{t('common.loading')}</Text>
               </>
             ) : (
               <>
                 <Text style={styles.glassCardTitle}>
-                  Connect to Apple Music
+                  {t('auth.connectTitle')}
                 </Text>
                 <Text style={styles.glassCardSubtitle}>
-                  <Text style={{ color: '#f0535b', fontWeight: 'bold' }}>Scan the QR code</Text> to connect, or visit the URL and enter the code below
+                  <Text style={{ color: '#f0535b', fontWeight: 'bold' }}>{t('auth.scanQR')}</Text> {t('auth.orVisitURL')}
                 </Text>
                 <View style={styles.authContainer} focusable={false}>
                   <View style={styles.qrContainer} focusable={false}>
@@ -522,7 +527,7 @@ export function AppleMusicAuthScreen({
                       </Text>
                     </View>
                     <View style={styles.visitBlock} focusable={false}>
-                      <Text style={styles.visitLabel}>Visit</Text>
+                      <Text style={styles.visitLabel}>{t('auth.visitURL')}</Text>
                       <Text style={styles.visitUrl} selectable={false}>
                         {localServerIp ? `http://${localServerIp}:${LOCAL_SERVER_PORT}/tv` : TV_LINK_DISPLAY}
                       </Text>
@@ -551,7 +556,7 @@ export function AppleMusicAuthScreen({
                       styles.getNewCodeBtnText,
                       newCodeBtnFocused && styles.getNewCodeBtnTextFocused,
                     ]}>
-                    Get New Code
+                    {t('auth.getNewCode')}
                   </Text>
                 </Pressable>
               </>
@@ -566,11 +571,11 @@ export function AppleMusicAuthScreen({
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>
-                Manual Token Entry (Reviewer Mode)
+                {t('auth.manualEntryTitle')}
               </Text>
               <TextInput
                 style={styles.textInput}
-                placeholder="Paste Music User Token here..."
+                placeholder={t('auth.manualEntryPlaceholder')}
                 placeholderTextColor="rgba(255,255,255,0.4)"
                 value={manualToken}
                 onChangeText={setManualToken}
@@ -581,7 +586,7 @@ export function AppleMusicAuthScreen({
                 <Pressable
                   style={[styles.modalButton, { backgroundColor: '#444' }]}
                   onPress={() => setShowManualInput(false)}>
-                  <Text style={{ color: '#fff' }}>Cancel</Text>
+                  <Text style={{ color: '#fff' }}>{t('common.cancel')}</Text>
                 </Pressable>
                 <Pressable
                   style={[styles.modalButton, { backgroundColor: '#f0535b' }]}
@@ -592,7 +597,7 @@ export function AppleMusicAuthScreen({
                       onAuthSuccess?.();
                     }
                   }}>
-                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>Connect</Text>
+                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t('auth.connect')}</Text>
                 </Pressable>
               </View>
             </View>
@@ -607,14 +612,13 @@ export function AppleMusicAuthScreen({
       contentContainerStyle={styles.container}
       style={styles.scroll}
       contentInsetAdjustmentBehavior="automatic">
-      <Text style={styles.title}>Apple Music Auth</Text>
+      <Text style={styles.title}>{t('auth.appleMusicAuth')}</Text>
       <Text style={styles.subtitle}>
-        Android TV – sign in API
+        {t('auth.androidTvSignIn')}
       </Text>
 
       {(status === 'success' || tokenPreview.length > 0) && (
         <>
-          <Text style={styles.label}>Token (preview):</Text>
           <Text style={styles.mono} numberOfLines={1}>
             {tokenPreview}
           </Text>
@@ -627,7 +631,7 @@ export function AppleMusicAuthScreen({
             ]}
             onPress={handleSignOut}
             focusable={true}>
-            <Text style={styles.buttonTextOutline}>Clear token (sign out)</Text>
+            <Text style={styles.buttonTextOutline}>{t('auth.signOut')}</Text>
           </Pressable>
         </>
       )}
@@ -650,11 +654,11 @@ export function AppleMusicAuthScreen({
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
-              Manual Token Entry (Reviewer Mode)
+              {t('auth.manualEntryTitle')}
             </Text>
             <TextInput
               style={styles.textInput}
-              placeholder="Paste Music User Token here..."
+              placeholder={t('auth.manualEntryPlaceholder')}
               placeholderTextColor="rgba(255,255,255,0.4)"
               value={manualToken}
               onChangeText={setManualToken}
@@ -665,7 +669,7 @@ export function AppleMusicAuthScreen({
               <Pressable
                 style={[styles.modalButton, { backgroundColor: '#444' }]}
                 onPress={() => setShowManualInput(false)}>
-                <Text style={{ color: '#fff' }}>Cancel</Text>
+                <Text style={{ color: '#fff' }}>{t('common.cancel')}</Text>
               </Pressable>
               <Pressable
                 style={[styles.modalButton, { backgroundColor: '#f0535b' }]}
@@ -676,7 +680,7 @@ export function AppleMusicAuthScreen({
                     onAuthSuccess?.();
                   }
                 }}>
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Connect</Text>
+                <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t('auth.connect')}</Text>
               </Pressable>
             </View>
           </View>
