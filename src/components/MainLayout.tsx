@@ -50,7 +50,11 @@ export function MainLayout({
               key={tabId}
               style={[
                 StyleSheet.absoluteFill,
-                { zIndex: isVisible ? 1 : 0, opacity: isVisible ? 1 : 0 },
+                {
+                  zIndex: isVisible ? 1 : 0,
+                  opacity: isVisible ? 1 : 0,
+                  display: isVisible ? 'flex' : 'none',
+                },
               ]}
               pointerEvents={isVisible ? 'auto' : 'none'}>
               <Screen />
@@ -89,5 +93,6 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
+    zIndex: 10,
   },
 });
