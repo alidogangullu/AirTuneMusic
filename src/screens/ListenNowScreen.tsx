@@ -56,7 +56,7 @@ function _ListenNowScreen(): React.JSX.Element {
   } else if (sections.length === 0) {
     contentNode = (
       <View style={styles.empty}>
-        <Text style={styles.emptyText}>{t('detail.noRecommendationsYet') || 'No recommendations yet'}</Text>
+        <Text style={styles.emptyText}>{t('detail.noRecommendationsYet')}</Text>
       </View>
     );
   } else {

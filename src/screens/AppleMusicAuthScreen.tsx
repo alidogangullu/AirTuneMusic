@@ -654,7 +654,7 @@ export function AppleMusicAuthScreen({
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
-              {t('auth.manualEntry')}
+              {t('auth.manualEntryTitle')}
             </Text>
             <TextInput
               style={styles.textInput}
