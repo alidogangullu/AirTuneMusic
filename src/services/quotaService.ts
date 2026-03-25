@@ -9,7 +9,7 @@ const KEYS = {
 };
 
 const HOUR_MS = 60 * 60 * 1000;
-const DEFAULT_LIMIT = 5;
+const DEFAULT_LIMIT = 30;
 
 export class QuotaService {
   static HOURLY_LIMIT = DEFAULT_LIMIT;
