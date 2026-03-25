@@ -235,6 +235,41 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
+    // ── Token Storage Fallback ──────────────────────────────────
+    
+    @ReactMethod
+    fun saveUserToken(token: String, promise: Promise) {
+        try {
+            val prefs = reactContext.getSharedPreferences("AirTuneMusicPrefs", android.content.Context.MODE_PRIVATE)
+            prefs.edit().putString("musicUserToken", token).commit()
+            promise.resolve(true)
+        } catch (e: Exception) {
+            promise.reject("SAVE_ERROR", e.message, e)
+        }
+    }
+
+    @ReactMethod
+    fun getUserToken(promise: Promise) {
+        try {
+            val prefs = reactContext.getSharedPreferences("AirTuneMusicPrefs", android.content.Context.MODE_PRIVATE)
+            val token = prefs.getString("musicUserToken", null)
+            promise.resolve(token)
+        } catch (e: Exception) {
+            promise.reject("GET_ERROR", e.message, e)
+        }
+    }
+
+    @ReactMethod
+    fun clearUserToken(promise: Promise) {
+        try {
+            val prefs = reactContext.getSharedPreferences("AirTuneMusicPrefs", android.content.Context.MODE_PRIVATE)
+            prefs.edit().remove("musicUserToken").commit()
+            promise.resolve(true)
+        } catch (e: Exception) {
+            promise.reject("CLEAR_ERROR", e.message, e)
+        }
+    }
+
     // ── Transport controls ──────────────────────────────────────
 
     private fun isSafeForQueueModification(): Boolean {
