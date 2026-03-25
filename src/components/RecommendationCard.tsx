@@ -20,7 +20,7 @@ export type RecommendationCardProps = {
   onPress?: () => void;
 };
 
-export const RecommendationCard = React.memo(function RecommendationCard({
+export function RecommendationCard({
   category,
   content,
   onPress,
@@ -60,11 +60,11 @@ export const RecommendationCard = React.memo(function RecommendationCard({
           )}
         </View>
         <View style={styles.textContainer}>
-          <Text style={styles.title} numberOfLines={2}>
+          <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
             {title}
           </Text>
           {subtitle ? (
-            <Text style={styles.subtitle} numberOfLines={1}>
+            <Text style={styles.subtitle} numberOfLines={1} ellipsizeMode="tail">
               {subtitle}
             </Text>
           ) : null}
@@ -72,7 +72,7 @@ export const RecommendationCard = React.memo(function RecommendationCard({
       </View>
     </Pressable>
   );
-});
+}
 
 function useStyles(c: {
   textOnDark: string;
