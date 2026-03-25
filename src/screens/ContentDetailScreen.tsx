@@ -197,7 +197,6 @@ export function ContentDetailScreen({
   const { colors } = useTheme();
   const styles = useStyles(colors);
   const { data, isLoading, error } = useContentDetail(contentId, contentType);
-  const isLibrary = contentId.startsWith('p.') || contentId.startsWith('l.') || contentId.startsWith('i.');
   const {
     state: playerState,
     playAlbum,
@@ -227,75 +226,59 @@ export function ContentDetailScreen({
   const handlePlay = useCallback(() => {
     const action = async () => {
       let success = false;
-      if (isLibrary && normalized) {
-        const firstTrack = normalized.tracks[0];
-        if (firstTrack) {
-          success = await playSong(getCatalogSongId(firstTrack));
-        }
-      } else {
-        const trackInfos = normalized.tracks.map(toTrackInfo);
-        switch (contentType) {
-          case 'albums':
-            success = await playAlbum(contentId, 0, false, trackInfos);
-            break;
-          case 'playlists':
-            success = await playPlaylist(contentId, 0, false, trackInfos);
-            break;
-          case 'stations':
-            success = await playStation(contentId);
-            break;
-          case 'songs':
-            success = await playSong(contentId);
-            break;
-          case 'music-videos':
-            success = await playMusicVideo(contentId);
-            break;
-        }
+      const trackInfos = normalized.tracks.map(toTrackInfo);
+      switch (contentType) {
+        case 'albums':
+          success = await playAlbum(contentId, 0, false, trackInfos);
+          break;
+        case 'playlists':
+          success = await playPlaylist(contentId, 0, false, trackInfos);
+          break;
+        case 'stations':
+          success = await playStation(contentId);
+          break;
+        case 'songs':
+          success = await playSong(contentId);
+          break;
+        case 'music-videos':
+          success = await playMusicVideo(contentId);
+          break;
       }
       if (success) {
         openNowPlayingFullscreen();
       }
     };
     action().catch(e => console.warn('[Play]', e));
-  }, [contentId, contentType, isLibrary, normalized, playAlbum, playPlaylist, playStation, playSong, playMusicVideo, openNowPlayingFullscreen]);
+  }, [contentId, contentType, normalized.tracks, playAlbum, playPlaylist, playStation, playSong, playMusicVideo, openNowPlayingFullscreen]);
 
   const handleShuffle = useCallback(() => {
     const action = async () => {
       let success = false;
-      if (isLibrary && normalized) {
-        const tracks = normalized.tracks;
-        const randomIndex = Math.floor(Math.random() * tracks.length);
-        const track = tracks[randomIndex];
-        if (track) {
-          success = await playSong(getCatalogSongId(track));
-        }
-      } else {
-        const trackInfos = normalized.tracks.map(toTrackInfo);
-        switch (contentType) {
-          case 'albums':
-            success = await playAlbum(contentId, 0, true, trackInfos);
-            break;
-          case 'playlists':
-            success = await playPlaylist(contentId, 0, true, trackInfos);
-            break;
-          default:
-            // This is effectively play
-            success = await (async () => {
-              switch (contentType) {
-                case 'stations': return playStation(contentId);
-                case 'songs': return playSong(contentId);
-                case 'music-videos': return playMusicVideo(contentId);
-                default: return false;
-              }
-            })();
-        }
+      const trackInfos = normalized.tracks.map(toTrackInfo);
+      switch (contentType) {
+        case 'albums':
+          success = await playAlbum(contentId, 0, true, trackInfos);
+          break;
+        case 'playlists':
+          success = await playPlaylist(contentId, 0, true, trackInfos);
+          break;
+        default:
+          // This is effectively play
+          success = await (async () => {
+            switch (contentType) {
+              case 'stations': return playStation(contentId);
+              case 'songs': return playSong(contentId);
+              case 'music-videos': return playMusicVideo(contentId);
+              default: return false;
+            }
+          })();
       }
       if (success) {
         openNowPlayingFullscreen();
       }
     };
     action().catch(e => console.warn('[Shuffle]', e));
-  }, [contentId, contentType, isLibrary, normalized, playAlbum, playPlaylist, playSong, playStation, playMusicVideo, openNowPlayingFullscreen]);
+  }, [contentId, contentType, normalized.tracks, playAlbum, playPlaylist, playSong, playStation, playMusicVideo, openNowPlayingFullscreen]);
 
   // Check if a track matches the currently playing item by comparing
   // title + artist (robust for both library and catalog content).
@@ -340,17 +323,19 @@ export function ContentDetailScreen({
 
       const action = async () => {
         let success = false;
-        if (isLibrary && normalized) {
-          success = await playSong(getCatalogSongId(track));
-        } else {
-          switch (contentType) {
-            case 'albums':
-              success = await playAlbum(contentId, index, false, normalized.tracks.map(toTrackInfo));
-              break;
-            case 'playlists':
-              success = await playPlaylist(contentId, index, false, normalized.tracks.map(toTrackInfo));
-              break;
-          }
+        switch (contentType) {
+          case 'albums':
+            success = await playAlbum(contentId, index, false, normalized.tracks.map(toTrackInfo));
+            break;
+          case 'playlists':
+            success = await playPlaylist(contentId, index, false, normalized.tracks.map(toTrackInfo));
+            break;
+          case 'songs':
+          case 'music-videos':
+          case 'stations':
+            // Individual items or library songs without container
+            success = await playSong(getCatalogSongId(track));
+            break;
         }
         if (success) {
           openNowPlayingFullscreen();
@@ -358,7 +343,7 @@ export function ContentDetailScreen({
       };
       action().catch(e => console.warn('[TrackPress]', e));
     },
-    [contentId, contentType, isLibrary, normalized, playAlbum, playPlaylist, playSong, openNowPlayingFullscreen, isTrackNowPlaying],
+    [contentId, contentType, normalized.tracks, playAlbum, playPlaylist, playSong, openNowPlayingFullscreen, isTrackNowPlaying],
   );
 
   const renderTrack = useCallback(

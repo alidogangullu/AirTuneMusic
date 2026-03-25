@@ -18,6 +18,7 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 
@@ -133,6 +134,46 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
     fun playMusicVideo(musicVideoId: String, promise: Promise) {
         // SDK doesn't expose MUSIC_VIDEO type; use SONG as fallback
         playItem(MediaItemType.SONG, musicVideoId, promise)
+    }
+
+    @ReactMethod
+    fun playTracks(trackIds: ReadableArray, startIndex: Int, shuffle: Boolean, promise: Promise) {
+        val p = player
+        if (p == null) {
+            promise.reject("NOT_CONFIGURED", "Call configure() first")
+            return
+        }
+        mainHandler.post {
+            try {
+                val idsList = mutableListOf<String>()
+                for (i in 0 until trackIds.size()) {
+                    val id = trackIds.getString(i)
+                    if (id != null) idsList.add(id)
+                }
+
+                Log.d(TAG, "playTracks count=${idsList.size} startIndex=$startIndex shuffle=$shuffle")
+                
+                if (idsList.isEmpty()) {
+                    promise.resolve(true)
+                    return@post
+                }
+                
+                val builder = CatalogPlaybackQueueItemProvider.Builder()
+                builder.items(MediaItemType.SONG, *idsList.toTypedArray())
+                builder.startItemIndex(startIndex)
+                
+                if (shuffle) {
+                    builder.shuffleMode(PlaybackShuffleMode.SHUFFLE_MODE_SONGS)
+                }
+                
+                val queue = builder.build()
+                p.prepare(queue, true)
+                promise.resolve(true)
+            } catch (e: Exception) {
+                Log.e(TAG, "playTracks error", e)
+                promise.reject("PLAY_ERROR", e.message, e)
+            }
+        }
     }
 
     private fun playContainer(

@@ -11,6 +11,7 @@ import type {
   SongDetailResponse,
   StationDetailResponse,
 } from '../../types/catalog';
+import type { GenreResponse } from '../../types/catalog';
 import type { RecommendationsResponse } from '../../types/recommendations';
 import { appleMusicApi } from './client';
 
@@ -21,6 +22,47 @@ export async function fetchRecommendations(): Promise<RecommendationsResponse> {
       //params: {limit: 20},
     },
   );
+  return data;
+}
+
+/**
+ * Fetch all catalog genres for a storefront.
+ * GET /v1/catalog/{storefront}/genres
+ */
+export async function fetchCatalogGenres(
+  storefront: string,
+): Promise<GenreResponse> {
+  const { data } = await appleMusicApi.get<GenreResponse>(
+    `/catalog/${storefront}/genres`,
+  );
+  return data;
+}
+
+/**
+ * Get the user's storefront (country code).
+ * GET /v1/me/storefront
+ */
+export async function fetchUserStorefront(): Promise<string> {
+  const { data } = await appleMusicApi.get<{ data: Array<{ id: string }> }>(
+    '/me/storefront',
+  );
+  return data.data[0]?.id ?? 'us';
+}
+
+/**
+ * Fetch top charts for a storefront.
+ * GET /v1/catalog/{storefront}/charts
+ */
+export async function fetchCatalogCharts(
+  storefront: string,
+  types: string = 'playlists,albums',
+  genre?: string,
+): Promise<any> {
+  const params: any = { types };
+  if (genre) params.genre = genre;
+  const { data } = await appleMusicApi.get(`/catalog/${storefront}/charts`, {
+    params,
+  });
   return data;
 }
 

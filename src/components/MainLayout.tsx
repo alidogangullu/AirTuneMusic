@@ -3,15 +3,15 @@
  */
 
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
-import {TopBar, type NavTabId} from './TopBar';
-import {BrowseScreen} from '../screens/BrowseScreen';
-import {LibraryScreen} from '../screens/LibraryScreen';
-import {ListenNowScreen} from '../screens/ListenNowScreen';
-import {NowPlayingScreen} from '../screens/NowPlayingScreen';
-import {RadioScreen} from '../screens/RadioScreen';
-import {SearchScreen} from '../screens/SearchScreen';
-import {VideosScreen} from '../screens/VideosScreen';
+import { StyleSheet, View } from 'react-native';
+import { TopBar, type NavTabId } from './TopBar';
+import { BrowseScreen } from '../screens/BrowseScreen';
+import { LibraryScreen } from '../screens/LibraryScreen';
+import { ListenNowScreen } from '../screens/ListenNowScreen';
+import { NowPlayingScreen } from '../screens/NowPlayingScreen';
+import { RadioScreen } from '../screens/RadioScreen';
+import { SearchScreen } from '../screens/SearchScreen';
+import { VideosScreen } from '../screens/VideosScreen';
 
 export type MainLayoutProps = {
   activeTab: NavTabId;
@@ -38,25 +38,12 @@ export function MainLayout({
   onSearchPress,
   onSettingsPress,
 }: Readonly<MainLayoutProps>): React.JSX.Element {
+  const Screen = SCREENS[activeTab];
+
   return (
     <View style={styles.root}>
       <View style={styles.contentFull}>
-        {(Object.keys(SCREENS) as NavTabId[]).map((tabId) => {
-          const Screen = SCREENS[tabId];
-          const isVisible = activeTab === tabId;
-          
-          return (
-            <View
-              key={tabId}
-              style={[
-                StyleSheet.absoluteFill,
-                { zIndex: isVisible ? 1 : 0, opacity: isVisible ? 1 : 0 },
-              ]}
-              pointerEvents={isVisible ? 'auto' : 'none'}>
-              <Screen />
-            </View>
-          );
-        })}
+        <Screen />
       </View>
       <View style={styles.topBarOverlay}>
         <TopBar

@@ -336,9 +336,13 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         containerIndex: startIndex,
         isLoading: true,
       }));
-      return checkQuotaAndPlay(() =>
-        musicPlayer.playAlbum(albumId, startIndex, shuffle),
-      );
+      return checkQuotaAndPlay(() => {
+        if (albumId.startsWith('l.') && tracks && tracks.length > 0) {
+          const trackIds = tracks.map(t => t.id).filter(Boolean) as string[];
+          return musicPlayer.playTracks(trackIds, startIndex, shuffle);
+        }
+        return musicPlayer.playAlbum(albumId, startIndex, shuffle);
+      });
     },
     [checkQuotaAndPlay],
   );
@@ -352,9 +356,13 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         containerIndex: startIndex,
         isLoading: true,
       }));
-      return checkQuotaAndPlay(() =>
-        musicPlayer.playPlaylist(playlistId, startIndex, shuffle),
-      );
+      return checkQuotaAndPlay(() => {
+        if (playlistId.startsWith('p.') && tracks && tracks.length > 0) {
+          const trackIds = tracks.map(t => t.id).filter(Boolean) as string[];
+          return musicPlayer.playTracks(trackIds, startIndex, shuffle);
+        }
+        return musicPlayer.playPlaylist(playlistId, startIndex, shuffle);
+      });
     },
     [checkQuotaAndPlay],
   );

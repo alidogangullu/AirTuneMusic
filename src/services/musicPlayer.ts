@@ -169,6 +169,15 @@ export async function playMusicVideo(musicVideoId: string): Promise<void> {
   await MusicPlayer.playMusicVideo(musicVideoId);
 }
 
+export async function playTracks(
+  trackIds: string[],
+  startIndex = 0,
+  shuffle = false,
+): Promise<void> {
+  await ensureConfigured();
+  await MusicPlayer.playTracks(trackIds, startIndex, shuffle);
+}
+
 export function play(): void {
   MusicPlayer?.play();
 }

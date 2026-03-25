@@ -34,7 +34,7 @@ export type PersonalRecommendation = {
   id: string;
   type: 'personal-recommendation';
   attributes?: {
-    title?: {stringForDisplay: string};
+    title?: { stringForDisplay: string; contentIds?: string[] };
     resourceTypes?: string[];
     kind?: string;
   };

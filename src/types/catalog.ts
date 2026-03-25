@@ -253,6 +253,23 @@ export type ArtistDetailResponse = {
   data: ArtistDetail[];
 };
 
+// ── Genre Detail ────────────────────────────────────────────────
+
+export type Genre = {
+  id: string;
+  type: 'genres';
+  href?: string;
+  attributes?: {
+    name: string;
+    parentId?: string;
+    parentName?: string;
+  };
+};
+
+export type GenreResponse = {
+  data: Genre[];
+};
+
 // ── Unified content detail ──────────────────────────────────────
 
 export type ContentDetailItem =
