@@ -109,7 +109,10 @@
     "language": {
       "title": "Language",
       "english": "English",
-      "turkish": "Turkish"
+      "turkish": "Turkish",
+      "german": "German",
+      "spanish": "Spanish",
+      "french": "French"
     },
     "subscription": "Subscription",
     "about": "About",

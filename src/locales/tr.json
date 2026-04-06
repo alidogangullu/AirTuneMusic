@@ -114,7 +114,10 @@
     "language": {
       "title": "Dil",
       "english": "İngilizce",
-      "turkish": "Türkçe"
+      "turkish": "Türkçe",
+      "german": "Almanca",
+      "spanish": "İspanyolca",
+      "french": "Fransızca"
     },
     "subscription": "Abonelik",
     "about": "Hakkında",

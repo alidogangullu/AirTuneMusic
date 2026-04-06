@@ -3,6 +3,9 @@ import { initReactI18next } from 'react-i18next';
 import { createMMKV } from 'react-native-mmkv';
 import en from '../locales/en.json';
 import tr from '../locales/tr.json';
+import de from '../locales/de.json';
+import es from '../locales/es.json';
+import fr from '../locales/fr.json';
 import { queryClient } from '../api/queryClient';
 
 const storage = createMMKV({ id: 'i18n-storage' });
@@ -32,6 +35,9 @@ i18n
     resources: {
       en: { translation: en },
       tr: { translation: tr },
+      de: { translation: de },
+      es: { translation: es },
+      fr: { translation: fr },
     },
     fallbackLng: 'en',
     debug: false,
@@ -40,7 +46,7 @@ i18n
     },
   });
 
-export const changeLanguage = (lang: 'en' | 'tr') => {
+export const changeLanguage = (lang: 'en' | 'tr' | 'de' | 'es' | 'fr') => {
   i18n.changeLanguage(lang);
 };
 

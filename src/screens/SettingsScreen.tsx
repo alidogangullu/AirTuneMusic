@@ -26,6 +26,7 @@ export function SettingsScreen({
 }: Readonly<SettingsScreenProps>): React.JSX.Element {
   const { colors } = useTheme();
   const { t, i18n } = useTranslation();
+  const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language'>('none');
 
   const MENU_ITEMS = [
     { id: 'Subscription', label: t('settings.subscription') },
@@ -80,6 +81,8 @@ export function SettingsScreen({
       onSignOut?.();
     } else if (item === 'Subscription') {
       handleSubscriptionPress();
+    } else if (item === 'Language') {
+      setCurrentSubMenu('language');
     } else if (item === 'Support') {
       Alert.alert(t('settings.support'), 'gullualidogan@gmail.com');
     } else if (item === 'About') {
@@ -90,20 +93,38 @@ export function SettingsScreen({
     }
   };
 
+  const handleBack = () => {
+    if (currentSubMenu !== 'none') {
+      setCurrentSubMenu('none');
+    } else {
+      onBack?.();
+    }
+  };
+
+  const LANGUAGES = [
+    { id: 'en', label: t('settings.language.english') },
+    { id: 'tr', label: t('settings.language.turkish') },
+    { id: 'de', label: t('settings.language.german') },
+    { id: 'es', label: t('settings.language.spanish') },
+    { id: 'fr', label: t('settings.language.french') },
+  ];
+
   return (
     <GradientBackground
       startColor={colors.gradientStart}
       endColor={colors.gradientEnd}>
       <Pressable
         style={styles.backArea}
-        onPress={onBack}
+        onPress={handleBack}
         focusable={false}
         accessibilityRole="button"
-        accessibilityLabel="Close settings"
+        accessibilityLabel="Go back"
       />
       <View style={styles.container}>
         {/* Header */}
-        <Text style={styles.title}>{t('settings.title')}</Text>
+        <Text style={styles.title}>
+          {currentSubMenu === 'language' ? t('settings.language.title') : t('settings.title')}
+        </Text>
 
         {/* Two-column layout */}
         <View style={styles.columns}>
@@ -124,31 +145,47 @@ export function SettingsScreen({
             style={styles.rightColumn}
             contentContainerStyle={styles.menuContent}
             showsVerticalScrollIndicator={false}>
-            {MENU_ITEMS.map((item, index) => (
-              <SettingsMenuItem
-                key={item.id}
-                label={item.label}
-                hasTVPreferredFocus={index === 0}
-                onPress={() => handleItemPress(item.id)}
-              />
-            ))}
-            
-            <View style={styles.divider} />
-            <Text style={styles.sectionTitle}>{t('settings.language.title')}</Text>
-            <SettingsMenuItem
-              label={t('settings.language.english') + (i18n.language === 'en' ? ' ✓' : '')}
-              onPress={() => changeLanguage('en')}
-            />
-            <SettingsMenuItem
-              label={t('settings.language.turkish') + (i18n.language === 'tr' ? ' ✓' : '')}
-              onPress={() => changeLanguage('tr')}
-            />
-            
-            <View style={styles.divider} />
-            <SettingsMenuItem
-              label={t('settings.signOut')}
-              onPress={() => handleItemPress('Sign Out')}
-            />
+            {currentSubMenu === 'none' ? (
+              <>
+                {MENU_ITEMS.map((item, index) => (
+                  <SettingsMenuItem
+                    key={item.id}
+                    label={item.label}
+                    hasTVPreferredFocus={index === 0}
+                    onPress={() => handleItemPress(item.id)}
+                  />
+                ))}
+                <SettingsMenuItem
+                  label={t('settings.language.title')}
+                  onPress={() => handleItemPress('Language')}
+                />
+                
+                <View style={styles.divider} />
+                <SettingsMenuItem
+                  label={t('settings.signOut')}
+                  onPress={() => handleItemPress('Sign Out')}
+                />
+              </>
+            ) : (
+              <>
+                <SettingsMenuItem
+                  label={"← " + t('common.cancel')}
+                  hasTVPreferredFocus
+                  onPress={() => setCurrentSubMenu('none')}
+                />
+                <View style={styles.divider} />
+                {LANGUAGES.map((lang) => (
+                  <SettingsMenuItem
+                    key={lang.id}
+                    label={lang.label + (i18n.language === lang.id ? ' ✓' : '')}
+                    onPress={() => {
+                      changeLanguage(lang.id as any);
+                      setCurrentSubMenu('none');
+                    }}
+                  />
+                ))}
+              </>
+            )}
           </ScrollView>
         </View>
       </View>

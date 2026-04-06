@@ -5,9 +5,9 @@
  * Response interceptor: central error handling and 401/403 token cleanup.
  */
 
-import axios, {AxiosError, AxiosInstance} from 'axios';
-import {getDeveloperToken} from './getDeveloperToken';
-import {clearMusicUserToken, getMusicUserToken} from './musicUserToken';
+import axios, { AxiosError, AxiosInstance } from 'axios';
+import { getDeveloperToken } from './getDeveloperToken';
+import { clearMusicUserToken, getMusicUserToken } from './musicUserToken';
 import i18n from '../../i18n';
 
 const APPLE_MUSIC_BASE = 'https://api.music.apple.com/v1';
@@ -33,7 +33,14 @@ function createClient(): AxiosInstance {
       }
     }
 
-    const lang = i18n.language === 'tr' ? 'tr' : 'en-US';
+    const localeMap: Record<string, string> = {
+      en: 'en-US',
+      tr: 'tr',
+      de: 'de',
+      es: 'es',
+      fr: 'fr',
+    };
+    const lang = localeMap[i18n.language] || 'en-US';
     config.params = { ...(config.params || {}), l: lang };
 
     return config;
@@ -41,7 +48,9 @@ function createClient(): AxiosInstance {
 
   client.interceptors.response.use(
     response => response,
-    (error: AxiosError<{errors?: Array<{code?: string; detail?: string}>}>) => {
+    (
+      error: AxiosError<{ errors?: Array<{ code?: string; detail?: string }> }>,
+    ) => {
       const status = error.response?.status;
       const url = error.config?.url ?? '';
       const fullUrl = error.config?.baseURL
@@ -51,7 +60,9 @@ function createClient(): AxiosInstance {
 
       if ((status === 401 || status === 403) && isMeRequest) {
         // clearMusicUserToken();
-        console.warn(`[Apple Music API] ${status} on ${url}, NOT clearing token automatically.`);
+        console.warn(
+          `[Apple Music API] ${status} on ${url}, NOT clearing token automatically.`,
+        );
       }
 
       const apiMessage =
