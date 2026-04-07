@@ -228,7 +228,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
     if (showQueue && activeIndex >= 0 && queueListRef.current) {
       const queueChanged = lastQueueRef.current !== state.queue;
       lastQueueRef.current = state.queue;
-      
+
       queueListRef.current.scrollToOffset({
         offset: activeIndex * (ARTWORK_SIZE + 20),
         animated: !queueChanged, // Instant on shuffle/queue updates, smooth on track skip
@@ -276,19 +276,8 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
       </LinearGradient>
     );
   }
-  if (!hasTrack || paletteLoading) {
-    const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
-    return (
-      <LinearGradient
-        colors={["#c1d5f3", "#bfc0c6"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.root}
-      >
-        <LoadingIndicator />
-      </LinearGradient>
-    );
-  }
+  // If we have a track, we show it, even if palette is loading or playback is pending.
+  // The only reason to show a full screen spinner is if we have NO track info yet while loading.
 
   return (
     <LinearGradient
@@ -478,8 +467,8 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
               <View
                 ref={playbackControlsRef}
                 onLayout={() => setPlaybackControlsNode(findNodeHandle(playbackControlsRef.current))}>
-                <PlaybackControls 
-                  nextFocusDown={progressBarNode} 
+                <PlaybackControls
+                  nextFocusDown={progressBarNode}
                   onLayoutButton={(node) => setPlaybackControlsNode(node)}
                 />
               </View>
@@ -796,15 +785,6 @@ const styles = StyleSheet.create({
   },
   infoButtonTextFocused: {
     color: '#fff',
-  },
-  progressTrackDisabled: {
-    opacity: 0.5,
-  },
-  infoButtonDisabled: {
-    opacity: 0.3,
-  },
-  infoButtonTextDisabled: {
-    color: 'rgba(255,255,255,0.3)',
   },
   // Info Menu
   modalOverlay: {

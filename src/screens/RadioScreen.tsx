@@ -12,7 +12,20 @@ export function RadioScreen(): React.JSX.Element {
 
   const isLoading = radioLoading || recsLoading;
   const error = radioError || recsError;
-  const refetch = () => { refetchRadio(); refetchRecs(); };
+  const refetch = React.useCallback(() => {
+    refetchRadio();
+    refetchRecs();
+  }, [refetchRadio, refetchRecs]);
+
+  const mapStationToContent = (station: any): RecommendationContent => ({
+    id: station.id,
+    type: 'stations',
+    attributes: {
+      name: station.attributes?.name,
+      artwork: station.attributes?.artwork,
+      url: station.attributes?.url,
+    },
+  });
 
   const radioSections = React.useMemo(() => {
     const sections: RecommendationSection[] = [];
@@ -23,7 +36,7 @@ export function RadioScreen(): React.JSX.Element {
         title: t('radio.liveRadio') || 'Live Radio',
         isCategorical: true,
         isRadio: true,
-        contents: liveRadio.data.data as unknown as RecommendationContent[],
+        contents: liveRadio.data.data.map(mapStationToContent),
       });
     }
 
@@ -33,7 +46,7 @@ export function RadioScreen(): React.JSX.Element {
         title: t('radio.personalStation') || 'Your Station',
         isCategorical: true,
         isRadio: true,
-        contents: personalRadio.data.data as unknown as RecommendationContent[],
+        contents: personalRadio.data.data.map(mapStationToContent),
       });
     }
 
@@ -43,7 +56,7 @@ export function RadioScreen(): React.JSX.Element {
         title: t('radio.recentlyPlayed') || 'Recently Played',
         isCategorical: true,
         isRadio: true,
-        contents: recentRadio.data.data as unknown as RecommendationContent[],
+        contents: recentRadio.data.data.map(mapStationToContent),
       });
     }
 

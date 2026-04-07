@@ -33,12 +33,13 @@ export function useRadioStations() {
     liveRadio: liveRadioQuery,
     personalRadio: personalRadioQuery,
     recentRadio: recentRadioQuery,
-    isLoading: liveRadioQuery.isLoading || personalRadioQuery.isLoading || recentRadioQuery.isLoading,
+    isLoading: !storefront || liveRadioQuery.isLoading || personalRadioQuery.isLoading || recentRadioQuery.isLoading,
     error: liveRadioQuery.error || personalRadioQuery.error || recentRadioQuery.error,
-    refetch: () => {
-      liveRadioQuery.refetch();
-      personalRadioQuery.refetch();
-      recentRadioQuery.refetch();
-    },
+    refetch: () =>
+      Promise.all([
+        liveRadioQuery.refetch(),
+        personalRadioQuery.refetch(),
+        recentRadioQuery.refetch(),
+      ]),
   };
 }

@@ -125,15 +125,23 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
   const [tokens, setTokens] = useState<{dev: string; user: string | null} | null>(null);
 
   useEffect(() => {
+    let mounted = true;
     (async () => {
       try {
         const dev = await getDeveloperToken();
         const user = await waitForToken();
-        setTokens({dev, user});
+        if (mounted) {
+          setTokens({dev, user});
+        }
       } catch (e) {
-        console.warn('Failed to load tokens for WebPlayer', e);
+        if (mounted) {
+          console.warn('Failed to load tokens for WebPlayer', e);
+        }
       }
     })();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -411,13 +419,20 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         return false;
       }
 
-      musicPlayer.stop();
-      activeEngineRef.current = 'web';
-      QuotaService.recordSongPlay();
-
-      setState(s => ({...s, containerId: stationId, isLoading: true, playbackState: 'unknown'}));
-      webPlayerRef.current?.playStation(stationId);
-      return true;
+      try {
+        if (activeEngineRef.current !== 'web') {
+          musicPlayer.stop();
+          activeEngineRef.current = 'web';
+        }
+        
+        setState(s => ({...s, containerId: stationId, isLoading: true, playbackState: 'unknown'}));
+        webPlayerRef.current?.playStation(stationId);
+        // Quota is recorded in onTrackChanged when playback actually begins
+        return true;
+      } catch (err) {
+        console.error('[PlayerProvider] playStation error:', err);
+        return false;
+      }
     },
     [t],
   );
@@ -539,7 +554,31 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
           }}
           onTrackChanged={trackInfo => {
             if (activeEngineRef.current === 'web') {
-               setState(s => ({...s, track: trackInfo}));
+              // Mirror native onCurrentItemChanged behavior: only record if queue identifier changed
+              if (trackInfo.playbackQueueId !== undefined && trackInfo.playbackQueueId !== lastTrackIdRef.current) {
+                if (!QuotaService.canPlayNextSong()) {
+                  webPlayerRef.current?.stop();
+                  const remaining = QuotaService.getRemainingTimeFormatted();
+                  Alert.alert(
+                    t('settings.pro.limitReached'),
+                    t('settings.pro.limitReachedMessage', {
+                      limit: QuotaService.HOURLY_LIMIT,
+                      remaining: remaining,
+                    }),
+                    [
+                      {text: t('common.cancel'), style: 'cancel'},
+                      {
+                        text: t('common.viewOptions'),
+                        onPress: () => setShowSettings(true),
+                      },
+                    ],
+                  );
+                  return;
+                }
+                QuotaService.recordSongPlay();
+                lastTrackIdRef.current = (trackInfo as any).playbackQueueId;
+              }
+              setState(s => ({...s, track: trackInfo}));
             }
           }}
           onCapabilitiesChanged={data => {

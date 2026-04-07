@@ -1,6 +1,6 @@
-import React, {useRef, useImperativeHandle, forwardRef} from 'react';
-import {StyleSheet, View} from 'react-native';
-import {WebView, WebViewMessageEvent} from 'react-native-webview';
+import React, { useRef, useImperativeHandle, forwardRef } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { WebView, WebViewMessageEvent } from 'react-native-webview';
 
 export interface MusicKitWebPlayerRef {
   playStation: (stationId: string) => void;
@@ -23,22 +23,31 @@ interface Props {
 }
 
 export const MusicKitWebView = forwardRef<MusicKitWebPlayerRef, Props>(
-  ({developerToken, musicUserToken, onPlaybackStateChanged, onTrackChanged, onCapabilitiesChanged, onProgressChanged, onQueueChanged}, ref) => {
+  ({ developerToken, musicUserToken, onPlaybackStateChanged, onTrackChanged, onCapabilitiesChanged, onProgressChanged, onQueueChanged }, ref) => {
     const webViewRef = useRef<WebView>(null);
 
     useImperativeHandle(ref, () => ({
       playStation: (stationId: string) => {
+        const safeStationId = JSON.stringify(stationId);
         webViewRef.current?.injectJavaScript(`
           (async function() {
             if (window.music) {
-              try {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Console Warn: Authorizing before setting queue...' }));
-                await window.music.authorize();
-                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Console Warn: Setting queue for station ID: ' + "${stationId}" }));
-                await window.music.setQueue({ url: "https://music.apple.com/station/${stationId}", startPlaying: true });
-              } catch(e) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Queue Error: ' + e.message }));
+              async function attempt(retryCount) {
+                try {
+                  window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Console Warn: Authorizing before setting queue...' }));
+                  await window.music.authorize();
+                  window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Console Warn: Setting queue for station ID: ' + ${safeStationId} }));
+                  await window.music.setQueue({ url: "https://music.apple.com/station/" + ${safeStationId}, startPlaying: true });
+                } catch(e) {
+                  if (e.message.includes('Content restricted') && retryCount > 0) {
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Queue Error: Content restricted. Retrying in 1s...' }));
+                    setTimeout(() => attempt(retryCount - 1), 1000);
+                  } else {
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Queue Error: ' + e.message }));
+                  }
+                }
               }
+              attempt(1);
             }
           })();
           true;
@@ -83,7 +92,7 @@ export const MusicKitWebView = forwardRef<MusicKitWebPlayerRef, Props>(
           true;
         `);
       }
-    }));
+    }), [developerToken, musicUserToken, onPlaybackStateChanged, onTrackChanged, onCapabilitiesChanged, onProgressChanged, onQueueChanged]);
 
     const validUserToken = musicUserToken && musicUserToken !== 'null' ? musicUserToken : '';
 
@@ -104,15 +113,16 @@ export const MusicKitWebView = forwardRef<MusicKitWebPlayerRef, Props>(
         mk.onload = function() {
           window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Console Warn: Starting MusicKit Config' }));
           MusicKit.configure({
-            developerToken: "${developerToken}",
+            developerToken: ${JSON.stringify(developerToken)},
             app: {
               name: 'AirTuneMusic',
               build: '1.0'
             }
           }).then(() => {
             window.music = MusicKit.getInstance();
-            if ("${validUserToken}") {
-              window.music.musicUserToken = "${validUserToken}";
+            var userToken = ${JSON.stringify(validUserToken)};
+            if (userToken) {
+              window.music.musicUserToken = userToken;
             }
             
             // Ensure authorization is settled before proceeding
@@ -239,14 +249,16 @@ export const MusicKitWebView = forwardRef<MusicKitWebPlayerRef, Props>(
         } else if (data.type === 'error') {
           console.warn('[MusicKit Web Error]', data.error);
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn('[MusicKit] Failed to parse WebView message:', e);
+      }
     };
 
     return (
       <View style={styles.container} pointerEvents="none">
         <WebView
           ref={webViewRef}
-          source={{uri: 'https://apple.com'}}
+          source={{ uri: 'https://apple.com' }}
           injectedJavaScript={injectedJS}
           originWhitelist={['*']}
           javaScriptEnabled={true}
@@ -272,8 +284,5 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     opacity: 0,
     zIndex: -9999,
-  },
-  hidden: {
-    flex: 1,
   },
 });
