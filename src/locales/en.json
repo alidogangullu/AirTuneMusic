@@ -129,6 +129,11 @@
       "message": "AirTune Music is a third-party Apple Music client built exclusively using the official Apple Music API. We do not store any of your personal data; all information is fetched directly from Apple's servers to provide a seamless music experience."
     }
   },
+  "radio": {
+    "liveRadio": "Live Radio",
+    "personalStation": "Your Station",
+    "recentlyPlayed": "Recently Played"
+  },
   "videos": {
     "title": "Videos",
     "comingSoon": "Coming soon"

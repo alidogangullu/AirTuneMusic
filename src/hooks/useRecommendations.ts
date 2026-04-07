@@ -79,6 +79,7 @@ export type RecommendationSection = {
   title: string;
   kind?: string;
   isCategorical: boolean;
+  isRadio: boolean;
   contents: RecommendationContent[];
 };
 
@@ -103,6 +104,7 @@ export function groupRecommendations(
       title,
       kind: rec.attributes?.kind,
       isCategorical: isCategoricalRecommendation(rec),
+      isRadio: rec.id?.startsWith('20-') === true,
       contents,
     });
   }

@@ -134,6 +134,11 @@
       "message": "AirTune Music, yalnızca resmi Apple Music API'si kullanılarak oluşturulmuş üçüncü taraf bir Apple Music istemcisidir. Kişisel verilerinizin hiçbirini saklamıyoruz; tüm bilgiler, kesintisiz bir müzik deneyimi sağlamak için doğrudan Apple sunucularından alınır."
     }
   },
+  "radio": {
+    "liveRadio": "Canlı Radyo",
+    "personalStation": "Senin İstasyonun",
+    "recentlyPlayed": "Son Çalınanlar"
+  },
   "videos": {
     "title": "Videolar",
     "comingSoon": "Yakında"

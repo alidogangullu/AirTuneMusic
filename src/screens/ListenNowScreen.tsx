@@ -11,7 +11,7 @@ export function ListenNowScreen(): React.JSX.Element {
   const sections = React.useMemo(() => {
     if (!data?.data) return [];
     const all = groupRecommendations(data.data);
-    return all.filter(section => !section.isCategorical);
+    return all.filter(section => !section.isCategorical && !section.isRadio);
   }, [data?.data]);
 
   return (

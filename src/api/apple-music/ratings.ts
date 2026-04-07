@@ -26,10 +26,16 @@ export async function getRating(songId: string): Promise<number> {
 }
 
 export async function addRating(songId: string, value: number): Promise<void> {
-  await appleMusicApi.put(`/me/ratings/songs/${songId}`, {
-    type: 'ratings',
-    attributes: {
-      value,
-    },
-  });
+  if (value === 0) {
+    // To remove a rating (un-love), Apple Music API requires a DELETE request
+    await appleMusicApi.delete(`/me/ratings/songs/${songId}`);
+  } else {
+    // To add a rating (love = 1, dislike = -1), use PUT
+    await appleMusicApi.put(`/me/ratings/songs/${songId}`, {
+      type: 'ratings',
+      attributes: {
+        value,
+      },
+    });
+  }
 }
