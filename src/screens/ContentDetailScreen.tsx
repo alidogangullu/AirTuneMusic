@@ -158,7 +158,7 @@ function normalizeStation(item: StationDetail): NormalizedDetail {
   return {
     name: attrs?.name,
     subtitle: t('detail.radioStation'),
-    meta: attrs?.isLive ? `🔴 ${t('detail.live')}` : t('detail.onDemand'),
+    meta: attrs?.isLive ? t('detail.live') : t('detail.onDemand'),
     artworkUrl: getArtworkUrl(attrs?.artwork?.url, ARTWORK_SIZE, ARTWORK_SIZE),
     tracks: [],
     kind: 'radio',

@@ -35,7 +35,8 @@
     "placeholder": "Artists, Songs, Lyrics and More",
     "recent": "Recent Searches",
     "clearRecent": "Clear Recent Searches",
-    "results": "Results for \"{{term}}\""
+    "results": "Results for \"{{term}}\"",
+    "space": "SPACE"
   },
   "library": {
     "title": "Library",

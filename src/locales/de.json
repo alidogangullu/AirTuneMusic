@@ -35,7 +35,8 @@
     "placeholder": "Künstler, Titel, Songtexte und mehr",
     "recent": "Zuletzt gesucht",
     "clearRecent": "Verlauf löschen",
-    "results": "Ergebnisse für \"{{term}}\""
+    "results": "Ergebnisse für \"{{term}}\"",
+    "space": "LEERTASTE"
   },
   "library": {
     "title": "Mediathek",
