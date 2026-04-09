@@ -24,3 +24,4 @@ export {
 export {startAppleMusicAuth} from './startAppleMusicAuth';
 export {searchCatalog, fetchSearchHints} from './search';
 export {fetchLibraryItems, fetchLibraryPlaylistDetail, fetchLibraryAlbumDetail, fetchStorefront} from './library';
+export {checkAppleMusicSubscription} from './subscription';

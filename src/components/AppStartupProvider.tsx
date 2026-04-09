@@ -5,6 +5,7 @@ import { VersionCheckResult } from '../services/versionService';
 interface AppStartupContextType {
   isInitialized: boolean;
   hasToken: boolean;
+  isAppleMusicSubscriber: boolean;
   setHasToken: (value: boolean) => void;
   updateInfo: VersionCheckResult | null;
 }
@@ -14,6 +15,7 @@ const AppStartupContext = createContext<AppStartupContextType | undefined>(undef
 export function AppStartupProvider({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasToken, setHasToken] = useState<boolean>(false);
+  const [isAppleMusicSubscriber, setIsAppleMusicSubscriber] = useState<boolean>(true);
   const [updateInfo, setUpdateInfo] = useState<VersionCheckResult | null>(null);
 
   useEffect(() => {
@@ -24,6 +26,7 @@ export function AppStartupProvider({ children }: { children: React.ReactNode }) 
         const data = await AppStartupService.init();
         if (mounted) {
           setHasToken(data.hasToken);
+          setIsAppleMusicSubscriber(data.isAppleMusicSubscriber);
           setUpdateInfo(data.updateInfo);
           setIsInitialized(true);
         }
@@ -46,9 +49,10 @@ export function AppStartupProvider({ children }: { children: React.ReactNode }) 
   const value = React.useMemo(() => ({
     isInitialized,
     hasToken,
+    isAppleMusicSubscriber,
     setHasToken,
     updateInfo,
-  }), [isInitialized, hasToken, updateInfo]);
+  }), [isInitialized, hasToken, isAppleMusicSubscriber, updateInfo]);
 
   return (
     <AppStartupContext.Provider value={value}>

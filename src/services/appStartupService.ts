@@ -1,10 +1,11 @@
-import { loadMusicUserToken } from '../api/apple-music';
+import { loadMusicUserToken, checkAppleMusicSubscription } from '../api/apple-music';
 import { checkAppVersion, VersionCheckResult } from './versionService';
 import { IapService } from './iapService';
 import { ensureConfigured } from './musicPlayer';
 
 export interface StartupData {
   hasToken: boolean;
+  isAppleMusicSubscriber: boolean;
   updateInfo: VersionCheckResult;
 }
 
@@ -22,9 +23,19 @@ export const AppStartupService = {
     ]);
 
     const hasToken = token !== null && token.length > 0;
-    console.log(`[AppStart] Version status: ${updateInfo.status}, Has token: ${hasToken}`);
+    let isAppleMusicSubscriber = true; // Default to true if no token, check after
 
-    // 2. Initialize IAP
+    if (hasToken) {
+      try {
+        isAppleMusicSubscriber = await checkAppleMusicSubscription();
+      } catch (e) {
+        console.warn('[AppStart] Subscription check failed:', e);
+      }
+    }
+
+    console.log(`[AppStart] Version status: ${updateInfo.status}, Has token: ${hasToken}, Subscriber: ${isAppleMusicSubscriber}`);
+
+    // 2. Initialize IAP (AirTune Pro)
     try {
       await IapService.init();
       await IapService.checkSubscriptionStatus();
@@ -33,7 +44,7 @@ export const AppStartupService = {
     }
 
     // 3. Configure Music Player if token exists
-    if (hasToken) {
+    if (hasToken && isAppleMusicSubscriber) {
       try {
         await ensureConfigured();
       } catch (e) {
@@ -43,6 +54,7 @@ export const AppStartupService = {
 
     return {
       hasToken,
+      isAppleMusicSubscriber,
       updateInfo,
     };
   },

@@ -22,13 +22,14 @@ import { AppleMusicAuthScreen } from './src/screens/AppleMusicAuthScreen';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { ForceUpdateScreen } from './src/screens/ForceUpdateScreen';
+import { SubscriptionRequiredScreen } from './src/screens/SubscriptionRequiredScreen';
 import { AppStartupProvider, useAppStartup } from './src/components/AppStartupProvider';
 import { handleLogout } from './src/services/musicPlayer';
 
 function AppContent(): React.JSX.Element {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { isInitialized, hasToken, setHasToken, updateInfo } = useAppStartup();
+  const { isInitialized, hasToken, isAppleMusicSubscriber, setHasToken, updateInfo } = useAppStartup();
 
   if (!isInitialized || updateInfo === null) {
     return (
@@ -65,13 +66,23 @@ function AppContent(): React.JSX.Element {
       <SafeAreaProvider>
         <SafeAreaView style={styles.container}>
           {hasToken ? (
-            <HomeScreen
-              onSignOut={async () => {
-                await handleLogout();
-                queryClient.clear();
-                setHasToken(false);
-              }}
-            />
+            isAppleMusicSubscriber ? (
+              <HomeScreen
+                onSignOut={async () => {
+                  await handleLogout();
+                  queryClient.clear();
+                  setHasToken(false);
+                }}
+              />
+            ) : (
+              <SubscriptionRequiredScreen
+                onSignOut={async () => {
+                  await handleLogout();
+                  queryClient.clear();
+                  setHasToken(false);
+                }}
+              />
+            )
           ) : (
             <AppleMusicAuthScreen
               onAuthSuccess={() => setHasToken(true)}

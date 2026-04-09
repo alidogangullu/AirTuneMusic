@@ -107,7 +107,8 @@
     "scanQR": "QR kodunu tarayın",
     "orVisitURL": "veya URL'yi ziyaret edin ve aşağıdaki kodu girin",
     "visitURL": "ZİYARET EDİLECEK URL",
-    "linkedMessage": "Bağlandı! Token alındı."
+    "linkedMessage": "Bağlandı! Token alındı.",
+    "paidSubscriptionRequired": "Ücretli Apple Music aboneliği gereklidir."
   },
   "settings": {
     "title": "Ayarlar",
@@ -163,5 +164,10 @@
     "notFoundMessage": "Bu hesap için aktif bir abonelik bulunamadı.",
     "error": "Hata",
     "errorMessage": "Mağaza ile iletişim kurulamadı. Lütfen daha sonra tekrar deneyin."
+  },
+  "subscriptionRequired": {
+    "title": "Abonelik Gerekli",
+    "message": "AirTune Music'i kullanmak için ücretli bir Apple Music aboneliği gereklidir. Lütfen hesabınızın aktif bir aboneliği olduğundan emin olun ve tekrar deneyin.",
+    "signOut": "Oturumu Kapat"
   }
 }

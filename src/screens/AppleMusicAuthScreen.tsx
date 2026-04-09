@@ -24,6 +24,7 @@ import { useTheme } from '../theme';
 import { radius, spacing, buttonMinHeight } from '../theme/layout';
 import * as musicPlayer from '../services/musicPlayer';
 
+
 import { DEV_SERVER } from '../config/devServer';
 const TV_LINK_SERVER = DEV_SERVER;
 const TV_LINK_DISPLAY = 'airtune.music/tv';
@@ -170,7 +171,7 @@ function makeStyles(c: AppColors) {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.md,
-      marginBottom: spacing.xxl,
+      marginBottom: spacing.lg,
     },
     logoIcon: {
       width: 65,
@@ -272,20 +273,19 @@ function makeStyles(c: AppColors) {
       borderColor: '#f0535b',
       transform: [{ scale: 1.05 }],
     },
-    getNewCodeBtnIcon: { fontSize: 20, color: '#f0535b' },
-    getNewCodeBtnIconFocused: { color: '#FFFFFF' },
+
     getNewCodeBtnText: { fontSize: 16, fontWeight: '700', color: '#f0535b' },
     getNewCodeBtnTextFocused: { color: '#FFFFFF' },
     qrContainer: {
       backgroundColor: '#FFFFFF',
-      padding: spacing.md,
+      padding: spacing.sm, // Reduced from md
       borderRadius: radius.md,
-      marginBottom: spacing.xl,
+      marginBottom: spacing.lg, // Reduced from xl
     },
     authContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: spacing.xl,
+      gap: spacing.lg, // Reduced from xl
       marginTop: spacing.md,
     },
     textColumns: {
@@ -336,6 +336,13 @@ function makeStyles(c: AppColors) {
       minWidth: 100,
       alignItems: 'center',
     },
+    subscriptionNote: {
+      fontSize: 12,
+      color: '#f0535b',
+      fontWeight: '600',
+      marginBottom: spacing.md,
+      opacity: 0.9,
+    },
   });
 }
 
@@ -352,6 +359,7 @@ export function AppleMusicAuthScreen({
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [status, setStatus] = useState<Status>('idle');
+
   const [message, setMessage] = useState<string>('');
   const [tokenPreview, setTokenPreview] = useState<string>('');
   const [pairingMode, setPairingMode] = useState(true);
@@ -507,11 +515,12 @@ export function AppleMusicAuthScreen({
                 <Text style={styles.glassCardSubtitle}>
                   <Text style={{ color: '#f0535b', fontWeight: 'bold' }}>{t('auth.scanQR')}</Text> {t('auth.orVisitURL')}
                 </Text>
+                <Text style={styles.subscriptionNote}>{t('auth.paidSubscriptionRequired')}</Text>
                 <View style={styles.authContainer} focusable={false}>
                   <View style={styles.qrContainer} focusable={false}>
                     <QRCode
                       value={`http://${localServerIp || '127.0.0.1'}:${LOCAL_SERVER_PORT}/tv?code=${linkCode}`}
-                      size={180}
+                      size={160}
                       backgroundColor="white"
                       color="black"
                     />
@@ -546,19 +555,14 @@ export function AppleMusicAuthScreen({
                   hasTVPreferredFocus={true}>
                   <Text
                     style={[
-                      styles.getNewCodeBtnIcon,
-                      newCodeBtnFocused && styles.getNewCodeBtnIconFocused,
-                    ]}>
-                    ↻
-                  </Text>
-                  <Text
-                    style={[
                       styles.getNewCodeBtnText,
                       newCodeBtnFocused && styles.getNewCodeBtnTextFocused,
                     ]}>
                     {t('auth.getNewCode')}
                   </Text>
                 </Pressable>
+
+
               </>
             )}
           </View>

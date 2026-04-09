@@ -107,7 +107,8 @@
     "scanQR": "Scan the QR code",
     "orVisitURL": "to connect, or visit the URL and enter the code below",
     "visitURL": "VISIT URL",
-    "linkedMessage": "Linked! Token received."
+    "linkedMessage": "Linked! Token received.",
+    "paidSubscriptionRequired": "Paid Apple Music subscription is required."
   },
   "settings": {
     "title": "Settings",
@@ -163,5 +164,10 @@
     "notFoundMessage": "No active subscription was found for this account.",
     "error": "Error",
     "errorMessage": "Failed to communicate with the Store. Please try again later."
+  },
+  "subscriptionRequired": {
+    "title": "Subscription Required",
+    "message": "A paid Apple Music subscription is required to use AirTune Music. Please ensure your account has an active subscription and try again.",
+    "signOut": "Sign Out"
   }
 }
