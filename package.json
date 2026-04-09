@@ -26,7 +26,8 @@
     "react-native-nitro-modules": "^0.35.0",
     "react-native-qrcode-svg": "^6.3.21",
     "react-native-safe-area-context": "^5.5.2",
-    "react-native-svg": "^15.15.3"
+    "react-native-svg": "^15.15.3",
+    "react-native-webview": "^13.16.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

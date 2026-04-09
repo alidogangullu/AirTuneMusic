@@ -10,6 +10,9 @@ import {Alert} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import * as musicPlayer from '../services/musicPlayer';
 import {QuotaService} from '../services/quotaService';
+import {getDeveloperToken} from '../api/apple-music/getDeveloperToken';
+import {waitForToken} from '../api/apple-music/musicUserToken';
+import {MusicKitWebView, MusicKitWebPlayerRef} from '../components/MusicKitWebView';
 import type {
   PlaybackStateName,
   TrackInfo,
@@ -116,6 +119,30 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
   const stateRef = useRef(state);
   stateRef.current = state;
   const lastTrackIdRef = useRef<number | null>(null);
+
+  const activeEngineRef = useRef<'native' | 'web'>('native');
+  const webPlayerRef = useRef<MusicKitWebPlayerRef>(null);
+  const [tokens, setTokens] = useState<{dev: string; user: string | null} | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const dev = await getDeveloperToken();
+        const user = await waitForToken();
+        if (mounted) {
+          setTokens({dev, user});
+        }
+      } catch (e) {
+        if (mounted) {
+          console.warn('Failed to load tokens for WebPlayer', e);
+        }
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const subs = [
@@ -316,6 +343,10 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
       }
 
       try {
+        if (activeEngineRef.current === 'web') {
+          webPlayerRef.current?.stop();
+          activeEngineRef.current = 'native';
+        }
         await playFn();
         // Quota is now recorded in onCurrentItemChanged to handle automatic transitions
         return true;
@@ -324,7 +355,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         return false;
       }
     },
-    [],
+    [t],
   );
 
   const playAlbum = useCallback(
@@ -369,10 +400,41 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
 
   const playStation = useCallback(
     async (stationId: string) => {
-      setState(s => ({...s, containerId: stationId, isLoading: true}));
-      return checkQuotaAndPlay(() => musicPlayer.playStation(stationId));
+      if (!QuotaService.canPlayNextSong()) {
+        const remaining = QuotaService.getRemainingTimeFormatted();
+        Alert.alert(
+          t('settings.pro.limitReached'),
+          t('settings.pro.limitReachedMessage', {
+            limit: QuotaService.HOURLY_LIMIT,
+            remaining: remaining,
+          }),
+          [
+            {text: t('common.cancel'), style: 'cancel'},
+            {
+              text: t('common.viewOptions'),
+              onPress: () => setShowSettings(true),
+            },
+          ],
+        );
+        return false;
+      }
+
+      try {
+        if (activeEngineRef.current !== 'web') {
+          musicPlayer.stop();
+          activeEngineRef.current = 'web';
+        }
+        
+        setState(s => ({...s, containerId: stationId, isLoading: true, playbackState: 'unknown'}));
+        webPlayerRef.current?.playStation(stationId);
+        // Quota is recorded in onTrackChanged when playback actually begins
+        return true;
+      } catch (err) {
+        console.error('[PlayerProvider] playStation error:', err);
+        return false;
+      }
     },
-    [checkQuotaAndPlay],
+    [t],
   );
 
   const playSong = useCallback(
@@ -393,7 +455,11 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
 
   const seekTo = useCallback((positionMs: number) => {
     setState(s => ({...s, position: positionMs}));
-    musicPlayer.seekTo(positionMs);
+    if (activeEngineRef.current === 'web') {
+      webPlayerRef.current?.seekTo?.(positionMs);
+    } else {
+      musicPlayer.seekTo(positionMs);
+    }
   }, []);
 
   const getQueue = useCallback(async () => {
@@ -407,11 +473,44 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     playStation,
     playSong,
     playMusicVideo,
-    play: musicPlayer.play,
-    pause: musicPlayer.pause,
-    stop: musicPlayer.stop,
-    skipToNext: musicPlayer.skipToNext,
-    skipToPrevious: musicPlayer.skipToPrevious,
+    play: () => {
+      if (activeEngineRef.current === 'web') {
+        webPlayerRef.current?.play();
+        setState(s => ({...s, playbackState: 'playing'}));
+      } else {
+        musicPlayer.play();
+      }
+    },
+    pause: () => {
+      if (activeEngineRef.current === 'web') {
+        webPlayerRef.current?.pause();
+        setState(s => ({...s, playbackState: 'paused'}));
+      } else {
+        musicPlayer.pause();
+      }
+    },
+    stop: () => {
+      if (activeEngineRef.current === 'web') {
+        webPlayerRef.current?.stop();
+        activeEngineRef.current = 'native';
+        setState(s => ({...s, playbackState: 'stopped'}));
+      }
+      musicPlayer.stop();
+    },
+    skipToNext: () => {
+      if (activeEngineRef.current === 'web') {
+        webPlayerRef.current?.skipToNext?.();
+      } else {
+        musicPlayer.skipToNext();
+      }
+    },
+    skipToPrevious: () => {
+      if (activeEngineRef.current === 'web') {
+        webPlayerRef.current?.skipToPrevious?.();
+      } else {
+        musicPlayer.skipToPrevious();
+      }
+    },
     seekTo,
     getQueue,
     setShuffleMode: musicPlayer.setShuffleMode,
@@ -441,6 +540,80 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
   return (
     <PlayerContext.Provider value={value}>
       {children}
+      {tokens && (
+        <MusicKitWebView
+          ref={webPlayerRef}
+          developerToken={tokens.dev}
+          musicUserToken={tokens.user}
+          onPlaybackStateChanged={stateName => {
+            if (activeEngineRef.current === 'web') {
+               const isLoading = stateName === 'loading';
+               const mappedState: PlaybackStateName = isLoading ? 'unknown' : (stateName as PlaybackStateName);
+               setState(s => ({...s, playbackState: mappedState, isLoading}));
+            }
+          }}
+          onTrackChanged={trackInfo => {
+            if (activeEngineRef.current === 'web') {
+              // Mirror native onCurrentItemChanged behavior: only record if queue identifier changed
+              if (trackInfo.playbackQueueId !== undefined && trackInfo.playbackQueueId !== lastTrackIdRef.current) {
+                if (!QuotaService.canPlayNextSong()) {
+                  webPlayerRef.current?.stop();
+                  const remaining = QuotaService.getRemainingTimeFormatted();
+                  Alert.alert(
+                    t('settings.pro.limitReached'),
+                    t('settings.pro.limitReachedMessage', {
+                      limit: QuotaService.HOURLY_LIMIT,
+                      remaining: remaining,
+                    }),
+                    [
+                      {text: t('common.cancel'), style: 'cancel'},
+                      {
+                        text: t('common.viewOptions'),
+                        onPress: () => setShowSettings(true),
+                      },
+                    ],
+                  );
+                  return;
+                }
+                QuotaService.recordSongPlay();
+                lastTrackIdRef.current = (trackInfo as any).playbackQueueId;
+              }
+              setState(s => ({...s, track: trackInfo}));
+            }
+          }}
+          onCapabilitiesChanged={data => {
+            if (activeEngineRef.current === 'web') {
+              setState(s => ({
+                ...s,
+                canSkipToNext: data.canSkipToNext,
+                canSkipToPrevious: data.canSkipToPrevious,
+              }));
+            }
+          }}
+          onProgressChanged={data => {
+            if (activeEngineRef.current === 'web') {
+              setState(s => ({
+                ...s,
+                position: data.position,
+                // Web event provides duration in MS. Keep it or prioritize track metadata duration
+                duration: data.duration > 0 ? data.duration : s.duration,
+                buffered: data.buffered,
+                isLoading: false,
+                buffering: false,
+              }));
+            }
+          }}
+          onQueueChanged={queueInfo => {
+            if (activeEngineRef.current === 'web') {
+              setState(s => ({
+                ...s,
+                queue: queueInfo,
+                queueCount: queueInfo.length
+              }));
+            }
+          }}
+        />
+      )}
     </PlayerContext.Provider>
   );
 }

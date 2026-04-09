@@ -9,6 +9,11 @@ export {
   fetchMusicVideoDetail,
   getArtworkUrl,
 } from './recommendations';
+export {
+  fetchLiveRadioStations,
+  fetchPersonalRadioStation,
+  fetchRecentlyPlayedStations,
+} from './radio';
 export {getDeveloperToken} from './getDeveloperToken';
 export {
   getMusicUserToken,

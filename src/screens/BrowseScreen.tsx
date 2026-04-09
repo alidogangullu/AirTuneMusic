@@ -23,6 +23,7 @@ export function BrowseScreen(): React.JSX.Element {
         sections.push({
           title: chartsData.results.playlists[0].name || t('topBar.playlists'),
           isCategorical: true,
+          isRadio: false,
           contents: chartsData.results.playlists[0].data,
         });
       }
@@ -31,6 +32,7 @@ export function BrowseScreen(): React.JSX.Element {
         sections.push({
           title: chartsData.results.albums[0].name || t('topBar.albums'),
           isCategorical: true,
+          isRadio: false,
           contents: chartsData.results.albums[0].data,
         });
       }

@@ -26,7 +26,9 @@ function createClient(): AxiosInstance {
     config.headers.Authorization = `Bearer ${devToken}`;
 
     const url = config.url ?? '';
-    if (url.includes('/me/')) {
+    const isPersonalRequest = url.includes('filter[identity]=personal') || config.params?.['filter[identity]'] === 'personal';
+    
+    if (url.includes('/me/') || isPersonalRequest) {
       const musicUserToken = getMusicUserToken();
       if (musicUserToken) {
         config.headers['Music-User-Token'] = musicUserToken;

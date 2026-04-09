@@ -146,6 +146,8 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
     pendingSeekMsRef.current = 0;
   }, []);
 
+  const isLiveRadio = track ? (track.id?.startsWith('ra.') || track.duration === 0) : false;
+
   const handlePress = useCallback(() => {
     if (state.buffering || state.isLoading) return; // Prevent interaction during track transition
     if (isScrubbingRef.current) {
@@ -168,7 +170,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
   // D-pad left/right: scrub ±5 s when progress bar is focused
   useTVEventHandler(useCallback((evt: { eventType: string }) => {
     if (!isFocusedRef.current) return;
-    if (state.buffering || state.isLoading) return; // Disable scrubbing during track transition
+    if (state.buffering || state.isLoading || isLiveRadio) return; // Disable scrubbing during track transition or live radio
     if (evt.eventType !== 'left' && evt.eventType !== 'right') return;
     const base = isScrubbingRef.current ? pendingSeekMsRef.current : positionRef.current;
     const delta = evt.eventType === 'right' ? SEEK_STEP_MS : -SEEK_STEP_MS;
@@ -177,7 +179,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
     isScrubbingRef.current = true;
     setPendingSeekMs(next);
     setIsScrubbing(true);
-  }, [state.buffering, state.isLoading]));
+  }, [state.buffering, state.isLoading, isLiveRadio]));
 
   // Handle back button (remote) in fullscreen mode
   useEffect(() => {
@@ -226,7 +228,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
     if (showQueue && activeIndex >= 0 && queueListRef.current) {
       const queueChanged = lastQueueRef.current !== state.queue;
       lastQueueRef.current = state.queue;
-      
+
       queueListRef.current.scrollToOffset({
         offset: activeIndex * (ARTWORK_SIZE + 20),
         animated: !queueChanged, // Instant on shuffle/queue updates, smooth on track skip
@@ -239,11 +241,11 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
   const bg2 = palette?.darkVibrant || palette?.muted || '#16213e';
   const accentColor = palette?.vibrant || palette?.lightVibrant || '#fa243c';
 
-  const progress = duration > 0 ? position / duration : 0;
-  const remainingMs = duration > 0 ? duration - position : 0;
+  const progress = (duration > 0 && !isLiveRadio) ? position / duration : 0;
+  const remainingMs = (duration > 0 && !isLiveRadio) ? duration - position : 0;
 
   // Scrub indicator progress (pending seek position)
-  const scrubProgress = duration > 0 ? pendingSeekMs / duration : 0;
+  const scrubProgress = (duration > 0 && !isLiveRadio) ? pendingSeekMs / duration : 0;
 
   if (!track) {
     if (state.isLoading) {
@@ -274,19 +276,8 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
       </LinearGradient>
     );
   }
-  if (!hasTrack || paletteLoading) {
-    const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
-    return (
-      <LinearGradient
-        colors={["#c1d5f3", "#bfc0c6"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.root}
-      >
-        <LoadingIndicator />
-      </LinearGradient>
-    );
-  }
+  // If we have a track, we show it, even if palette is loading or playback is pending.
+  // The only reason to show a full screen spinner is if we have NO track info yet while loading.
 
   return (
     <LinearGradient
@@ -425,7 +416,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
                 ]}
                 hasTVPreferredFocus={showInfo}
                 onPress={async () => {
-                  if (track?.id) {
+                  if (track?.id && !isLiveRadio) {
                     try {
                       const detail = await fetchSongDetail(track.id, storefrontId);
                       const albumId = detail.data[0]?.relationships?.albums?.data?.[0]?.id;
@@ -456,7 +447,7 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
                     }
                   }
                 }}
-                focusable={true}>
+                focusable={!isLiveRadio}>
                 {({ focused }) => (
                   <Text style={[styles.gotoAlbumText, focused && styles.gotoAlbumTextFocused]}>
                     {t('nowPlaying.goToAlbum')}
@@ -469,106 +460,87 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
       </Modal>
 
       {/* Progress and Info footer — at screen bottom */}
-      <View style={styles.footerContainer}>
-        {!showInfo && (
-          <>
-            <View
-              ref={playbackControlsRef}
-              onLayout={() => setPlaybackControlsNode(findNodeHandle(playbackControlsRef.current))}>
-              <PlaybackControls 
-                nextFocusDown={progressBarNode} 
-                onLayoutButton={(node) => setPlaybackControlsNode(node)}
-              />
-            </View>
-            <Pressable
-              ref={progressBarRef}
-              onLayout={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
-              style={styles.progressContainer}
-              nextFocusUp={playbackControlsNode}
-              nextFocusDown={infoButtonNode}
-              focusable={true}
-              hasTVPreferredFocus={false}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-              onPress={handlePress}
-              accessibilityLabel={t('nowPlaying.progressBar')}
-              accessibilityRole="adjustable">
-              {({ focused }) => (
-                <Animated.View
-                  style={[
-                    styles.progressTrack,
-                    { height: barHeightAnim, overflow: 'visible' },
-                    focused && styles.progressTrackFocused,
-                  ]}>
-                  {/* Clipped content wrapper */}
-                  <View style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 3 }]}>
-                    {/* Playback fill */}
-                    <View
-                      style={[
-                        styles.progressFill,
-                        { width: `${progress * 100}%`, backgroundColor: accentColor },
-                      ]}
-                    />
-                    {/* Scrub indicator (only when scrubbing) */}
-                    {isScrubbing && (
+      {!isLiveRadio && (
+        <View style={styles.footerContainer}>
+          {!showInfo && (
+            <>
+              <View
+                ref={playbackControlsRef}
+                onLayout={() => setPlaybackControlsNode(findNodeHandle(playbackControlsRef.current))}>
+                <PlaybackControls
+                  nextFocusDown={progressBarNode}
+                  onLayoutButton={(node) => setPlaybackControlsNode(node)}
+                />
+              </View>
+
+              <Pressable
+                ref={progressBarRef}
+                onLayout={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
+                style={styles.progressContainer}
+                nextFocusUp={playbackControlsNode}
+                nextFocusDown={infoButtonNode}
+                focusable={true}
+                hasTVPreferredFocus={false}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                onPress={handlePress}
+                accessibilityLabel={t('nowPlaying.progressBar')}
+                accessibilityRole="adjustable">
+                {({ focused }) => (
+                  <Animated.View
+                    style={[
+                      styles.progressTrack,
+                      { height: barHeightAnim, overflow: 'visible' },
+                      focused && styles.progressTrackFocused,
+                    ]}>
+                    <View style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 3 }]}>
                       <View
                         style={[
                           styles.progressFill,
-                          styles.scrubFill,
-                          { width: `${scrubProgress * 100}%` },
+                          { width: `${progress * 100}%`, backgroundColor: accentColor },
                         ]}
                       />
-                    )}
-                    {/* Shimmer effect for buffering */}
-                    {(state.buffering || state.isLoading) && (
-                      <Animated.View
-                        style={[
-                          styles.shimmerContainer,
-                          {
-                            transform: [
-                              {
-                                translateX: shimmerAnim.interpolate({
-                                  inputRange: [-1, 1],
-                                  outputRange: [-250, 1200],
-                                }),
-                              },
-                            ],
-                          },
-                        ]}
-                      >
-                        <LinearGradient
-                          colors={['transparent', 'rgba(255,255,255,0.4)', 'transparent']}
-                          start={{ x: 0, y: 0.5 }}
-                          end={{ x: 1, y: 0.5 }}
-                          style={styles.shimmerGradient}
+                      {isScrubbing && (
+                        <View
+                          style={[
+                            styles.progressFill,
+                            styles.scrubFill,
+                            { width: `${scrubProgress * 100}%` },
+                          ]}
                         />
-                      </Animated.View>
-                    )}
-                  </View>
+                      )}
+                      {(state.buffering || state.isLoading) && (
+                        <Animated.View
+                          style={[
+                            styles.shimmerContainer,
+                            {
+                              transform: [
+                                {
+                                  translateX: shimmerAnim.interpolate({
+                                    inputRange: [-1, 1],
+                                    outputRange: [-250, 1200],
+                                  }),
+                                },
+                              ],
+                            },
+                          ]}
+                        >
+                          <LinearGradient
+                            colors={['transparent', 'rgba(255,255,255,0.4)', 'transparent']}
+                            start={{ x: 0, y: 0.5 }}
+                            end={{ x: 0, y: 0.5 }}
+                            style={styles.shimmerGradient}
+                          />
+                        </Animated.View>
+                      )}
+                    </View>
 
-                  {/* Playback knob */}
-                  <Animated.View
-                    style={[
-                      styles.progressKnob,
-                      {
-                        left: `${progress * 100}%` as unknown as number,
-                        backgroundColor: accentColor,
-                        width: knobSizeAnim,
-                        height: knobSizeAnim,
-                        borderRadius: Animated.divide(knobSizeAnim, 2) as unknown as number,
-                        marginLeft: Animated.multiply(knobSizeAnim, -0.5) as unknown as number,
-                        top: Animated.multiply(Animated.subtract(knobSizeAnim, barHeightAnim), -0.5) as unknown as number,
-                      },
-                    ]}
-                  />
-                  {/* Scrub knob */}
-                  {isScrubbing && (
                     <Animated.View
                       style={[
                         styles.progressKnob,
                         {
-                          left: `${scrubProgress * 100}%` as unknown as number,
-                          backgroundColor: '#fff',
+                          left: `${progress * 100}%` as unknown as number,
+                          backgroundColor: accentColor,
                           width: knobSizeAnim,
                           height: knobSizeAnim,
                           borderRadius: Animated.divide(knobSizeAnim, 2) as unknown as number,
@@ -577,67 +549,83 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
                         },
                       ]}
                     />
-                  )}
-                </Animated.View>
-              )}
-            </Pressable>
+                    {isScrubbing && (
+                      <Animated.View
+                        style={[
+                          styles.progressKnob,
+                          {
+                            left: `${scrubProgress * 100}%` as unknown as number,
+                            backgroundColor: '#fff',
+                            width: knobSizeAnim,
+                            height: knobSizeAnim,
+                            borderRadius: Animated.divide(knobSizeAnim, 2) as unknown as number,
+                            marginLeft: Animated.multiply(knobSizeAnim, -0.5) as unknown as number,
+                            top: Animated.multiply(Animated.subtract(knobSizeAnim, barHeightAnim), -0.5) as unknown as number,
+                          },
+                        ]}
+                      />
+                    )}
+                  </Animated.View>
+                )}
+              </Pressable>
 
-            <View style={styles.timeRow}>
-              <View style={styles.timeInfoColumn}>
-                <Text style={styles.timeText}>
-                  {isScrubbing ? formatTime(pendingSeekMs) : formatTime(position)}
-                </Text>
-                <Pressable
-                  ref={infoButtonRef}
-                  onLayout={() => setInfoButtonNode(findNodeHandle(infoButtonRef.current))}
-                  style={({ focused }) => [
-                    styles.infoButton,
-                    focused && styles.infoButtonFocused,
-                  ]}
-                  nextFocusUp={progressBarNode}
-                  onPress={() => setShowInfo(true)}
-                  focusable={true}>
-                  {({ focused }) => (
-                    <Text style={[styles.infoButtonText, focused && styles.infoButtonTextFocused]}>
-                      {t('nowPlaying.info')}
-                    </Text>
-                  )}
-                </Pressable>
-              </View>
+              <View style={styles.timeRow}>
+                <View style={styles.timeInfoColumn}>
+                  <Text style={styles.timeText}>
+                    {isScrubbing ? formatTime(pendingSeekMs) : formatTime(position)}
+                  </Text>
+                  <Pressable
+                    ref={infoButtonRef}
+                    onLayout={() => setInfoButtonNode(findNodeHandle(infoButtonRef.current))}
+                    style={({ focused }) => [
+                      styles.infoButton,
+                      focused && styles.infoButtonFocused,
+                    ]}
+                    nextFocusUp={progressBarNode}
+                    onPress={() => setShowInfo(true)}
+                    focusable={true}>
+                    {({ focused }) => (
+                      <Text style={[styles.infoButtonText, focused && styles.infoButtonTextFocused]}>
+                        {t('nowPlaying.info')}
+                      </Text>
+                    )}
+                  </Pressable>
+                </View>
 
-              <View style={styles.timeInfoColumnRight}>
-                <Text style={[styles.timeText, isScrubbing && styles.timeTextScrubbing]}>
-                  {isScrubbing
-                    ? `${formatTime(pendingSeekMs)}`
-                    : `-${formatTime(remainingMs)}`}
-                </Text>
-                <Pressable
-                  ref={queueButtonRef}
-                  onLayout={() => setQueueButtonNode(findNodeHandle(queueButtonRef.current))}
-                  style={({ focused }) => [
-                    styles.infoButton,
-                    focused && styles.infoButtonFocused,
-                    { alignSelf: 'flex-end', marginRight: -spacing.sm },
-                  ]}
-                  nextFocusUp={progressBarNode}
-                  onPress={() => setShowQueue(!showQueue)}
-                  focusable={true}>
-                  {({ focused }) => {
-                    const iconColor = showQueue || focused ? '#fff' : 'rgba(255, 255, 255, 0.7)';
-                    return (
-                      <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <Path d="M3 12h18" />
-                        <Path d="M3 6h18" />
-                        <Path d="M3 18h18" />
-                      </Svg>
-                    );
-                  }}
-                </Pressable>
+                <View style={styles.timeInfoColumnRight}>
+                  <Text style={[styles.timeText, isScrubbing && styles.timeTextScrubbing]}>
+                    {isScrubbing
+                      ? `${formatTime(pendingSeekMs)}`
+                      : `-${formatTime(remainingMs)}`}
+                  </Text>
+                  <Pressable
+                    ref={queueButtonRef}
+                    onLayout={() => setQueueButtonNode(findNodeHandle(queueButtonRef.current))}
+                    style={({ focused }) => [
+                      styles.infoButton,
+                      focused && styles.infoButtonFocused,
+                      { alignSelf: 'flex-end', marginRight: -spacing.sm },
+                    ]}
+                    nextFocusUp={progressBarNode}
+                    onPress={() => setShowQueue(!showQueue)}
+                    focusable={true}>
+                    {({ focused }) => {
+                      const iconColor = showQueue || focused ? '#fff' : 'rgba(255, 255, 255, 0.7)';
+                      return (
+                        <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <Path d="M3 12h18" />
+                          <Path d="M3 6h18" />
+                          <Path d="M3 18h18" />
+                        </Svg>
+                      );
+                    }}
+                  </Pressable>
+                </View>
               </View>
-            </View>
-          </>
-        )}
-      </View>
+            </>
+          )}
+        </View>
+      )}
     </LinearGradient>
   );
 }

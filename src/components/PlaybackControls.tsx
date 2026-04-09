@@ -35,17 +35,22 @@ function ControlButton({ onPress, active, children, disabled, nextFocusDown, onL
 
 export function PlaybackControls({ 
   nextFocusDown, 
-  onLayoutButton 
+  onLayoutButton,
+  isLive,
 }: { 
   nextFocusDown?: number | null,
-  onLayoutButton?: (node: number | null) => void 
+  onLayoutButton?: (node: number | null) => void,
+  isLive?: boolean,
 }) {
   const { state, setShuffleMode, setRepeatMode, toggleRating, toggleAutoplay, skipToPrevious, skipToNext } = usePlayer();
-  const { shuffleMode, repeatMode, rating, autoplay, track, isLoading, buffering } = state;
+  const { shuffleMode, repeatMode, rating, autoplay, track, isLoading, buffering, containerId } = state;
 
-  const isDisabled = !track || isLoading || buffering;
+  const isDisabled = !track || isLoading || buffering || !!isLive;
 
-  // Use the SDK's authoritative can-skip flags (from onCurrentItemChanged event)
+  // Station checking (st. tracks mostly don't support shuffle/repeat/autoplay)
+  const isStation = containerId?.startsWith('ra.') || containerId?.startsWith('st.');
+  
+  // Use the SDK's authoritative can-skip flags (from onCurrentItemChanged event or WebView capabilities)
   const isPreviousDisabled = isDisabled || !state.canSkipToPrevious;
   const isNextDisabled = isDisabled || !state.canSkipToNext;
 
@@ -91,7 +96,7 @@ export function PlaybackControls({
         <ControlButton 
           onPress={handleShufflePress} 
           active={shuffleMode !== ShuffleMode.OFF} 
-          disabled={isDisabled} 
+          disabled={isDisabled || isStation} 
           nextFocusDown={nextFocusDown}>
           <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={shuffleMode !== ShuffleMode.OFF ? activeColor : inactiveColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <Path d="M16 3h5v5" />
@@ -103,7 +108,7 @@ export function PlaybackControls({
         </ControlButton>
 
         {/* Repeat */}
-        <ControlButton onPress={handleRepeatPress} active={repeatMode !== RepeatMode.NONE} disabled={isDisabled} nextFocusDown={nextFocusDown}>
+        <ControlButton onPress={handleRepeatPress} active={repeatMode !== RepeatMode.NONE} disabled={isDisabled || isStation} nextFocusDown={nextFocusDown}>
           <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={repeatMode !== RepeatMode.NONE ? activeColor : inactiveColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <Path d="m17 2 4 4-4 4" />
             <Path d="M3 11V9a4 4 0 0 1 4-4h14" />
@@ -116,7 +121,7 @@ export function PlaybackControls({
         </ControlButton>
 
         {/* Autoplay (Infinity) */}
-        <ControlButton onPress={toggleAutoplay} active={autoplay} disabled={isDisabled} nextFocusDown={nextFocusDown}>
+        <ControlButton onPress={toggleAutoplay} active={autoplay} disabled={isDisabled || isStation} nextFocusDown={nextFocusDown}>
           <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={autoplay ? activeColor : inactiveColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <Path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z" />
           </Svg>
