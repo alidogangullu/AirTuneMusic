@@ -13,7 +13,6 @@ let isInitialized = false;
 let initPromise: Promise<string | null> | null = null;
 const { MusicPlayer } = require('react-native').NativeModules;
 
-
 export function getMusicUserToken(): string | null {
   return musicUserToken;
 }
@@ -61,13 +60,13 @@ export async function loadMusicUserToken(): Promise<string | null> {
   initPromise = (async () => {
     try {
       let stored: string | null | undefined = storage.getString(STORAGE_KEY);
-      
+
       // Fallback: If MMKV lost the token but it was committed to Native SharedPreferences, restore it
       if (!stored && MusicPlayer?.getUserToken) {
         try {
           stored = await MusicPlayer.getUserToken();
           if (stored) {
-             storage.set(STORAGE_KEY, stored); // Restore to MMKV
+            storage.set(STORAGE_KEY, stored); // Restore to MMKV
           }
         } catch {
           // ignore

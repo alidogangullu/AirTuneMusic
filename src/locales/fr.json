@@ -13,7 +13,11 @@
     "minute": "1 minute",
     "minutes": "{{count}} minutes",
     "viewOptions": "Afficher les options",
-    "comingSoon": "Bientôt disponible"
+    "comingSoon": "Bientôt disponible",
+    "artist": "Artiste",
+    "song": "Morceau",
+    "album": "Album",
+    "playlist": "Playlist"
   },
   "topBar": {
     "listenNow": "Écouter",
@@ -132,6 +136,11 @@
       "title": "À propos d'AirTune Music",
       "message": "AirTune Music est un client Apple Music tiers construit exclusivement à l'aide de l'API officielle Apple Music. Nous ne stockons aucune de vos données personnelles ; toutes les informations sont récupérées directement des serveurs d'Apple pour offrir une expérience musicale fluide."
     }
+  },
+  "radio": {
+    "liveRadio": "Radio en direct",
+    "personalStation": "Votre station",
+    "recentlyPlayed": "Écoutés récemment"
   },
   "videos": {
     "title": "Vidéos",

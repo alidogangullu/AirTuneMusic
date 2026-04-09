@@ -11,7 +11,7 @@ import {useTranslation} from 'react-i18next';
 import * as musicPlayer from '../services/musicPlayer';
 import {QuotaService} from '../services/quotaService';
 import {getDeveloperToken} from '../api/apple-music/getDeveloperToken';
-import {waitForToken} from '../api/apple-music/musicUserToken';
+import {waitForToken, getMusicUserToken} from '../api/apple-music/musicUserToken';
 import {MusicKitWebView, MusicKitWebPlayerRef} from '../components/MusicKitWebView';
 import type {
   PlaybackStateName,
@@ -126,6 +126,8 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
 
   useEffect(() => {
     let mounted = true;
+
+    // Load initial tokens on mount
     (async () => {
       try {
         const dev = await getDeveloperToken();
@@ -139,6 +141,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         }
       }
     })();
+
     return () => {
       mounted = false;
     };
@@ -426,7 +429,27 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         }
         
         setState(s => ({...s, containerId: stationId, isLoading: true, playbackState: 'unknown'}));
+
+        // Ensure WebView has the latest token (handles first-auth case where
+        // MusicKitWebView mounted before the user completed sign-in)
+        const currentToken = getMusicUserToken();
+        if (currentToken) {
+          webPlayerRef.current?.updateUserToken(currentToken);
+        }
+
         webPlayerRef.current?.playStation(stationId);
+
+        // Safety timeout to clear loading indicator if playback fails to start
+        setTimeout(() => {
+          setState(s => {
+            if (s.containerId === stationId && s.isLoading) {
+              console.warn('[Player] playStation timed out');
+              return { ...s, isLoading: false };
+            }
+            return s;
+          });
+        }, 15000);
+
         // Quota is recorded in onTrackChanged when playback actually begins
         return true;
       } catch (err) {

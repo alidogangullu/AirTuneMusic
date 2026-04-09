@@ -13,7 +13,11 @@
     "minute": "1 minute",
     "minutes": "{{count}} minutes",
     "viewOptions": "View Options",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "artist": "Artist",
+    "song": "Song",
+    "album": "Album",
+    "playlist": "Playlist"
   },
   "topBar": {
     "listenNow": "Listen Now",

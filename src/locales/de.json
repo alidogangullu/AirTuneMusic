@@ -13,7 +13,11 @@
     "minute": "1 Minute",
     "minutes": "{{count}} Minuten",
     "viewOptions": "Optionen anzeigen",
-    "comingSoon": "Demnächst"
+    "comingSoon": "Demnächst",
+    "artist": "Künstler",
+    "song": "Titel",
+    "album": "Album",
+    "playlist": "Playlist"
   },
   "topBar": {
     "listenNow": "Jetzt hören",
@@ -132,6 +136,11 @@
       "title": "Über AirTune Music",
       "message": "AirTune Music ist ein Drittanbieter-Client für Apple Music, der ausschließlich über die offizielle Apple Music API erstellt wurde. Wir speichern keine Ihrer persönlichen Daten; alle Informationen werden direkt von Apple-Servern abgerufen, um ein nahtloses Musikerlebnis zu bieten."
     }
+  },
+  "radio": {
+    "liveRadio": "Live-Radio",
+    "personalStation": "Dein Sender",
+    "recentlyPlayed": "Zuletzt gespielt"
   },
   "videos": {
     "title": "Videos",

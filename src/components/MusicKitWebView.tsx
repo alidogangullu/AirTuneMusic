@@ -10,6 +10,7 @@ export interface MusicKitWebPlayerRef {
   seekTo: (positionMs: number) => void;
   skipToNext: () => void;
   skipToPrevious: () => void;
+  updateUserToken: (token: string) => void;
 }
 
 interface Props {
@@ -91,7 +92,17 @@ export const MusicKitWebView = forwardRef<MusicKitWebPlayerRef, Props>(
           if (window.music) window.music.skipToPreviousItem().catch(function(e){});
           true;
         `);
-      }
+      },
+      updateUserToken: (token: string) => {
+        const safeToken = JSON.stringify(token);
+        webViewRef.current?.injectJavaScript(`
+          if (window.music) {
+            window.music.musicUserToken = ${safeToken};
+            window.music.authorize().catch(function(e){});
+          }
+          true;
+        `);
+      },
     }), [developerToken, musicUserToken, onPlaybackStateChanged, onTrackChanged, onCapabilitiesChanged, onProgressChanged, onQueueChanged]);
 
     const validUserToken = musicUserToken && musicUserToken !== 'null' ? musicUserToken : '';
@@ -124,15 +135,13 @@ export const MusicKitWebView = forwardRef<MusicKitWebPlayerRef, Props>(
             if (userToken) {
               window.music.musicUserToken = userToken;
             }
-            
+
             // Ensure authorization is settled before proceeding
             window.music.authorize().then(() => {
               window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Console Warn: MusicKit Authorized Successfully' }));
             }).catch(e => {
               window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Authorize Error: ' + e.message }));
             });
-            
-            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Console Warn: MusicKit Configured Successfully' }));
 
             function postQueue() {
               if (!window.music || !window.music.queue || !window.music.queue.items) return;
@@ -263,6 +272,7 @@ export const MusicKitWebView = forwardRef<MusicKitWebPlayerRef, Props>(
           originWhitelist={['*']}
           javaScriptEnabled={true}
           domStorageEnabled={true}
+          thirdPartyCookiesEnabled={true}
           mixedContentMode="always"
           allowsInlineMediaPlayback={true}
           mediaPlaybackRequiresUserAction={false}
