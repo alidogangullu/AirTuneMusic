@@ -27,7 +27,9 @@ export const AppStartupService = {
 
     if (hasToken) {
       try {
+        console.log('[AppStart] Checking Apple Music subscription...');
         isAppleMusicSubscriber = await checkAppleMusicSubscription();
+        console.log('[AppStart] Subscription check result:', isAppleMusicSubscriber);
       } catch (e) {
         console.warn('[AppStart] Subscription check failed:', e);
       }

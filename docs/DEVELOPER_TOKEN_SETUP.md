@@ -15,7 +15,7 @@ This guide follows [Generating Developer Tokens](https://developer.apple.com/doc
    - **`APPLE_KEY_ID`** = your 10-character Key ID
    - **`APPLE_PRIVATE_KEY_PATH`** = path to the `.p8` file, e.g. `./AuthKey_XXXXXXXXXX.p8`  
      Or put the key content in **`APPLE_PRIVATE_KEY`** (paste the whole block including `-----BEGIN PRIVATE KEY-----` and `-----END PRIVATE KEY-----`).
-4. Run **`npm run token:apple-music`** — the script reads `.env.local` and prints the JWT.
+4. Run **`yarn token:apple-music`** — the script reads `.env.local` and prints the JWT.
 
 Example `.env.local`:
 
@@ -27,15 +27,15 @@ APPLE_PRIVATE_KEY_PATH=./keys/AuthKey_ABC123DEFG.p8
 
 Put your `.p8` file in the project’s **`keys/`** folder (that folder is in `.gitignore` and is never committed).
 
-### Using the token in the app (Expo)
+### Using the token in the app
 
 To pass the developer token into the app, add it to **`.env.local`** (same file as above) as:
 
 ```env
-EXPO_PUBLIC_APPLE_MUSIC_TOKEN=eyJhbGciOiJFUzI1NiIs...
+APPLE_MUSIC_DEVELOPER_TOKEN=eyJhbGciOiJFUzI1NiIs...
 ```
 
-Use the value from `npm run token:apple-music`. The app reads it via `app.config.js` and uses it for all Apple Music API requests (see `src/api/apple-music/`). Later you can switch to fetching the token from your backend by changing `getDeveloperToken` in `src/api/apple-music/getDeveloperToken.ts`.
+Use the value from `npm run token:apple-music`. The app reads it via a build-time injection script (see `scripts/inject-apple-music-token.mjs`) and makes it available in `src/config/appleMusicToken.generated.ts`. Later you can switch to fetching the token from your backend by changing `getDeveloperToken` in `src/api/apple-music/getDeveloperToken.ts`.
 
 ---
 
@@ -150,7 +150,7 @@ For **user library** endpoints (`/me/...`), you also need the **Music User Token
 1. **Install dependencies** (includes `jsonwebtoken` for the script):
 
    ```bash
-   npm install
+   yarn install
    ```
 
 2. **Create `.env.local`** in the project root (it is gitignored) and add your credentials:
@@ -164,7 +164,7 @@ For **user library** endpoints (`/me/...`), you also need the **Music User Token
 3. **Run the script** to print a new token (e.g. for local testing or to give to a backend):
 
    ```bash
-   npm run token:apple-music
+   yarn token:apple-music
    ```
    Or: `node scripts/generate-developer-token.mjs`
 

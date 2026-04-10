@@ -2,38 +2,44 @@ import { appleMusicApi } from './client';
 
 /**
  * Checks if the currently authenticated Apple Music user has a paid subscription.
- * Returns true if active, false otherwise.
+ * Uses /me/recommendations as a proxy: Apple returns 403 Forbidden for non-subscribers.
+ * Returns true if active or indeterminate, false ONLY if confirmed inactive.
  */
 export async function checkAppleMusicSubscription(): Promise<boolean> {
   try {
-    const response = await appleMusicApi.get('/me/user-subscription');
-    
-    // In many regions, 200 OK with a non-empty data list indicates an active subscription.
-    // However, sometimes it returns 200 with an empty list if not active.
-    if (response.status === 200 && response.data && response.data.data && response.data.data.length > 0) {
+    // /me/recommendations requires an active subscription.
+    // We use a small limit to minimize data transfer.
+    const response = await appleMusicApi.get('/me/recommendations', {
+      params: { limit: 1 },
+    });
+
+    if (response.status === 200) {
+      console.log('[Subscription] Active subscription confirmed via recommendations.');
       return true;
     }
-    
-    // Fallback: Check if the response itself indicates an active subscription
-    // Some versions of the API might return differently.
-    return false;
+
+    return true; // Default to true for unknown 2xx status
   } catch (error: any) {
     const status = error.response?.status;
-    // 403 Forbidden or 404 Not Found are common for non-subscribers at this endpoint
-    if (status === 403 || status === 404) {
-      console.log('[Subscription] No active Apple Music subscription found (Status:', status, ')');
+
+    if (status === 403) {
+      console.log('[Subscription] No active Apple Music subscription found (Status: 403 Forbidden)');
       return false;
     }
-    
-    // If it's another error (network, 500), we might want to return true to avoid blocking the user 
-    // due to a temporary API issue. But usually, 401/403 are very specific.
-    console.warn('[Subscription] Error checking Apple Music subscription:', error.message);
-    
-    // If we're unauthorized (401), we can't check, so we assume false or let the 401 handler deal with it.
-    if (status === 401) return false;
-    
-    // On network/unknown error, we default to TRUE to be safe and not block legitimate users 
-    // who just have a temporary connection issue.
-    return true; 
+
+    // 401 means the token is expired/invalid, not necessarily that there's no subscription.
+    // The client interceptor should handle 401s.
+    if (status === 401) {
+      console.warn('[Subscription] Unauthorized (401). Cannot determine subscription status.');
+      return true; // Let them through, the API call that failed will handle re-auth
+    }
+
+    // For any other error (including the legacy 404), we default to TRUE.
+    // This prevents blocking legitimate subscribers due to API inconsistencies or network issues.
+    console.warn(
+      `[Subscription] Indeterminate status (Status: ${status}). Defaulting to true. Error:`,
+      error.message,
+    );
+    return true;
   }
 }

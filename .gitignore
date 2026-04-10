@@ -2,6 +2,11 @@
 #
 .DS_Store
 
+# Editors
+#
+.vscode/
+.cursorignore
+
 # Xcode
 #
 build/

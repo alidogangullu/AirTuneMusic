@@ -5,7 +5,6 @@ import {
   Modal,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -482,173 +481,134 @@ export function AppleMusicAuthScreen({
     }, 800);
   };
 
-  const isCodeScreen = restoring || pairingMode;
-
-  if (isCodeScreen) {
-    return (
-      <View style={styles.codeScreenRoot} focusable={false}>
-        <View style={styles.codeScreenInner} focusable={false}>
-          <Pressable
-            onPress={() => setShowManualInput(true)}
-            focusable={false}
-            style={styles.logoRow}>
-            <View style={styles.logoIcon} focusable={false}>
-              <Image
-                source={require('../assets/images/logo.png')}
-                style={styles.logoImage}
-                resizeMode="cover"
-              />
-            </View>
-            <Text style={styles.logoTitle}>AirTune</Text>
-          </Pressable>
-          <View style={styles.glassCard} focusable={false}>
-            {restoring ? (
-              <>
-                <ActivityIndicator size="large" color={colors.accent} />
-                <Text style={styles.glassCardHint}>{t('common.loading')}</Text>
-              </>
-            ) : (
-              <>
-                <Text style={styles.glassCardTitle}>
-                  {t('auth.connectTitle')}
-                </Text>
-                <Text style={styles.glassCardSubtitle}>
-                  <Text style={{ color: '#f0535b', fontWeight: 'bold' }}>{t('auth.scanQR')}</Text> {t('auth.orVisitURL')}
-                </Text>
-                <Text style={styles.subscriptionNote}>{t('auth.paidSubscriptionRequired')}</Text>
-                <View style={styles.authContainer} focusable={false}>
-                  <View style={styles.qrContainer} focusable={false}>
-                    <QRCode
-                      value={`http://${localServerIp || '127.0.0.1'}:${LOCAL_SERVER_PORT}/tv?code=${linkCode}`}
-                      size={160}
-                      backgroundColor="white"
-                      color="black"
-                    />
-                  </View>
-
-                  <View style={styles.textColumns} focusable={false}>
-                    <View style={styles.codeDisplayBox} focusable={false}>
-                      <Text
-                        style={styles.codeDisplayText}
-                        selectable={false}
-                        numberOfLines={1}>
-                        {formatCodeForDisplay(linkCode)}
-                      </Text>
-                    </View>
-                    <View style={styles.visitBlock} focusable={false}>
-                      <Text style={styles.visitLabel}>{t('auth.visitURL')}</Text>
-                      <Text style={styles.visitUrl} selectable={false}>
-                        {localServerIp ? `http://${localServerIp}:${LOCAL_SERVER_PORT}/tv` : TV_LINK_DISPLAY}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-                <Pressable
-                  style={({ focused }) => [
-                    styles.getNewCodeBtn,
-                    focused && styles.getNewCodeBtnFocused,
-                  ]}
-                  onPress={cancelTvLink}
-                  onFocus={() => setNewCodeBtnFocused(true)}
-                  onBlur={() => setNewCodeBtnFocused(false)}
-                  focusable={true}
-                  hasTVPreferredFocus={true}>
-                  <Text
-                    style={[
-                      styles.getNewCodeBtnText,
-                      newCodeBtnFocused && styles.getNewCodeBtnTextFocused,
-                    ]}>
-                    {t('auth.getNewCode')}
-                  </Text>
-                </Pressable>
-
-
-              </>
-            )}
-          </View>
-        </View>
-        <Modal
-          visible={showManualInput}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowManualInput(false)}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>
-                {t('auth.manualEntryTitle')}
-              </Text>
-              <TextInput
-                style={styles.textInput}
-                placeholder={t('auth.manualEntryPlaceholder')}
-                placeholderTextColor="rgba(255,255,255,0.4)"
-                value={manualToken}
-                onChangeText={setManualToken}
-                multiline
-                numberOfLines={4}
-              />
-              <View style={styles.modalButtons}>
-                <Pressable
-                  style={[styles.modalButton, { backgroundColor: '#444' }]}
-                  onPress={() => setShowManualInput(false)}>
-                  <Text style={{ color: '#fff' }}>{t('common.cancel')}</Text>
-                </Pressable>
-                <Pressable
-                  style={[styles.modalButton, { backgroundColor: '#f0535b' }]}
-                  onPress={() => {
-                    if (manualToken.trim()) {
-                      setMusicUserToken(manualToken.trim());
-                      musicPlayer.syncTokens();
-                      onAuthSuccess?.();
-                    }
-                  }}>
-                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t('auth.connect')}</Text>
-                </Pressable>
-              </View>
-            </View>
-          </View>
-        </Modal>
-      </View>
-    );
-  }
+  const isConnected = tokenPreview.length > 0;
+  const isCodeScreen = restoring || pairingMode || !isConnected;
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      style={styles.scroll}
-      contentInsetAdjustmentBehavior="automatic">
-      <Text style={styles.title}>{t('auth.appleMusicAuth')}</Text>
-      <Text style={styles.subtitle}>
-        {t('auth.androidTvSignIn')}
-      </Text>
+    <View style={styles.codeScreenRoot} focusable={false}>
+      <View style={styles.codeScreenInner} focusable={false}>
+        <Pressable
+          onPress={() => setShowManualInput(true)}
+          focusable={false}
+          style={styles.logoRow}>
+          <View style={styles.logoIcon} focusable={false}>
+            <Image
+              source={require('../assets/images/logo.png')}
+              style={styles.logoImage}
+              resizeMode="cover"
+            />
+          </View>
+          <Text style={styles.logoTitle}>AirTune</Text>
+        </Pressable>
 
-      {(status === 'success' || tokenPreview.length > 0) && (
-        <>
-          <Text style={styles.mono} numberOfLines={1}>
-            {tokenPreview}
-          </Text>
+        <View style={styles.glassCard} focusable={false}>
+          {restoring ? (
+            <>
+              <ActivityIndicator size="large" color={colors.accent} />
+              <Text style={styles.glassCardHint}>{t('common.loading')}</Text>
+            </>
+          ) : isConnected && !pairingMode ? (
+            <>
+              <Text style={styles.glassCardTitle}>
+                {t('auth.linkedMessage')}
+              </Text>
+              <Text style={styles.glassCardSubtitle}>
+                {t('auth.androidTvSignIn')}
+              </Text>
 
-          <Pressable
-            style={({ focused }) => [
-              styles.button,
-              styles.buttonOutline,
-              focused && styles.buttonFocused,
-            ]}
-            onPress={handleSignOut}
-            focusable={true}>
-            <Text style={styles.buttonTextOutline}>{t('auth.signOut')}</Text>
-          </Pressable>
-        </>
-      )}
+              <View style={styles.codeDisplayBox} focusable={false}>
+                <Text
+                  style={[styles.codeDisplayText, { fontSize: 14, letterSpacing: 0.5 }]}
+                  numberOfLines={1}>
+                  {tokenPreview}
+                </Text>
+              </View>
 
-      {message.length > 0 ? (
-        <View
-          style={[
-            styles.messageBox,
-            status === 'error' ? styles.messageError : styles.messageOk,
-          ]}>
-          <Text style={styles.messageText}>{message}</Text>
+              <Pressable
+                style={({ focused }) => [
+                  styles.getNewCodeBtn,
+                  focused && styles.getNewCodeBtnFocused,
+                ]}
+                onPress={handleSignOut}
+                onFocus={() => setNewCodeBtnFocused(true)}
+                onBlur={() => setNewCodeBtnFocused(false)}
+                focusable={true}
+                hasTVPreferredFocus={true}>
+                <Text
+                  style={[
+                    styles.getNewCodeBtnText,
+                    newCodeBtnFocused && styles.getNewCodeBtnTextFocused,
+                  ]}>
+                  {t('auth.signOut')}
+                </Text>
+              </Pressable>
+            </>
+          ) : (
+            <>
+              <Text style={styles.glassCardTitle}>
+                {t('auth.connectTitle')}
+              </Text>
+              <Text style={styles.glassCardSubtitle}>
+                <Text style={{ color: '#f0535b', fontWeight: 'bold' }}>{t('auth.scanQR')}</Text> {t('auth.orVisitURL')}
+              </Text>
+              <Text style={styles.subscriptionNote}>{t('auth.paidSubscriptionRequired')}</Text>
+
+              <View style={styles.authContainer} focusable={false}>
+                <View style={styles.qrContainer} focusable={false}>
+                  <QRCode
+                    value={`http://${localServerIp || '127.0.0.1'}:${LOCAL_SERVER_PORT}/tv?code=${linkCode}`}
+                    size={160}
+                    backgroundColor="white"
+                    color="black"
+                  />
+                </View>
+
+                <View style={styles.textColumns} focusable={false}>
+                  <View style={styles.codeDisplayBox} focusable={false}>
+                    <Text
+                      style={styles.codeDisplayText}
+                      selectable={false}
+                      numberOfLines={1}>
+                      {formatCodeForDisplay(linkCode)}
+                    </Text>
+                  </View>
+                  <View style={styles.visitBlock} focusable={false}>
+                    <Text style={styles.visitLabel}>{t('auth.visitURL')}</Text>
+                    <Text style={styles.visitUrl} selectable={false}>
+                      {localServerIp ? `http://${localServerIp}:${LOCAL_SERVER_PORT}/tv` : TV_LINK_DISPLAY}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              <Pressable
+                style={({ focused }) => [
+                  styles.getNewCodeBtn,
+                  focused && styles.getNewCodeBtnFocused,
+                ]}
+                onPress={cancelTvLink}
+                onFocus={() => setNewCodeBtnFocused(true)}
+                onBlur={() => setNewCodeBtnFocused(false)}
+                focusable={true}
+                hasTVPreferredFocus={true}>
+                <Text
+                  style={[
+                    styles.getNewCodeBtnText,
+                    newCodeBtnFocused && styles.getNewCodeBtnTextFocused,
+                  ]}>
+                  {t('auth.getNewCode')}
+                </Text>
+              </Pressable>
+            </>
+          )}
         </View>
-      ) : null}
+
+        {message.length > 0 && status === 'error' && (
+          <View style={[styles.messageBox, styles.messageError]}>
+            <Text style={styles.messageText}>{message}</Text>
+          </View>
+        )}
+      </View>
 
       <Modal
         visible={showManualInput}
@@ -690,6 +650,6 @@ export function AppleMusicAuthScreen({
           </View>
         </View>
       </Modal>
-    </ScrollView>
+    </View>
   );
 }

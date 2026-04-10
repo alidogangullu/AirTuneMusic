@@ -1,54 +1,28 @@
 # TV Link Page (Companion login for Android TV)
 
-This folder contains a single-page HTML that lets users **link their Apple Music account to the TV app** by entering the code shown on the Android TV. No “Install Apple Music” on the TV; login happens on phone/PC.
+This folder contains a single-page HTML that lets users **link their Apple Music account to the TV app** by entering the code shown on the Android TV. 
 
-## Local use (no backend)
+## How it works
 
-From the **project root** run:
+1. **TV app** starts a native local server and shows a 6-digit code and its local URL (e.g. `http://192.168.1.50:8080/tv`).
+2. User opens this URL on a phone or computer connected to the same network.
+3. The TV app's local server serves this `index.html` page.
+4. User enters the code, clicks “Sign in with Apple Music”, and signs in via Apple MusicKit JS.
+5. The page sends the **Music User Token** back to the TV app's local server (via `POST /api/tv-link`).
+6. The TV app receives the token and completes the sign-in.
 
-```bash
-npm run tv-link:serve
-# (defined in the root package.json; it simply invokes
-# `node tv-link-page/server.mjs`)
+## Structure
 
-# or, if you prefer to bypass npm scripts, you can run:
-node tv-link-page/server.mjs
-```
+- **index.html**: The pairing UI. Uses MusicKit JS to authenticate the user and obtain a Music User Token.
+- **scripts/**: (If any) supporting scripts for the pairing page.
 
-Then open **http://localhost:8080/tv** in your browser. The server reads `EXPO_PUBLIC_APPLE_MUSIC_TOKEN` from `.env.local`, serves the page, and provides the two API endpoints. From the Android TV emulator use **http://10.0.2.2:8080/tv**. Different port: `TV_LINK_PORT=8081 npm run tv-link:serve`.
+## Backend / Integration
 
-## Flow
+In the current implementation, the Android app acts as the server. The `index.html` communicates with endpoints provided by the `TVLinkServer` native module:
 
-1. **TV app** shows a 6-digit code and the URL of this page (e.g. `https://yoursite.com/tv`).
-2. User opens this page on a phone or computer, enters the code, clicks “Sign in with Apple Music”.
-3. MusicKit JS runs Apple’s sign-in; the page gets the **Music User Token** and sends it to your backend with the code.
-4. **Backend** stores `code → musicUserToken` (e.g. for 10–15 minutes). TV app polls the backend with the code and receives the token.
+- `GET /api/tv-link/developer-token`: Provides the Apple Music developer JWT.
+- `POST /api/tv-link`: Receives the code and Music User Token from the browser.
 
-## Backend API
+## Security
 
-Your backend must expose two endpoints (paths are examples; you can change them in `index.html`):
-
-### 1. GET developer token
-
-- **Path:** e.g. `GET /api/tv-link/developer-token`
-- **Response:** `{ "developerToken": "YOUR_JWT_DEVELOPER_TOKEN" }`
-- **Purpose:** So the HTML page can configure MusicKit JS without embedding the secret. Generate the token the same way as for the TV app (see `scripts/generate-developer-token.mjs` or your backend logic).
-
-### 2. POST link (code + token)
-
-- **Path:** e.g. `POST /api/tv-link`
-- **Body:** `{ "code": "123456", "musicUserToken": "..." }`
-- **Response:** `200 OK` (or any 2xx) on success.
-- **Purpose:** Store the mapping `code → musicUserToken` so the TV app can poll and retrieve the token.
-
-The **TV app** should poll something like `GET /api/tv-link?code=123456` and expect a response containing the token (e.g. `{ "musicUserToken": "..." }`) once the user has completed the flow on this page.
-
-## Hosting
-
-- Serve `index.html` at a public URL (e.g. `https://yoursite.com/tv` or `https://yoursite.com/tv-link`).
-- Ensure the same origin (or CORS) allows this page to call your backend for `/api/tv-link/developer-token` and `POST /api/tv-link`.
-- If the page is on another domain, set `API_BASE` in the script to your backend origin (e.g. `'https://api.yoursite.com'`).
-
-## Hosting in production
-
-Do **not** put your real developer token inside the HTML; always serve it from the backend via the developer-token endpoint.
+The developer token is served by the app's local server after being injected at build time (from `APPLE_MUSIC_DEVELOPER_TOKEN` in `.env.local`). In a production web-hosted scenario, you should always serve the token from a secure backend rather than embedding it in the HTML.

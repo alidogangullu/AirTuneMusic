@@ -8,7 +8,8 @@
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest",
-    "tv-link:serve": "node tv-link-page/server.mjs"
+    "emulator:tv": "emulator -avd Android_TV_API36",
+    "android:tv": "react-native run-android"
   },
   "dependencies": {
     "@react-native/new-app-screen": "0.83.0",

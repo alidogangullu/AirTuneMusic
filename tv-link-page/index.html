@@ -165,7 +165,13 @@
           showMessage('Success! Your TV is now linked. You can close this page.', 'success');
           form.reset();
         } catch (err) {
-          const msg = err.message || String(err);
+          let msg = err.message || String(err);
+          
+          // If the error is about authorization, it's almost always a missing subscription
+          if (msg.toLowerCase().includes('unauthorized') || msg.toLowerCase().includes('forbidden')) {
+            msg = 'An active Apple Music subscription is required. Please check your account and try again.';
+          }
+          
           showMessage(msg, 'error');
         } finally {
           btn.disabled = false;

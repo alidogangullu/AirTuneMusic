@@ -43,7 +43,7 @@ So: **catalog-only** (search, browse, charts) → developer token is enough.
 
 ### 2. Auth flow (high level)
 
-1. **Developer token** — You already have this (JWT from `npm run token:apple-music`).
+1. **Developer token** — You already have this (JWT from `yarn token:apple-music`).
 2. **Start auth UI** — Use MusicKit’s **AuthIntentBuilder** with your developer token to get an **Intent**.
 3. **User signs in** — Launch that Intent (e.g. `startActivityForResult`). User signs in with Apple ID / Apple Music in the system/Apple UI.
 4. **Get Music User Token** — In `onActivityResult`, pass the result **Intent** to **AuthenticationManager.handleTokenResult(intent)**. You get a **TokenResult** with `getMusicUserToken()` or an error via `getError()`.
@@ -70,9 +70,9 @@ So: **catalog-only** (search, browse, charts) → developer token is enough.
 
 ---
 
-## In this project (React Native / Expo)
+## In this project (React Native)
 
-- **Catalog-only (no login):** Developer token in app config; `appleMusicApi` adds `Authorization: Bearer`. No user auth needed.
+- **Catalog-only (no login):** Developer token injected at build time; `appleMusicApi` adds `Authorization: Bearer`. No user auth needed.
 - **User library / playlists / recommendations:**
   1. **Add the MusicKit AAR** — Download from [Apple Developer Downloads](https://developer.apple.com/download/all/?q=Android%20MusicKit) and place the auth AAR in `android/app/libs/`. See `android/app/libs/README.md`.
   2. **Sign in from JS:** Call `startAppleMusicAuth()` from `src/api/apple-music`. It launches the native sign-in UI and stores the Music User Token.

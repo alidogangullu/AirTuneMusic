@@ -10,7 +10,7 @@
 
 1. **Start the TV emulator** (in one terminal):
    ```bash
-   npm run emulator:tv
+   yarn emulator:tv
    ```
    or:
    ```bash
@@ -19,26 +19,25 @@
 
 2. After the emulator is up, **deploy the app** (in another terminal):
    ```bash
-   npm run android
+   yarn android
    ```
    If only one device/emulator is connected, the app is installed there.
 
 3. **If multiple devices/emulators are connected**, select the TV emulator:
    ```bash
-   npm run android:tv
+   yarn android:tv
    ```
    Choose the Android TV emulator from the list.
 
 ## Debug (Cursor / VS Code)
 
 1. Ensure **React Native Tools** extension is installed.
-2. Start the TV emulator: `npm run emulator:tv`.
-3. In Cursor: **Run and Debug** (Ctrl+Shift+D / Cmd+Shift+D) → **Debug Android (Expo)** and start with F5; or run the app with `npm run android` first, then **Attach to Android** to attach the debugger.
+2. Start the TV emulator: `yarn emulator:tv`.
+3. In Cursor: **Run and Debug** (Ctrl+Shift+D / Cmd+Shift+D) → **Debug Android** and start with F5; or run the app with `yarn android` first, then **Attach to Android** to attach the debugger.
 
 ## Command summary
 
 | Goal | Command |
 |------|---------|
-| Start TV emulator | `npm run emulator:tv` |
-| Run app | `npm run android` |
-| Run app (choose device) | `npm run android:tv` |
+| Start TV emulator | `yarn emulator:tv` |
+| Run app | `yarn android` |
