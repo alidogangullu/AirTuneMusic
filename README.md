@@ -9,7 +9,6 @@
   <img src="https://img.shields.io/badge/platform-Android%20TV-green.svg" alt="Android TV">
   <img src="https://img.shields.io/badge/React%20Native-0.83.0-blue.svg" alt="React Native">
   <img src="https://img.shields.io/badge/TypeScript-Ready-blue.svg" alt="TypeScript">
-  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
 </p>
 
 ---
@@ -34,6 +33,9 @@
 <p align="center">
   <img src="src/assets/images/Screenshot_1774223696.png" width="400">
   <img src="src/assets/images/Screenshot_1774223726.png" width="400">
+</p>
+<p align="center">
+  <img src="src/assets/images/screenshot.png" width="400">
 </p>
 
 ---
