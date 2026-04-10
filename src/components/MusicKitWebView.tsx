@@ -1,6 +1,7 @@
 import React, { useRef, useImperativeHandle, forwardRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
+import * as musicPlayer from '../services/musicPlayer';
 
 export interface MusicKitWebPlayerRef {
   playStation: (stationId: string) => void;
@@ -247,6 +248,8 @@ export const MusicKitWebView = forwardRef<MusicKitWebPlayerRef, Props>(
         const data = JSON.parse(event.nativeEvent.data);
         if (data.type === 'state' && onPlaybackStateChanged) {
           onPlaybackStateChanged(data.state);
+          // Keep screen on while playing from web player
+          musicPlayer.setKeepAwake(data.state === 'playing');
         } else if (data.type === 'track' && onTrackChanged) {
           onTrackChanged(data.track);
         } else if (data.type === 'capabilities' && onCapabilitiesChanged) {

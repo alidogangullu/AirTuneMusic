@@ -244,6 +244,10 @@ export function setAutoplay(enabled: boolean): void {
   console.log('[musicPlayer] setAutoplay:', enabled);
 }
 
+export function setKeepAwake(enabled: boolean): void {
+  MusicPlayer?.setKeepAwake(enabled);
+}
+
 export function release(): void {
   MusicPlayer?.release();
   configured = false;

@@ -2,6 +2,7 @@ package com.airtunemusic.musicplayer
 
 import android.os.Handler
 import android.os.Looper
+import android.view.WindowManager
 import android.util.Log
 import com.apple.android.music.playback.controller.MediaPlayerController
 import com.apple.android.music.playback.controller.MediaPlayerControllerFactory
@@ -278,6 +279,26 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
+    fun setKeepAwake(enabled: Boolean) {
+        mainHandler.post {
+            try {
+                val activity = reactContext.currentActivity
+                if (activity != null) {
+                    if (enabled) {
+                        Log.d(TAG, "Setting FLAG_KEEP_SCREEN_ON")
+                        activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    } else {
+                        Log.d(TAG, "Clearing FLAG_KEEP_SCREEN_ON")
+                        activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in setKeepAwake", e)
+            }
+        }
+    }
+
+    @ReactMethod
     fun play() {
         mainHandler.post { player?.play() }
     }
@@ -442,8 +463,10 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
         sendEvent("onPlaybackStateChanged", map)
 
         if (currentState == PlaybackState.PLAYING) {
+            setKeepAwake(true)
             startProgressUpdates()
         } else {
+            setKeepAwake(false)
             stopProgressUpdates()
         }
     }
