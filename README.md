@@ -1,71 +1,95 @@
-# AirTune Music
+# 🎵 AirTune Music
 
-**Apple Music Android TV client** built with TypeScript, React Native, and the [Apple Music API](https://developer.apple.com/documentation/applemusicapi/).
+<p align="center">
+  <img src="src/assets/images/airtune_banner_glassmorphism_1774224073194-2.png" alt="AirTune Music Banner" width="800">
+</p>
 
-## Technical overview
+<p align="center">
+  <b>An Apple Music client for Android TV</b><br>
+  Built with React Native
+</p>
 
-| Area | Technology |
-|------|------------|
-| Framework | React Native |
-| TV runtime | `react-native-tvos` |
-| Language | TypeScript |
-| Backend / catalog | Apple Music API |
-| Target platform | Android TV only |
+<p align="center">
+  <img src="https://img.shields.io/badge/platform-Android%20TV-green.svg" alt="Android TV">
+  <img src="https://img.shields.io/badge/React%20Native-0.83.0-blue.svg" alt="React Native">
+  <img src="https://img.shields.io/badge/TypeScript-Ready-blue.svg" alt="TypeScript">
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
+</p>
 
-- **Input**: Development must account for **Android TV remote** (D-pad, focus, key events).
-- **Language**: All documentation and code are in **English**. The app uses **localization** for user-facing strings.
+---
 
-## Local Pairing Server (TV Link)
+## ✨ Features
 
-Because Android TV lacks a convenient keyboard, this app uses a **pairing flow** for user authentication:
+- **📺 Native TV Experience**: Fully optimized for D-pad navigation and remote control interaction.
+- **💎 Native UI**: Modern native-like interface with dynamic background color extraction from artwork.
+- **📱 TV Link Pairing**: Easy sign-in using your phone or PC via a local pairing server—no clunky TV keyboard required.
+- **🎼 Full Library Access**: Browse your playlists, albums, and "Listen Now" recommendations.
+- **📻 Apple Music Radio**: Stream your favorite stations and algorithmic radio.
+- **🚀 Performance**: Built on `react-native-tvos` for smooth performance on hardware.
 
-1. The Android TV app starts a **built-in local web server** when the sign-in screen is opened.
-2. The user navigates to the TV's IP address (e.g., `http://192.168.1.50:8080/tv`) on a phone or PC.
-3. The user signs in via Apple MusicKit JS on that page.
-4. The web page sends the **Music User Token** back to the TV app's local server.
-5. The TV app receives the token and completes the sign-in.
+---
 
-For local development, the app's server can be accessed at `http://10.0.2.2:8080/tv` from within the Android emulator.
+## 📸 Screenshots
 
-## Project structure
+<p align="center">
+  <img src="src/assets/images/Screenshot_1774223677.png" width="400">
+  <img src="src/assets/images/Screenshot_1774223689.png" width="400">
+</p>
+<p align="center">
+  <img src="src/assets/images/Screenshot_1774223696.png" width="400">
+  <img src="src/assets/images/Screenshot_1774223726.png" width="400">
+</p>
 
-The codebase follows a structure suited for React Native + TypeScript + Apple Music API:
+---
 
-```
-├── App.tsx
-├── src/
-│   ├── api/                 # Apple Music API client, types, endpoints
-│   ├── assets/              # Static assets (images, fonts)
-│   ├── components/          # Reusable UI components (TV-friendly, focus-aware)
-│   ├── config/              # Build-time generated configuration
-│   ├── constants/           # App constants
-│   ├── hooks/               # Custom React hooks
-│   ├── i18n/                # Localization configuration (i18next)
-│   ├── locales/             # Translation strings (JSON)
-│   ├── navigation/          # Navigation / routing
-│   ├── screens/             # Screen components
-│   ├── services/            # Native module wrappers and services (e.g., tvLinkServer)
-│   ├── theme/               # Theming (colors, typography)
-│   ├── types/               # Shared TypeScript types
-│   └── utils/               # Utilities
-├── android/                 # Android TV native project
-├── tv-link-page/            # Pairing page (HTML/JS) served by the app
-├── scripts/                 # Build/run helpers
-└── docs/                    # Project documentation
-```
+## 🔗 Download
 
-See [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) for details.
+<p align="center">
+  <a href="https://play.google.com/store/apps/details?id=com.airtunemusic">
+    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" width="240">
+  </a>
+</p>
 
-## Requirements
+---
 
-- Node.js (see `.node-version`) and **Yarn** (recommended).
-- Apple Music API: developer token (JWT). See [docs/DEVELOPER_TOKEN_SETUP.md](docs/DEVELOPER_TOKEN_SETUP.md) for setup and `yarn token:apple-music` to generate a token. For **local dev**: set `APPLE_MUSIC_DEVELOPER_TOKEN` in `.env.local`.
-- Android: `ANDROID_HOME` or `ANDROID_SDK_ROOT`, **Java 17**, TV AVD (e.g. `Android_TV_API36`). For **user sign-in** (library, playlists): add the MusicKit for Android AAR to `android/app/libs/` — see [docs/APPLE_MUSIC_USER_AUTH.md](docs/APPLE_MUSIC_USER_AUTH.md).
+## 🛠 Technical Overview
 
-## Running the app
+| Area      | Technology                             |
+| --------- | -------------------------------------- |
+| Framework | React Native (`react-native-tvos`)     |
+| Language  | TypeScript                             |
+| API       | Apple Music API (REST)                 |
+| Auth      | MusicKit JS (via Local Pairing Server) |
 
-| Platform | Command |
-|----------|---------|
-| Android TV (choose device) | `npm run android` |
+### Local Pairing Server (TV Link)
 
-Detailed Android TV run/debug: [docs/ANDROID_TV_RUN_DEBUG.md](docs/ANDROID_TV_RUN_DEBUG.md).
+Because Android TV lacks a convenient keyboard, this app uses a dedicated **pairing flow**:
+
+1. The TV app starts a **built-in local web server**.
+2. User goes to the TV's IP (e.g., `http://192.168.1.50:8080/tv`) on a phone.
+3. User signs in via Apple MusicKit JS on the mobile browser.
+4. The token is sent back to the TV instantly.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js**: >= 20.x
+- **Yarn**: Recommended
+- **Java**: Version 17 (for Android builds)
+- **Apple Music Developer Token**: Required for API access.
+
+### Installation
+
+1. Clone the repository: `git clone https://github.com/alidogangullu/AirTuneMusic.git`
+2. Install dependencies: `yarn install`
+3. Configure environment: Copy `.env.example` to `.env.local` and add your `APPLE_MUSIC_DEVELOPER_TOKEN`.
+4. Build for Android TV: `yarn android`
+
+For detailed setup instructions, see:
+
+- [🚀 Run & Debug Guide](docs/ANDROID_TV_RUN_DEBUG.md)
+- [🔑 Developer Token Setup](docs/DEVELOPER_TOKEN_SETUP.md)
+- [📂 Project Structure](docs/PROJECT_STRUCTURE.md)
