@@ -38,13 +38,22 @@
 
 ---
 
-## 🔗 Download
+## 🧪 Closed Beta Testing
+
+AirTune Music is currently in **Closed Beta**. (The Open Beta is currently under review and will be available soon.) To install the app on your Android TV, please follow these steps:
+
+1. **Join the Testers Group**: [Join our Google Group](https://groups.google.com/g/airtune-testers/) first. You must join using the same Google account you use for the Play Store.
+2. **Opt-in to Testing**: After joining the group, [Opt-in to the Testing Program](https://play.google.com/apps/testing/com.airtunemusic) here.
+3. **Download from Play Store**: Once opted-in, you can download the app from the Play Store:
 
 <p align="center">
   <a href="https://play.google.com/store/apps/details?id=com.airtunemusic">
     <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" width="240">
   </a>
 </p>
+
+> [!IMPORTANT]
+> You **must** join the Google Group before the "Opt-in" link will work. This is a Google Play requirement for Closed Beta access.
 
 ---
 
