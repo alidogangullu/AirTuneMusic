@@ -1,10 +1,6 @@
 # 🎵 AirTune Music
 
 <p align="center">
-  <img src="src/assets/images/airtune_banner_glassmorphism_1774224073194-2.png" alt="AirTune Music Banner" width="800">
-</p>
-
-<p align="center">
   <b>An Apple Music client for Android TV</b><br>
   Built with React Native
 </p>
