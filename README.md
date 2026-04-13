@@ -40,13 +40,14 @@
 
 ---
 
-## 🧪 Closed Beta Testing
+## 🧪 Testing (Open Beta)
 
-AirTune Music is currently in **Closed Beta**. (The Open Beta is currently under review and will be available soon.) To install the app on your Android TV, please follow these steps:
+~~AirTune Music is currently in **Closed Beta**. (The Open Beta is currently under review and will be available soon.) To install the app on your Android TV, please follow these steps:~~
 
-1. **Join the Testers Group**: [Join our Google Group](https://groups.google.com/g/airtune-testers/) first. You must join using the same Google account you use for the Play Store.
-2. **Opt-in to Testing**: After joining the group, [Opt-in to the Testing Program](https://play.google.com/apps/testing/com.airtunemusic) here.
-3. **Download from Play Store**: Once opted-in, you can download the app from the Play Store:
+~~1. **Join the Testers Group**: [Join our Google Group](https://groups.google.com/g/airtune-testers/) first. You must join using the same Google account you use for the Play Store.~~
+~~2. **Opt-in to Testing**: After joining the group, [Opt-in to the Testing Program](https://play.google.com/apps/testing/com.airtunemusic) here.~~
+
+The closed testing phase with 50+ users has been successfully completed, and AirTune Music is now in **Open Beta**! You can now join the testing program and download the app directly from the Google Play Store.
 
 <p align="center">
   <a href="https://play.google.com/store/apps/details?id=com.airtunemusic">
@@ -54,8 +55,8 @@ AirTune Music is currently in **Closed Beta**. (The Open Beta is currently under
   </a>
 </p>
 
-> [!IMPORTANT]
-> You **must** join the Google Group before the "Opt-in" link will work. This is a Google Play requirement for Closed Beta access.
+> [!NOTE]
+> The app is now available for direct access via the Play Store. The previous requirement to join a Google Group is no longer necessary.
 
 ---
 
@@ -67,6 +68,7 @@ AirTune Music is currently in **Closed Beta**. (The Open Beta is currently under
 | Language  | TypeScript                             |
 | API       | Apple Music API (REST)                 |
 | Auth      | MusicKit JS (via Local Pairing Server) |
+| Lyrics    | [LRCLIB](https://lrclib.net/)          |
 
 ### Local Pairing Server (TV Link)
 
