@@ -497,12 +497,13 @@ export function NowPlayingScreen({
   const [infoButtonNode, setInfoButtonNode] = useState<number | null>(null);
 
   if (!track) {
-    if (state.isLoading) {
+    const isActuallyLoading = state.isLoading || state.playbackState !== 'stopped';
+    if (isActuallyLoading) {
       // Something is loading but track info isn't available yet
       const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
       return (
         <LinearGradient
-          colors={["#c1d5f3", "#bfc0c6"]}
+          colors={['#c1d5f3', '#bfc0c6']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.root}

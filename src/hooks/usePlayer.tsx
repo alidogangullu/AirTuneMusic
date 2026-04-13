@@ -212,8 +212,8 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         setState(s => ({
           ...s,
           playbackState: data.state,
-          // If we transition to anything other than stopped, we're done with the initial "loading"
-          isLoading: data.state === 'stopped' ? s.isLoading : false,
+          // Only stop "loading" if we have a track to display OR we reached a terminal stopped state
+          isLoading: (data.state === 'stopped' || !!s.track) ? false : s.isLoading,
         }));
       }),
       musicPlayer.addEventListener('onCurrentItemChanged', data => {

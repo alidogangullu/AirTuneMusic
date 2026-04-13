@@ -15,9 +15,21 @@ export function useLyrics(enabled: boolean = true): UseLyricsResult {
   const { track } = state;
   const { position } = usePlaybackProgress();
 
+  const shouldFetch = enabled && !!track?.title && !!track?.artistName;
   const [lyricsData, setLyricsData] = useState<LyricsResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(shouldFetch);
   const [error, setError] = useState<string | null>(null);
+  const [prevTrackId, setPrevTrackId] = useState(track?.id);
+  const [prevEnabled, setPrevEnabled] = useState(enabled);
+
+  // Sync state during render when track or enabled state changes to prevent flicker
+  if (track?.id !== prevTrackId || enabled !== prevEnabled) {
+    setPrevTrackId(track?.id);
+    setPrevEnabled(enabled);
+    setLyricsData(null);
+    setError(null);
+    setIsLoading(enabled && !!track?.title && !!track?.artistName);
+  }
 
   // Fetch lyrics when track changes or when lyrics are enabled
   useEffect(() => {
@@ -31,9 +43,9 @@ export function useLyrics(enabled: boolean = true): UseLyricsResult {
     let mounted = true;
     setLyricsData(null); // Clear previous lyrics immediately on track change
     setError(null);
+    setIsLoading(true);
 
     async function loadLyrics() {
-      setIsLoading(true);
       setError(null);
       try {
         const data = await fetchLyrics(

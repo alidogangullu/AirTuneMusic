@@ -4,6 +4,7 @@ import {
   groupRecommendations,
   useRecommendations,
   useCharts,
+  useStorefront,
   RecommendationSection,
 } from '../hooks/useRecommendations';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 export function BrowseScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { data: recsData, isLoading: recsLoading, error: recsError, refetch: refetchRecs } = useRecommendations();
+  const { isLoading: storefrontLoading, data: storefront } = useStorefront();
   const { data: chartsData, isLoading: chartsLoading, error: chartsError, refetch: refetchCharts } = useCharts();
 
   const browseSections = React.useMemo(() => {
@@ -47,7 +49,7 @@ export function BrowseScreen(): React.JSX.Element {
     return sections;
   }, [recsData?.data, chartsData?.results, t]);
 
-  const isLoading = recsLoading || chartsLoading;
+  const isLoading = recsLoading || chartsLoading || storefrontLoading || !storefront;
   const error = recsError || chartsError;
   const refetch = () => {
     refetchRecs();

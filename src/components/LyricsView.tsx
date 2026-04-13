@@ -105,7 +105,12 @@ export function LyricsView(): React.JSX.Element {
   }
 
   return (
-    <View style={styles.container}>
+    <View 
+      style={styles.container} 
+      {...({ descendantFocusability: 'blocksDescendants' } as any)} 
+      focusable={false} 
+      pointerEvents="none"
+    >
       <FlatList
         ref={flatListRef}
         data={lyrics}
@@ -113,6 +118,7 @@ export function LyricsView(): React.JSX.Element {
         keyExtractor={(item, index) => `${item.time}-${index}`}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        scrollEnabled={false}
         onScrollToIndexFailed={(info) => {
           if (scrollTimeoutRef.current) {
             clearTimeout(scrollTimeoutRef.current);
