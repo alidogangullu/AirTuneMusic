@@ -5,7 +5,7 @@
  */
 
 import React, { useCallback, useMemo, useState } from 'react';
-import { Alert, Modal, StyleSheet, View } from 'react-native';
+import { Alert, Modal, StyleSheet, View, BackHandler, ToastAndroid } from 'react-native';
 import { GradientBackground } from '../components/GradientBackground';
 import { MainLayout } from '../components/MainLayout';
 import { ContentNavigationContext } from '../navigation';
@@ -38,6 +38,39 @@ export function HomeScreen({
 
   // When player hook triggers settings (quota reached), show it
   const { showSettings: playerWantsSettings, setShowSettings } = usePlayer();
+  const isDetailOpen = selectedContent !== null;
+  const [lastBackPressed, setLastBackPressed] = useState(0);
+
+  // Handle back button for tab navigation and double-back exit
+  React.useEffect(() => {
+    const onBackPress = () => {
+      // If any modal is open, let the modal's onRequestClose handle it
+      if (settingsVisible || isDetailOpen || nowPlayingFullscreen) {
+        return false;
+      }
+
+      // If not on the main tab, go back to the main tab
+      if (activeTab !== 'listen-now') {
+        setActiveTab('listen-now');
+        return true;
+      }
+
+      // If on the main tab, check for double-back exit
+      const now = Date.now();
+      if (lastBackPressed && now - lastBackPressed < 2000) {
+        // Exit app
+        return false;
+      }
+
+      setLastBackPressed(now);
+      ToastAndroid.show(t('common.exitPressAgain'), ToastAndroid.SHORT);
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+    return () => backHandler.remove();
+  }, [activeTab, settingsVisible, isDetailOpen, nowPlayingFullscreen, lastBackPressed, t]);
 
   React.useEffect(() => {
     if (playerWantsSettings) {
@@ -69,8 +102,6 @@ export function HomeScreen({
     () => ({ pushContent, openNowPlayingFullscreen }),
     [pushContent, openNowPlayingFullscreen],
   );
-
-  const isDetailOpen = selectedContent !== null;
 
   const handleSignOut = useCallback(() => {
     Alert.alert(

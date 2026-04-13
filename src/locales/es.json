@@ -17,7 +17,8 @@
     "artist": "Artista",
     "song": "Canción",
     "album": "Álbum",
-    "playlist": "Lista de reproducción"
+    "playlist": "Lista de reproducción",
+    "exitPressAgain": "Presiona de nuevo para salir"
   },
   "topBar": {
     "listenNow": "Escuchar ahora",

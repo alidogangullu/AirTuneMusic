@@ -17,7 +17,8 @@
     "artist": "Artiste",
     "song": "Morceau",
     "album": "Album",
-    "playlist": "Playlist"
+    "playlist": "Playlist",
+    "exitPressAgain": "Appuyez de nouveau pour quitter"
   },
   "topBar": {
     "listenNow": "Écouter",

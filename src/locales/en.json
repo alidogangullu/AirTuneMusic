@@ -17,7 +17,8 @@
     "artist": "Artist",
     "song": "Song",
     "album": "Album",
-    "playlist": "Playlist"
+    "playlist": "Playlist",
+    "exitPressAgain": "Press back again to exit"
   },
   "topBar": {
     "listenNow": "Listen Now",

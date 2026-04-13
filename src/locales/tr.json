@@ -17,7 +17,8 @@
     "artist": "Sanatçı",
     "song": "Şarkı",
     "album": "Albüm",
-    "playlist": "Çalma Listesi"
+    "playlist": "Çalma Listesi",
+    "exitPressAgain": "Çıkmak için tekrar basın"
   },
   "topBar": {
     "listenNow": "Şimdi Dinle",
