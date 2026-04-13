@@ -24,9 +24,6 @@ import type {
 export interface PlayerState {
   playbackState: PlaybackStateName;
   track: TrackInfo | null;
-  position: number;
-  duration: number;
-  buffered: number;
   buffering: boolean;
   shuffleMode: number;
   repeatMode: number;
@@ -43,12 +40,15 @@ export interface PlayerState {
   autoplay: boolean;
 }
 
+export interface ProgressState {
+  position: number;
+  duration: number;
+  buffered: number;
+}
+
 const initialState: PlayerState = {
   playbackState: 'stopped',
   track: null,
-  position: 0,
-  duration: 0,
-  buffered: 0,
   buffering: false,
   shuffleMode: 0,
   repeatMode: 0,
@@ -63,6 +63,12 @@ const initialState: PlayerState = {
   isLoading: false,
   rating: 0,
   autoplay: false,
+};
+
+const initialProgress: ProgressState = {
+  position: 0,
+  duration: 0,
+  buffered: 0,
 };
 
 // ── Context ─────────────────────────────────────────────────────
@@ -91,6 +97,59 @@ interface PlayerContextValue {
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
+
+const PlaybackProgressContext = createContext<ProgressState>(initialProgress);
+
+export function PlaybackProgressProvider({children}: {children: React.ReactNode}) {
+  const [progress, setProgress] = useState<ProgressState>(initialProgress);
+
+  useEffect(() => {
+    const subs = [
+      musicPlayer.addEventListener('onPlaybackProgress', (data: ProgressInfo) => {
+        setProgress({
+          position: data.position,
+          duration: data.duration,
+          buffered: data.buffered,
+        });
+      }),
+      // Handle track changes to reset progress or set initial duration
+      musicPlayer.addEventListener('onCurrentItemChanged', data => {
+        if (data.duration !== undefined) {
+          setProgress(p => ({
+            ...p,
+            duration: data.duration ?? 0,
+            position: 0,
+          }));
+        }
+      }),
+      // Initial state sync
+      musicPlayer.addEventListener('onPlaybackStateChanged', data => {
+         if (data.state === 'stopped') {
+           setProgress(initialProgress);
+         }
+      })
+    ];
+
+    // Sync initial state if already playing
+    musicPlayer.getPlaybackState().then(info => {
+      if (info) {
+        setProgress({
+          position: info.position,
+          duration: info.trackDuration ?? info.duration,
+          buffered: 0, // SDK info doesn't provide buffered for initial sync
+        });
+      }
+    });
+
+    return () => subs.forEach(s => s.remove());
+  }, []);
+
+  return (
+    <PlaybackProgressContext.Provider value={progress}>
+      {children}
+    </PlaybackProgressContext.Provider>
+  );
+}
 
 // ── Queue builder ─────────────────────────────────────────────────
 /**
@@ -205,8 +264,6 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
 
             return {
               ...tempState,
-              duration: data.duration ?? 0,
-              position: isSameTrack ? s.position : 0,
               queueIndex: data.trackIndex ?? s.queueIndex,
               queue: merged,
               canSkipToPrevious: (data as any).canSkipToPrevious ?? s.canSkipToPrevious,
@@ -226,9 +283,6 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
       musicPlayer.addEventListener('onPlaybackProgress', (data: ProgressInfo) => {
         setState(s => ({
           ...s,
-          position: data.position,
-          duration: data.duration,
-          buffered: data.buffered,
           isLoading: false, // Progress received, definitely not loading anymore
           // If we are progressing, we shouldn't be "stuck" in a buffering state visual
           buffering: data.position > 0 ? false : s.buffering,
@@ -284,10 +338,6 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
       setState(s => ({
         ...s,
         playbackState: info.state,
-        position: info.position,
-        duration: info.duration,
-        shuffleMode: info.shuffleMode,
-        repeatMode: info.repeatMode,
         queueCount: info.queueCount,
         queueIndex: info.queueIndex,
         queue: info.title ? s.queue : [], // Will be updated by getQueue() call below
@@ -477,7 +527,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
   );
 
   const seekTo = useCallback((positionMs: number) => {
-    setState(s => ({...s, position: positionMs}));
+    // Note: Local progress state update is handled by the progress event following the seek
     if (activeEngineRef.current === 'web') {
       webPlayerRef.current?.seekTo?.(positionMs);
     } else {
@@ -562,9 +612,10 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
 
   return (
     <PlayerContext.Provider value={value}>
-      {children}
-      {tokens && (
-        <MusicKitWebView
+      <PlaybackProgressProvider>
+        {children}
+        {tokens && (
+          <MusicKitWebView
           ref={webPlayerRef}
           developerToken={tokens.dev}
           musicUserToken={tokens.user}
@@ -615,12 +666,9 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
           }}
           onProgressChanged={data => {
             if (activeEngineRef.current === 'web') {
+              musicPlayer.emitManualPlaybackProgress(data);
               setState(s => ({
                 ...s,
-                position: data.position,
-                // Web event provides duration in MS. Keep it or prioritize track metadata duration
-                duration: data.duration > 0 ? data.duration : s.duration,
-                buffered: data.buffered,
                 isLoading: false,
                 buffering: false,
               }));
@@ -637,6 +685,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
           }}
         />
       )}
+      </PlaybackProgressProvider>
     </PlayerContext.Provider>
   );
 }
@@ -648,5 +697,10 @@ export function usePlayer(): PlayerContextValue {
   if (!ctx) {
     throw new Error('usePlayer must be used within <PlayerProvider>');
   }
+  return ctx;
+}
+
+export function usePlaybackProgress(): ProgressState {
+  const ctx = useContext(PlaybackProgressContext);
   return ctx;
 }

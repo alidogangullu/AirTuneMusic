@@ -2,13 +2,13 @@
  * Animated equalizer bars — "now playing" indicator for track lists.
  * Shows 4 bars that animate up/down when playing, freeze mid-height when paused.
  */
-import React, {useEffect, useRef} from 'react';
-import {Animated, Easing, View, StyleSheet} from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Easing, View, StyleSheet } from 'react-native';
 
 const BAR_COUNT = 4;
 const BAR_WIDTH = 3;
 const BAR_GAP = 2;
-const HEIGHT = 16;
+const HEIGHT = 13;
 
 interface NowPlayingBarsProps {
   playing: boolean;
@@ -22,7 +22,7 @@ export function NowPlayingBars({
   size = HEIGHT,
 }: Readonly<NowPlayingBarsProps>) {
   const anims = useRef(
-    Array.from({length: BAR_COUNT}, () => new Animated.Value(0.3)),
+    Array.from({ length: BAR_COUNT }, () => new Animated.Value(size * 0.3)),
   ).current;
 
   useEffect(() => {
@@ -31,13 +31,13 @@ export function NowPlayingBars({
         Animated.loop(
           Animated.sequence([
             Animated.timing(anim, {
-              toValue: 0.2 + Math.random() * 0.3,
+              toValue: size * (0.2 + Math.random() * 0.3),
               duration: 280 + i * 60,
               easing: Easing.inOut(Easing.ease),
               useNativeDriver: false,
             }),
             Animated.timing(anim, {
-              toValue: 0.7 + Math.random() * 0.3,
+              toValue: size * (0.7 + Math.random() * 0.3),
               duration: 320 + i * 50,
               easing: Easing.inOut(Easing.ease),
               useNativeDriver: false,
@@ -48,21 +48,20 @@ export function NowPlayingBars({
       animations.forEach(a => a.start());
       return () => animations.forEach(a => a.stop());
     } else {
-      // Paused — settle bars to mid values
       anims.forEach((anim, i) => {
         Animated.timing(anim, {
-          toValue: 0.3 + i * 0.1,
+          toValue: size * (0.3 + i * 0.1),
           duration: 300,
           useNativeDriver: false,
         }).start();
       });
     }
-  }, [playing, anims]);
+  }, [playing, anims, size]);
 
   const totalWidth = BAR_COUNT * BAR_WIDTH + (BAR_COUNT - 1) * BAR_GAP;
 
   return (
-    <View style={[styles.container, {width: totalWidth, height: size}]}>
+    <View style={[styles.container, { width: totalWidth, height: size }]}>
       {anims.map((anim, i) => (
         <Animated.View
           key={`bar-${i}`}
@@ -71,10 +70,7 @@ export function NowPlayingBars({
             {
               width: BAR_WIDTH,
               backgroundColor: color,
-              height: anim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [2, size],
-              }),
+              height: anim,
             },
           ]}
         />

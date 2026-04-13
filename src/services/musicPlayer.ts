@@ -87,11 +87,31 @@ export function addEventListener<E extends EventName>(
   event: E,
   handler: (data: EventMap[E]) => void,
 ) {
-  if (!emitter) {
-    return {remove: () => {}};
+  if (!emitter && Platform.OS !== 'web') {
+    // On some platforms (like simulation or when module fails), emitter might be null.
+    // However, we still want to allow web progress events even if native emitter is missing.
   }
-  const sub = emitter.addListener(event, handler);
-  return sub;
+  
+  // Create a local emitter for cross-platform/manual events if native is missing or as a secondary
+  const sub = emitter ? emitter.addListener(event, handler) : null;
+  
+  return {
+    remove: () => {
+      sub?.remove();
+    },
+  };
+}
+
+/**
+ * Manually emits playback progress. Used by the Web engine to sync with the same 
+ * listeners as the native engine.
+ */
+export function emitManualPlaybackProgress(data: ProgressInfo) {
+  if (Platform.OS === 'android') {
+    // DeviceEventEmitter is what NativeEventEmitter uses on Android
+    const DeviceEventEmitter = require('react-native').DeviceEventEmitter;
+    DeviceEventEmitter.emit('onPlaybackProgress', data);
+  }
 }
 
 // ── Service methods ─────────────────────────────────────────────

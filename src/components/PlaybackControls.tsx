@@ -33,7 +33,7 @@ function ControlButton({ onPress, active, children, disabled, nextFocusDown, onL
   );
 }
 
-export function PlaybackControls({ 
+export const PlaybackControls = React.memo(({ 
   nextFocusDown, 
   onLayoutButton,
   isLive,
@@ -41,7 +41,7 @@ export function PlaybackControls({
   nextFocusDown?: number | null,
   onLayoutButton?: (node: number | null) => void,
   isLive?: boolean,
-}) {
+}) => {
   const { state, setShuffleMode, setRepeatMode, toggleRating, toggleAutoplay, skipToPrevious, skipToNext } = usePlayer();
   const { shuffleMode, repeatMode, rating, autoplay, track, isLoading, buffering, containerId } = state;
 
@@ -136,7 +136,7 @@ export function PlaybackControls({
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

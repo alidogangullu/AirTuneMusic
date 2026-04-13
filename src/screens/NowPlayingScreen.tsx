@@ -28,7 +28,7 @@ import Svg, { Path } from 'react-native-svg';
 import LinearGradient from 'react-native-linear-gradient';
 import { NowPlayingBars } from '../components/NowPlayingBars';
 import { useImageColors } from '../hooks/useImageColors';
-import { usePlayer } from '../hooks/usePlayer';
+import { usePlayer, PlaybackProgressProvider, usePlaybackProgress } from '../hooks/usePlayer';
 import { PlaybackControls } from '../components/PlaybackControls';
 import { ContentNavigationContext } from '../navigation';
 import { radius, spacing } from '../theme/layout';
@@ -59,47 +59,55 @@ interface NowPlayingScreenProps {
   isTabView?: boolean;
 }
 
-export function NowPlayingScreen({
-  onBack,
-  isTabView = false,
-}: Readonly<NowPlayingScreenProps>): React.JSX.Element {
+// ── Sub-component: Progress Bar & Time ─────────────────────────────
+
+interface ProgressBarProps {
+  accentColor: string;
+  isLiveRadio: boolean;
+  isLoading: boolean;
+  isBuffering: boolean;
+  isPlaying: boolean;
+  playbackControlsNode: number | null;
+  infoButtonNode: number | null;
+  onSetInfoButtonNode: (node: number | null) => void;
+  onOpenInfo: () => void;
+  showLyrics: boolean;
+  onToggleLyrics: () => void;
+  showQueue: boolean;
+  onToggleQueue: () => void;
+  progressBarRef: React.RefObject<View | null>;
+  onLayoutProgress: () => void;
+}
+
+const NowPlayingProgressBar = React.memo(({
+  accentColor,
+  isLiveRadio,
+  isLoading,
+  isBuffering,
+  isPlaying,
+  playbackControlsNode,
+  infoButtonNode,
+  onSetInfoButtonNode,
+  onOpenInfo,
+  showLyrics,
+  onToggleLyrics,
+  showQueue,
+  onToggleQueue,
+  progressBarRef,
+  onLayoutProgress,
+}: ProgressBarProps) => {
   const { t } = useTranslation();
-  const { state, play, pause, seekTo } = usePlayer();
-  const { track, position, duration, playbackState } = state;
-  const isPlaying = playbackState === 'playing';
-  const hasTrack = track !== null && playbackState !== 'stopped';
-  const palette = useImageColors(track?.artworkUrl);
-  const paletteLoading = track?.artworkUrl && !palette;
-
-  // ── Focus & Navigation ──────────────────────────────────────────
-  const progressBarRef = useRef<View>(null);
-  const infoButtonRef = useRef<View>(null);
-  const queueButtonRef = useRef<View>(null);
-  const playbackControlsRef = useRef<View>(null);
-
-  const [progressBarNode, setProgressBarNode] = useState<number | null>(null);
-  const [playbackControlsNode, setPlaybackControlsNode] = useState<number | null>(null);
-  const [infoButtonNode, setInfoButtonNode] = useState<number | null>(null);
-  const [queueButtonNode, setQueueButtonNode] = useState<number | null>(null);
-
-  // ── Interactive progress bar state ──────────────────────────────
+  const { seekTo, play, pause } = usePlayer();
+  const { position, duration } = usePlaybackProgress();
+  
   const [isFocused, setIsFocused] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [pendingSeekMs, setPendingSeekMs] = useState(0);
-  const [showInfo, setShowInfo] = useState(false);
-  const [showQueue, setShowQueue] = useState(false);
-  const [showLyrics, setShowLyrics] = useState(false);
-  const queueListRef = useRef<FlatList>(null);
-
-  const { lyrics, currentLineIndex, isLoading: lyricsLoading } = useLyrics();
-
-  const { pushContent } = React.useContext(ContentNavigationContext);
-  const { storefrontId } = useStorefront();
 
   // Animated values for focus feedback
   const barHeightAnim = useRef(new Animated.Value(3)).current;
   const knobSizeAnim = useRef(new Animated.Value(10)).current;
-  const shimmerAnim = useRef(new Animated.Value(-1)).current; // -1 to 1 (left to right)
+  const shimmerAnim = useRef(new Animated.Value(-1)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -114,12 +122,10 @@ export function NowPlayingScreen({
         useNativeDriver: false,
       }),
     ]).start();
-  }, [isFocused, barHeightAnim, knobSizeAnim]);
+  }, [isFocused]);
 
-  // Shimmer animation loop
   useEffect(() => {
-    const isBuffering = state.buffering || state.isLoading;
-    if (isBuffering) {
+    if (isBuffering || isLoading) {
       Animated.loop(
         Animated.timing(shimmerAnim, {
           toValue: 1,
@@ -131,66 +137,287 @@ export function NowPlayingScreen({
       shimmerAnim.stopAnimation();
       shimmerAnim.setValue(-1);
     }
-  }, [state.buffering, state.isLoading, shimmerAnim]);
+  }, [isBuffering, isLoading]);
 
-  // Keep latest scrubbing state in refs so useTVEventHandler callback doesn't go stale
   const isFocusedRef = useRef(false);
   const isScrubbingRef = useRef(false);
   const pendingSeekMsRef = useRef(0);
   const positionRef = useRef(position);
   const durationRef = useRef(duration);
 
+  isFocusedRef.current = isFocused;
+  isScrubbingRef.current = isScrubbing;
   positionRef.current = position;
   durationRef.current = duration;
+  pendingSeekMsRef.current = pendingSeekMs;
 
-  const handleFocus = useCallback(() => {
-    setIsFocused(true);
-    isFocusedRef.current = true;
-  }, []);
-
+  const handleFocus = useCallback(() => setIsFocused(true), []);
   const handleBlur = useCallback(() => {
     setIsFocused(false);
-    isFocusedRef.current = false;
     setIsScrubbing(false);
-    isScrubbingRef.current = false;
     setPendingSeekMs(0);
-    pendingSeekMsRef.current = 0;
   }, []);
 
-  const isLiveRadio = track ? (track.id?.startsWith('ra.') || track.duration === 0) : false;
-
   const handlePress = useCallback(() => {
-    if (state.buffering || state.isLoading) return; // Prevent interaction during track transition
+    if (isBuffering || isLoading) return;
     if (isScrubbingRef.current) {
-      // Confirm seek
       seekTo(pendingSeekMsRef.current);
       setIsScrubbing(false);
-      isScrubbingRef.current = false;
       setPendingSeekMs(0);
-      pendingSeekMsRef.current = 0;
     } else {
-      // Toggle play/pause
-      if (isPlaying) {
-        pause();
-      } else {
-        play();
-      }
+      isPlaying ? pause() : play();
     }
-  }, [isPlaying, seekTo, play, pause, state.buffering, state.isLoading]);
+  }, [isPlaying, isBuffering, isLoading, seekTo, play, pause]);
 
-  // D-pad left/right: scrub ±5 s when progress bar is focused
   useTVEventHandler(useCallback((evt: { eventType: string }) => {
-    if (!isFocusedRef.current) return;
-    if (state.buffering || state.isLoading || isLiveRadio) return; // Disable scrubbing during track transition or live radio
+    if (!isFocusedRef.current || isBuffering || isLoading || isLiveRadio) return;
     if (evt.eventType !== 'left' && evt.eventType !== 'right') return;
+    
     const base = isScrubbingRef.current ? pendingSeekMsRef.current : positionRef.current;
     const delta = evt.eventType === 'right' ? SEEK_STEP_MS : -SEEK_STEP_MS;
     const next = Math.max(0, Math.min(durationRef.current, base + delta));
-    pendingSeekMsRef.current = next;
-    isScrubbingRef.current = true;
+    
     setPendingSeekMs(next);
     setIsScrubbing(true);
-  }, [state.buffering, state.isLoading, isLiveRadio]));
+  }, [isBuffering, isLoading, isLiveRadio]));
+
+  const progress = (duration > 0 && !isLiveRadio) ? position / duration : 0;
+  const remainingMs = (duration > 0 && !isLiveRadio) ? duration - position : 0;
+  const scrubProgress = (duration > 0 && !isLiveRadio) ? pendingSeekMs / duration : 0;
+
+  const infoButtonRef = useRef<View>(null);
+  const queueButtonRef = useRef<View>(null);
+
+  return (
+    <View>
+      <Pressable
+        ref={progressBarRef}
+        onLayout={onLayoutProgress}
+        style={styles.progressContainer}
+        nextFocusUp={playbackControlsNode}
+        nextFocusDown={infoButtonNode}
+        focusable={true}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onPress={handlePress}
+        accessibilityLabel={t('nowPlaying.progressBar')}
+        accessibilityRole="adjustable">
+        {({ focused }) => (
+          <Animated.View
+            style={[
+              styles.progressTrack,
+              { height: barHeightAnim, overflow: 'visible' },
+              focused && styles.progressTrackFocused,
+            ]}>
+            <View style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 3 }]}>
+              <View
+                style={[
+                  styles.progressFill,
+                  { width: `${progress * 100}%`, backgroundColor: accentColor },
+                ]}
+              />
+              {isScrubbing && (
+                <View
+                  style={[
+                    styles.progressFill,
+                    styles.scrubFill,
+                    { width: `${scrubProgress * 100}%` },
+                  ]}
+                />
+              )}
+              {(isBuffering || isLoading) && (
+                <Animated.View
+                  style={[
+                    styles.shimmerContainer,
+                    {
+                      transform: [
+                        {
+                          translateX: shimmerAnim.interpolate({
+                            inputRange: [-1, 1],
+                            outputRange: [-250, 1200],
+                          }),
+                        },
+                      ],
+                    },
+                  ]}
+                >
+                  <LinearGradient
+                    colors={['transparent', 'rgba(255,255,255,0.4)', 'transparent']}
+                    start={{ x: 0, y: 0.5 }}
+                    end={{ x: 0, y: 0.5 }}
+                    style={styles.shimmerGradient}
+                  />
+                </Animated.View>
+              )}
+            </View>
+
+            <Animated.View
+              style={[
+                styles.progressKnob,
+                {
+                  left: `${progress * 100}%` as unknown as number,
+                  backgroundColor: accentColor,
+                  width: knobSizeAnim,
+                  height: knobSizeAnim,
+                  borderRadius: Animated.divide(knobSizeAnim, 2) as unknown as number,
+                  marginLeft: Animated.multiply(knobSizeAnim, -0.5) as unknown as number,
+                  top: Animated.multiply(Animated.subtract(knobSizeAnim, barHeightAnim), -0.5) as unknown as number,
+                },
+              ]}
+            />
+            {isScrubbing && (
+              <Animated.View
+                style={[
+                  styles.progressKnob,
+                  {
+                    left: `${scrubProgress * 100}%` as unknown as number,
+                    backgroundColor: '#fff',
+                    width: knobSizeAnim,
+                    height: knobSizeAnim,
+                    borderRadius: Animated.divide(knobSizeAnim, 2) as unknown as number,
+                    marginLeft: Animated.multiply(knobSizeAnim, -0.5) as unknown as number,
+                    top: Animated.multiply(Animated.subtract(knobSizeAnim, barHeightAnim), -0.5) as unknown as number,
+                  },
+                ]}
+              />
+            )}
+          </Animated.View>
+        )}
+      </Pressable>
+
+      <View style={styles.timeRow}>
+        <View style={styles.timeInfoColumn}>
+          <Text style={styles.timeText}>
+            {isScrubbing ? formatTime(pendingSeekMs) : formatTime(position)}
+          </Text>
+          <Pressable
+            ref={infoButtonRef}
+            onLayout={() => onSetInfoButtonNode(findNodeHandle(infoButtonRef.current))}
+            style={({ focused }) => [
+              styles.infoButton,
+              focused && styles.infoButtonFocused,
+            ]}
+            nextFocusUp={findNodeHandle(progressBarRef.current)}
+            onPress={onOpenInfo}
+            focusable={true}>
+            {({ focused }) => (
+              <Text style={[styles.infoButtonText, focused && styles.infoButtonTextFocused]}>
+                {t('nowPlaying.info')}
+              </Text>
+            )}
+          </Pressable>
+        </View>
+
+        <View style={styles.timeInfoColumnRight}>
+          <Text style={[styles.timeText, isScrubbing && styles.timeTextScrubbing]}>
+            {isScrubbing
+              ? `${formatTime(pendingSeekMs)}`
+              : `-${formatTime(remainingMs)}`}
+          </Text>
+          <View style={styles.footerButtonsRight}>
+            <Pressable
+              style={({ focused }) => [
+                styles.infoButton,
+                focused && styles.infoButtonFocused,
+                { marginRight: spacing.md },
+              ]}
+              nextFocusUp={findNodeHandle(progressBarRef.current)}
+              onPress={onToggleLyrics}
+              focusable={true}
+              accessible={true}
+              accessibilityRole="button">
+              {({ focused }) => (
+                <LyricIcon active={showLyrics} focused={focused} />
+              )}
+            </Pressable>
+
+            <Pressable
+              ref={queueButtonRef}
+              style={({ focused }) => [
+                styles.infoButton,
+                focused && styles.infoButtonFocused,
+                { alignSelf: 'flex-end', marginRight: -spacing.sm },
+              ]}
+              nextFocusUp={findNodeHandle(progressBarRef.current)}
+              onPress={onToggleQueue}
+              focusable={true}
+              accessible={true}
+              accessibilityRole="button">
+              {({ focused }) => {
+                const iconColor = showQueue || focused ? '#fff' : 'rgba(255, 255, 255, 0.7)';
+                return (
+                  <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <Path d="M3 12h18" />
+                    <Path d="M3 6h18" />
+                    <Path d="M3 18h18" />
+                  </Svg>
+                );
+              }}
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+});
+
+// ── Sub-component: Queue Item ──────────────────────────────────────
+
+interface QueueItemProps {
+  track: any;
+  isCurrent: boolean;
+  isPlaying: boolean;
+  isLoading: boolean;
+  isBuffering: boolean;
+  accentColor: string;
+  showInfo: boolean;
+}
+
+const QueueItem = React.memo(({
+  track,
+  isCurrent,
+  isPlaying,
+  isLoading,
+  isBuffering,
+  accentColor,
+  showInfo,
+}: QueueItemProps) => {
+  return (
+    <View style={styles.queueItemContainer}>
+      <NowPlayingTrackInfo
+        track={track}
+        isPlaying={isPlaying && isCurrent}
+        isLoading={isLoading}
+        isBuffering={isBuffering}
+        accentColor={accentColor}
+        showBars={isCurrent}
+        align="center"
+        style={{ opacity: showInfo ? 0 : 1 }}
+      />
+    </View>
+  );
+});
+
+export function NowPlayingScreen({
+  onBack,
+  isTabView = false,
+}: Readonly<NowPlayingScreenProps>): React.JSX.Element {
+  const { t } = useTranslation();
+  const { state } = usePlayer();
+  const { track, playbackState } = state;
+  const isPlaying = playbackState === 'playing';
+  const palette = useImageColors(track?.artworkUrl);
+  const paletteLoading = track?.artworkUrl && !palette;
+
+  const [showInfo, setShowInfo] = useState(false);
+  const [showQueue, setShowQueue] = useState(false);
+  const [showLyrics, setShowLyrics] = useState(false);
+  const queueListRef = useRef<FlatList>(null);
+
+
+
+  const { pushContent } = React.useContext(ContentNavigationContext);
+  const { storefrontId } = useStorefront();
 
   // Handle back button (remote) in fullscreen mode
   useEffect(() => {
@@ -261,16 +488,13 @@ export function NowPlayingScreen({
     }
   }, [showQueue, showInfo]);
 
-  // Background colors derived from artwork
-  const bg1 = palette?.darkMuted || palette?.dominant || '#1a1a2e';
-  const bg2 = palette?.darkVibrant || palette?.muted || '#16213e';
-  const accentColor = palette?.vibrant || palette?.lightVibrant || '#fa243c';
+  const isLiveRadio = track ? (track.id?.startsWith('ra.') || track.duration === 0) : false;
 
-  const progress = (duration > 0 && !isLiveRadio) ? position / duration : 0;
-  const remainingMs = (duration > 0 && !isLiveRadio) ? duration - position : 0;
-
-  // Scrub indicator progress (pending seek position)
-  const scrubProgress = (duration > 0 && !isLiveRadio) ? pendingSeekMs / duration : 0;
+  const progressBarRef = useRef<View>(null);
+  const playbackControlsRef = useRef<View>(null);
+  const [progressBarNode, setProgressBarNode] = useState<number | null>(null);
+  const [playbackControlsNode, setPlaybackControlsNode] = useState<number | null>(null);
+  const [infoButtonNode, setInfoButtonNode] = useState<number | null>(null);
 
   if (!track) {
     if (state.isLoading) {
@@ -301,6 +525,11 @@ export function NowPlayingScreen({
       </LinearGradient>
     );
   }
+
+  // Final rendering values
+  const bg1 = palette?.darkMuted || palette?.dominant || '#1a1a2e';
+  const bg2 = palette?.darkVibrant || palette?.muted || '#16213e';
+  const accentColor = palette?.vibrant || palette?.lightVibrant || '#fa243c';
   // If we have a track, we show it, even if palette is loading or playback is pending.
   // The only reason to show a full screen spinner is if we have NO track info yet while loading.
 
@@ -310,354 +539,194 @@ export function NowPlayingScreen({
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.root}>
-      {showLyrics && (
-        <View
-          style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.15)' }]}
-          pointerEvents="none"
-        />
-      )}
-
-      {/* Centered content: artwork OR queue OR lyrics */}
-      <View style={styles.content}>
-        {!showLyrics && !showQueue ? (
-          <NowPlayingTrackInfo
-            track={track}
-            isPlaying={isPlaying}
-            isLoading={state.isLoading}
-            isBuffering={state.buffering}
-            accentColor={accentColor}
-            scaleAnim={scaleAnim}
-            showBars={true}
-            align="center"
+        {showLyrics && (
+          <View
+            style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.15)' }]}
+            pointerEvents="none"
           />
-        ) : !showLyrics && showQueue ? (
-          <View style={styles.integratedQueueContainer}>
-            <FlatList
-              key={`queue-${state.shuffleMode}`}
-              ref={queueListRef}
-              data={state.queue}
-              horizontal
-              keyExtractor={(item) => item.playbackQueueId?.toString() ?? item.id}
-              showsHorizontalScrollIndicator={false}
-              removeClippedSubviews={true}
-              initialNumToRender={5}
-              maxToRenderPerBatch={5}
-              windowSize={7}
-              contentContainerStyle={[styles.queueListContent, { paddingHorizontal: HORIZONTAL_PADDING }]}
-              initialScrollIndex={activeIndex >= 0 ? activeIndex : 0}
-              getItemLayout={(_, index) => ({
-                length: ARTWORK_SIZE + 20,
-                offset: (ARTWORK_SIZE + 20) * index,
-                index,
-              })}
-              renderItem={({ item }) => {
-                const isCurrent = item.playbackQueueId === (state.track as any)?.playbackQueueId;
-                return (
-                  <View style={styles.queueItemContainer}>
-                    <NowPlayingTrackInfo
-                      track={item}
-                      isPlaying={isPlaying && isCurrent}
-                      isLoading={state.isLoading}
-                      isBuffering={state.buffering}
-                      accentColor={accentColor}
-                      showBars={isCurrent}
-                      align="center"
-                      style={{ opacity: showInfo ? 0 : 1 }}
-                    />
-                  </View>
-                );
-              }}
-            />
-          </View>
-        ) : (
-          <View style={styles.lyricsSplitView}>
-            <View style={styles.artworkSectionSide}>
-              <NowPlayingTrackInfo
-                track={track}
-                isPlaying={isPlaying}
-                isLoading={state.isLoading}
-                isBuffering={state.buffering}
-                accentColor={accentColor}
-                scaleAnim={scaleAnim}
-                showBars={true}
-                align="center"
-              />
-            </View>
-            <View style={[styles.lyricsSection, isTabView && styles.lyricsTabPadding]}>
-              <LyricsView lyrics={lyrics} currentLineIndex={currentLineIndex} isLoading={lyricsLoading} />
-            </View>
-          </View>
         )}
-      </View>
 
-
-      {/* Info Modal Panel */}
-      <Modal
-        visible={showInfo}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowInfo(false)}>
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setShowInfo(false)}
-          focusable={false}>
-          <View style={styles.infoMenuContainer}>
-            <View style={styles.infoCard}>
-              <Image
-                source={{ uri: track.artworkUrl ?? '' }}
-                style={styles.infoArtwork}
-              />
-              <View style={styles.infoMeta}>
-                <Text style={styles.infoTitle} numberOfLines={1}>
-                  {track.title}
-                </Text>
-                <Text style={styles.infoArtistAlbum} numberOfLines={1}>
-                  {track.artistName} — {track.albumTitle}
-                </Text>
-                <Text style={styles.infoDuration}>
-                  {t('nowPlaying.durationFormat', { mins: Math.floor(track.duration / 60000), secs: Math.floor((track.duration % 60000) / 1000) })}
-                </Text>
-              </View>
-              <Pressable
-                style={({ focused }) => [
-                  styles.gotoAlbumButton,
-                  focused && styles.gotoAlbumButtonFocused,
-                ]}
-                hasTVPreferredFocus={showInfo}
-                onPress={async () => {
-                  if (track?.id && !isLiveRadio) {
-                    try {
-                      const detail = await fetchSongDetail(track.id, storefrontId);
-                      const albumId = detail.data[0]?.relationships?.albums?.data?.[0]?.id;
-
-                      if (albumId) {
-                        pushContent({
-                          id: albumId,
-                          type: 'albums',
-                          attributes: {
-                            name: track.albumTitle ?? '',
-                          },
-                        });
-                        setShowInfo(false); // Close the info card
-                      }
-                    } catch (e) {
-                      console.warn('NowPlayingScreen: Failed to fetch album ID:', e);
-                      // Fallback: try containerId if available
-                      if (state.containerId) {
-                        pushContent({
-                          id: state.containerId,
-                          type: 'albums',
-                          attributes: {
-                            name: track.albumTitle ?? '',
-                          },
-                        });
-                        setShowInfo(false);
-                      }
-                    }
-                  }
-                }}
-                focusable={!isLiveRadio}>
-                {({ focused }) => (
-                  <Text style={[styles.gotoAlbumText, focused && styles.gotoAlbumTextFocused]}>
-                    {t('nowPlaying.goToAlbum')}
-                  </Text>
+        {/* Centered content: artwork OR queue OR lyrics */}
+        <View style={styles.content}>
+          {!showLyrics && !showQueue ? (
+            <NowPlayingTrackInfo
+              track={track}
+              isPlaying={isPlaying}
+              isLoading={state.isLoading}
+              isBuffering={state.buffering}
+              accentColor={accentColor}
+              scaleAnim={scaleAnim}
+              showBars={true}
+              align="center"
+            />
+          ) : !showLyrics && showQueue ? (
+            <View style={styles.integratedQueueContainer}>
+              <FlatList
+                key={`queue-${state.shuffleMode}`}
+                ref={queueListRef}
+                data={state.queue}
+                horizontal
+                keyExtractor={(item) => item.playbackQueueId?.toString() ?? item.id}
+                showsHorizontalScrollIndicator={false}
+                removeClippedSubviews={true}
+                initialNumToRender={3}
+                maxToRenderPerBatch={3}
+                windowSize={5}
+                contentContainerStyle={[styles.queueListContent, { paddingHorizontal: HORIZONTAL_PADDING }]}
+                initialScrollIndex={activeIndex >= 0 ? activeIndex : 0}
+                getItemLayout={(_, index) => ({
+                  length: ARTWORK_SIZE + 20,
+                  offset: (ARTWORK_SIZE + 20) * index,
+                  index,
+                })}
+                renderItem={({ item }) => (
+                  <QueueItem
+                    track={item}
+                    isCurrent={item.playbackQueueId === (state.track as any)?.playbackQueueId}
+                    isPlaying={isPlaying}
+                    isLoading={state.isLoading}
+                    isBuffering={state.buffering}
+                    accentColor={accentColor}
+                    showInfo={showInfo}
+                  />
                 )}
-              </Pressable>
+              />
             </View>
-          </View>
-        </Pressable>
-      </Modal>
-
-      {/* Progress and Info footer — at screen bottom */}
-      {!isLiveRadio && (
-        <View style={styles.footerContainer}>
-          {!showInfo && (
-            <>
-              <View
-                ref={playbackControlsRef}
-                onLayout={() => setPlaybackControlsNode(findNodeHandle(playbackControlsRef.current))}>
-                <PlaybackControls
-                  nextFocusDown={progressBarNode}
-                  onLayoutButton={(node) => setPlaybackControlsNode(node)}
+          ) : (
+            <View style={styles.lyricsSplitView}>
+              <View style={styles.artworkSectionSide}>
+                <NowPlayingTrackInfo
+                  track={track}
+                  isPlaying={isPlaying}
+                  isLoading={state.isLoading}
+                  isBuffering={state.buffering}
+                  accentColor={accentColor}
+                  scaleAnim={scaleAnim}
+                  showBars={true}
+                  align="center"
                 />
               </View>
-
-              <Pressable
-                ref={progressBarRef}
-                onLayout={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
-                style={styles.progressContainer}
-                nextFocusUp={playbackControlsNode}
-                nextFocusDown={infoButtonNode}
-                focusable={true}
-                hasTVPreferredFocus={false}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                onPress={handlePress}
-                accessibilityLabel={t('nowPlaying.progressBar')}
-                accessibilityRole="adjustable">
-                {({ focused }) => (
-                  <Animated.View
-                    style={[
-                      styles.progressTrack,
-                      { height: barHeightAnim, overflow: 'visible' },
-                      focused && styles.progressTrackFocused,
-                    ]}>
-                    <View style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 3 }]}>
-                      <View
-                        style={[
-                          styles.progressFill,
-                          { width: `${progress * 100}%`, backgroundColor: accentColor },
-                        ]}
-                      />
-                      {isScrubbing && (
-                        <View
-                          style={[
-                            styles.progressFill,
-                            styles.scrubFill,
-                            { width: `${scrubProgress * 100}%` },
-                          ]}
-                        />
-                      )}
-                      {(state.buffering || state.isLoading) && (
-                        <Animated.View
-                          style={[
-                            styles.shimmerContainer,
-                            {
-                              transform: [
-                                {
-                                  translateX: shimmerAnim.interpolate({
-                                    inputRange: [-1, 1],
-                                    outputRange: [-250, 1200],
-                                  }),
-                                },
-                              ],
-                            },
-                          ]}
-                        >
-                          <LinearGradient
-                            colors={['transparent', 'rgba(255,255,255,0.4)', 'transparent']}
-                            start={{ x: 0, y: 0.5 }}
-                            end={{ x: 0, y: 0.5 }}
-                            style={styles.shimmerGradient}
-                          />
-                        </Animated.View>
-                      )}
-                    </View>
-
-                    <Animated.View
-                      style={[
-                        styles.progressKnob,
-                        {
-                          left: `${progress * 100}%` as unknown as number,
-                          backgroundColor: accentColor,
-                          width: knobSizeAnim,
-                          height: knobSizeAnim,
-                          borderRadius: Animated.divide(knobSizeAnim, 2) as unknown as number,
-                          marginLeft: Animated.multiply(knobSizeAnim, -0.5) as unknown as number,
-                          top: Animated.multiply(Animated.subtract(knobSizeAnim, barHeightAnim), -0.5) as unknown as number,
-                        },
-                      ]}
-                    />
-                    {isScrubbing && (
-                      <Animated.View
-                        style={[
-                          styles.progressKnob,
-                          {
-                            left: `${scrubProgress * 100}%` as unknown as number,
-                            backgroundColor: '#fff',
-                            width: knobSizeAnim,
-                            height: knobSizeAnim,
-                            borderRadius: Animated.divide(knobSizeAnim, 2) as unknown as number,
-                            marginLeft: Animated.multiply(knobSizeAnim, -0.5) as unknown as number,
-                            top: Animated.multiply(Animated.subtract(knobSizeAnim, barHeightAnim), -0.5) as unknown as number,
-                          },
-                        ]}
-                      />
-                    )}
-                  </Animated.View>
-                )}
-              </Pressable>
-
-              <View style={styles.timeRow}>
-                <View style={styles.timeInfoColumn}>
-                  <Text style={styles.timeText}>
-                    {isScrubbing ? formatTime(pendingSeekMs) : formatTime(position)}
-                  </Text>
-                  <Pressable
-                    ref={infoButtonRef}
-                    onLayout={() => setInfoButtonNode(findNodeHandle(infoButtonRef.current))}
-                    style={({ focused }) => [
-                      styles.infoButton,
-                      focused && styles.infoButtonFocused,
-                    ]}
-                    nextFocusUp={progressBarNode}
-                    onPress={() => setShowInfo(true)}
-                    focusable={true}>
-                    {({ focused }) => (
-                      <Text style={[styles.infoButtonText, focused && styles.infoButtonTextFocused]}>
-                        {t('nowPlaying.info')}
-                      </Text>
-                    )}
-                  </Pressable>
-                </View>
-
-                <View style={styles.timeInfoColumnRight}>
-                  <Text style={[styles.timeText, isScrubbing && styles.timeTextScrubbing]}>
-                    {isScrubbing
-                      ? `${formatTime(pendingSeekMs)}`
-                      : `-${formatTime(remainingMs)}`}
-                  </Text>
-                  <View style={styles.footerButtonsRight}>
-                    <Pressable
-                      style={({ focused }) => [
-                        styles.infoButton,
-                        focused && styles.infoButtonFocused,
-                        { marginRight: spacing.md },
-                      ]}
-                      nextFocusUp={progressBarNode}
-                      onPress={() => setShowLyrics(!showLyrics)}
-                      focusable={true}
-                      accessible={true}
-                      accessibilityRole="button"
-                      accessibilityLabel={showLyrics ? t('nowPlaying.hideLyrics') : t('nowPlaying.showLyrics')}>
-                      {({ focused }) => (
-                        <LyricIcon active={showLyrics} focused={focused} />
-                      )}
-                    </Pressable>
-
-                    <Pressable
-                      ref={queueButtonRef}
-                      onLayout={() => setQueueButtonNode(findNodeHandle(queueButtonRef.current))}
-                      style={({ focused }) => [
-                        styles.infoButton,
-                        focused && styles.infoButtonFocused,
-                        { alignSelf: 'flex-end', marginRight: -spacing.sm },
-                      ]}
-                      nextFocusUp={progressBarNode}
-                      onPress={() => setShowQueue(!showQueue)}
-                      focusable={true}
-                      accessible={true}
-                      accessibilityRole="button"
-                      accessibilityLabel={showQueue ? t('nowPlaying.hideQueue') : t('nowPlaying.showQueue')}>
-                      {({ focused }) => {
-                        const iconColor = showQueue || focused ? '#fff' : 'rgba(255, 255, 255, 0.7)';
-                        return (
-                          <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <Path d="M3 12h18" />
-                            <Path d="M3 6h18" />
-                            <Path d="M3 18h18" />
-                          </Svg>
-                        );
-                      }}
-                    </Pressable>
-                  </View>
-                </View>
+              <View style={[styles.lyricsSection, isTabView && styles.lyricsTabPadding]}>
+                <LyricsView />
               </View>
-            </>
+            </View>
           )}
         </View>
-      )}
-    </LinearGradient>
+
+
+        {/* Info Modal Panel */}
+        <Modal
+          visible={showInfo}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowInfo(false)}>
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => setShowInfo(false)}
+            focusable={false}>
+            <View style={styles.infoMenuContainer}>
+              <View style={styles.infoCard}>
+                <Image
+                  source={{ uri: track.artworkUrl ?? '' }}
+                  style={styles.infoArtwork}
+                />
+                <View style={styles.infoMeta}>
+                  <Text style={styles.infoTitle} numberOfLines={1}>
+                    {track.title}
+                  </Text>
+                  <Text style={styles.infoArtistAlbum} numberOfLines={1}>
+                    {track.artistName} — {track.albumTitle}
+                  </Text>
+                  <Text style={styles.infoDuration}>
+                    {t('nowPlaying.durationFormat', { mins: Math.floor(track.duration / 60000), secs: Math.floor((track.duration % 60000) / 1000) })}
+                  </Text>
+                </View>
+                <Pressable
+                  style={({ focused }) => [
+                    styles.gotoAlbumButton,
+                    focused && styles.gotoAlbumButtonFocused,
+                  ]}
+                  hasTVPreferredFocus={showInfo}
+                  onPress={async () => {
+                    if (track?.id && !isLiveRadio) {
+                      try {
+                        const detail = await fetchSongDetail(track.id, storefrontId);
+                        const albumId = detail.data[0]?.relationships?.albums?.data?.[0]?.id;
+
+                        if (albumId) {
+                          pushContent({
+                            id: albumId,
+                            type: 'albums',
+                            attributes: {
+                              name: track.albumTitle ?? '',
+                            },
+                          });
+                          setShowInfo(false); // Close the info card
+                        }
+                      } catch (e) {
+                        console.warn('NowPlayingScreen: Failed to fetch album ID:', e);
+                        // Fallback: try containerId if available
+                        if (state.containerId) {
+                          pushContent({
+                            id: state.containerId,
+                            type: 'albums',
+                            attributes: {
+                              name: track.albumTitle ?? '',
+                            },
+                          });
+                          setShowInfo(false);
+                        }
+                      }
+                    }
+                  }}
+                  focusable={!isLiveRadio}>
+                  {({ focused }) => (
+                    <Text style={[styles.gotoAlbumText, focused && styles.gotoAlbumTextFocused]}>
+                      {t('nowPlaying.goToAlbum')}
+                    </Text>
+                  )}
+                </Pressable>
+              </View>
+            </View>
+          </Pressable>
+        </Modal>
+
+        {/* Progress and Info footer — at screen bottom */}
+        {!isLiveRadio && (
+          <View style={styles.footerContainer}>
+            {!showInfo && (
+              <>
+                <View
+                  ref={playbackControlsRef}
+                  onLayout={() => setPlaybackControlsNode(findNodeHandle(playbackControlsRef.current))}>
+                  <PlaybackControls
+                    nextFocusDown={progressBarNode}
+                    onLayoutButton={(node) => setPlaybackControlsNode(node)}
+                  />
+                </View>
+
+                <NowPlayingProgressBar
+                  accentColor={accentColor}
+                  isLiveRadio={isLiveRadio}
+                  isLoading={state.isLoading}
+                  isBuffering={state.buffering}
+                  isPlaying={isPlaying}
+                  playbackControlsNode={playbackControlsNode}
+                  infoButtonNode={infoButtonNode}
+                  onSetInfoButtonNode={setInfoButtonNode}
+                  onOpenInfo={() => setShowInfo(true)}
+                  showLyrics={showLyrics}
+                  onToggleLyrics={() => setShowLyrics(!showLyrics)}
+                  showQueue={showQueue}
+                  onToggleQueue={() => setShowQueue(!showQueue)}
+                  progressBarRef={progressBarRef}
+                  onLayoutProgress={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
+                />
+              </>
+            )}
+          </View>
+        )}
+      </LinearGradient>
   );
 }
 

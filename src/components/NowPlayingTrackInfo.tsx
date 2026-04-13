@@ -18,7 +18,7 @@ interface NowPlayingTrackInfoProps {
 
 export const ARTWORK_SIZE = 260;
 
-export function NowPlayingTrackInfo({
+export const NowPlayingTrackInfo = React.memo(({
   track,
   isPlaying,
   isLoading,
@@ -28,7 +28,7 @@ export function NowPlayingTrackInfo({
   showBars = true,
   align = 'center',
   style,
-}: NowPlayingTrackInfoProps): React.JSX.Element {
+}: NowPlayingTrackInfoProps): React.JSX.Element => {
   const containerStyle = [
     styles.container,
     align === 'flex-start' && styles.alignStart,
@@ -58,7 +58,7 @@ export function NowPlayingTrackInfo({
             <NowPlayingBars
               playing={isPlaying && !isLoading && !isBuffering}
               color={accentColor}
-              size={16}
+              size={13}
             />
           )}
           <Text style={styles.title} numberOfLines={1}>
@@ -71,7 +71,7 @@ export function NowPlayingTrackInfo({
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

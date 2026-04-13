@@ -11,15 +11,11 @@ import { useTranslation } from 'react-i18next';
 import { LyricLine } from '../utils/lrcParser';
 import { spacing } from '../theme/layout';
 
+import { useLyrics } from '../hooks/useLyrics';
+
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const LINE_HEIGHT = 70; // Estimated height for local calculation
 const LIST_PADDING_TOP = 70; // Give it one line of breathing room from the top
-
-interface LyricsViewProps {
-  lyrics: LyricLine[];
-  currentLineIndex: number;
-  isLoading?: boolean;
-}
 
 interface LyricLineItemProps {
   line: LyricLine;
@@ -56,12 +52,9 @@ const LyricLineItem = React.memo(({ line, isActive }: LyricLineItemProps) => {
   );
 });
 
-export function LyricsView({
-  lyrics,
-  currentLineIndex,
-  isLoading,
-}: LyricsViewProps): React.JSX.Element {
+export function LyricsView(): React.JSX.Element {
   const { t } = useTranslation();
+  const { lyrics, currentLineIndex, isLoading } = useLyrics(true);
   const flatListRef = useRef<FlatList>(null);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
