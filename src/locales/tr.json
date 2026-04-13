@@ -58,10 +58,14 @@
     "goToAlbum": "Albüme Git",
     "info": "Bilgi",
     "progressBar": "İlerleme çubuğu",
-    "durationFormat": "{{mins}} dk, {{secs}} sn"
+    "durationFormat": "{{mins}} dk, {{secs}} sn",
+    "showLyrics": "Sözleri göster",
+    "hideLyrics": "Sözleri gizle",
+    "showQueue": "Sıradakileri göster",
+    "hideQueue": "Sıradakileri gizle"
   },
   "lyrics": {
-    "notFound": "Şarkı sözü bulunamadı",
+    "notFound": "Şarkı sözleri bulunamadı",
     "loading": "Şarkı sözleri yükleniyor..."
   },
   "detail": {

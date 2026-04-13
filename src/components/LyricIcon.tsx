@@ -2,19 +2,27 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import Svg, {G, Path} from 'react-native-svg';
 
-interface LyricIconButtonProps {
+interface LyricIconProps {
   active?: boolean;
   focused?: boolean;
+  accessibilityLabel?: string;
 }
 
-export function LyricIconButton({
+export function LyricIcon({
   active = false,
   focused = false,
-}: LyricIconButtonProps): React.JSX.Element {
+  accessibilityLabel,
+}: LyricIconProps): React.JSX.Element {
   const color = active || focused ? '#fff' : 'rgba(255, 255, 255, 0.4)';
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? 'Lyrics'}
+      accessibilityState={{
+        selected: active,
+      }}>
       <Svg width="24" height="24" viewBox="0 0 100 100">
         <G
           transform="translate(0, 100) scale(0.1, -0.1)"

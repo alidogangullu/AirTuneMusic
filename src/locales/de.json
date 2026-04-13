@@ -58,7 +58,11 @@
     "goToAlbum": "Zum Album gehen",
     "info": "Info",
     "progressBar": "Fortschrittsbalken",
-    "durationFormat": "{{mins}} Min., {{secs}} Sek."
+    "durationFormat": "{{mins}} Min., {{secs}} Sek.",
+    "showLyrics": "Songtexte anzeigen",
+    "hideLyrics": "Songtexte ausblenden",
+    "showQueue": "Warteschlange anzeigen",
+    "hideQueue": "Warteschlange ausblenden"
   },
   "lyrics": {
     "notFound": "Songtexte nicht verfügbar",

@@ -23,6 +23,7 @@ export function useLyrics(): UseLyricsResult {
     if (!track || !track.title || !track.artistName) {
       setLyricsData(null);
       setError(null);
+      setIsLoading(false);
       return;
     }
 

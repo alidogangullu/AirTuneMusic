@@ -37,7 +37,7 @@ import { fetchSongDetail } from '../api/apple-music/recommendations';
 import { TrackInfo } from '../services/musicPlayer';
 import { useLyrics } from '../hooks/useLyrics';
 import { LyricsView } from '../components/LyricsView';
-import { LyricIconButton } from '../components/LyricIconButton';
+import { LyricIcon } from '../components/LyricIcon';
 import { NowPlayingTrackInfo, ARTWORK_SIZE } from '../components/NowPlayingTrackInfo';
 
 const SEEK_STEP_MS = 5000;
@@ -616,9 +616,12 @@ export function NowPlayingScreen({
                       ]}
                       nextFocusUp={progressBarNode}
                       onPress={() => setShowLyrics(!showLyrics)}
-                      focusable={true}>
+                      focusable={true}
+                      accessible={true}
+                      accessibilityRole="button"
+                      accessibilityLabel={showLyrics ? t('nowPlaying.hideLyrics') : t('nowPlaying.showLyrics')}>
                       {({ focused }) => (
-                        <LyricIconButton active={showLyrics} focused={focused} />
+                        <LyricIcon active={showLyrics} focused={focused} />
                       )}
                     </Pressable>
 
@@ -632,7 +635,10 @@ export function NowPlayingScreen({
                       ]}
                       nextFocusUp={progressBarNode}
                       onPress={() => setShowQueue(!showQueue)}
-                      focusable={true}>
+                      focusable={true}
+                      accessible={true}
+                      accessibilityRole="button"
+                      accessibilityLabel={showQueue ? t('nowPlaying.hideQueue') : t('nowPlaying.showQueue')}>
                       {({ focused }) => {
                         const iconColor = showQueue || focused ? '#fff' : 'rgba(255, 255, 255, 0.7)';
                         return (
@@ -892,7 +898,7 @@ const styles = StyleSheet.create({
   lyricsSection: {
     flex: 0.55,
     paddingLeft: spacing.xxl,
-    paddingRight: 100,
+    paddingRight: 80,
     paddingBottom: 100, // Clear the progress bar and footer buttons
   },
   footerButtonsRight: {

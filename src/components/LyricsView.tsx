@@ -27,14 +27,14 @@ interface LyricLineItemProps {
 }
 
 const LyricLineItem = React.memo(({ line, isActive }: LyricLineItemProps) => {
-  const opacity = useRef(new Animated.Value(0.3)).current;
+  const opacity = useRef(new Animated.Value(0.4)).current;
   useEffect(() => {
     Animated.timing(opacity, {
       toValue: isActive ? 1 : 0.4,
       duration: 350,
       useNativeDriver: true,
     }).start();
-  }, [isActive, opacity]);
+  }, [isActive]);
 
   return (
     <Animated.View
@@ -46,7 +46,9 @@ const LyricLineItem = React.memo(({ line, isActive }: LyricLineItemProps) => {
       ]}>
       <Text
         style={[styles.lineText, isActive && styles.activeLineText]}
-      // Removed numberOfLines={1} to allow wrapping
+        adjustsFontSizeToFit={true}
+        minimumFontScale={0.7}
+        allowFontScaling={true}
       >
         {line.text}
       </Text>
@@ -61,14 +63,28 @@ export function LyricsView({
 }: LyricsViewProps): React.JSX.Element {
   const { t } = useTranslation();
   const flatListRef = useRef<FlatList>(null);
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clean up the timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
-    if (lyrics.length > 0 && currentLineIndex >= 0 && flatListRef.current) {
-      flatListRef.current.scrollToIndex({
-        index: currentLineIndex,
-        animated: true,
-        viewPosition: 0.12, // Positions the active line slightly below the top (around 2nd row)
-      });
+    if (lyrics.length > 0 && currentLineIndex >= 0 && currentLineIndex < lyrics.length && flatListRef.current) {
+      try {
+        flatListRef.current.scrollToIndex({
+          index: currentLineIndex,
+          animated: true,
+          viewPosition: 0.28, // Positions the active line further down to show previous lines
+        });
+      } catch (error) {
+        console.warn('[LyricsView] Scroll failed:', error);
+      }
     }
   }, [currentLineIndex, lyrics.length]);
 
@@ -104,13 +120,11 @@ export function LyricsView({
         keyExtractor={(item, index) => `${item.time}-${index}`}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        getItemLayout={(_, index) => ({
-          length: LINE_HEIGHT + (spacing.sm * 2),
-          offset: (LINE_HEIGHT + (spacing.sm * 2)) * index,
-          index,
-        })}
         onScrollToIndexFailed={(info) => {
-          setTimeout(() => {
+          if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current);
+          }
+          scrollTimeoutRef.current = setTimeout(() => {
             flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
           }, 500);
         }}
@@ -129,24 +143,29 @@ const styles = StyleSheet.create({
   listContent: {
     paddingTop: LIST_PADDING_TOP,
     paddingBottom: SCREEN_HEIGHT / 2,
-    paddingHorizontal: spacing.xl,
+    paddingHorizontal: spacing.lg,
   },
   lineWrapper: {
-    height: LINE_HEIGHT,
+    minHeight: LINE_HEIGHT,
     justifyContent: 'center',
     marginVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
   },
   lineText: {
     fontSize: 22,
     fontWeight: '600',
     color: '#fff',
     opacity: 0.8,
+    textAlign: 'left',
+    textAlignVertical: 'center',
   },
   activeLineText: {
-    fontSize: 28, // Previously 28/40
+    fontSize: 28,
     fontWeight: '800',
     color: '#fff',
     opacity: 1,
+    textAlign: 'left',
+    textAlignVertical: 'center',
   },
   emptyContainer: {
     flex: 1,

@@ -58,7 +58,11 @@
     "goToAlbum": "Go to Album",
     "info": "Info",
     "progressBar": "Progress bar",
-    "durationFormat": "{{mins}} min, {{secs}} secs"
+    "durationFormat": "{{mins}} min, {{secs}} secs",
+    "showLyrics": "Show lyrics",
+    "hideLyrics": "Hide lyrics",
+    "showQueue": "Show queue",
+    "hideQueue": "Hide queue"
   },
   "lyrics": {
     "notFound": "Lyrics not available",
