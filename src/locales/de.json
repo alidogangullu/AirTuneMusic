@@ -60,6 +60,10 @@
     "progressBar": "Fortschrittsbalken",
     "durationFormat": "{{mins}} Min., {{secs}} Sek."
   },
+  "lyrics": {
+    "notFound": "Songtexte nicht verfügbar",
+    "loading": "Songtexte werden geladen..."
+  },
   "detail": {
     "failedToLoad": "Inhalt konnte nicht geladen werden",
     "add": "Hinzufügen",

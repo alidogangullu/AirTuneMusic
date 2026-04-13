@@ -60,6 +60,10 @@
     "progressBar": "Barre de progression",
     "durationFormat": "{{mins}} min, {{secs}} s"
   },
+  "lyrics": {
+    "notFound": "Paroles non disponibles",
+    "loading": "Chargement des paroles..."
+  },
   "detail": {
     "failedToLoad": "Échec du chargement du contenu",
     "add": "Ajouter",

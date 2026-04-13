@@ -35,6 +35,10 @@ import { radius, spacing } from '../theme/layout';
 import { useStorefront } from '../hooks/useStorefront';
 import { fetchSongDetail } from '../api/apple-music/recommendations';
 import { TrackInfo } from '../services/musicPlayer';
+import { useLyrics } from '../hooks/useLyrics';
+import { LyricsView } from '../components/LyricsView';
+import { LyricIconButton } from '../components/LyricIconButton';
+import { NowPlayingTrackInfo, ARTWORK_SIZE } from '../components/NowPlayingTrackInfo';
 
 const SEEK_STEP_MS = 5000;
 
@@ -52,9 +56,13 @@ function formatTime(ms: number): string {
 
 interface NowPlayingScreenProps {
   onBack?: () => void;
+  isTabView?: boolean;
 }
 
-export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): React.JSX.Element {
+export function NowPlayingScreen({
+  onBack,
+  isTabView = false,
+}: Readonly<NowPlayingScreenProps>): React.JSX.Element {
   const { t } = useTranslation();
   const { state, play, pause, seekTo } = usePlayer();
   const { track, position, duration, playbackState } = state;
@@ -80,7 +88,10 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
   const [pendingSeekMs, setPendingSeekMs] = useState(0);
   const [showInfo, setShowInfo] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
+  const [showLyrics, setShowLyrics] = useState(false);
   const queueListRef = useRef<FlatList>(null);
+
+  const { lyrics, currentLineIndex, isLoading: lyricsLoading } = useLyrics();
 
   const { pushContent } = React.useContext(ContentNavigationContext);
   const { storefrontId } = useStorefront();
@@ -236,6 +247,20 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
     }
   }, [activeIndex, state.queue, showQueue]);
 
+  // If lyrics button is pressed, hide queue/info and vice versa
+  useEffect(() => {
+    if (showLyrics) {
+      setShowQueue(false);
+      setShowInfo(false);
+    }
+  }, [showLyrics]);
+
+  useEffect(() => {
+    if (showQueue || showInfo) {
+      setShowLyrics(false);
+    }
+  }, [showQueue, showInfo]);
+
   // Background colors derived from artwork
   const bg1 = palette?.darkMuted || palette?.dominant || '#1a1a2e';
   const bg2 = palette?.darkVibrant || palette?.muted || '#16213e';
@@ -285,34 +310,30 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.root}>
+      {showLyrics && (
+        <View
+          style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.15)' }]}
+          pointerEvents="none"
+        />
+      )}
 
-      {/* Centered content: artwork OR queue + track info */}
+      {/* Centered content: artwork OR queue OR lyrics */}
       <View style={styles.content}>
-        {!showQueue ? (
-          <><Animated.View style={[styles.artworkShadow, { transform: [{ scale: scaleAnim }] }]}>
-            {track?.artworkUrl ? (
-              <Image
-                source={{ uri: track.artworkUrl }}
-                style={styles.artwork}
-                resizeMode="cover" />
-            ) : (
-              <View style={[styles.artwork, styles.artworkPlaceholder]} />
-            )}
-          </Animated.View><View style={[styles.meta, { opacity: showInfo ? 0 : 1 }]}>
-              <View style={styles.titleRow}>
-                <NowPlayingBars playing={isPlaying && !state.isLoading && !state.buffering} color={accentColor} size={16} />
-                <Text style={styles.title} numberOfLines={1}>
-                  {track?.title ?? ''}
-                </Text>
-              </View>
-              <Text style={styles.artist} numberOfLines={1}>
-                {track?.artistName ?? ''}
-              </Text>
-            </View></>
-        ) : (
+        {!showLyrics && !showQueue ? (
+          <NowPlayingTrackInfo
+            track={track}
+            isPlaying={isPlaying}
+            isLoading={state.isLoading}
+            isBuffering={state.buffering}
+            accentColor={accentColor}
+            scaleAnim={scaleAnim}
+            showBars={true}
+            align="center"
+          />
+        ) : !showLyrics && showQueue ? (
           <View style={styles.integratedQueueContainer}>
             <FlatList
-              key={`queue-${state.shuffleMode}`} // Force remount on shuffle to apply initialScrollIndex instantly
+              key={`queue-${state.shuffleMode}`}
               ref={queueListRef}
               data={state.queue}
               horizontal
@@ -324,9 +345,8 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
               windowSize={7}
               contentContainerStyle={[styles.queueListContent, { paddingHorizontal: HORIZONTAL_PADDING }]}
               initialScrollIndex={activeIndex >= 0 ? activeIndex : 0}
-              contentOffset={{ x: Math.max(0, activeIndex) * (ARTWORK_SIZE + 20), y: 0 }}
               getItemLayout={(_, index) => ({
-                length: ARTWORK_SIZE + 20, // artwork width (260) + gap (20)
+                length: ARTWORK_SIZE + 20,
                 offset: (ARTWORK_SIZE + 20) * index,
                 index,
               })}
@@ -334,51 +354,40 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
                 const isCurrent = item.playbackQueueId === (state.track as any)?.playbackQueueId;
                 return (
                   <View style={styles.queueItemContainer}>
-                    <View style={styles.artworkShadow}>
-                      <View style={styles.artwork}>
-                        {item.artworkUrl ? (
-                          <Image
-                            source={{ uri: item.artworkUrl }}
-                            style={styles.artwork}
-                          />
-                        ) : (
-                          <View style={[styles.artwork, styles.artworkPlaceholder]} />
-                        )}
-                      </View>
-                    </View>
-                    <View style={[styles.meta, { opacity: showInfo ? 0 : 1 }]}>
-                      <View style={styles.titleRow}>
-                        {isCurrent && (
-                          <NowPlayingBars playing={isPlaying && !state.isLoading && !state.buffering} color={accentColor} size={16} />
-                        )}
-                        <Text style={styles.title} numberOfLines={1}>
-                          {item?.title ?? ''}
-                        </Text>
-                      </View>
-                      <Text style={styles.artist} numberOfLines={1}>
-                        {item?.artistName ?? ''}
-                      </Text>
-                    </View>
+                    <NowPlayingTrackInfo
+                      track={item}
+                      isPlaying={isPlaying && isCurrent}
+                      isLoading={state.isLoading}
+                      isBuffering={state.buffering}
+                      accentColor={accentColor}
+                      showBars={isCurrent}
+                      align="center"
+                      style={{ opacity: showInfo ? 0 : 1 }}
+                    />
                   </View>
                 );
               }}
             />
           </View>
-        )}
-
-        {/*
-        <View style={[styles.meta, { opacity: showInfo ? 0 : 1 }]}>
-          <View style={styles.titleRow}>
-            <NowPlayingBars playing={isPlaying && !state.isLoading && !state.buffering} color={accentColor} size={16} />
-            <Text style={styles.title} numberOfLines={1}>
-              {track?.title ?? ''}
-            </Text>
+        ) : (
+          <View style={styles.lyricsSplitView}>
+            <View style={styles.artworkSectionSide}>
+              <NowPlayingTrackInfo
+                track={track}
+                isPlaying={isPlaying}
+                isLoading={state.isLoading}
+                isBuffering={state.buffering}
+                accentColor={accentColor}
+                scaleAnim={scaleAnim}
+                showBars={true}
+                align="center"
+              />
+            </View>
+            <View style={[styles.lyricsSection, isTabView && styles.lyricsTabPadding]}>
+              <LyricsView lyrics={lyrics} currentLineIndex={currentLineIndex} isLoading={lyricsLoading} />
+            </View>
           </View>
-          <Text style={styles.artist} numberOfLines={1}>
-            {track?.artistName ?? ''}
-          </Text>
-        </View>
-        */}
+        )}
       </View>
 
 
@@ -598,28 +607,44 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
                       ? `${formatTime(pendingSeekMs)}`
                       : `-${formatTime(remainingMs)}`}
                   </Text>
-                  <Pressable
-                    ref={queueButtonRef}
-                    onLayout={() => setQueueButtonNode(findNodeHandle(queueButtonRef.current))}
-                    style={({ focused }) => [
-                      styles.infoButton,
-                      focused && styles.infoButtonFocused,
-                      { alignSelf: 'flex-end', marginRight: -spacing.sm },
-                    ]}
-                    nextFocusUp={progressBarNode}
-                    onPress={() => setShowQueue(!showQueue)}
-                    focusable={true}>
-                    {({ focused }) => {
-                      const iconColor = showQueue || focused ? '#fff' : 'rgba(255, 255, 255, 0.7)';
-                      return (
-                        <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <Path d="M3 12h18" />
-                          <Path d="M3 6h18" />
-                          <Path d="M3 18h18" />
-                        </Svg>
-                      );
-                    }}
-                  </Pressable>
+                  <View style={styles.footerButtonsRight}>
+                    <Pressable
+                      style={({ focused }) => [
+                        styles.infoButton,
+                        focused && styles.infoButtonFocused,
+                        { marginRight: spacing.md },
+                      ]}
+                      nextFocusUp={progressBarNode}
+                      onPress={() => setShowLyrics(!showLyrics)}
+                      focusable={true}>
+                      {({ focused }) => (
+                        <LyricIconButton active={showLyrics} focused={focused} />
+                      )}
+                    </Pressable>
+
+                    <Pressable
+                      ref={queueButtonRef}
+                      onLayout={() => setQueueButtonNode(findNodeHandle(queueButtonRef.current))}
+                      style={({ focused }) => [
+                        styles.infoButton,
+                        focused && styles.infoButtonFocused,
+                        { alignSelf: 'flex-end', marginRight: -spacing.sm },
+                      ]}
+                      nextFocusUp={progressBarNode}
+                      onPress={() => setShowQueue(!showQueue)}
+                      focusable={true}>
+                      {({ focused }) => {
+                        const iconColor = showQueue || focused ? '#fff' : 'rgba(255, 255, 255, 0.7)';
+                        return (
+                          <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <Path d="M3 12h18" />
+                            <Path d="M3 6h18" />
+                            <Path d="M3 18h18" />
+                          </Svg>
+                        );
+                      }}
+                    </Pressable>
+                  </View>
                 </View>
               </View>
             </>
@@ -632,7 +657,6 @@ export function NowPlayingScreen({ onBack }: Readonly<NowPlayingScreenProps>): R
 
 // ── Styles ────────────────────────────────────────────────────────
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const ARTWORK_SIZE = 260;
 const HORIZONTAL_PADDING = (SCREEN_WIDTH - ARTWORK_SIZE) / 2;
 
 const styles = StyleSheet.create({
@@ -665,38 +689,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: 'rgba(255,255,255,0.7)',
     marginTop: spacing.xl,
-  },
-  // Artwork
-  artworkShadow: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.5,
-    shadowRadius: 24,
-    elevation: 20,
-  },
-  artwork: {
-    width: ARTWORK_SIZE,
-    height: ARTWORK_SIZE,
-  },
-  artworkPlaceholder: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-  },
-  // Meta: track info aligned with artwork
-  meta: {
-    marginTop: spacing.lg,
-    alignItems: 'center',
-  },
-  // Title row: bars + title inline
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  title: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#fff',
-    flexShrink: 1,
   },
   artist: {
     fontSize: 12,
@@ -880,5 +872,31 @@ const styles = StyleSheet.create({
   queueListContent: {
     // Center items vertically within the ARTWORK_SIZE container
     justifyContent: 'center',
+  },
+  // Lyrics Split View
+  lyricsSplitView: {
+    flex: 1,
+    width: '100%',
+    flexDirection: 'row',
+  },
+  lyricsTabPadding: {
+    paddingTop: 80, // Account for TopBar height when viewed as a tab
+  },
+  artworkSectionSide: {
+    flex: 0.45,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    paddingLeft: spacing.xxl, // Increased space from the left edge
+    paddingRight: spacing.xxl,
+  },
+  lyricsSection: {
+    flex: 0.55,
+    paddingLeft: spacing.xxl,
+    paddingRight: 100,
+    paddingBottom: 100, // Clear the progress bar and footer buttons
+  },
+  footerButtonsRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });

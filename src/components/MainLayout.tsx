@@ -21,7 +21,7 @@ export type MainLayoutProps = {
   onSettingsPress?: () => void;
 };
 
-const SCREENS: Record<NavTabId, React.ComponentType> = {
+const SCREENS: Record<NavTabId, React.ComponentType<{ isTabView?: boolean }>> = {
   'listen-now': ListenNowScreen,
   browse: BrowseScreen,
   videos: VideosScreen,
@@ -43,7 +43,7 @@ export function MainLayout({
   return (
     <View style={styles.root}>
       <View style={styles.contentFull}>
-        <Screen />
+        <Screen isTabView={activeTab === 'now-playing'} />
       </View>
       <View style={styles.topBarOverlay}>
         <TopBar

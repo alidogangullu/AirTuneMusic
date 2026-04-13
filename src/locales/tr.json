@@ -60,6 +60,10 @@
     "progressBar": "İlerleme çubuğu",
     "durationFormat": "{{mins}} dk, {{secs}} sn"
   },
+  "lyrics": {
+    "notFound": "Şarkı sözü bulunamadı",
+    "loading": "Şarkı sözleri yükleniyor..."
+  },
   "detail": {
     "failedToLoad": "İçerik yüklenemedi",
     "add": "Ekle",
