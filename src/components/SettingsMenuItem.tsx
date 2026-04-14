@@ -5,12 +5,14 @@ export type SettingsMenuItemProps = {
   label: string;
   onPress?: () => void;
   hasTVPreferredFocus?: boolean;
+  labelColor?: string;
 };
 
 export function SettingsMenuItem({
   label,
   onPress,
   hasTVPreferredFocus = false,
+  labelColor,
 }: Readonly<SettingsMenuItemProps>): React.JSX.Element {
   return (
     <View>
@@ -30,6 +32,7 @@ export function SettingsMenuItem({
               style={[
                 styles.label,
                 focused ? styles.labelFocused : styles.labelUnfocused,
+                labelColor ? { color: labelColor } : undefined,
               ]}>
               {label}
             </Text>

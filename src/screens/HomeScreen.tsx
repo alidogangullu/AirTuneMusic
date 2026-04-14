@@ -18,6 +18,7 @@ import type { RecommendationContent } from '../types/recommendations';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
 import { usePlayer } from '../hooks/usePlayer';
+import { useAppStartup } from '../components/AppStartupProvider';
 
 export type HomeScreenProps = {
   onSignOut?: () => void;
@@ -28,6 +29,7 @@ export function HomeScreen({
 }: Readonly<HomeScreenProps>): React.JSX.Element {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const { updateInfo } = useAppStartup();
   const [activeTab, setActiveTab] = useState<NavTabId>('listen-now');
   const [selectedContent, setSelectedContent] =
     useState<RecommendationContent | null>(null);
@@ -128,6 +130,7 @@ export function HomeScreen({
           onAvatarPress={handleSignOut}
           onSearchPress={() => setActiveTab('search')}
           onSettingsPress={() => setSettingsVisible(true)}
+          hasUpdate={updateInfo?.status === 'optional_update'}
         />
 
         {/* Modal ensures OS-level focus trapping — Android creates a new Window,
@@ -177,6 +180,7 @@ export function HomeScreen({
               setSettingsVisible(false);
               handleSignOut();
             }}
+            updateInfo={updateInfo}
           />
         </Modal>
       </View>

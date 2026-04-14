@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { changeLanguage } from '../i18n';
 import { SettingsMenuItem } from '../components/SettingsMenuItem';
@@ -14,21 +14,27 @@ import { useTheme } from '../theme';
 import { QuotaService } from '../services/quotaService';
 import { IapService } from '../services/iapService';
 import { spacing, radius } from '../theme/layout';
+import { VersionCheckResult } from '../services/versionService';
 
 export type SettingsScreenProps = {
   onBack?: () => void;
   onSignOut?: () => void;
+  updateInfo?: VersionCheckResult | null;
 };
 
 export function SettingsScreen({
   onBack,
   onSignOut,
+  updateInfo,
 }: Readonly<SettingsScreenProps>): React.JSX.Element {
   const { colors } = useTheme();
   const { t, i18n } = useTranslation();
   const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language'>('none');
 
+  const hasOptionalUpdate = updateInfo?.status === 'optional_update';
+
   const MENU_ITEMS = [
+    ...(hasOptionalUpdate ? [{ id: 'Update', label: t('settings.update') }] : []),
     { id: 'Subscription', label: t('settings.subscription') },
     { id: 'Support', label: t('settings.support') },
     { id: 'About', label: t('settings.about') },
@@ -77,7 +83,11 @@ export function SettingsScreen({
   };
 
   const handleItemPress = (item: string) => {
-    if (item === 'Sign Out') {
+    if (item === 'Update') {
+      if (updateInfo?.storeUrl) {
+        Linking.openURL(updateInfo.storeUrl);
+      }
+    } else if (item === 'Sign Out') {
       onSignOut?.();
     } else if (item === 'Subscription') {
       handleSubscriptionPress();
@@ -153,13 +163,14 @@ export function SettingsScreen({
                     label={item.label}
                     hasTVPreferredFocus={index === 0}
                     onPress={() => handleItemPress(item.id)}
+                    labelColor={item.id === 'Update' ? '#f0535b' : undefined}
                   />
                 ))}
                 <SettingsMenuItem
                   label={t('settings.language.title')}
                   onPress={() => handleItemPress('Language')}
                 />
-                
+
                 <View style={styles.divider} />
                 <SettingsMenuItem
                   label={t('settings.signOut')}

@@ -93,6 +93,7 @@ export type TopBarProps = {
   onSettingsPress?: () => void;
   transparent?: boolean;
   dark?: boolean;
+  hasUpdate?: boolean;
 };
 
 export function TopBar({
@@ -103,6 +104,7 @@ export function TopBar({
   onSettingsPress,
   transparent = false,
   dark = false,
+  hasUpdate = false,
 }: Readonly<TopBarProps>): React.JSX.Element {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -162,19 +164,22 @@ export function TopBar({
         </NavPressable>
       </View>
       <View style={styles.spacer} focusable={false} />
-      <NavPressable
-        style={({ focused }) => [styles.avatar, focused && styles.avatarFocused]}
-        onPress={onSettingsPress}
-        focusable={true}
-        hasTVPreferredFocus={false}
-        accessibilityLabel={t('topBar.settings')}
-        accessibilityRole="button">
-        {({ focused }) => (
-          <Text style={[styles.settingsIcon, focused && styles.settingsIconFocused]}>
-            ⚙
-          </Text>
-        )}
-      </NavPressable>
+      <View style={styles.settingsWrapper} focusable={false}>
+        <NavPressable
+          style={({ focused }) => [styles.avatar, focused && styles.avatarFocused]}
+          onPress={onSettingsPress}
+          focusable={true}
+          hasTVPreferredFocus={false}
+          accessibilityLabel={t('topBar.settings')}
+          accessibilityRole="button">
+          {({ focused }) => (
+            <Text style={[styles.settingsIcon, focused && styles.settingsIconFocused]}>
+              ⚙
+            </Text>
+          )}
+        </NavPressable>
+        {hasUpdate && <View style={styles.updateBadge} focusable={false} />}
+      </View>
     </View>
   );
 }
@@ -311,6 +316,20 @@ function useStyles(c: {
       gap: spacing.xs,
       justifyContent: 'center',
       overflow: 'visible',
+    },
+    settingsWrapper: {
+      position: 'relative' as const,
+    },
+    updateBadge: {
+      position: 'absolute' as const,
+      top: -2,
+      right: -2,
+      width: 13,
+      height: 13,
+      borderRadius: 7,
+      backgroundColor: '#FF3B30',
+      borderWidth: 2,
+      borderColor: 'rgba(0,0,0,0.15)',
     },
     settingsIcon: {
       fontSize: 20,
