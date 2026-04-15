@@ -199,6 +199,11 @@ export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCan
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const autoTriggeredRef = useRef(false);
   const adStartInFlightRef = useRef(false);
+  const onWatchAdRef = useRef(onWatchAd);
+
+  useEffect(() => {
+    onWatchAdRef.current = onWatchAd;
+  }, [onWatchAd]);
 
   const handleWatchAd = useCallback(async () => {
     if (adStartInFlightRef.current) return;
@@ -208,7 +213,7 @@ export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCan
     setErrorMessage(null);
 
     try {
-      await onWatchAd();
+      await onWatchAdRef.current();
     } catch (error) {
       const message = error instanceof Error ? error.message : t('quotaLimit.adErrorFallback');
       setErrorMessage(message);
@@ -216,7 +221,7 @@ export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCan
     } finally {
       adStartInFlightRef.current = false;
     }
-  }, [onWatchAd, t]);
+  }, [t]);
 
   useEffect(() => {
     autoTriggeredRef.current = false;

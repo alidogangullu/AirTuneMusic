@@ -331,11 +331,19 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     }));
   }, []);
 
+  const resumeCurrentPlayback = useCallback(async () => {
+    if (activeEngineRef.current === 'web') {
+      webPlayerRef.current?.play();
+      return;
+    }
+    musicPlayer.play();
+  }, []);
+
   const handleNativeCurrentItemChanged = useCallback((data: TrackInfo) => {
     if (data.playbackQueueId !== undefined && data.playbackQueueId !== lastTrackIdRef.current) {
       if (!QuotaService.canPlayNextSong()) {
         musicPlayer.stop();
-        requestQuotaRecovery();
+        requestQuotaRecovery(resumeCurrentPlayback);
         return;
       }
       QuotaService.recordSongPlay();
@@ -351,7 +359,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     if (data.id) {
       updateTrackRating(data.id);
     }
-  }, [requestQuotaRecovery, updateNativeTrackState, updateTrackRating]);
+  }, [requestQuotaRecovery, resumeCurrentPlayback, updateNativeTrackState, updateTrackRating]);
 
   const handleNativePlaybackProgress = useCallback((data: ProgressInfo) => {
     setState(s => ({
@@ -653,6 +661,25 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
       musicPlayer.stop();
     },
     skipToNext: () => {
+      if (!QuotaService.canPlayNextSong()) {
+        if (activeEngineRef.current === 'web') {
+          webPlayerRef.current?.pause();
+        } else {
+          musicPlayer.pause();
+        }
+
+        requestQuotaRecovery(async () => {
+          if (activeEngineRef.current === 'web') {
+            webPlayerRef.current?.skipToNext?.();
+            webPlayerRef.current?.play();
+            return;
+          }
+          musicPlayer.skipToNext();
+          musicPlayer.play();
+        });
+        return;
+      }
+
       if (activeEngineRef.current === 'web') {
         webPlayerRef.current?.skipToNext?.();
       } else {
@@ -660,6 +687,25 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
       }
     },
     skipToPrevious: () => {
+      if (!QuotaService.canPlayNextSong()) {
+        if (activeEngineRef.current === 'web') {
+          webPlayerRef.current?.pause();
+        } else {
+          musicPlayer.pause();
+        }
+
+        requestQuotaRecovery(async () => {
+          if (activeEngineRef.current === 'web') {
+            webPlayerRef.current?.skipToPrevious?.();
+            webPlayerRef.current?.play();
+            return;
+          }
+          musicPlayer.skipToPrevious();
+          musicPlayer.play();
+        });
+        return;
+      }
+
       if (activeEngineRef.current === 'web') {
         webPlayerRef.current?.skipToPrevious?.();
       } else {
@@ -733,7 +779,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
               if (trackInfo.playbackQueueId !== undefined && trackInfo.playbackQueueId !== lastTrackIdRef.current) {
                 if (!QuotaService.canPlayNextSong()) {
                   webPlayerRef.current?.stop();
-                  requestQuotaRecovery();
+                  requestQuotaRecovery(resumeCurrentPlayback);
                   return;
                 }
                 QuotaService.recordSongPlay();
