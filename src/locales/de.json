@@ -173,5 +173,18 @@
     "notFoundMessage": "Kein aktives Abonnement für dieses Konto gefunden.",
     "error": "Fehler",
     "errorMessage": "Fehler bei der Kommunikation mit dem Store. Bitte versuchen Sie es später erneut."
+  },
+  "quotaLimit": {
+    "title": "Limit erreicht",
+    "message": "Sie haben das kostenlose Wiedergabelimit von {{limit}} Songs erreicht. Sehen Sie sich eine Anzeige an, um {{bonus}} weitere Wiedergaben zu erhalten, oder wechseln Sie zu Pro.",
+    "watchAd": "Anzeige ansehen +3 Wiedergaben",
+    "subscription": "Abonnement öffnen",
+    "preparingAd": "Anzeige wird vorbereitet...",
+    "adStarting": "Anzeige startet",
+    "autoStartCount": "Anzeige startet automatisch in {{count}}s",
+    "remainingLabel": "Nächste Wiedergabe: {{remaining}}",
+    "limitLabel": "Nutzung: {{used}}/{{total}}",
+    "rewardLabel": "+{{bonus}} Bonus-Wiedergaben",
+    "adErrorFallback": "Die Anzeige konnte nicht gestartet werden. Bitte versuchen Sie es erneut oder öffnen Sie die Abonnementoptionen."
   }
 }

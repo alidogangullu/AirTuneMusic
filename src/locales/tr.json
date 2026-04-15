@@ -179,5 +179,18 @@
     "title": "Abonelik Gerekli",
     "message": "AirTune Music'i kullanmak için ücretli bir Apple Music aboneliği gereklidir. Lütfen hesabınızın aktif bir aboneliği olduğundan emin olun ve tekrar deneyin.",
     "signOut": "Oturumu Kapat"
+  },
+  "quotaLimit": {
+    "title": "Sınıra Ulaşıldı",
+    "message": "Ücretsiz dinleme sınırı olan {{limit}} şarkıya ulaştınız. Bir reklam izleyerek {{bonus}} ek hak kazanabilir veya Pro'ya geçebilirsiniz.",
+    "watchAd": "Reklam İzle +3 Hak",
+    "subscription": "Aboneliği Aç",
+    "preparingAd": "Reklam hazırlanıyor...",
+    "adStarting": "Reklam başlıyor",
+    "autoStartCount": "Reklam {{count}} sn içinde otomatik başlayacak",
+    "remainingLabel": "Sonraki hak: {{remaining}}",
+    "limitLabel": "Kullanım: {{used}}/{{total}}",
+    "rewardLabel": "+{{bonus}} bonus hak",
+    "adErrorFallback": "Reklam başlatılamadı. Lütfen tekrar deneyin veya abonelik seçeneklerini açın."
   }
 }

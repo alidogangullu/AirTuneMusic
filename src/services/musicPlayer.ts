@@ -46,6 +46,7 @@ export interface PlaybackStateInfo {
   albumTitle?: string;
   artworkUrl?: string;
   trackDuration?: number;
+  playbackQueueId?: number;
 }
 
 export interface ProgressInfo {

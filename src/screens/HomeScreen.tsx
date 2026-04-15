@@ -11,6 +11,7 @@ import { MainLayout } from '../components/MainLayout';
 import { ContentNavigationContext } from '../navigation';
 import { ArtistDetailScreen } from './ArtistDetailScreen';
 import { ContentDetailScreen } from './ContentDetailScreen';
+import { QuotaLimitScreen } from './QuotaLimitScreen';
 import { NowPlayingScreen } from './NowPlayingScreen';
 import { SettingsScreen } from './SettingsScreen';
 import type { NavTabId } from '../components/TopBar';
@@ -34,12 +35,17 @@ export function HomeScreen({
   const [selectedContent, setSelectedContent] =
     useState<RecommendationContent | null>(null);
   const [nowPlayingFullscreen, setNowPlayingFullscreen] = useState(false);
-  const { setShowSettings: setShowSettingsViaPlayer } = usePlayer();
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [lastOpened, setLastOpened] = useState<'detail' | 'now-playing' | null>(null);
 
   // When player hook triggers settings (quota reached), show it
-  const { showSettings: playerWantsSettings, setShowSettings } = usePlayer();
+  const {
+    showSettings: playerWantsSettings,
+    setShowSettings,
+    quotaRecoveryRequest,
+    dismissQuotaRecovery,
+    startQuotaRewardAd,
+  } = usePlayer();
   const isDetailOpen = selectedContent !== null;
   const [lastBackPressed, setLastBackPressed] = useState(0);
 
@@ -182,6 +188,25 @@ export function HomeScreen({
             }}
             updateInfo={updateInfo}
           />
+        </Modal>
+
+        <Modal
+          visible={Boolean(quotaRecoveryRequest)}
+          animationType="none"
+          onRequestClose={dismissQuotaRecovery}>
+          {quotaRecoveryRequest ? (
+            <QuotaLimitScreen
+              request={quotaRecoveryRequest}
+              onWatchAd={async () => {
+                await startQuotaRewardAd();
+              }}
+              onOpenSubscription={() => {
+                dismissQuotaRecovery();
+                setSettingsVisible(true);
+              }}
+              onCancel={dismissQuotaRecovery}
+            />
+          ) : null}
         </Modal>
       </View>
     </ContentNavigationContext.Provider>

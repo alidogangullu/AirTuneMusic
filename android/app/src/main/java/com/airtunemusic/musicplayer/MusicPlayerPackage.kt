@@ -9,7 +9,8 @@ class MusicPlayerPackage : ReactPackage {
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
         return listOf(
             MusicPlayerModule(reactContext),
-            TVLinkServerModule(reactContext)
+            TVLinkServerModule(reactContext),
+            RewardedAdModule(reactContext)
         )
     }
 

@@ -6,13 +6,16 @@ const storage = createMMKV({ id: 'quota-storage' });
 const KEYS = {
   PLAY_TIMESTAMPS: 'play_timestamps',
   IS_PRO: 'is_pro',
+  BONUS_PLAYS: 'bonus_plays',
 };
 
 const HOUR_MS = 60 * 60 * 1000;
-const DEFAULT_LIMIT = 15;
+const DEFAULT_LIMIT = 10;
+const DEFAULT_BONUS_PLAYS = 3;
 
 export class QuotaService {
-  static HOURLY_LIMIT = DEFAULT_LIMIT;
+  static readonly HOURLY_LIMIT = DEFAULT_LIMIT;
+  static readonly BONUS_PLAYS_PER_AD = DEFAULT_BONUS_PLAYS;
 
   /**
    * Check if user has active Pro subscription
@@ -26,6 +29,34 @@ export class QuotaService {
    */
   static setProStatus(isPro: boolean): void {
     storage.set(KEYS.IS_PRO, isPro);
+  }
+
+  /**
+   * Returns how many bonus plays are currently available from ads.
+   */
+  static getBonusPlaysRemaining(): number {
+    return storage.getNumber(KEYS.BONUS_PLAYS) ?? 0;
+  }
+
+  /**
+   * Adds bonus plays granted by watching an ad.
+   */
+  static addBonusPlays(count: number = this.BONUS_PLAYS_PER_AD): void {
+    if (this.isProUser() || count <= 0) return;
+
+    const current = this.getBonusPlaysRemaining();
+    storage.set(KEYS.BONUS_PLAYS, current + count);
+  }
+
+  /**
+   * Consumes one bonus play if available.
+   */
+  private static consumeBonusPlay(): boolean {
+    const current = this.getBonusPlaysRemaining();
+    if (current <= 0) return false;
+
+    storage.set(KEYS.BONUS_PLAYS, current - 1);
+    return true;
   }
 
   /**
@@ -52,9 +83,9 @@ export class QuotaService {
     if (this.isProUser()) return true;
 
     const recentPlays = this.getRecentPlayTimestamps();
-    const canPlay = recentPlays.length < this.HOURLY_LIMIT;
+    const canPlay = recentPlays.length < this.HOURLY_LIMIT || this.getBonusPlaysRemaining() > 0;
     console.log(
-      `[QuotaService] canPlayNextSong: ${recentPlays.length}/${this.HOURLY_LIMIT} -> ${canPlay}`,
+      `[QuotaService] canPlayNextSong: ${recentPlays.length}/${this.HOURLY_LIMIT} +bonus:${this.getBonusPlaysRemaining()} -> ${canPlay}`,
     );
     return canPlay;
   }
@@ -66,6 +97,11 @@ export class QuotaService {
     if (this.isProUser()) return;
 
     const recentPlays = this.getRecentPlayTimestamps();
+
+    if (recentPlays.length >= this.HOURLY_LIMIT && this.consumeBonusPlay()) {
+      return;
+    }
+
     recentPlays.push(Date.now());
 
     // We only need to keep up to HOURLY_LIMIT timestamps

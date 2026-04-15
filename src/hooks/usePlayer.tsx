@@ -3,16 +3,18 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
-import {Alert} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import * as musicPlayer from '../services/musicPlayer';
 import {QuotaService} from '../services/quotaService';
+import {RewardAdService} from '../services/rewardAdService';
 import {getDeveloperToken} from '../api/apple-music/getDeveloperToken';
 import {waitForToken, getMusicUserToken} from '../api/apple-music/musicUserToken';
 import {MusicKitWebView, MusicKitWebPlayerRef} from '../components/MusicKitWebView';
+import type {QuotaRecoveryRequest} from '../screens/QuotaLimitScreen';
 import type {
   PlaybackStateName,
   TrackInfo,
@@ -94,13 +96,17 @@ interface PlayerContextValue {
   isPlaying: boolean;
   showSettings: boolean;
   setShowSettings: (show: boolean) => void;
+  quotaRecoveryRequest: QuotaRecoveryRequest | null;
+  requestQuotaRecovery: (retryAction?: () => Promise<void>) => void;
+  dismissQuotaRecovery: () => void;
+  startQuotaRewardAd: () => Promise<boolean>;
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
 
 const PlaybackProgressContext = createContext<ProgressState>(initialProgress);
 
-export function PlaybackProgressProvider({children}: {children: React.ReactNode}) {
+export function PlaybackProgressProvider({children}: Readonly<{children: React.ReactNode}>) {
   const [progress, setProgress] = useState<ProgressState>(initialProgress);
 
   useEffect(() => {
@@ -171,22 +177,209 @@ function buildVisualQueue(s: PlayerState, sdkQueue: TrackInfo[]): TrackInfo[] {
 
 // ── Provider ────────────────────────────────────────────────────
 
-export function PlayerProvider({children}: {children: React.ReactNode}) {
+export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>) {
   const {t} = useTranslation();
   const [state, setState] = useState<PlayerState>(initialState);
   const [showSettings, setShowSettings] = useState(false);
+  const [quotaRecoveryRequest, setQuotaRecoveryRequest] = useState<QuotaRecoveryRequest | null>(null);
   const stateRef = useRef(state);
   stateRef.current = state;
   const lastTrackIdRef = useRef<number | null>(null);
+  const pendingQuotaRetryRef = useRef<(() => Promise<void>) | null>(null);
+  const quotaRecoveryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const quotaRewardInFlightRef = useRef(false);
 
   const activeEngineRef = useRef<'native' | 'web'>('native');
   const webPlayerRef = useRef<MusicKitWebPlayerRef>(null);
   const [tokens, setTokens] = useState<{dev: string; user: string | null} | null>(null);
 
+  const clearQuotaRecoveryTimer = useCallback(() => {
+    if (quotaRecoveryTimerRef.current) {
+      clearTimeout(quotaRecoveryTimerRef.current);
+      quotaRecoveryTimerRef.current = null;
+    }
+  }, []);
+
+  const dismissQuotaRecovery = useCallback(() => {
+    clearQuotaRecoveryTimer();
+    pendingQuotaRetryRef.current = null;
+    setQuotaRecoveryRequest(null);
+  }, [clearQuotaRecoveryTimer]);
+
+  const startQuotaRewardAd = useCallback(async (): Promise<boolean> => {
+    if (!quotaRecoveryRequest || quotaRewardInFlightRef.current) {
+      return false;
+    }
+
+    quotaRewardInFlightRef.current = true;
+    clearQuotaRecoveryTimer();
+
+    try {
+      await RewardAdService.showRewardedAd();
+      QuotaService.addBonusPlays();
+
+      const retryAction = pendingQuotaRetryRef.current;
+      dismissQuotaRecovery();
+
+      if (retryAction) {
+        await retryAction();
+      }
+
+      return true;
+    } finally {
+      quotaRewardInFlightRef.current = false;
+    }
+  }, [clearQuotaRecoveryTimer, dismissQuotaRecovery, quotaRecoveryRequest]);
+
+  const requestQuotaRecovery = useCallback(
+    (retryAction?: () => Promise<void>) => {
+      if (retryAction && !pendingQuotaRetryRef.current) {
+        pendingQuotaRetryRef.current = retryAction;
+      }
+
+      let shouldScheduleAutoStart = false;
+
+      setQuotaRecoveryRequest(existingRequest => {
+        if (existingRequest) {
+          return existingRequest;
+        }
+
+        const usage = QuotaService.getUsageInfo();
+        const remaining = QuotaService.getRemainingTimeFormatted();
+        shouldScheduleAutoStart = true;
+
+        return {
+          title: t('quotaLimit.title'),
+          message: t('quotaLimit.message', {
+            limit: QuotaService.HOURLY_LIMIT,
+            used: usage.used,
+            total: usage.total,
+            remaining,
+            bonus: QuotaService.BONUS_PLAYS_PER_AD,
+          }),
+          bonusPlays: QuotaService.BONUS_PLAYS_PER_AD,
+          autoWatchAfterMs: 5000,
+          limit: QuotaService.HOURLY_LIMIT,
+          used: usage.used,
+          total: usage.total,
+          remaining,
+        };
+      });
+
+      if (!shouldScheduleAutoStart) {
+        return;
+      }
+
+      clearQuotaRecoveryTimer();
+      quotaRecoveryTimerRef.current = setTimeout(() => {
+        startQuotaRewardAd();
+      }, 5000);
+    },
+    [clearQuotaRecoveryTimer, startQuotaRewardAd, t],
+  );
+
+  const updateTrackRating = useCallback((trackId: string) => {
+    musicPlayer.getRating(trackId).then(rating => {
+      setState(s => ({...s, rating}));
+    });
+  }, []);
+
+  const updateNativeTrackState = useCallback((data: TrackInfo, sdkQueue: TrackInfo[]) => {
+    setState(s => {
+      const newContainerId = (data as any).containerStoreId ?? s.containerId;
+      const newContainerIndex = (data as any).containerIndex ?? s.containerIndex;
+
+      const tempState = {
+        ...s,
+        track: data,
+        containerId: newContainerId,
+        containerIndex: newContainerIndex,
+      };
+
+      const merged = buildVisualQueue(tempState, sdkQueue);
+
+      return {
+        ...tempState,
+        queueIndex: data.trackIndex ?? s.queueIndex,
+        queue: merged,
+        canSkipToPrevious: (data as any).canSkipToPrevious ?? s.canSkipToPrevious,
+        canSkipToNext: (data as any).canSkipToNext ?? s.canSkipToNext,
+        isLoading: false,
+      };
+    });
+  }, []);
+
+  const updateNativeQueueState = useCallback((sdkQueue: TrackInfo[], queueCount: number) => {
+    setState(s => {
+      const merged = buildVisualQueue(s, sdkQueue);
+      return {...s, queue: merged, queueCount};
+    });
+  }, []);
+
+  const updateNativeShuffleState = useCallback((sdkQueue: TrackInfo[], shuffleMode: number) => {
+    setState(s => {
+      const merged = buildVisualQueue({...s, shuffleMode}, sdkQueue);
+      return {...s, queue: merged, shuffleMode};
+    });
+  }, []);
+
+  const handleNativePlaybackStateChanged = useCallback((data: {state: PlaybackStateName}) => {
+    setState(s => ({
+      ...s,
+      playbackState: data.state,
+      isLoading: (data.state === 'stopped' || !!s.track) ? false : s.isLoading,
+    }));
+  }, []);
+
+  const handleNativeCurrentItemChanged = useCallback((data: TrackInfo) => {
+    if (data.playbackQueueId !== undefined && data.playbackQueueId !== lastTrackIdRef.current) {
+      if (!QuotaService.canPlayNextSong()) {
+        musicPlayer.stop();
+        requestQuotaRecovery();
+        return;
+      }
+      QuotaService.recordSongPlay();
+      lastTrackIdRef.current = data.playbackQueueId;
+    }
+
+    if (data.playbackQueueId === undefined) return;
+
+    musicPlayer.getQueue().then(sdkQueue => {
+      updateNativeTrackState(data, sdkQueue);
+    });
+
+    if (data.id) {
+      updateTrackRating(data.id);
+    }
+  }, [requestQuotaRecovery, updateNativeTrackState, updateTrackRating]);
+
+  const handleNativePlaybackProgress = useCallback((data: ProgressInfo) => {
+    setState(s => ({
+      ...s,
+      isLoading: false,
+      buffering: data.position > 0 ? false : s.buffering,
+    }));
+  }, []);
+
+  const handleNativePlaybackQueueChanged = useCallback((queueCount: number) => {
+    musicPlayer.getQueue().then(sdkQueue => {
+      updateNativeQueueState(sdkQueue, queueCount);
+    });
+  }, [updateNativeQueueState]);
+
+  const handleNativeShuffleModeChanged = useCallback((shuffleMode: number) => {
+    musicPlayer.getQueue().then(sdkQueue => {
+      updateNativeShuffleState(sdkQueue, shuffleMode);
+    });
+  }, [updateNativeShuffleState]);
+
+  const syncStartupQueue = useCallback((queue: TrackInfo[]) => {
+    setState(s => ({...s, queue}));
+  }, []);
+
   useEffect(() => {
     let mounted = true;
 
-    // Load initial tokens on mount
     (async () => {
       try {
         const dev = await getDeveloperToken();
@@ -208,105 +401,17 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
 
   useEffect(() => {
     const subs = [
-      musicPlayer.addEventListener('onPlaybackStateChanged', data => {
-        setState(s => ({
-          ...s,
-          playbackState: data.state,
-          // Only stop "loading" if we have a track to display OR we reached a terminal stopped state
-          isLoading: (data.state === 'stopped' || !!s.track) ? false : s.isLoading,
-        }));
-      }),
-      musicPlayer.addEventListener('onCurrentItemChanged', data => {
-        // Enforce quota on track transitions (manual or automatic)
-        if (data.playbackQueueId !== undefined && data.playbackQueueId !== lastTrackIdRef.current) {
-          if (!QuotaService.canPlayNextSong()) {
-            musicPlayer.stop();
-            const remaining = QuotaService.getRemainingTimeFormatted();
-            Alert.alert(
-              t('settings.pro.limitReached'),
-              t('settings.pro.limitReachedMessage', {
-                limit: QuotaService.HOURLY_LIMIT,
-                remaining: remaining,
-              }),
-              [
-                {text: t('common.cancel'), style: 'cancel'},
-                {
-                  text: t('common.viewOptions'),
-                  onPress: () => setShowSettings(true),
-                },
-              ],
-            );
-            return;
-          }
-          // Quota available, record the play and update tracking
-          QuotaService.recordSongPlay();
-          lastTrackIdRef.current = data.playbackQueueId;
-        }
-
-        if (data.playbackQueueId === undefined) return;
-
-        // Rebuild visual queue and update state atomically to prevent NowPlaying jitter
-        musicPlayer.getQueue().then(sdkQueue => {
-          setState(s => {
-            const newContainerId = (data as any).containerStoreId ?? s.containerId;
-            const newContainerIndex = (data as any).containerIndex ?? s.containerIndex;
-            const isSameTrack = data.playbackQueueId === s.track?.playbackQueueId;
-            
-            // Build the merged queue using the NEW state properties locally
-            const tempState = {
-              ...s,
-              track: data,
-              containerId: newContainerId,
-              containerIndex: newContainerIndex,
-              shuffleMode: s.shuffleMode, // explicit for buildVisualQueue
-            };
-            const merged = buildVisualQueue(tempState, sdkQueue);
-
-            return {
-              ...tempState,
-              queueIndex: data.trackIndex ?? s.queueIndex,
-              queue: merged,
-              canSkipToPrevious: (data as any).canSkipToPrevious ?? s.canSkipToPrevious,
-              canSkipToNext: (data as any).canSkipToNext ?? s.canSkipToNext,
-              isLoading: false,
-            };
-          });
-        });
-
-        // Fetch rating in background (doesn't affect layout)
-        if (data.id) {
-          musicPlayer.getRating(data.id).then(r => {
-            setState(s => ({...s, rating: r}));
-          });
-        }
-      }),
-      musicPlayer.addEventListener('onPlaybackProgress', (data: ProgressInfo) => {
-        setState(s => ({
-          ...s,
-          isLoading: false, // Progress received, definitely not loading anymore
-          // If we are progressing, we shouldn't be "stuck" in a buffering state visual
-          buffering: data.position > 0 ? false : s.buffering,
-        }));
-      }),
+      musicPlayer.addEventListener('onPlaybackStateChanged', handleNativePlaybackStateChanged),
+      musicPlayer.addEventListener('onCurrentItemChanged', handleNativeCurrentItemChanged),
+      musicPlayer.addEventListener('onPlaybackProgress', handleNativePlaybackProgress),
       musicPlayer.addEventListener('onBufferingStateChanged', data => {
         setState(s => ({...s, buffering: data.buffering}));
       }),
       musicPlayer.addEventListener('onPlaybackQueueChanged', data => {
-        musicPlayer.getQueue().then(sdkQueue => {
-          setState(s => {
-            const merged = buildVisualQueue(s, sdkQueue);
-            return {...s, queue: merged, queueCount: data.count};
-          });
-        });
+        handleNativePlaybackQueueChanged(data.count);
       }),
       musicPlayer.addEventListener('onShuffleModeChanged', data => {
-        // SDK rebuilds queue on shuffle change - re-fetch to get updated order
-        musicPlayer.getQueue().then(sdkQueue => {
-          setState(s => {
-            const merged = buildVisualQueue({...s, shuffleMode: data.shuffleMode}, sdkQueue);
-            return {...s, queue: merged, shuffleMode: data.shuffleMode};
-          });
-        });
+        handleNativeShuffleModeChanged(data.shuffleMode);
       }),
       musicPlayer.addEventListener('onRepeatModeChanged', data => {
         setState(s => ({...s, repeatMode: data.repeatMode}));
@@ -320,11 +425,16 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     ];
 
     return () => {
-      subs.forEach(s => s.remove());
+      subs.forEach(subscription => subscription.remove());
     };
-  }, []);
+  }, [
+    handleNativeCurrentItemChanged,
+    handleNativePlaybackProgress,
+    handleNativePlaybackQueueChanged,
+    handleNativePlaybackStateChanged,
+    handleNativeShuffleModeChanged,
+  ]);
 
-  // Sync current state and pre-configure native module on mount
   useEffect(() => {
     let mounted = true;
 
@@ -340,7 +450,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         playbackState: info.state,
         queueCount: info.queueCount,
         queueIndex: info.queueIndex,
-        queue: info.title ? s.queue : [], // Will be updated by getQueue() call below
+        queue: info.title ? s.queue : [],
         track: info.title
           ? {
               id: info.id ?? null,
@@ -356,42 +466,28 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
       }));
 
       musicPlayer.getQueue().then(queue => {
-        setState(s => ({...s, queue}));
+        if (mounted) {
+          syncStartupQueue(queue);
+        }
       });
 
       if (info.id) {
-        musicPlayer.getRating(info.id).then(r => {
-          setState(s => ({...s, rating: r}));
-        });
+        updateTrackRating(info.id);
       }
     });
 
     return () => {
       mounted = false;
-      // Stop playback and clear state on unmount / reload
       musicPlayer.stop();
       setState(initialState);
     };
-  }, []);
+  }, [syncStartupQueue, updateTrackRating]);
 
+  // Sync current state and pre-configure native module on mount
   const checkQuotaAndPlay = useCallback(
     async (playFn: () => Promise<void>): Promise<boolean> => {
       if (!QuotaService.canPlayNextSong()) {
-        const remaining = QuotaService.getRemainingTimeFormatted();
-        Alert.alert(
-          t('settings.pro.limitReached'),
-          t('settings.pro.limitReachedMessage', {
-            limit: QuotaService.HOURLY_LIMIT,
-            remaining: remaining,
-          }),
-          [
-            {text: t('common.cancel'), style: 'cancel'},
-            {
-              text: t('common.viewOptions'),
-              onPress: () => setShowSettings(true),
-            },
-          ],
-        );
+        requestQuotaRecovery(playFn);
         return false;
       }
 
@@ -408,7 +504,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         return false;
       }
     },
-    [t],
+    [requestQuotaRecovery],
   );
 
   const playAlbum = useCallback(
@@ -422,7 +518,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
       }));
       return checkQuotaAndPlay(() => {
         if (albumId.startsWith('l.') && tracks && tracks.length > 0) {
-          const trackIds = tracks.map(t => t.id).filter(Boolean) as string[];
+          const trackIds = tracks.map(track => track.id).filter(Boolean) as string[];
           return musicPlayer.playTracks(trackIds, startIndex, shuffle);
         }
         return musicPlayer.playAlbum(albumId, startIndex, shuffle);
@@ -442,7 +538,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
       }));
       return checkQuotaAndPlay(() => {
         if (playlistId.startsWith('p.') && tracks && tracks.length > 0) {
-          const trackIds = tracks.map(t => t.id).filter(Boolean) as string[];
+          const trackIds = tracks.map(track => track.id).filter(Boolean) as string[];
           return musicPlayer.playTracks(trackIds, startIndex, shuffle);
         }
         return musicPlayer.playPlaylist(playlistId, startIndex, shuffle);
@@ -454,21 +550,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
   const playStation = useCallback(
     async (stationId: string) => {
       if (!QuotaService.canPlayNextSong()) {
-        const remaining = QuotaService.getRemainingTimeFormatted();
-        Alert.alert(
-          t('settings.pro.limitReached'),
-          t('settings.pro.limitReachedMessage', {
-            limit: QuotaService.HOURLY_LIMIT,
-            remaining: remaining,
-          }),
-          [
-            {text: t('common.cancel'), style: 'cancel'},
-            {
-              text: t('common.viewOptions'),
-              onPress: () => setShowSettings(true),
-            },
-          ],
-        );
+        requestQuotaRecovery();
         return false;
       }
 
@@ -507,7 +589,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         return false;
       }
     },
-    [t],
+    [requestQuotaRecovery],
   );
 
   const playSong = useCallback(
@@ -539,7 +621,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     return musicPlayer.getQueue();
   }, []);
 
-  const value: PlayerContextValue = {
+  const playerValue = useMemo<PlayerContextValue>(() => ({
     state,
     playAlbum,
     playPlaylist,
@@ -597,7 +679,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         await musicPlayer.setRating(track.id, newValue);
       } catch (e) {
         console.warn('Failed to set rating:', e);
-        setState(s => ({...s, rating})); // Rollback
+        setState(s => ({...s, rating}));
       }
     },
     toggleAutoplay: () => {
@@ -608,10 +690,29 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     isPlaying: state.playbackState === 'playing',
     showSettings,
     setShowSettings,
-  };
+    quotaRecoveryRequest,
+    requestQuotaRecovery,
+    dismissQuotaRecovery,
+    startQuotaRewardAd,
+  }), [
+    dismissQuotaRecovery,
+    getQueue,
+    playAlbum,
+    playMusicVideo,
+    playPlaylist,
+    playSong,
+    playStation,
+    quotaRecoveryRequest,
+    requestQuotaRecovery,
+    seekTo,
+    setShowSettings,
+    showSettings,
+    startQuotaRewardAd,
+    state,
+  ]);
 
   return (
-    <PlayerContext.Provider value={value}>
+    <PlayerContext.Provider value={playerValue}>
       <PlaybackProgressProvider>
         {children}
         {tokens && (
@@ -632,25 +733,11 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
               if (trackInfo.playbackQueueId !== undefined && trackInfo.playbackQueueId !== lastTrackIdRef.current) {
                 if (!QuotaService.canPlayNextSong()) {
                   webPlayerRef.current?.stop();
-                  const remaining = QuotaService.getRemainingTimeFormatted();
-                  Alert.alert(
-                    t('settings.pro.limitReached'),
-                    t('settings.pro.limitReachedMessage', {
-                      limit: QuotaService.HOURLY_LIMIT,
-                      remaining: remaining,
-                    }),
-                    [
-                      {text: t('common.cancel'), style: 'cancel'},
-                      {
-                        text: t('common.viewOptions'),
-                        onPress: () => setShowSettings(true),
-                      },
-                    ],
-                  );
+                  requestQuotaRecovery();
                   return;
                 }
                 QuotaService.recordSongPlay();
-                lastTrackIdRef.current = (trackInfo as any).playbackQueueId;
+                lastTrackIdRef.current = trackInfo.playbackQueueId;
               }
               setState(s => ({...s, track: trackInfo}));
             }

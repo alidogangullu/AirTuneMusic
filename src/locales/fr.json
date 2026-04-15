@@ -173,5 +173,18 @@
     "notFoundMessage": "Aucun abonnement actif n'a été trouvé pour ce compte.",
     "error": "Erreur",
     "errorMessage": "Échec de la communication avec le Store. Veuillez réessayer plus tard."
+  },
+  "quotaLimit": {
+    "title": "Limite atteinte",
+    "message": "Vous avez atteint la limite gratuite de {{limit}} chansons. Regardez une publicité pour gagner {{bonus}} écoutes supplémentaires, ou passez à Pro.",
+    "watchAd": "Regarder une pub +3 écoutes",
+    "subscription": "Ouvrir l'abonnement",
+    "preparingAd": "Préparation de la publicité...",
+    "adStarting": "La publicité démarre",
+    "autoStartCount": "La publicité démarre automatiquement dans {{count}} s",
+    "remainingLabel": "Écoute suivante : {{remaining}}",
+    "limitLabel": "Utilisation : {{used}}/{{total}}",
+    "rewardLabel": "+{{bonus}} écoutes bonus",
+    "adErrorFallback": "Impossible de démarrer la publicité. Réessayez ou ouvrez les options d'abonnement."
   }
 }

@@ -173,5 +173,18 @@
     "notFoundMessage": "No se ha encontrado ninguna suscripción activa para esta cuenta.",
     "error": "Error",
     "errorMessage": "Error al comunicarse con la tienda. Por favor, inténtalo de nuevo más tarde."
+  },
+  "quotaLimit": {
+    "title": "Límite alcanzado",
+    "message": "Has alcanzado el límite gratuito de {{limit}} canciones. Mira un anuncio para ganar {{bonus}} reproducciones más o cambia a Pro.",
+    "watchAd": "Ver anuncio +3 reproducciones",
+    "subscription": "Abrir suscripción",
+    "preparingAd": "Preparando anuncio...",
+    "adStarting": "El anuncio está comenzando",
+    "autoStartCount": "El anuncio se iniciará automáticamente en {{count}}s",
+    "remainingLabel": "Siguiente reproducción: {{remaining}}",
+    "limitLabel": "Uso: {{used}}/{{total}}",
+    "rewardLabel": "+{{bonus}} reproducciones extra",
+    "adErrorFallback": "No se pudo iniciar el anuncio. Inténtalo de nuevo o abre las opciones de suscripción."
   }
 }
