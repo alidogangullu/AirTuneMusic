@@ -110,6 +110,8 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 12
         versionName "1.3.1"
+        buildConfigField "String", "LEVELPLAY_APP_KEY", "\"${env.LEVELPLAY_APP_KEY ?: ''}\""
+        buildConfigField "String", "LEVELPLAY_REWARDED_AD_UNIT_ID", "\"${env.LEVELPLAY_REWARDED_AD_UNIT_ID ?: ''}\""
     }
     signingConfigs {
         debug {
@@ -147,8 +149,8 @@ dependencies {
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 
-    // Google IMA SDK for Android TV rewarded-style ad playback
-    implementation("com.google.ads.interactivemedia.v3:interactivemedia:3.39.0")
+    // Unity LevelPlay mediation SDK (rewarded ads)
+    implementation("com.unity3d.ads-mediation:mediation-sdk:9.2.0")
 
     // Apple MusicKit for Android — auth + playback AARs
     implementation fileTree(dir: 'libs', include: ['*.aar'])

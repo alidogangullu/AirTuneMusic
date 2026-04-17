@@ -1,75 +1,192 @@
 package com.airtunemusic.musicplayer
 
-import android.app.Activity
-import android.content.Intent
-import com.facebook.react.bridge.ActivityEventListener
+import android.util.Log
+import com.airtunemusic.BuildConfig
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+import com.unity3d.mediation.LevelPlay
+import com.unity3d.mediation.LevelPlayAdError
+import com.unity3d.mediation.LevelPlayAdInfo
+import com.unity3d.mediation.LevelPlayConfiguration
+import com.unity3d.mediation.LevelPlayInitError
+import com.unity3d.mediation.LevelPlayInitListener
+import com.unity3d.mediation.LevelPlayInitRequest
+import com.unity3d.mediation.rewarded.LevelPlayReward
+import com.unity3d.mediation.rewarded.LevelPlayRewardedAd
+import com.unity3d.mediation.rewarded.LevelPlayRewardedAdListener
 
 class RewardedAdModule(private val reactContext: ReactApplicationContext) :
-    ReactContextBaseJavaModule(reactContext), ActivityEventListener {
+    ReactContextBaseJavaModule(reactContext), LevelPlayRewardedAdListener {
 
     companion object {
         const val NAME = "RewardedAdModule"
-        private const val REQUEST_CODE_REWARDED_AD = 9043
+        private const val TAG = "RewardedAdModule"
     }
 
+    private var rewardedAd: LevelPlayRewardedAd? = null
+    private var rewardedAdUnitId: String? = null
     private var pendingPromise: Promise? = null
+    private var rewardGranted = false
+    private var isLoadingAd = false
 
-    init {
-        reactContext.addActivityEventListener(this)
-    }
+    private var isInitializing = false
+    private var isInitialized = false
+    private val initCallbacks = mutableListOf<(Boolean, String?) -> Unit>()
 
     override fun getName(): String = NAME
 
     @ReactMethod
-    fun showRewardedAd(adTagUrl: String?, promise: Promise) {
+    fun showRewardedAd(adUnitIdOverride: String?, promise: Promise) {
         if (pendingPromise != null) {
             promise.reject("AD_IN_PROGRESS", "A rewarded ad is already in progress.")
             return
         }
 
-        val activity = reactContext.currentActivity
-        if (activity == null) {
-            promise.reject("ACTIVITY_UNAVAILABLE", "No active Activity to show rewarded ad.")
+        val appKey = BuildConfig.LEVELPLAY_APP_KEY
+        if (appKey.isBlank()) {
+            promise.reject(
+                "LEVELPLAY_CONFIG_MISSING",
+                "LEVELPLAY_APP_KEY is missing. Set it in .env.local.",
+            )
             return
         }
 
-        val intent = Intent(activity, RewardedAdActivity::class.java)
-        if (!adTagUrl.isNullOrBlank()) {
-            intent.putExtra(RewardedAdActivity.EXTRA_AD_TAG_URL, adTagUrl)
+        val adUnitId = adUnitIdOverride?.takeIf { it.isNotBlank() }
+            ?: BuildConfig.LEVELPLAY_REWARDED_AD_UNIT_ID
+        if (adUnitId.isBlank()) {
+            promise.reject(
+                "LEVELPLAY_CONFIG_MISSING",
+                "LEVELPLAY_REWARDED_AD_UNIT_ID is missing. Set it in .env.local.",
+            )
+            return
         }
 
         pendingPromise = promise
-        activity.startActivityForResult(intent, REQUEST_CODE_REWARDED_AD)
+        rewardGranted = false
+
+        ensureSdkInitialized(appKey) { success, errorMessage ->
+            if (!success) {
+                rejectPending("INIT_FAILED", errorMessage ?: "LevelPlay init failed.")
+                return@ensureSdkInitialized
+            }
+
+            val activity = reactContext.currentActivity
+            if (activity == null) {
+                rejectPending("ACTIVITY_UNAVAILABLE", "No active Activity to show rewarded ad.")
+                return@ensureSdkInitialized
+            }
+
+            if (rewardedAd == null || rewardedAdUnitId != adUnitId) {
+                rewardedAd = LevelPlayRewardedAd(adUnitId)
+                rewardedAd?.setListener(this)
+                rewardedAdUnitId = adUnitId
+            }
+
+            val ad = rewardedAd
+            if (ad == null) {
+                rejectPending("AD_OBJECT_ERROR", "Failed to create rewarded ad object.")
+                return@ensureSdkInitialized
+            }
+
+            if (ad.isAdReady) {
+                ad.showAd(activity)
+                return@ensureSdkInitialized
+            }
+
+            isLoadingAd = true
+            ad.loadAd()
+        }
     }
 
-    override fun onActivityResult(activity: Activity, requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode != REQUEST_CODE_REWARDED_AD) {
+    private fun ensureSdkInitialized(appKey: String, callback: (Boolean, String?) -> Unit) {
+        if (isInitialized) {
+            callback(true, null)
             return
         }
 
+        initCallbacks.add(callback)
+        if (isInitializing) return
+
+        isInitializing = true
+
+        val initRequest = LevelPlayInitRequest.Builder(appKey).build()
+        LevelPlay.init(reactContext.applicationContext, initRequest, object : LevelPlayInitListener {
+            override fun onInitFailed(error: LevelPlayInitError) {
+                isInitializing = false
+                isInitialized = false
+                val callbacks = initCallbacks.toList()
+                initCallbacks.clear()
+                callbacks.forEach { it(false, error.errorMessage) }
+            }
+
+            override fun onInitSuccess(configuration: LevelPlayConfiguration) {
+                isInitializing = false
+                isInitialized = true
+                val callbacks = initCallbacks.toList()
+                initCallbacks.clear()
+                callbacks.forEach { it(true, null) }
+            }
+        })
+    }
+
+    private fun resolvePending() {
         val promise = pendingPromise ?: return
         pendingPromise = null
+        promise.resolve(true)
+    }
 
-        val granted = data?.getBooleanExtra(RewardedAdActivity.EXTRA_REWARD_GRANTED, false) == true
-        if (resultCode == Activity.RESULT_OK && granted) {
-            promise.resolve(true)
+    private fun rejectPending(code: String, message: String) {
+        val promise = pendingPromise ?: return
+        pendingPromise = null
+        promise.reject(code, message)
+    }
+
+    override fun onAdLoaded(adInfo: LevelPlayAdInfo) {
+        if (!isLoadingAd) return
+        isLoadingAd = false
+
+        val activity = reactContext.currentActivity
+        val ad = rewardedAd
+        if (activity == null || ad == null) {
+            rejectPending("ACTIVITY_UNAVAILABLE", "No active Activity to show rewarded ad.")
             return
         }
 
-        val errorCode =
-            data?.getStringExtra(RewardedAdActivity.EXTRA_ERROR_CODE)
-                ?: "AD_NOT_COMPLETED"
-        val errorMessage =
-            data?.getStringExtra(RewardedAdActivity.EXTRA_ERROR_MESSAGE)
-                ?: "Ad was not completed."
-        promise.reject(errorCode, errorMessage)
+        ad.showAd(activity)
     }
 
-    override fun onNewIntent(intent: Intent) {
-        // No-op.
+    override fun onAdLoadFailed(error: LevelPlayAdError) {
+        isLoadingAd = false
+        rejectPending("AD_LOAD_FAILED", error.errorMessage)
+    }
+
+    override fun onAdDisplayed(adInfo: LevelPlayAdInfo) {
+        Log.d(TAG, "Rewarded ad displayed")
+    }
+
+    override fun onAdRewarded(reward: LevelPlayReward, adInfo: LevelPlayAdInfo) {
+        rewardGranted = true
+    }
+
+    override fun onAdDisplayFailed(error: LevelPlayAdError, adInfo: LevelPlayAdInfo) {
+        rejectPending("AD_DISPLAY_FAILED", error.errorMessage)
+    }
+
+    override fun onAdClicked(adInfo: LevelPlayAdInfo) {
+        // Optional no-op.
+    }
+
+    override fun onAdClosed(adInfo: LevelPlayAdInfo) {
+        if (rewardGranted) {
+            resolvePending()
+        } else {
+            rejectPending("AD_SKIPPED", "Ad was not fully watched.")
+        }
+    }
+
+    override fun onAdInfoChanged(adInfo: LevelPlayAdInfo) {
+        // Optional no-op.
     }
 }
