@@ -1,6 +1,8 @@
 package com.airtunemusic.musicplayer
 
 import android.util.Log
+import android.os.Handler
+import android.os.Looper
 import com.airtunemusic.BuildConfig
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -23,6 +25,7 @@ class RewardedAdModule(private val reactContext: ReactApplicationContext) :
     companion object {
         const val NAME = "RewardedAdModule"
         private const val TAG = "RewardedAdModule"
+        private const val AD_REQUEST_TIMEOUT_MS = 15000L
     }
 
     private var rewardedAd: LevelPlayRewardedAd? = null
@@ -30,6 +33,8 @@ class RewardedAdModule(private val reactContext: ReactApplicationContext) :
     private var pendingPromise: Promise? = null
     private var rewardGranted = false
     private var isLoadingAd = false
+    private val timeoutHandler = Handler(Looper.getMainLooper())
+    private var requestTimeoutRunnable: Runnable? = null
 
     private var isInitializing = false
     private var isInitialized = false
@@ -39,13 +44,16 @@ class RewardedAdModule(private val reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun showRewardedAd(adUnitIdOverride: String?, promise: Promise) {
+        Log.d(TAG, "showRewardedAd called")
         if (pendingPromise != null) {
+            Log.w(TAG, "Rejecting showRewardedAd: pending promise already exists")
             promise.reject("AD_IN_PROGRESS", "A rewarded ad is already in progress.")
             return
         }
 
         val appKey = BuildConfig.LEVELPLAY_APP_KEY
         if (appKey.isBlank()) {
+            Log.e(TAG, "LEVELPLAY_APP_KEY is missing")
             promise.reject(
                 "LEVELPLAY_CONFIG_MISSING",
                 "LEVELPLAY_APP_KEY is missing. Set it in .env.local.",
@@ -56,6 +64,7 @@ class RewardedAdModule(private val reactContext: ReactApplicationContext) :
         val adUnitId = adUnitIdOverride?.takeIf { it.isNotBlank() }
             ?: BuildConfig.LEVELPLAY_REWARDED_AD_UNIT_ID
         if (adUnitId.isBlank()) {
+            Log.e(TAG, "LEVELPLAY_REWARDED_AD_UNIT_ID is missing")
             promise.reject(
                 "LEVELPLAY_CONFIG_MISSING",
                 "LEVELPLAY_REWARDED_AD_UNIT_ID is missing. Set it in .env.local.",
@@ -65,15 +74,21 @@ class RewardedAdModule(private val reactContext: ReactApplicationContext) :
 
         pendingPromise = promise
         rewardGranted = false
+        startRequestTimeout()
+        Log.d(TAG, "Starting rewarded flow for adUnitId=$adUnitId")
 
         ensureSdkInitialized(appKey) { success, errorMessage ->
             if (!success) {
+                Log.e(TAG, "LevelPlay init failed: ${errorMessage ?: "unknown"}")
                 rejectPending("INIT_FAILED", errorMessage ?: "LevelPlay init failed.")
                 return@ensureSdkInitialized
             }
 
+            Log.d(TAG, "LevelPlay init success")
+
             val activity = reactContext.currentActivity
             if (activity == null) {
+                Log.e(TAG, "No active Activity to show rewarded ad")
                 rejectPending("ACTIVITY_UNAVAILABLE", "No active Activity to show rewarded ad.")
                 return@ensureSdkInitialized
             }
@@ -86,16 +101,19 @@ class RewardedAdModule(private val reactContext: ReactApplicationContext) :
 
             val ad = rewardedAd
             if (ad == null) {
+                Log.e(TAG, "Failed to create rewarded ad object")
                 rejectPending("AD_OBJECT_ERROR", "Failed to create rewarded ad object.")
                 return@ensureSdkInitialized
             }
 
             if (ad.isAdReady) {
+                Log.d(TAG, "Ad already ready, showing now")
                 ad.showAd(activity)
                 return@ensureSdkInitialized
             }
 
             isLoadingAd = true
+            Log.d(TAG, "Ad not ready, loading rewarded ad")
             ad.loadAd()
         }
     }
@@ -114,6 +132,7 @@ class RewardedAdModule(private val reactContext: ReactApplicationContext) :
         val initRequest = LevelPlayInitRequest.Builder(appKey).build()
         LevelPlay.init(reactContext.applicationContext, initRequest, object : LevelPlayInitListener {
             override fun onInitFailed(error: LevelPlayInitError) {
+                Log.e(TAG, "onInitFailed: ${error.errorMessage}")
                 isInitializing = false
                 isInitialized = false
                 val callbacks = initCallbacks.toList()
@@ -122,6 +141,7 @@ class RewardedAdModule(private val reactContext: ReactApplicationContext) :
             }
 
             override fun onInitSuccess(configuration: LevelPlayConfiguration) {
+                Log.d(TAG, "onInitSuccess")
                 isInitializing = false
                 isInitialized = true
                 val callbacks = initCallbacks.toList()
@@ -132,18 +152,41 @@ class RewardedAdModule(private val reactContext: ReactApplicationContext) :
     }
 
     private fun resolvePending() {
+        clearRequestTimeout()
         val promise = pendingPromise ?: return
         pendingPromise = null
+        Log.d(TAG, "Resolving rewarded promise")
         promise.resolve(true)
     }
 
     private fun rejectPending(code: String, message: String) {
+        clearRequestTimeout()
+        isLoadingAd = false
         val promise = pendingPromise ?: return
         pendingPromise = null
+        Log.w(TAG, "Rejecting rewarded promise: $code - $message")
         promise.reject(code, message)
     }
 
+    private fun startRequestTimeout() {
+        clearRequestTimeout()
+
+        requestTimeoutRunnable = Runnable {
+            if (pendingPromise == null) return@Runnable
+            Log.w(TAG, "Rewarded ad request timed out waiting for SDK callbacks")
+            rejectPending("AD_TIMEOUT", "Rewarded ad timed out. Please try again.")
+        }
+
+        timeoutHandler.postDelayed(requestTimeoutRunnable!!, AD_REQUEST_TIMEOUT_MS)
+    }
+
+    private fun clearRequestTimeout() {
+        requestTimeoutRunnable?.let { timeoutHandler.removeCallbacks(it) }
+        requestTimeoutRunnable = null
+    }
+
     override fun onAdLoaded(adInfo: LevelPlayAdInfo) {
+        Log.d(TAG, "onAdLoaded")
         if (!isLoadingAd) return
         isLoadingAd = false
 
@@ -158,19 +201,23 @@ class RewardedAdModule(private val reactContext: ReactApplicationContext) :
     }
 
     override fun onAdLoadFailed(error: LevelPlayAdError) {
+        Log.e(TAG, "onAdLoadFailed: ${error.errorMessage}")
         isLoadingAd = false
         rejectPending("AD_LOAD_FAILED", error.errorMessage)
     }
 
     override fun onAdDisplayed(adInfo: LevelPlayAdInfo) {
+        clearRequestTimeout()
         Log.d(TAG, "Rewarded ad displayed")
     }
 
     override fun onAdRewarded(reward: LevelPlayReward, adInfo: LevelPlayAdInfo) {
+        Log.d(TAG, "onAdRewarded")
         rewardGranted = true
     }
 
     override fun onAdDisplayFailed(error: LevelPlayAdError, adInfo: LevelPlayAdInfo) {
+        Log.e(TAG, "onAdDisplayFailed: ${error.errorMessage}")
         rejectPending("AD_DISPLAY_FAILED", error.errorMessage)
     }
 
@@ -179,6 +226,7 @@ class RewardedAdModule(private val reactContext: ReactApplicationContext) :
     }
 
     override fun onAdClosed(adInfo: LevelPlayAdInfo) {
+        Log.d(TAG, "onAdClosed rewardGranted=$rewardGranted")
         if (rewardGranted) {
             resolvePending()
         } else {
