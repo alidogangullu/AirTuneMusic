@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   StyleSheet,
@@ -8,8 +9,6 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { GradientBackground } from '../components/GradientBackground';
-import { useTheme } from '../theme';
 import { radius, spacing } from '../theme/layout';
 
 export type QuotaRecoveryRequest = {
@@ -34,6 +33,7 @@ function makeStyles() {
   return StyleSheet.create({
     root: {
       flex: 1,
+      backgroundColor: 'rgba(7, 10, 14, 0.58)',
     },
     overlay: {
       flex: 1,
@@ -176,6 +176,12 @@ function makeStyles() {
       marginTop: spacing.md,
       lineHeight: 20,
     },
+    skipNote: {
+      color: 'rgba(255,255,255,0.72)',
+      fontSize: 13,
+      marginTop: spacing.sm,
+      lineHeight: 18,
+    },
     loadingRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -192,7 +198,6 @@ function makeStyles() {
 
 export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCancel }: Readonly<Props>): React.JSX.Element {
   const { t } = useTranslation();
-  const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(), []);
   const [secondsLeft, setSecondsLeft] = useState(Math.ceil(request.autoWatchAfterMs / 1000));
   const [isStartingAd, setIsStartingAd] = useState(false);
@@ -215,6 +220,17 @@ export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCan
     try {
       await onWatchAdRef.current();
     } catch (error) {
+      const errorCode =
+        typeof error === 'object' && error !== null && 'code' in error && typeof (error as {code?: unknown}).code === 'string'
+          ? (error as {code: string}).code
+          : '';
+
+      if (errorCode === 'AD_SKIPPED') {
+        Alert.alert(t('quotaLimit.skipAlertTitle'), t('quotaLimit.skipNoReward'));
+        setIsStartingAd(false);
+        return;
+      }
+
       const message = error instanceof Error ? error.message : t('quotaLimit.adErrorFallback');
       setErrorMessage(message);
       setIsStartingAd(false);
@@ -247,10 +263,9 @@ export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCan
   }, [handleWatchAd, request.autoWatchAfterMs]);
 
   return (
-    <GradientBackground startColor={colors.gradientStart} endColor={colors.gradientEnd}>
-      <View style={styles.root}>
-        <View style={styles.overlay}>
-          <View style={styles.card}>
+    <View style={styles.root}>
+      <View style={styles.overlay}>
+        <View style={styles.card}>
             <View style={styles.topRow}>
               <View style={styles.iconWrap}>
                 <Image source={require('../assets/images/logo.png')} style={styles.icon} resizeMode="cover" />
@@ -332,10 +347,11 @@ export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCan
               ) : null}
             </View>
 
-            {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
-          </View>
+            <Text style={styles.skipNote}>{t('quotaLimit.skipNoReward')}</Text>
+
+          {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
         </View>
       </View>
-    </GradientBackground>
+    </View>
   );
 }

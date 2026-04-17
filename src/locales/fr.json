@@ -185,6 +185,8 @@
     "remainingLabel": "Écoute suivante : {{remaining}}",
     "limitLabel": "Utilisation : {{used}}/{{total}}",
     "rewardLabel": "+{{bonus}} écoutes bonus",
+    "skipAlertTitle": "Publicité ignorée",
+    "skipNoReward": "Passer la publicité n'accorde pas d'écoutes bonus.",
     "adErrorFallback": "Impossible de démarrer la publicité. Réessayez ou ouvrez les options d'abonnement."
   }
 }

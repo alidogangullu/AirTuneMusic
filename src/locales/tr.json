@@ -191,6 +191,8 @@
     "remainingLabel": "Sonraki hak: {{remaining}}",
     "limitLabel": "Kullanım: {{used}}/{{total}}",
     "rewardLabel": "+{{bonus}} bonus hak",
+    "skipAlertTitle": "Reklam atlandı",
+    "skipNoReward": "Reklamı atlamak bonus hak vermez.",
     "adErrorFallback": "Reklam başlatılamadı. Lütfen tekrar deneyin veya abonelik seçeneklerini açın."
   }
 }

@@ -185,6 +185,8 @@
     "remainingLabel": "Nächste Wiedergabe: {{remaining}}",
     "limitLabel": "Nutzung: {{used}}/{{total}}",
     "rewardLabel": "+{{bonus}} Bonus-Wiedergaben",
+    "skipAlertTitle": "Anzeige übersprungen",
+    "skipNoReward": "Das Überspringen der Anzeige gewährt keine Bonus-Wiedergaben.",
     "adErrorFallback": "Die Anzeige konnte nicht gestartet werden. Bitte versuchen Sie es erneut oder öffnen Sie die Abonnementoptionen."
   }
 }

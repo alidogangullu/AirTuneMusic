@@ -191,6 +191,8 @@
     "remainingLabel": "Next play: {{remaining}}",
     "limitLabel": "Usage: {{used}}/{{total}}",
     "rewardLabel": "+{{bonus}} bonus plays",
+    "skipAlertTitle": "Ad skipped",
+    "skipNoReward": "Skipping the ad will not grant bonus plays.",
     "adErrorFallback": "The ad could not be started. Please try again or open subscription options."
   }
 }

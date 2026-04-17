@@ -31,6 +31,7 @@ class RewardedAdActivity : Activity() {
 
         const val EXTRA_AD_TAG_URL = "extra_ad_tag_url"
         const val EXTRA_REWARD_GRANTED = "extra_reward_granted"
+        const val EXTRA_ERROR_CODE = "extra_error_code"
         const val EXTRA_ERROR_MESSAGE = "extra_error_message"
 
         private const val DEFAULT_AD_TAG_URL =
@@ -72,7 +73,7 @@ class RewardedAdActivity : Activity() {
     }
 
     override fun onBackPressed() {
-        finishWithResult(false, "Ad closed before completion.")
+        finishWithResult(false, "AD_SKIPPED", "Ad closed before completion.")
     }
 
     override fun onDestroy() {
@@ -96,19 +97,19 @@ class RewardedAdActivity : Activity() {
         adsLoader = sdkFactory.createAdsLoader(this, sdkSettings, adDisplayContainer).also { loader ->
             loader.addAdErrorListener(AdErrorEvent.AdErrorListener { event ->
                 Log.e(TAG, "Ad load/playback error: ${event.error.message}")
-                finishWithResult(false, event.error.message)
+                finishWithResult(false, "AD_ERROR", event.error.message)
             })
 
             loader.addAdsLoadedListener { loadedEvent ->
                 val manager = loadedEvent.getAdsManager() ?: run {
-                    finishWithResult(false, "Failed to create ads manager.")
+                    finishWithResult(false, "AD_MANAGER_INIT_FAILED", "Failed to create ads manager.")
                     return@addAdsLoadedListener
                 }
                 adsManager = manager
 
                 manager.addAdErrorListener(AdErrorEvent.AdErrorListener { event ->
                     Log.e(TAG, "AdsManager error: ${event.error.message}")
-                    finishWithResult(false, event.error.message)
+                    finishWithResult(false, "AD_ERROR", event.error.message)
                 })
 
                 manager.addAdEventListener(AdEvent.AdEventListener { event ->
@@ -125,9 +126,9 @@ class RewardedAdActivity : Activity() {
                         AdEvent.AdEventType.CONTENT_RESUME_REQUESTED,
                         AdEvent.AdEventType.ALL_ADS_COMPLETED -> {
                             if (completedSuccessfully) {
-                                finishWithResult(true, null)
+                                finishWithResult(true, null, null)
                             } else {
-                                finishWithResult(false, "Ad was not fully watched.")
+                                finishWithResult(false, "AD_SKIPPED", "Ad was not fully watched.")
                             }
                         }
                         else -> {
@@ -158,7 +159,7 @@ class RewardedAdActivity : Activity() {
         adsLoader?.requestAds(request)
     }
 
-    private fun finishWithResult(rewardGranted: Boolean, errorMessage: String?) {
+    private fun finishWithResult(rewardGranted: Boolean, errorCode: String?, errorMessage: String?) {
         if (finished) return
         finished = true
 
@@ -166,6 +167,9 @@ class RewardedAdActivity : Activity() {
 
         val resultIntent = Intent().apply {
             putExtra(EXTRA_REWARD_GRANTED, rewardGranted)
+            if (!errorCode.isNullOrBlank()) {
+                putExtra(EXTRA_ERROR_CODE, errorCode)
+            }
             if (!errorMessage.isNullOrBlank()) {
                 putExtra(EXTRA_ERROR_MESSAGE, errorMessage)
             }

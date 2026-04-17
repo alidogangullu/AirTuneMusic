@@ -60,10 +60,13 @@ class RewardedAdModule(private val reactContext: ReactApplicationContext) :
             return
         }
 
+        val errorCode =
+            data?.getStringExtra(RewardedAdActivity.EXTRA_ERROR_CODE)
+                ?: "AD_NOT_COMPLETED"
         val errorMessage =
             data?.getStringExtra(RewardedAdActivity.EXTRA_ERROR_MESSAGE)
                 ?: "Ad was not completed."
-        promise.reject("AD_NOT_COMPLETED", errorMessage)
+        promise.reject(errorCode, errorMessage)
     }
 
     override fun onNewIntent(intent: Intent) {

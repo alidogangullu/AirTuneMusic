@@ -192,7 +192,8 @@ export function HomeScreen({
 
         <Modal
           visible={Boolean(quotaRecoveryRequest)}
-          animationType="none"
+          transparent
+          animationType="fade"
           onRequestClose={dismissQuotaRecovery}>
           {quotaRecoveryRequest ? (
             <QuotaLimitScreen

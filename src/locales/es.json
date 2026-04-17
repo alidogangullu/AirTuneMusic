@@ -185,6 +185,8 @@
     "remainingLabel": "Siguiente reproducción: {{remaining}}",
     "limitLabel": "Uso: {{used}}/{{total}}",
     "rewardLabel": "+{{bonus}} reproducciones extra",
+    "skipAlertTitle": "Anuncio omitido",
+    "skipNoReward": "Saltar el anuncio no otorgará reproducciones extra.",
     "adErrorFallback": "No se pudo iniciar el anuncio. Inténtalo de nuevo o abre las opciones de suscripción."
   }
 }
