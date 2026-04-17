@@ -1,4 +1,9 @@
 {
   "name": "AirTuneMusic",
-  "displayName": "AirTune"
+  "displayName": "AirTune Music",
+  "levelPlay": {
+    "appKey": "260971ea5",
+    "rewardedAdUnitId": "eejspp3ujziykucm",
+    "rewardedPlacementName": ""
+  }
 }

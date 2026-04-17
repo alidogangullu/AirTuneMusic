@@ -21,6 +21,47 @@ type Props = Readonly<{
   onCancel: () => void;
 }>;
 
+function getAdErrorMessage(errorCode: string, t: ReturnType<typeof useTranslation>['t']): string | null {
+  switch (errorCode) {
+    case 'AD_CONFIGURATION_MISSING':
+      return 'LevelPlay ads are not configured yet. Add the app key and ad unit id.';
+    case 'AD_NOT_READY':
+      return 'Ad is not ready yet. Please try again in a moment.';
+    case 'AD_DISPLAY_FAILED':
+      return 'Ad could not be displayed. Please try again.';
+    case 'AD_TIMEOUT':
+    case 'AD_LOAD_FAILED':
+      return 'No ad is available right now. Please try again later.';
+    default:
+      return errorCode ? null : t('quotaLimit.adErrorFallback');
+  }
+}
+
+function handleAdError(
+  error: unknown,
+  t: ReturnType<typeof useTranslation>['t'],
+  setErrorMessage: (value: string | null) => void,
+): void {
+  const errorCode =
+    typeof error === 'object' && error !== null && 'code' in error && typeof (error as {code?: unknown}).code === 'string'
+      ? (error as {code: string}).code
+      : '';
+
+  if (errorCode === 'AD_SKIPPED') {
+    Alert.alert(t('quotaLimit.skipAlertTitle'), t('quotaLimit.skipNoReward'));
+    return;
+  }
+
+  const adErrorMessage = getAdErrorMessage(errorCode, t);
+  if (adErrorMessage) {
+    setErrorMessage(adErrorMessage);
+    return;
+  }
+
+  const message = error instanceof Error ? error.message : t('quotaLimit.adErrorFallback');
+  setErrorMessage(message);
+}
+
 function makeStyles() {
   return StyleSheet.create({
     root: {
@@ -187,19 +228,7 @@ export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCan
     try {
       await onWatchAdRef.current();
     } catch (error) {
-      const errorCode =
-        typeof error === 'object' && error !== null && 'code' in error && typeof (error as {code?: unknown}).code === 'string'
-          ? (error as {code: string}).code
-          : '';
-
-      if (errorCode === 'AD_SKIPPED') {
-        Alert.alert(t('quotaLimit.skipAlertTitle'), t('quotaLimit.skipNoReward'));
-        setIsStartingAd(false);
-        return;
-      }
-
-      const message = error instanceof Error ? error.message : t('quotaLimit.adErrorFallback');
-      setErrorMessage(message);
+      handleAdError(error, t, setErrorMessage);
       setIsStartingAd(false);
     } finally {
       adStartInFlightRef.current = false;

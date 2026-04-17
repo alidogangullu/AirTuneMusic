@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { AppStartupService, StartupData } from '../services/appStartupService';
+import { AppStartupService } from '../services/appStartupService';
 import { VersionCheckResult } from '../services/versionService';
+import { initializeLevelPlay } from '../services/levelPlay';
 
 interface AppStartupContextType {
   isInitialized: boolean;
@@ -12,7 +13,7 @@ interface AppStartupContextType {
 
 const AppStartupContext = createContext<AppStartupContextType | undefined>(undefined);
 
-export function AppStartupProvider({ children }: { children: React.ReactNode }) {
+export function AppStartupProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasToken, setHasToken] = useState<boolean>(false);
   const [isAppleMusicSubscriber, setIsAppleMusicSubscriber] = useState<boolean>(true);
@@ -23,6 +24,10 @@ export function AppStartupProvider({ children }: { children: React.ReactNode }) 
 
     async function runStartup() {
       try {
+        void initializeLevelPlay().catch(error => {
+          console.error('[AppStartupProvider] LevelPlay init error:', error);
+        });
+
         const data = await AppStartupService.init();
         if (mounted) {
           setHasToken(data.hasToken);
