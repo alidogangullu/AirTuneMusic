@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { StyleSheet, View, Pressable, findNodeHandle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { spacing, radius } from '../theme/layout';
@@ -17,12 +17,15 @@ interface ControlButtonProps {
 }
 
 function ControlButton({ onPress, active, activeTransparent, children, disabled, nextFocusDown, onLayout }: Readonly<ControlButtonProps>) {
+  const buttonRef = useRef<View | null>(null);
+
   return (
     <Pressable
+      ref={buttonRef}
       onPress={onPress}
       disabled={disabled}
       nextFocusDown={nextFocusDown}
-      onLayout={(e: any) => onLayout?.(findNodeHandle(e.nativeEvent.target))}
+      onLayout={() => onLayout?.(findNodeHandle(buttonRef.current))}
       style={({ focused }) => [
         styles.button,
         active && !focused && !activeTransparent && styles.buttonActive,
