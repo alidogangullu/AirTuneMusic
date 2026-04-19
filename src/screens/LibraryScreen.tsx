@@ -26,10 +26,6 @@ import type { LibraryCategoryId, LibraryItem } from '../types/library';
 import { useLibraryInfiniteItems } from '../hooks/useLibraryItems';
 
 // ── Sidebar categories ───────────────────────────────────────────
-type SidebarCategory = {
-  id: LibraryCategoryId;
-  label: string;
-};
 
 const CATEGORIES_CONFIG: { id: LibraryCategoryId; labelKey: string }[] = [
   { id: 'recently-added', labelKey: 'library.recentlyAdded' },
@@ -123,7 +119,7 @@ export function LibraryScreen(): React.JSX.Element {
     hasNextPage,
   } = useLibraryInfiniteItems(activeCategory);
 
-  const items = data?.pages.flatMap((page: any) => page.data) ?? [];
+  const items = React.useMemo(() => data?.pages.flatMap((page: any) => page.data) ?? [], [data]);
   const loading = isLoading && items.length === 0;
 
   // Load more (pagination)
@@ -211,7 +207,7 @@ export function LibraryScreen(): React.JSX.Element {
         showsVerticalScrollIndicator={false}
       />
     );
-  }, [loading, hasUserToken, error, items, styles, renderGridItem, keyExtractor, handleLoadMore]);
+  }, [loading, hasUserToken, error, items, styles, renderGridItem, keyExtractor, handleLoadMore, t]);
 
   return (
     <View style={styles.root}>
@@ -273,7 +269,7 @@ function useStyles(c: AppColors) {
     },
     sidebarItemActive: {},
     sidebarItemFocused: {
-      backgroundColor: c.glassCardBg,
+      backgroundColor: c.buttonFocusedBg,
       transform: [{ scale: 1.02 }],
     },
     sidebarText: {

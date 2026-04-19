@@ -1,20 +1,22 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import Svg, {G, Path} from 'react-native-svg';
-import { colors } from '../theme/colors';
+import { lightColors as colors } from '../theme/colors';
 
 interface LyricIconProps {
   readonly active?: boolean;
   readonly focused?: boolean;
+  readonly color?: string;
   readonly accessibilityLabel?: string;
 }
 
 export function LyricIcon({
   active = false,
   focused = false,
+  color: colorProp,
   accessibilityLabel,
 }: LyricIconProps): React.JSX.Element {
-  const color = active || focused ? colors.onDarkTextPrimary : colors.onDarkTextDim;
+  const color = colorProp ?? (active || focused ? colors.onDarkTextPrimary : colors.onDarkTextDim);
 
   return (
     <View

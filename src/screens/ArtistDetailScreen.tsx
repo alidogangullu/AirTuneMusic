@@ -337,6 +337,7 @@ function useStyles(c: {
   screenBackground: string;
   lightGreyBg: string;
   glassBg: string;
+  buttonFocusedBg: string;
 }) {
   return StyleSheet.create({
     root: {
@@ -371,13 +372,13 @@ function useStyles(c: {
       width: 64,
       height: 64,
       borderRadius: 32,
-      backgroundColor: c.screenBackground,
+      backgroundColor: c.glassBg,
       justifyContent: 'center',
       alignItems: 'center',
     },
     playButtonFocused: {
       transform: [{ scale: 1.1 }],
-      backgroundColor: c.lightGreyBg,
+      backgroundColor: c.buttonFocusedBg,
     },
     playButtonIcon: {
       color: c.textOnDark,
@@ -431,7 +432,7 @@ function useStyles(c: {
     // ── Cards ────────────────────────
     cardFocused: {
       transform: [{ scale: 1.02 }],
-      backgroundColor: c.screenBackground,
+      backgroundColor: c.buttonFocusedBg,
     },
 
     // Latest Release Card

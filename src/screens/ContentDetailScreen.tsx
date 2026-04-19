@@ -624,6 +624,7 @@ function useStyles(c: {
   textSubtle: string;
   accent: string;
   navBarCardBg: string;
+  buttonFocusedBg: string;
   borderMuted: string;
   buttonSecondaryBg: string;
   settingsCardBg: string;
@@ -741,7 +742,7 @@ function useStyles(c: {
       backgroundColor: c.glassBg,
     },
     actionBtnFocused: {
-      backgroundColor: c.glassCardBgStrong,
+      backgroundColor: c.buttonFocusedBg,
       transform: [{ scale: 1.05 }],
     },
     actionBtnText: {

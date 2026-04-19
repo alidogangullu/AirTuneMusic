@@ -43,6 +43,7 @@ export type AppColors = {
   // ── Buttons ────────────────────────────────────────────────────────────────
   buttonPrimary: string;
   buttonSecondaryBg: string;
+  buttonFocusedBg: string;
   alertRed: string;
 
   // ── Borders ────────────────────────────────────────────────────────────────
@@ -76,6 +77,10 @@ export type AppColors = {
   onDarkControlBg: string;
   /** Semi-transparent white focus bg on dark surfaces. */
   onDarkBgMid: string;
+  /** Semi-transparent white bg for active/selected state on dark surfaces. */
+  onDarkButtonActiveBg: string;
+  /** Dark icon color for use on white/light focused button backgrounds. */
+  onDarkFocusedIcon: string;
 
   // ── Progress bar (on dark bg) ─────────────────────────────────────────────
   progressTrackBg: string;
@@ -159,6 +164,7 @@ export const lightColors: AppColors = {
   // ── Buttons ────────────────────────────────────────────────────────────────
   buttonPrimary: '#FF0436',
   buttonSecondaryBg: '#e0e0e0',
+  buttonFocusedBg: '#ffffff',
   alertRed: '#f0535b',
 
   // ── Borders ────────────────────────────────────────────────────────────────
@@ -188,11 +194,13 @@ export const lightColors: AppColors = {
   // ── Controls (dark surface) ───────────────────────────────────────────────
   onDarkControlBg: 'rgba(255, 255, 255, 0.15)',
   onDarkBgMid: 'rgba(255, 255, 255, 0.3)',
+  onDarkButtonActiveBg: 'rgba(255, 255, 255, 0.18)',
+  onDarkFocusedIcon: '#111111',
 
   // ── Progress bar (on dark bg) ─────────────────────────────────────────────
-  progressTrackBg: 'rgba(255, 255, 255, 0.2)',
-  progressTrackFocusedBg: 'rgba(255, 255, 255, 0.3)',
-  scrubFillBg: 'rgba(255, 255, 255, 0.55)',
+  progressTrackBg: 'rgba(255, 255, 255, 0.1)',
+  progressTrackFocusedBg: 'rgba(255, 255, 255, 0.2)',
+  scrubFillBg: 'rgba(255, 255, 255, 0.25)',
   scrubKnobBg: '#ffffff',
 
   // ── Dark overlays ─────────────────────────────────────────────────────────
@@ -240,6 +248,7 @@ export const darkColors: AppColors = {
 
   // ── Screen / surface backgrounds ──────────────────────────────────────────
   screenBackground: '#0f1420',
+  codeScreenBackground: '#f0535b',
   lightGreyBg: '#1e2435',
   subtleBg: 'rgba(255, 255, 255, 0.05)',
 
@@ -248,12 +257,15 @@ export const darkColors: AppColors = {
   textMuted: 'rgba(255, 255, 255, 0.55)',
   textSubtle: 'rgba(255, 255, 255, 0.45)',
   cardTitleText: '#ffffff',
+  textSecondary: 'rgba(255, 255, 255, 0.55)',
+  glassCodeBg: 'rgba(255, 255, 255, 0.08)',
 
   // ── Overlays (inverted for dark bg) ──────────────────────────────────────
   overlayLight: 'rgba(255, 255, 255, 0.15)',
 
   // ── Buttons ────────────────────────────────────────────────────────────────
   buttonSecondaryBg: '#252b3a',
+  buttonFocusedBg: '#3a4155',
 
   // ── Borders ────────────────────────────────────────────────────────────────
   borderMuted: 'rgba(255, 255, 255, 0.12)',
@@ -268,7 +280,7 @@ export const darkColors: AppColors = {
 
   // ── Navigation bar ────────────────────────────────────────────────────────
   navBarCardBg: '#252b3a',
-  navBarGreyBg: '#1a1f2e',
+  navBarGreyBg: '#252b3a',
   navTabFocusedBg: '#ffffff',
   navTabText: 'rgba(255, 255, 255, 0.55)',
   navTabTextFocused: '#0f1420',

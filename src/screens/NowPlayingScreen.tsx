@@ -61,7 +61,6 @@ interface NowPlayingScreenProps {
 // ── Sub-component: Progress Bar & Time ─────────────────────────────
 
 interface ProgressBarProps {
-  accentColor: string;
   isLiveRadio: boolean;
   isLoading: boolean;
   isBuffering: boolean;
@@ -79,7 +78,6 @@ interface ProgressBarProps {
 }
 
 const NowPlayingProgressBar = React.memo(({
-  accentColor,
   isLiveRadio,
   isLoading,
   isBuffering,
@@ -103,25 +101,8 @@ const NowPlayingProgressBar = React.memo(({
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [pendingSeekMs, setPendingSeekMs] = useState(0);
 
-  // Animated values for focus feedback
-  const barHeightAnim = useRef(new Animated.Value(3)).current;
-  const knobSizeAnim = useRef(new Animated.Value(10)).current;
   const shimmerAnim = useRef(new Animated.Value(-1)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(barHeightAnim, {
-        toValue: isFocused ? 6 : 3,
-        duration: 150,
-        useNativeDriver: false,
-      }),
-      Animated.timing(knobSizeAnim, {
-        toValue: isFocused ? 16 : 10,
-        duration: 150,
-        useNativeDriver: false,
-      }),
-    ]).start();
-  }, [isFocused, barHeightAnim, knobSizeAnim]);
+  const fillOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (isBuffering || isLoading) {
@@ -150,12 +131,16 @@ const NowPlayingProgressBar = React.memo(({
   durationRef.current = duration;
   pendingSeekMsRef.current = pendingSeekMs;
 
-  const handleFocus = useCallback(() => setIsFocused(true), []);
+  const handleFocus = useCallback(() => {
+    setIsFocused(true);
+    Animated.timing(fillOpacity, { toValue: 1, duration: 300, useNativeDriver: true }).start();
+  }, [fillOpacity]);
   const handleBlur = useCallback(() => {
     setIsFocused(false);
     setIsScrubbing(false);
     setPendingSeekMs(0);
-  }, []);
+    Animated.timing(fillOpacity, { toValue: 0, duration: 300, useNativeDriver: true }).start();
+  }, [fillOpacity]);
 
   const handlePress = useCallback(() => {
     if (isBuffering || isLoading) return;
@@ -163,6 +148,7 @@ const NowPlayingProgressBar = React.memo(({
       seekTo(pendingSeekMsRef.current);
       setIsScrubbing(false);
       setPendingSeekMs(0);
+      if (!isPlaying) play();
     } else {
       isPlaying ? pause() : play();
     }
@@ -202,28 +188,14 @@ const NowPlayingProgressBar = React.memo(({
         accessibilityLabel={t('nowPlaying.progressBar')}
         accessibilityRole="adjustable">
         {({ focused }) => (
-          <Animated.View
-            style={[
-              styles.progressTrack,
-              { height: barHeightAnim, overflow: 'visible' },
-              focused && styles.progressTrackFocused,
-            ]}>
+          <View style={[styles.progressTrack, focused && styles.progressTrackFocused]}>
             <View style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 3 }]}>
-              <View
+              <Animated.View
                 style={[
                   styles.progressFill,
-                  { width: `${progress * 100}%`, backgroundColor: accentColor },
+                  { width: `${isScrubbing ? scrubProgress * 100 : progress * 100}%`, opacity: fillOpacity },
                 ]}
               />
-              {isScrubbing && (
-                <View
-                  style={[
-                    styles.progressFill,
-                    styles.scrubFill,
-                    { width: `${scrubProgress * 100}%` },
-                  ]}
-                />
-              )}
               {(isBuffering || isLoading) && (
                 <Animated.View
                   style={[
@@ -249,38 +221,15 @@ const NowPlayingProgressBar = React.memo(({
                 </Animated.View>
               )}
             </View>
-
-            <Animated.View
+            {/* Knob — thin vertical line at position */}
+            <View
               style={[
                 styles.progressKnob,
-                {
-                  left: `${progress * 100}%` as unknown as number,
-                  backgroundColor: accentColor,
-                  width: knobSizeAnim,
-                  height: knobSizeAnim,
-                  borderRadius: Animated.divide(knobSizeAnim, 2) as unknown as number,
-                  marginLeft: Animated.multiply(knobSizeAnim, -0.5) as unknown as number,
-                  top: Animated.multiply(Animated.subtract(knobSizeAnim, barHeightAnim), -0.5) as unknown as number,
-                },
+                { left: `${isScrubbing ? scrubProgress * 100 : progress * 100}%` as unknown as number },
+                focused && styles.progressKnobFocused,
               ]}
             />
-            {isScrubbing && (
-              <Animated.View
-                style={[
-                  styles.progressKnob,
-                  {
-                    left: `${scrubProgress * 100}%` as unknown as number,
-                    backgroundColor: C.scrubKnobBg,
-                    width: knobSizeAnim,
-                    height: knobSizeAnim,
-                    borderRadius: Animated.divide(knobSizeAnim, 2) as unknown as number,
-                    marginLeft: Animated.multiply(knobSizeAnim, -0.5) as unknown as number,
-                    top: Animated.multiply(Animated.subtract(knobSizeAnim, barHeightAnim), -0.5) as unknown as number,
-                  },
-                ]}
-              />
-            )}
-          </Animated.View>
+          </View>
         )}
       </Pressable>
 
@@ -317,6 +266,7 @@ const NowPlayingProgressBar = React.memo(({
             <Pressable
               style={({ focused }) => [
                 styles.infoButton,
+                showLyrics && !focused && styles.infoButtonActive,
                 focused && styles.infoButtonFocused,
                 { marginRight: spacing.md },
               ]}
@@ -326,7 +276,7 @@ const NowPlayingProgressBar = React.memo(({
               accessible={true}
               accessibilityRole="button">
               {({ focused }) => (
-                <LyricIcon active={showLyrics} focused={focused} />
+                <LyricIcon active={showLyrics} focused={focused} color={focused ? C.onDarkFocusedIcon : undefined} />
               )}
             </Pressable>
 
@@ -334,6 +284,7 @@ const NowPlayingProgressBar = React.memo(({
               ref={queueButtonRef}
               style={({ focused }) => [
                 styles.infoButton,
+                showQueue && !focused && styles.infoButtonActive,
                 focused && styles.infoButtonFocused,
                 { alignSelf: 'flex-end', marginRight: -spacing.sm },
               ]}
@@ -343,7 +294,9 @@ const NowPlayingProgressBar = React.memo(({
               accessible={true}
               accessibilityRole="button">
               {({ focused }) => {
-                const iconColor = showQueue || focused ? C.onDarkTextPrimary : C.onDarkTextFaint;
+                let iconColor = C.onDarkTextFaint;
+                if (focused) { iconColor = C.onDarkFocusedIcon; }
+                else if (showQueue) { iconColor = C.onDarkTextPrimary; }
                 return (
                   <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <Path d="M3 12h18" />
@@ -706,7 +659,6 @@ export function NowPlayingScreen({
                 </View>
 
                 <NowPlayingProgressBar
-                  accentColor={accentColor}
                   isLiveRadio={isLiveRadio}
                   isLoading={state.isLoading}
                   isBuffering={state.buffering}
@@ -778,19 +730,36 @@ const styles = StyleSheet.create({
     paddingTop: spacing.lg,
   },
   progressTrack: {
+    height: 6,
     backgroundColor: C.progressTrackBg,
     borderRadius: 3,
-    overflow: 'hidden',
+    overflow: 'visible',
   },
   progressTrackFocused: {
-    backgroundColor: C.progressTrackFocusedBg,
+    height: 6,
   },
   progressFill: {
     position: 'absolute',
     top: 0,
     left: 0,
     height: '100%',
-    borderRadius: 3,
+    borderTopLeftRadius: 3,
+    borderBottomLeftRadius: 3,
+    backgroundColor: C.scrubFillBg,
+  },
+  progressKnob: {
+    position: 'absolute',
+    width: 1,
+    height: 6,
+    marginLeft: -1,
+    borderRadius: 2,
+    backgroundColor: C.scrubKnobBg,
+  },
+  progressKnobFocused: {
+    width: 1,
+    height: 6,
+    marginLeft: -1,
+    borderRadius: 2,
   },
   scrubFill: {
     backgroundColor: C.scrubFillBg,
@@ -803,9 +772,6 @@ const styles = StyleSheet.create({
   },
   shimmerGradient: {
     flex: 1,
-  },
-  progressKnob: {
-    position: 'absolute',
   },
   timeTextScrubbing: {
     color: C.onDarkTextPrimary,
@@ -843,7 +809,10 @@ const styles = StyleSheet.create({
     marginLeft: -spacing.sm, // Align text with time above
   },
   infoButtonFocused: {
-    backgroundColor: C.onDarkControlBg,
+    backgroundColor: C.scrubKnobBg,
+  },
+  infoButtonActive: {
+    backgroundColor: C.onDarkButtonActiveBg,
   },
   infoButtonText: {
     fontSize: 16,
@@ -851,7 +820,7 @@ const styles = StyleSheet.create({
     color: C.onDarkTextFaint,
   },
   infoButtonTextFocused: {
-    color: C.onDarkTextPrimary,
+    color: C.onDarkFocusedIcon,
   },
   // Info Menu
   modalOverlay: {

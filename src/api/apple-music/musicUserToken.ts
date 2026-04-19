@@ -48,6 +48,9 @@ export function clearMusicUserToken(): void {
   isInitialized = false;
   initPromise = null;
   storage.remove(STORAGE_KEY);
+  if (MusicPlayer?.clearUserToken) {
+    MusicPlayer.clearUserToken().catch(() => {});
+  }
 }
 
 /**
