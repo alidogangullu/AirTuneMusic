@@ -268,15 +268,15 @@ function makeStyles(c: AppColors) {
       minWidth: 200,
     },
     getNewCodeBtnFocused: {
-      backgroundColor: '#f0535b',
-      borderColor: '#f0535b',
+      backgroundColor: c.alertRed,
+      borderColor: c.alertRed,
       transform: [{ scale: 1.05 }],
     },
 
-    getNewCodeBtnText: { fontSize: 16, fontWeight: '700', color: '#f0535b' },
-    getNewCodeBtnTextFocused: { color: '#FFFFFF' },
+    getNewCodeBtnText: { fontSize: 16, fontWeight: '700', color: c.alertRed },
+    getNewCodeBtnTextFocused: { color: c.onDarkTextPrimary },
     qrContainer: {
-      backgroundColor: '#FFFFFF',
+      backgroundColor: c.screenBackground,
       padding: spacing.sm, // Reduced from md
       borderRadius: radius.md,
       marginBottom: spacing.lg, // Reduced from xl
@@ -293,27 +293,27 @@ function makeStyles(c: AppColors) {
     },
     modalOverlay: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.9)',
+      backgroundColor: c.modalOverlay,
       justifyContent: 'center',
       alignItems: 'center',
     },
     modalContent: {
       width: '80%',
-      backgroundColor: '#2a2a2a',
+      backgroundColor: c.modalBg,
       borderRadius: radius.lg,
       padding: spacing.xl,
       borderWidth: 1,
-      borderColor: '#444',
+      borderColor: c.modalBorder,
     },
     modalTitle: {
       fontSize: 20,
       fontWeight: '700',
-      color: '#fff',
+      color: c.onDarkTextPrimary,
       marginBottom: spacing.lg,
     },
     textInput: {
-      backgroundColor: '#1a1a1a',
-      color: '#fff',
+      backgroundColor: c.modalInputBg,
+      color: c.onDarkTextPrimary,
       borderRadius: radius.md,
       padding: spacing.md,
       fontSize: 14,
@@ -321,7 +321,7 @@ function makeStyles(c: AppColors) {
       textAlignVertical: 'top',
       marginBottom: spacing.xl,
       borderWidth: 1,
-      borderColor: '#444',
+      borderColor: c.modalBorder,
     },
     modalButtons: {
       flexDirection: 'row',
@@ -337,7 +337,7 @@ function makeStyles(c: AppColors) {
     },
     subscriptionNote: {
       fontSize: 12,
-      color: '#f0535b',
+      color: c.alertRed,
       fontWeight: '600',
       marginBottom: spacing.md,
       opacity: 0.9,
@@ -482,7 +482,6 @@ export function AppleMusicAuthScreen({
   };
 
   const isConnected = tokenPreview.length > 0;
-  const isCodeScreen = restoring || pairingMode || !isConnected;
 
   return (
     <View style={styles.codeScreenRoot} focusable={false}>
@@ -549,7 +548,7 @@ export function AppleMusicAuthScreen({
                 {t('auth.connectTitle')}
               </Text>
               <Text style={styles.glassCardSubtitle}>
-                <Text style={{ color: '#f0535b', fontWeight: 'bold' }}>{t('auth.scanQR')}</Text> {t('auth.orVisitURL')}
+                <Text style={{ color: colors.alertRed, fontWeight: 'bold' }}>{t('auth.scanQR')}</Text> {t('auth.orVisitURL')}
               </Text>
               <Text style={styles.subscriptionNote}>{t('auth.paidSubscriptionRequired')}</Text>
 
@@ -623,7 +622,7 @@ export function AppleMusicAuthScreen({
             <TextInput
               style={styles.textInput}
               placeholder={t('auth.manualEntryPlaceholder')}
-              placeholderTextColor="rgba(255,255,255,0.4)"
+              placeholderTextColor={colors.modalInputPlaceholder}
               value={manualToken}
               onChangeText={setManualToken}
               multiline
@@ -631,12 +630,12 @@ export function AppleMusicAuthScreen({
             />
             <View style={styles.modalButtons}>
               <Pressable
-                style={[styles.modalButton, { backgroundColor: '#444' }]}
+                style={[styles.modalButton, { backgroundColor: colors.modalBorder }]}
                 onPress={() => setShowManualInput(false)}>
-                <Text style={{ color: '#fff' }}>{t('common.cancel')}</Text>
+                <Text style={{ color: colors.onDarkTextPrimary }}>{t('common.cancel')}</Text>
               </Pressable>
               <Pressable
-                style={[styles.modalButton, { backgroundColor: '#f0535b' }]}
+                style={[styles.modalButton, { backgroundColor: colors.alertRed }]}
                 onPress={() => {
                   if (manualToken.trim()) {
                     setMusicUserToken(manualToken.trim());
@@ -644,7 +643,7 @@ export function AppleMusicAuthScreen({
                     onAuthSuccess?.();
                   }
                 }}>
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t('auth.connect')}</Text>
+                <Text style={{ color: colors.onDarkTextPrimary, fontWeight: 'bold' }}>{t('auth.connect')}</Text>
               </Pressable>
             </View>
           </View>

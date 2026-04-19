@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { StyleSheet, View, Pressable, findNodeHandle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { spacing, radius } from '../theme/layout';
+import { colors } from '../theme/colors';
 import { usePlayer } from '../hooks/usePlayer';
 import { ShuffleMode, RepeatMode } from '../services/musicPlayer';
 
@@ -67,8 +68,8 @@ export const PlaybackControls = React.memo(({
     setRepeatMode(nextMode);
   }, [repeatMode, setRepeatMode]);
 
-  const inactiveColor = 'rgba(255, 255, 255, 0.4)';
-  const activeColor = '#FFFFFF';
+  const inactiveColor = colors.onDarkTextDim;
+  const activeColor = colors.onDarkTextPrimary;
 
   return (
     <View style={styles.container}>
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   buttonFocused: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: colors.onDarkControlBg,
   },
   buttonActive: {
     // Optional: a subtle indicator when active but not focused

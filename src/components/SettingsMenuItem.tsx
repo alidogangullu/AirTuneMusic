@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { colors } from '../theme/colors';
 
 export type SettingsMenuItemProps = {
   label: string;
@@ -63,7 +64,7 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   rowFocused: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: colors.settingsCardBg,
     transform: [{ scale: 1.03 }],
   },
   rowUnfocused: {
@@ -74,19 +75,19 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   labelFocused: {
-    color: '#111111',
+    color: colors.textOnDark,
   },
   labelUnfocused: {
-    color: 'rgba(0, 0, 0, 0.7)',
+    color: colors.settingsTextSubdued,
   },
   chevron: {
     fontSize: 22,
     fontWeight: '400',
   },
   chevronFocused: {
-    color: 'rgba(0, 0, 0, 0.35)',
+    color: colors.settingsTextHint,
   },
   chevronUnfocused: {
-    color: 'rgba(0, 0, 0, 0.25)',
+    color: colors.settingsTextDisabled,
   },
 });

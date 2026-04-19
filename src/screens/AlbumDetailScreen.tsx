@@ -246,6 +246,7 @@ function useStyles(c: {
   navBarCardBg: string;
   borderMuted: string;
   buttonSecondaryBg: string;
+  glassCardBg: string;
 }) {
   return StyleSheet.create({
     root: {
@@ -311,7 +312,7 @@ function useStyles(c: {
       gap: spacing.md,
     },
     trackRowFocused: {
-      backgroundColor: 'rgba(255, 255, 255, 0.85)',
+      backgroundColor: c.glassCardBg,
     },
     trackNumber: {
       width: 24,

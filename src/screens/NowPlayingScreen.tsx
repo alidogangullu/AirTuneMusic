@@ -32,6 +32,7 @@ import { usePlayer, PlaybackProgressProvider, usePlaybackProgress } from '../hoo
 import { PlaybackControls } from '../components/PlaybackControls';
 import { ContentNavigationContext } from '../navigation';
 import { radius, spacing } from '../theme/layout';
+import { colors as C } from '../theme/colors';
 import { useStorefront } from '../hooks/useStorefront';
 import { fetchSongDetail } from '../api/apple-music/recommendations';
 import { TrackInfo } from '../services/musicPlayer';
@@ -271,7 +272,7 @@ const NowPlayingProgressBar = React.memo(({
                   styles.progressKnob,
                   {
                     left: `${scrubProgress * 100}%` as unknown as number,
-                    backgroundColor: '#fff',
+                    backgroundColor: C.scrubKnobBg,
                     width: knobSizeAnim,
                     height: knobSizeAnim,
                     borderRadius: Animated.divide(knobSizeAnim, 2) as unknown as number,
@@ -344,7 +345,7 @@ const NowPlayingProgressBar = React.memo(({
               accessible={true}
               accessibilityRole="button">
               {({ focused }) => {
-                const iconColor = showQueue || focused ? '#fff' : 'rgba(255, 255, 255, 0.7)';
+                const iconColor = showQueue || focused ? C.onDarkTextPrimary : C.onDarkTextFaint;
                 return (
                   <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <Path d="M3 12h18" />
@@ -503,7 +504,7 @@ export function NowPlayingScreen({
       const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
       return (
         <LinearGradient
-          colors={['#c1d5f3', '#bfc0c6']}
+          colors={[C.gradientStart, C.gradientEnd]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.root}
@@ -515,22 +516,22 @@ export function NowPlayingScreen({
     // Select music warning
     return (
       <LinearGradient
-        colors={["#c1d5f3", "#bfc0c6"]}
+        colors={[C.gradientStart, C.gradientEnd]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.root}
       >
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ fontSize: 20, color: '#333', fontWeight: '600' }}>{t('nowPlaying.emptyState')}</Text>
+          <Text style={{ fontSize: 20, color: C.textMuted, fontWeight: '600' }}>{t('nowPlaying.emptyState')}</Text>
         </View>
       </LinearGradient>
     );
   }
 
   // Final rendering values
-  const bg1 = palette?.darkMuted || palette?.dominant || '#1a1a2e';
-  const bg2 = palette?.darkVibrant || palette?.muted || '#16213e';
-  const accentColor = palette?.vibrant || palette?.lightVibrant || '#fa243c';
+  const bg1 = palette?.darkMuted || palette?.dominant || C.nowPlayingDarkBg;
+  const bg2 = palette?.darkVibrant || palette?.muted || C.nowPlayingDarkBgDeep;
+  const accentColor = palette?.vibrant || palette?.lightVibrant || C.accent;
   // If we have a track, we show it, even if palette is loading or playback is pending.
   // The only reason to show a full screen spinner is if we have NO track info yet while loading.
 
@@ -542,7 +543,7 @@ export function NowPlayingScreen({
       style={styles.root}>
         {showLyrics && (
           <View
-            style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.15)' }]}
+            style={[StyleSheet.absoluteFill, { backgroundColor: C.overlayLight }]}
             pointerEvents="none"
           />
         )}
@@ -746,7 +747,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 20,
-    color: 'rgba(255,255,255,0.5)',
+    color: C.onDarkTextMuted,
   },
   content: {
     flex: 1,
@@ -763,12 +764,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: 'rgba(255,255,255,0.7)',
+    color: C.onDarkTextFaint,
     marginTop: spacing.xl,
   },
   artist: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.65)',
+    color: C.onDarkTextSecondary,
     marginTop: 2,
   },
   // Progress — full width at bottom
@@ -779,12 +780,12 @@ const styles = StyleSheet.create({
     paddingTop: spacing.lg,
   },
   progressTrack: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: C.progressTrackBg,
     borderRadius: 3,
     overflow: 'hidden',
   },
   progressTrackFocused: {
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: C.progressTrackFocusedBg,
   },
   progressFill: {
     position: 'absolute',
@@ -794,7 +795,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   scrubFill: {
-    backgroundColor: 'rgba(255,255,255,0.55)',
+    backgroundColor: C.scrubFillBg,
   },
   shimmerContainer: {
     position: 'absolute',
@@ -809,7 +810,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   timeTextScrubbing: {
-    color: '#fff',
+    color: C.onDarkTextPrimary,
     fontWeight: '700',
   },
   timeRow: {
@@ -825,7 +826,7 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.5)',
+    color: C.onDarkTextMuted,
     fontVariant: ['tabular-nums'],
   },
   footerContainer: {
@@ -844,20 +845,20 @@ const styles = StyleSheet.create({
     marginLeft: -spacing.sm, // Align text with time above
   },
   infoButtonFocused: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: C.onDarkControlBg,
   },
   infoButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: 'rgba(255,255,255,0.7)',
+    color: C.onDarkTextFaint,
   },
   infoButtonTextFocused: {
-    color: '#fff',
+    color: C.onDarkTextPrimary,
   },
   // Info Menu
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: C.overlayStrong,
     justifyContent: 'flex-end',
   },
   infoMenuContainer: {
@@ -867,7 +868,7 @@ const styles = StyleSheet.create({
   infoCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: C.overlayMid,
     borderRadius: radius.lg,
     padding: spacing.lg,
   },
@@ -883,16 +884,16 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#fff',
+    color: C.onDarkTextPrimary,
   },
   infoArtistAlbum: {
     fontSize: 16,
-    color: 'rgba(255,255,255,0.8)',
+    color: C.onDarkTextSoft,
     marginTop: 2,
   },
   infoDuration: {
     fontSize: 14,
-    color: 'rgba(255,255,255,0.6)',
+    color: C.onDarkTextSecondary,
     marginTop: 8,
   },
   losslessBadge: {
@@ -901,34 +902,34 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.4)',
+    borderColor: C.onDarkTextDim,
     alignSelf: 'flex-start',
   },
   losslessText: {
     fontSize: 10,
-    color: 'rgba(255,255,255,0.6)',
+    color: C.onDarkTextSecondary,
     fontWeight: '700',
     textTransform: 'uppercase',
   },
   gotoAlbumButton: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: C.glassCardBgStrong,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.sm,
     borderRadius: radius.md,
     marginLeft: spacing.lg,
   },
   gotoAlbumButtonFocused: {
-    backgroundColor: '#fff',
+    backgroundColor: C.scrubKnobBg,
     transform: [{ scale: 1.05 }],
   },
   gotoAlbumText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#000',
+    color: C.textOnDark,
   },
   gotoAlbumTextFocused: {
     fontWeight: '700',
-    color: '#000',
+    color: C.textOnDark,
   },
   // Queue View
   integratedQueueContainer: {
@@ -942,7 +943,7 @@ const styles = StyleSheet.create({
     width: ARTWORK_SIZE,
   },
   queueContainer: {
-    backgroundColor: 'rgba(0,0,0,0.8)',
+    backgroundColor: C.overlayHeavy,
   },
   // List content
   queueListContent: {

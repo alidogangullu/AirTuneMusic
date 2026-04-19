@@ -334,6 +334,9 @@ function useStyles(c: {
   navBarCardBg: string;
   borderMuted: string;
   buttonSecondaryBg: string;
+  screenBackground: string;
+  lightGreyBg: string;
+  glassBg: string;
 }) {
   return StyleSheet.create({
     root: {
@@ -368,18 +371,18 @@ function useStyles(c: {
       width: 64,
       height: 64,
       borderRadius: 32,
-      backgroundColor: '#fff',
+      backgroundColor: c.screenBackground,
       justifyContent: 'center',
       alignItems: 'center',
     },
     playButtonFocused: {
       transform: [{ scale: 1.1 }],
-      backgroundColor: '#f0f0f0',
+      backgroundColor: c.lightGreyBg,
     },
     playButtonIcon: {
-      color: '#000',
+      color: c.textOnDark,
       fontSize: 28,
-      marginLeft: 4, // optical alignment for play triangle
+      marginLeft: 4,
     },
     artistNameTitle: {
       fontSize: 48,
@@ -428,13 +431,13 @@ function useStyles(c: {
     // ── Cards ────────────────────────
     cardFocused: {
       transform: [{ scale: 1.02 }],
-      backgroundColor: '#fff', // Solid white on focus
+      backgroundColor: c.screenBackground,
     },
 
     // Latest Release Card
     latestReleaseCard: {
       flexDirection: 'row',
-      backgroundColor: 'rgba(255, 255, 255, 0.7)',
+      backgroundColor: c.glassBg,
       borderRadius: 4,
       overflow: 'hidden',
       height: 152,
@@ -474,7 +477,7 @@ function useStyles(c: {
     // Top Song Card
     topSongCard: {
       flexDirection: 'row',
-      backgroundColor: 'rgba(255, 255, 255, 0.7)',
+      backgroundColor: c.glassBg,
       borderRadius: 4,
       overflow: 'hidden',
       alignItems: 'center',
@@ -507,7 +510,7 @@ function useStyles(c: {
     // Essential Album Card
     essentialAlbumCard: {
       flexDirection: 'row',
-      backgroundColor: 'rgba(255, 255, 255, 0.7)',
+      backgroundColor: c.glassBg,
       borderRadius: 4,
       overflow: 'hidden',
       width: 400,

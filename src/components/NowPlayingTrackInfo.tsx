@@ -2,6 +2,7 @@ import React from 'react';
 import {Animated, Image, StyleSheet, Text, View} from 'react-native';
 import {NowPlayingBars} from './NowPlayingBars';
 import {spacing} from '../theme/layout';
+import { colors } from '../theme/colors';
 import {TrackInfo} from '../services/musicPlayer';
 
 interface NowPlayingTrackInfoProps {
@@ -93,7 +94,7 @@ const styles = StyleSheet.create({
     height: ARTWORK_SIZE,
   },
   artworkPlaceholder: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: colors.onDarkControlBg,
   },
   meta: {
     marginTop: spacing.lg,
@@ -110,12 +111,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#fff',
+    color: colors.onDarkTextPrimary,
     flexShrink: 1,
   },
   artist: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.65)',
+    color: colors.onDarkTextSecondary,
     marginTop: 2,
   },
 });

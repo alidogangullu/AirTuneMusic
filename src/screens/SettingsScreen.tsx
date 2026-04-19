@@ -4,13 +4,14 @@
  * Opened as a Modal from HomeScreen.
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { changeLanguage } from '../i18n';
 import { SettingsMenuItem } from '../components/SettingsMenuItem';
 import { GradientBackground } from '../components/GradientBackground';
 import { useTheme } from '../theme';
+import type { AppColors } from '../theme/colors';
 import { QuotaService } from '../services/quotaService';
 import { IapService } from '../services/iapService';
 import { spacing, radius } from '../theme/layout';
@@ -28,6 +29,7 @@ export function SettingsScreen({
   updateInfo,
 }: Readonly<SettingsScreenProps>): React.JSX.Element {
   const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { t, i18n } = useTranslation();
   const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language'>('none');
 
@@ -163,7 +165,7 @@ export function SettingsScreen({
                     label={item.label}
                     hasTVPreferredFocus={index === 0}
                     onPress={() => handleItemPress(item.id)}
-                    labelColor={item.id === 'Update' ? '#f0535b' : undefined}
+                    labelColor={item.id === 'Update' ? colors.alertRed : undefined}
                   />
                 ))}
                 <SettingsMenuItem
@@ -204,79 +206,81 @@ export function SettingsScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  backArea: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  container: {
-    flex: 1,
-    paddingTop: spacing.xxxl,
-    paddingHorizontal: spacing.xxxl,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    textAlign: 'center',
-    marginBottom: spacing.xl,
-  },
-  columns: {
-    flex: 1,
-    flexDirection: 'row',
-    gap: spacing.xxxl,
-  },
-  leftColumn: {
-    flex: 0.42,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    paddingTop: spacing.lg,
-  },
-  placeholder: {
-    width: '90%',
-    aspectRatio: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-    borderRadius: radius.xl,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  placeholderImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: radius.xl,
-  },
-  appNameText: {
-    marginTop: spacing.md,
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#f0535b',
-    textAlign: 'center',
-  },
-  rightColumn: {
-    flex: 0.58,
-  },
-  menuContent: {
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.xxxl,
-    paddingHorizontal: spacing.md,
-    gap: 2,
-    overflow: 'visible',
-  },
-  divider: {
-    height: spacing.md,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: 'rgba(0, 0, 0, 0.4)',
-    textTransform: 'uppercase',
-    marginTop: spacing.sm,
-    marginBottom: spacing.xs,
-    marginLeft: 24,
-  },
-});
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+    backArea: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    },
+    container: {
+      flex: 1,
+      paddingTop: spacing.xxxl,
+      paddingHorizontal: spacing.xxxl,
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: '600',
+      color: c.textOnDark,
+      textAlign: 'center',
+      marginBottom: spacing.xl,
+    },
+    columns: {
+      flex: 1,
+      flexDirection: 'row',
+      gap: spacing.xxxl,
+    },
+    leftColumn: {
+      flex: 0.42,
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      paddingTop: spacing.lg,
+    },
+    placeholder: {
+      width: '90%',
+      aspectRatio: 1,
+      backgroundColor: c.subtleBg,
+      borderRadius: radius.xl,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: c.glassBorderSubtle,
+    },
+    placeholderImage: {
+      width: '100%',
+      height: '100%',
+      borderRadius: radius.xl,
+    },
+    appNameText: {
+      marginTop: spacing.md,
+      fontSize: 24,
+      fontWeight: '700',
+      color: c.alertRed,
+      textAlign: 'center',
+    },
+    rightColumn: {
+      flex: 0.58,
+    },
+    menuContent: {
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.xxxl,
+      paddingHorizontal: spacing.md,
+      gap: 2,
+      overflow: 'visible',
+    },
+    divider: {
+      height: spacing.md,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: c.settingsTextHint,
+      textTransform: 'uppercase',
+      marginTop: spacing.sm,
+      marginBottom: spacing.xs,
+      marginLeft: 24,
+    },
+  });
+}

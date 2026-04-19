@@ -10,6 +10,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { LyricLine } from '../utils/lrcParser';
 import { spacing } from '../theme/layout';
+import { colors } from '../theme/colors';
 
 import { useLyrics } from '../hooks/useLyrics';
 
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
   lineText: {
     fontSize: 22,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.onDarkTextPrimary,
     opacity: 0.8,
     textAlign: 'left',
     textAlignVertical: 'center',
@@ -161,7 +162,7 @@ const styles = StyleSheet.create({
   activeLineText: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#fff',
+    color: colors.onDarkTextPrimary,
     opacity: 1,
     textAlign: 'left',
     textAlignVertical: 'center',
@@ -173,6 +174,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 20,
-    color: 'rgba(255,255,255,0.4)',
+    color: colors.onDarkTextDim,
   },
 });

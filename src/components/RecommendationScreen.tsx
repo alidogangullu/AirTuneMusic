@@ -82,7 +82,7 @@ export function RecommendationScreen({
   );
 }
 
-function useStyles(c: { textMuted: string; accent: string }) {
+function useStyles(c: { textMuted: string; accent: string; onDarkTextPrimary: string }) {
   return StyleSheet.create({
     retryButton: {
       marginTop: 12,
@@ -93,7 +93,7 @@ function useStyles(c: { textMuted: string; accent: string }) {
       alignSelf: 'flex-start',
     },
     retryButtonText: {
-      color: '#fff',
+      color: c.onDarkTextPrimary,
       fontSize: 14,
       fontWeight: '600',
     },

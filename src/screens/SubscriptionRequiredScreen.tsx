@@ -93,22 +93,22 @@ function makeStyles(c: AppColors) {
       paddingHorizontal: spacing.xl,
       borderRadius: radius.md,
       borderWidth: 1,
-      borderColor: '#f0535b',
+      borderColor: c.alertRed,
       gap: spacing.sm,
       minWidth: 200,
     },
     signOutBtnFocused: {
-      backgroundColor: '#f0535b',
-      borderColor: '#f0535b',
+      backgroundColor: c.alertRed,
+      borderColor: c.alertRed,
       transform: [{ scale: 1.05 }],
     },
     signOutBtnText: {
       fontSize: 16,
       fontWeight: '700',
-      color: '#f0535b',
+      color: c.alertRed,
     },
     signOutBtnTextFocused: {
-      color: '#FFFFFF',
+      color: c.onDarkTextPrimary,
     },
   });
 }

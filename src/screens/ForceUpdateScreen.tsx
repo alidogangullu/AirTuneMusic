@@ -86,7 +86,7 @@ function makeStyles(c: AppColors) {
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.xs,
       borderRadius: radius.sm,
-      backgroundColor: 'rgba(0,0,0,0.05)',
+      backgroundColor: c.subtleBg,
       marginBottom: spacing.xl,
     },
     versionText: {
@@ -108,17 +108,17 @@ function makeStyles(c: AppColors) {
       minWidth: 200,
     },
     buttonFocused: {
-      backgroundColor: '#f0535b',
-      borderColor: '#f0535b',
+      backgroundColor: c.alertRed,
+      borderColor: c.alertRed,
       transform: [{ scale: 1.05 }],
     },
     buttonText: {
       fontSize: 16,
       fontWeight: '700',
-      color: '#f0535b',
+      color: c.alertRed,
     },
     buttonTextFocused: {
-      color: '#FFFFFF',
+      color: c.onDarkTextPrimary,
     },
   });
 }

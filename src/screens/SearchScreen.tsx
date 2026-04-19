@@ -423,9 +423,14 @@ function useStyles(c: {
   textSubtle: string;
   accent: string;
   navBarCardBg: string;
+  navBarGreyBg: string;
   borderMuted: string;
   buttonSecondaryBg: string;
   navTabFocusedBg: string;
+  screenBackground: string;
+  glassCardBgStrong: string;
+  glassButtonBg: string;
+  overlayLight: string;
 }) {
   return StyleSheet.create({
     root: {
@@ -477,12 +482,12 @@ function useStyles(c: {
       paddingHorizontal: spacing.sm,
       paddingVertical: 4,
       borderRadius: radius.sm,
-      backgroundColor: 'rgba(0,0,0,0.08)',
+      backgroundColor: c.navBarGreyBg,
       alignItems: 'center',
       justifyContent: 'center',
     },
     keyFocused: {
-      backgroundColor: 'rgba(0,0,0,0.15)',
+      backgroundColor: c.overlayLight,
       transform: [{ scale: 1.15 }],
     },
     keyText: {
@@ -520,7 +525,7 @@ function useStyles(c: {
       borderRadius: radius.md,
     },
     resultCardFocused: {
-      backgroundColor: 'rgba(255, 255, 255, 0.90)',
+      backgroundColor: c.glassCardBgStrong,
     },
     resultThumb: {
       width: 60,
@@ -582,7 +587,7 @@ function useStyles(c: {
     },
     recentSearchCard: {
       flexDirection: 'row',
-      backgroundColor: 'rgba(255, 255, 255, 0.75)',
+      backgroundColor: c.glassButtonBg,
       borderRadius: radius.sm,
       width: 290,
       height: 88,
@@ -593,7 +598,7 @@ function useStyles(c: {
       marginTop: spacing.sm,
     },
     recentSearchCardFocused: {
-      backgroundColor: '#ffffff',
+      backgroundColor: c.screenBackground,
       transform: [{ scale: 1.05 }],
     },
     recentSearchThumb: {
@@ -613,12 +618,12 @@ function useStyles(c: {
     recentSearchName: {
       fontSize: 15,
       fontWeight: '500',
-      color: '#000000',
+      color: c.textOnDark,
       marginBottom: 1,
     },
     recentSearchSubtitle: {
       fontSize: 13,
-      color: 'rgba(0,0,0,0.5)',
+      color: c.textMuted,
     },
   });
 }

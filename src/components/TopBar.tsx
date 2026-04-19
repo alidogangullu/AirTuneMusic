@@ -190,24 +190,35 @@ function useStyles(c: {
   navTabText: string;
   navTabTextFocused: string;
   navAvatarBg: string;
+  overlayMedium: string;
+  overlayMid: string;
+  overlayStrong: string;
+  glassBgDim: string;
+  onDarkControlBg: string;
+  onDarkBgMid: string;
+  onDarkTextFaint: string;
+  onDarkTextSoft: string;
+  onDarkTextPrimary: string;
+  overlayLight: string;
+  notificationBadge: string;
 }, transparent: boolean, dark: boolean) {
   const cardBg = transparent
     ? dark
-      ? 'rgba(0,0,0,0.35)'
-      : 'rgba(255,255,255,0.12)'
+      ? c.overlayMedium
+      : c.glassBgDim
     : c.navBarCardBg;
   const avatarBg = transparent
     ? dark
-      ? 'rgba(0,0,0,0.3)'
-      : 'rgba(255,255,255,0.15)'
+      ? c.overlayMid
+      : c.onDarkControlBg
     : c.navAvatarBg;
   const avatarFocusBg = transparent
     ? dark
-      ? 'rgba(0,0,0,0.5)'
-      : 'rgba(255,255,255,0.3)'
+      ? c.overlayStrong
+      : c.onDarkBgMid
     : c.navTabFocusedBg;
-  const textColor = transparent ? 'rgba(255,255,255,0.7)' : c.navTabText;
-  const avatarTextColor = transparent ? 'rgba(255,255,255,0.8)' : c.navTabText;
+  const textColor = transparent ? c.onDarkTextFaint : c.navTabText;
+  const avatarTextColor = transparent ? c.onDarkTextSoft : c.navTabText;
 
   const tabFocusedShadow =
     Platform.OS === 'ios'
@@ -327,9 +338,9 @@ function useStyles(c: {
       width: 13,
       height: 13,
       borderRadius: 7,
-      backgroundColor: '#FF3B30',
+      backgroundColor: c.notificationBadge,
       borderWidth: 2,
-      borderColor: 'rgba(0,0,0,0.15)',
+      borderColor: c.overlayLight,
     },
     settingsIcon: {
       fontSize: 20,
@@ -337,7 +348,7 @@ function useStyles(c: {
       fontWeight: '600',
     },
     settingsIconFocused: {
-      color: '#FFFFFF',
+      color: c.onDarkTextPrimary,
     },
   });
 }

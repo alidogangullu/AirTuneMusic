@@ -628,6 +628,9 @@ function useStyles(c: {
   navBarCardBg: string;
   borderMuted: string;
   buttonSecondaryBg: string;
+  subtleBg: string;
+  glassBg: string;
+  glassCardBgStrong: string;
 }) {
   return StyleSheet.create({
     // ── Root ──────────────────────────────────────────
@@ -655,7 +658,7 @@ function useStyles(c: {
       height: '100%',
     },
     artworkPlaceholder: {
-      backgroundColor: 'rgba(0,0,0,0.1)',
+      backgroundColor: c.subtleBg,
     },
     // ── Content panel (right) ─────────────────────────
     contentPanel: {
@@ -736,7 +739,7 @@ function useStyles(c: {
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.lg,
       borderRadius: radius.md,
-      backgroundColor: 'rgba(255, 255, 255, 0.5)',
+      backgroundColor: c.glassBg,
     },
     actionBtnFocused: {
       backgroundColor: c.navBarCardBg,
@@ -751,7 +754,7 @@ function useStyles(c: {
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.md,
       borderRadius: radius.md,
-      backgroundColor: 'rgba(255, 255, 255, 0.5)',
+      backgroundColor: c.glassBg,
     },
     moreBtnFocused: {
       backgroundColor: c.navBarCardBg,
@@ -778,7 +781,7 @@ function useStyles(c: {
       marginHorizontal: spacing.xxl,
     },
     trackRowFocused: {
-      backgroundColor: 'rgba(255, 255, 255, 0.90)',
+      backgroundColor: c.glassCardBgStrong,
     },
     trackPrefix: {
       width: 28,
@@ -821,7 +824,7 @@ function useStyles(c: {
       fontWeight: '700',
     },
     trackNamePlaying: {
-      color: '#fa243c',
+      color: c.accent,
     },
     trackArtist: {
       fontSize: 13,

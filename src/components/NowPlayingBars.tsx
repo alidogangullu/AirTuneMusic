@@ -4,6 +4,7 @@
  */
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, View, StyleSheet } from 'react-native';
+import { colors as appColors } from '../theme/colors';
 
 const BAR_COUNT = 4;
 const BAR_WIDTH = 3;
@@ -18,7 +19,7 @@ interface NowPlayingBarsProps {
 
 export function NowPlayingBars({
   playing,
-  color = '#fa243c',
+  color = appColors.accent,
   size = HEIGHT,
 }: Readonly<NowPlayingBarsProps>) {
   const anims = useRef(

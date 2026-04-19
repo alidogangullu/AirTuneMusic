@@ -273,7 +273,7 @@ function useStyles(c: AppColors) {
     },
     sidebarItemActive: {},
     sidebarItemFocused: {
-      backgroundColor: 'rgba(255,255,255,0.85)',
+      backgroundColor: c.glassCardBg,
       transform: [{ scale: 1.02 }],
     },
     sidebarText: {
@@ -286,7 +286,7 @@ function useStyles(c: AppColors) {
       color: c.textOnDark,
     },
     sidebarTextFocused: {
-      color: '#000000',
+      color: c.textOnDark,
       fontWeight: '700',
     },
     // ── Content grid ──────────────────────────────
@@ -314,7 +314,7 @@ function useStyles(c: AppColors) {
       width: ARTWORK_SIZE,
       height: ARTWORK_SIZE,
       borderRadius: 4,
-      backgroundColor: 'rgba(0,0,0,0.05)',
+      backgroundColor: c.subtleBg,
     },
     artworkRound: {
       borderRadius: ARTWORK_SIZE / 2,
@@ -323,13 +323,13 @@ function useStyles(c: AppColors) {
       width: ARTWORK_SIZE,
       height: ARTWORK_SIZE,
       borderRadius: radius.sm,
-      backgroundColor: 'rgba(0,0,0,0.08)',
+      backgroundColor: c.navBarGreyBg,
       alignItems: 'center',
       justifyContent: 'center',
     },
     artworkPlaceholderIcon: {
       fontSize: 48,
-      color: 'rgba(0,0,0,0.2)',
+      color: c.settingsTextDisabled,
     },
     itemTitle: {
       fontSize: 14,
