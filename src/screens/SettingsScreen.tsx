@@ -38,6 +38,8 @@ export function SettingsScreen({
   const MENU_ITEMS = [
     ...(hasOptionalUpdate ? [{ id: 'Update', label: t('settings.update') }] : []),
     { id: 'Subscription', label: t('settings.subscription') },
+    { id: 'Language', label: t('settings.language.title') },
+    { id: 'DarkMode', label: themeMode === 'dark' ? t('settings.lightMode') : t('settings.darkMode') },
     { id: 'Support', label: t('settings.support') },
     { id: 'About', label: t('settings.about') },
   ];
@@ -170,14 +172,6 @@ export function SettingsScreen({
                     labelColor={item.id === 'Update' ? colors.alertRed : undefined}
                   />
                 ))}
-                <SettingsMenuItem
-                  label={t('settings.language.title')}
-                  onPress={() => handleItemPress('Language')}
-                />
-                <SettingsMenuItem
-                  label={themeMode === 'dark' ? t('settings.lightMode') : t('settings.darkMode')}
-                  onPress={() => handleItemPress('DarkMode')}
-                />
 
                 <View style={styles.divider} />
                 <SettingsMenuItem
