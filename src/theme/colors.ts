@@ -249,6 +249,9 @@ export const darkColors: AppColors = {
   textSubtle: 'rgba(255, 255, 255, 0.45)',
   cardTitleText: '#ffffff',
 
+  // ── Overlays (inverted for dark bg) ──────────────────────────────────────
+  overlayLight: 'rgba(255, 255, 255, 0.15)',
+
   // ── Buttons ────────────────────────────────────────────────────────────────
   buttonSecondaryBg: '#252b3a',
 
@@ -256,12 +259,12 @@ export const darkColors: AppColors = {
   borderMuted: 'rgba(255, 255, 255, 0.12)',
 
   // ── Glass morphism (dark) ─────────────────────────────────────────────────
-  glassBg: 'rgba(255, 255, 255, 0.08)',
+  glassBg: '#252b3a',
   glassBorder: 'rgba(255, 255, 255, 0.15)',
   glassBorderSubtle: 'rgba(255, 255, 255, 0.08)',
   glassButtonBg: '#252b3a',
   glassCardBg: '#252b3a',
-  glassCardBgStrong: '#2e3548',
+  glassCardBgStrong: '#3a4155',
 
   // ── Navigation bar ────────────────────────────────────────────────────────
   navBarCardBg: '#252b3a',

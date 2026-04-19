@@ -21,7 +21,7 @@ import { NowPlayingBars } from '../components/NowPlayingBars';
 import { usePlayer } from '../hooks/usePlayer';
 import { useContentNavigation } from '../navigation';
 import i18n from '../i18n';
-import { formatDuration, formatFullDate, formatRelativeDate } from '../utils/dateUtils';
+import { formatDuration, formatRelativeDate } from '../utils/dateUtils';
 import { useTheme } from '../theme';
 import { radius, spacing } from '../theme/layout';
 import type {
@@ -97,7 +97,7 @@ function normalizePlaylists(item: PlaylistDetail): NormalizedDetail {
     meta: formattedDate ? t('detail.updated', { date: formattedDate }) : undefined,
     description: attrs?.description?.standard,
     artworkUrl: getArtworkUrl(attrs?.artwork?.url, ARTWORK_SIZE, ARTWORK_SIZE),
-    tracks: (item.relationships?.tracks?.data ?? []).filter(t => t.type !== 'music-videos' && t.type !== 'library-music-videos'),
+    tracks: (item.relationships?.tracks?.data ?? []).filter(track => track.type !== 'music-videos' && track.type !== 'library-music-videos'),
     kind: 'tracklist',
   };
 }
@@ -116,7 +116,7 @@ function normalizeAlbum(item: AlbumDetail): NormalizedDetail {
     subtitle: attrs?.artistName,
     meta: metaParts.join(' · '),
     artworkUrl: getArtworkUrl(attrs?.artwork?.url, ARTWORK_SIZE, ARTWORK_SIZE),
-    tracks: (item.relationships?.tracks?.data ?? []).filter(t => t.type !== 'music-videos' && t.type !== 'library-music-videos'),
+    tracks: (item.relationships?.tracks?.data ?? []).filter(track => track.type !== 'music-videos' && track.type !== 'library-music-videos'),
     kind: 'tracklist',
   };
 }
@@ -193,7 +193,6 @@ export function ContentDetailScreen({
   contentType,
   onBack,
 }: Readonly<ContentDetailScreenProps>): React.JSX.Element {
-  const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useStyles(colors);
   const { data, isLoading, error } = useContentDetail(contentId, contentType);
@@ -210,7 +209,6 @@ export function ContentDetailScreen({
 
   const isPlaying = playerState.playbackState === 'playing';
   const isPaused = playerState.playbackState === 'paused';
-  const isThisContainer = playerState.containerId === contentId;
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -283,7 +281,7 @@ export function ContentDetailScreen({
   // Check if a track matches the currently playing item by comparing
   // title + artist (robust for both library and catalog content).
   const isTrackNowPlaying = useCallback(
-    (track: PlaylistTrack, index: number): boolean => {
+    (track: PlaylistTrack): boolean => {
       if (!(isPlaying || isPaused)) { return false; }
       const currentTrack = playerState.track;
       if (!currentTrack) { return false; }
@@ -316,7 +314,7 @@ export function ContentDetailScreen({
       if (!track) return;
 
       // If this track is already now playing, just open the fullscreen player
-      if (isTrackNowPlaying(track, index)) {
+      if (isTrackNowPlaying(track)) {
         openNowPlayingFullscreen();
         return;
       }
@@ -354,7 +352,7 @@ export function ContentDetailScreen({
         showArtist={contentType === 'playlists'}
         showThumb={contentType === 'playlists'}
         onPress={() => handleTrackPress(renderInfo.index)}
-        isNowPlaying={isTrackNowPlaying(renderInfo.item, renderInfo.index)}
+        isNowPlaying={isTrackNowPlaying(renderInfo.item)}
         isPlaying={isPlaying}
         styles={styles}
       />
@@ -628,6 +626,7 @@ function useStyles(c: {
   navBarCardBg: string;
   borderMuted: string;
   buttonSecondaryBg: string;
+  settingsCardBg: string;
   subtleBg: string;
   glassBg: string;
   glassCardBgStrong: string;
@@ -742,7 +741,7 @@ function useStyles(c: {
       backgroundColor: c.glassBg,
     },
     actionBtnFocused: {
-      backgroundColor: c.navBarCardBg,
+      backgroundColor: c.glassCardBgStrong,
       transform: [{ scale: 1.05 }],
     },
     actionBtnText: {
@@ -757,7 +756,7 @@ function useStyles(c: {
       backgroundColor: c.glassBg,
     },
     moreBtnFocused: {
-      backgroundColor: c.navBarCardBg,
+      backgroundColor: c.glassCardBgStrong,
       transform: [{ scale: 1.05 }],
     },
     moreBtnText: {
