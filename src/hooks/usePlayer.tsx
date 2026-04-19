@@ -368,8 +368,8 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
 
     return () => {
       mounted = false;
-      // Stop playback and clear state on unmount / reload
-      musicPlayer.stop();
+      // Release playback and clear state on unmount / reload
+      musicPlayer.release();
       setState(initialState);
     };
   }, []);
