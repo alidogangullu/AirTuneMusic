@@ -141,6 +141,8 @@
       "restorePurchases": "Satın Almaları Geri Yükle",
       "getProMonthly": "Pro Al (Aylık)"
     },
+    "darkMode": "Koyu Mod",
+    "lightMode": "Açık Mod",
     "update": "Güncelleme Mevcut",
     "support": "Destek",
     "aboutInfo": {

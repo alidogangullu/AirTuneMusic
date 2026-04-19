@@ -5,6 +5,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { TopBar, type NavTabId } from './TopBar';
+import { useTheme } from '../theme';
 import { BrowseScreen } from '../screens/BrowseScreen';
 import { LibraryScreen } from '../screens/LibraryScreen';
 import { ListenNowScreen } from '../screens/ListenNowScreen';
@@ -40,6 +41,7 @@ export function MainLayout({
   onSettingsPress,
   hasUpdate = false,
 }: Readonly<MainLayoutProps>): React.JSX.Element {
+  const { themeMode } = useTheme();
   const Screen = SCREENS[activeTab];
 
   return (
@@ -56,7 +58,7 @@ export function MainLayout({
           onSettingsPress={onSettingsPress}
           hasUpdate={hasUpdate}
           transparent
-          dark={activeTab !== 'now-playing'}
+          dark={themeMode === 'dark' ? activeTab === 'now-playing' : activeTab !== 'now-playing'}
         />
       </View>
     </View>

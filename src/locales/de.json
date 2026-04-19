@@ -140,6 +140,8 @@
       "restorePurchases": "Käufe wiederherstellen",
       "getProMonthly": "Pro holen (Monatlich)"
     },
+    "darkMode": "Dunkelmodus",
+    "lightMode": "Hellmodus",
     "update": "Update verfügbar",
     "support": "Support",
     "aboutInfo": {

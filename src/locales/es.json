@@ -140,6 +140,8 @@
       "restorePurchases": "Restaurar compras",
       "getProMonthly": "Obtener Pro (Mensual)"
     },
+    "darkMode": "Modo oscuro",
+    "lightMode": "Modo claro",
     "update": "Actualización disponible",
     "support": "Soporte",
     "aboutInfo": {

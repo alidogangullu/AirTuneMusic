@@ -28,7 +28,7 @@ export function SettingsScreen({
   onSignOut,
   updateInfo,
 }: Readonly<SettingsScreenProps>): React.JSX.Element {
-  const { colors } = useTheme();
+  const { colors, themeMode, setThemeMode } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const { t, i18n } = useTranslation();
   const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language'>('none');
@@ -97,6 +97,8 @@ export function SettingsScreen({
       setCurrentSubMenu('language');
     } else if (item === 'Support') {
       Alert.alert(t('settings.support'), 'gullualidogan@gmail.com');
+    } else if (item === 'DarkMode') {
+      setThemeMode(themeMode === 'dark' ? 'light' : 'dark');
     } else if (item === 'About') {
       Alert.alert(
         t('settings.aboutInfo.title'),
@@ -171,6 +173,10 @@ export function SettingsScreen({
                 <SettingsMenuItem
                   label={t('settings.language.title')}
                   onPress={() => handleItemPress('Language')}
+                />
+                <SettingsMenuItem
+                  label={themeMode === 'dark' ? t('settings.lightMode') : t('settings.darkMode')}
+                  onPress={() => handleItemPress('DarkMode')}
                 />
 
                 <View style={styles.divider} />

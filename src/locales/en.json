@@ -141,6 +141,8 @@
       "restorePurchases": "Restore Purchases",
       "getProMonthly": "Get Pro (Monthly)"
     },
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
     "update": "Update Available",
     "support": "Support",
     "aboutInfo": {

@@ -119,10 +119,12 @@ export function TopBar({
         hasTVPreferredFocus={false}
         accessibilityLabel={t('topBar.profile')}
         accessibilityRole="button">
-        <View style={styles.silhouetteContainer}>
-          <View style={styles.silhouetteHead} />
-          <View style={styles.silhouetteBody} />
-        </View>
+        {({ focused }) => (
+          <View style={styles.silhouetteContainer}>
+            <View style={[styles.silhouetteHead, focused && styles.silhouetteFocused]} />
+            <View style={[styles.silhouetteBody, focused && styles.silhouetteFocused]} />
+          </View>
+        )}
       </NavPressable>
 
       <View style={styles.spacer} focusable={false} />
@@ -341,6 +343,9 @@ function useStyles(c: {
       backgroundColor: c.notificationBadge,
       borderWidth: 2,
       borderColor: c.overlayLight,
+    },
+    silhouetteFocused: {
+      backgroundColor: c.onDarkTextPrimary,
     },
     settingsIcon: {
       fontSize: 20,

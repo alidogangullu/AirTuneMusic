@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../theme/colors';
+import { useTheme } from '../theme';
+import type { AppColors } from '../theme/colors';
 
 export type SettingsMenuItemProps = {
   label: string;
@@ -15,6 +16,9 @@ export function SettingsMenuItem({
   hasTVPreferredFocus = false,
   labelColor,
 }: Readonly<SettingsMenuItemProps>): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
+
   return (
     <View>
       <Pressable
@@ -53,41 +57,43 @@ export function SettingsMenuItem({
 
 const ROW_HEIGHT = 52;
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: ROW_HEIGHT,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    overflow: 'visible',
-  },
-  rowFocused: {
-    backgroundColor: colors.settingsCardBg,
-    transform: [{ scale: 1.03 }],
-  },
-  rowUnfocused: {
-    backgroundColor: 'transparent',
-  },
-  label: {
-    fontSize: 17,
-    fontWeight: '500',
-  },
-  labelFocused: {
-    color: colors.textOnDark,
-  },
-  labelUnfocused: {
-    color: colors.settingsTextSubdued,
-  },
-  chevron: {
-    fontSize: 22,
-    fontWeight: '400',
-  },
-  chevronFocused: {
-    color: colors.settingsTextHint,
-  },
-  chevronUnfocused: {
-    color: colors.settingsTextDisabled,
-  },
-});
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      height: ROW_HEIGHT,
+      paddingHorizontal: 24,
+      borderRadius: 12,
+      overflow: 'visible',
+    },
+    rowFocused: {
+      backgroundColor: c.settingsCardBg,
+      transform: [{ scale: 1.03 }],
+    },
+    rowUnfocused: {
+      backgroundColor: 'transparent',
+    },
+    label: {
+      fontSize: 17,
+      fontWeight: '500',
+    },
+    labelFocused: {
+      color: c.textOnDark,
+    },
+    labelUnfocused: {
+      color: c.settingsTextSubdued,
+    },
+    chevron: {
+      fontSize: 22,
+      fontWeight: '400',
+    },
+    chevronFocused: {
+      color: c.settingsTextHint,
+    },
+    chevronUnfocused: {
+      color: c.settingsTextDisabled,
+    },
+  });
+}

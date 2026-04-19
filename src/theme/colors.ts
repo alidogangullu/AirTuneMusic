@@ -125,7 +125,7 @@ export type AppColors = {
   settingsTextDisabled: string;
 };
 
-export const colors: AppColors = {
+export const lightColors: AppColors = {
   // ── Brand ──────────────────────────────────────────────────────────────────
   appleMusicPink: '#FF4E6B',
   appleMusicRed: '#FF0436',
@@ -209,7 +209,7 @@ export const colors: AppColors = {
   nowPlayingDarkBg: '#1a1a2e',
   nowPlayingDarkBgDeep: '#16213e',
 
-  // ── Modal (dark-themed) ───────────────────────────────────────────────────
+  // ── Modal ───────────────────────────────────────────────────
   modalOverlay: 'rgba(0, 0, 0, 0.9)',
   modalBg: '#2a2a2a',
   modalBorder: '#444444',
@@ -230,3 +230,52 @@ export const colors: AppColors = {
   settingsTextHint: 'rgba(0, 0, 0, 0.35)',
   settingsTextDisabled: 'rgba(0, 0, 0, 0.25)',
 };
+
+export const darkColors: AppColors = {
+  ...lightColors,
+
+  // ── Gradient ──────────────────────────────────────────────────────────────
+  gradientStart: '#1a2035',
+  gradientEnd: '#0f1420',
+
+  // ── Screen / surface backgrounds ──────────────────────────────────────────
+  screenBackground: '#0f1420',
+  lightGreyBg: '#1e2435',
+  subtleBg: 'rgba(255, 255, 255, 0.05)',
+
+  // ── Text (light surfaces → repurposed for dark bg) ────────────────────────
+  textOnDark: '#ffffff',
+  textMuted: 'rgba(255, 255, 255, 0.55)',
+  textSubtle: 'rgba(255, 255, 255, 0.45)',
+  cardTitleText: '#ffffff',
+
+  // ── Buttons ────────────────────────────────────────────────────────────────
+  buttonSecondaryBg: '#252b3a',
+
+  // ── Borders ────────────────────────────────────────────────────────────────
+  borderMuted: 'rgba(255, 255, 255, 0.12)',
+
+  // ── Glass morphism (dark) ─────────────────────────────────────────────────
+  glassBg: 'rgba(255, 255, 255, 0.08)',
+  glassBorder: 'rgba(255, 255, 255, 0.15)',
+  glassBorderSubtle: 'rgba(255, 255, 255, 0.08)',
+  glassButtonBg: '#252b3a',
+  glassCardBg: '#252b3a',
+  glassCardBgStrong: '#2e3548',
+
+  // ── Navigation bar ────────────────────────────────────────────────────────
+  navBarCardBg: '#252b3a',
+  navBarGreyBg: '#1a1f2e',
+  navTabFocusedBg: '#ffffff',
+  navTabText: 'rgba(255, 255, 255, 0.55)',
+  navTabTextFocused: '#0f1420',
+
+  // ── Settings ──────────────────────────────────────────────────────────────
+  settingsCardBg: '#3a4155',
+  settingsTextSubdued: 'rgba(255, 255, 255, 0.55)',
+  settingsTextHint: 'rgba(255, 255, 255, 0.38)',
+  settingsTextDisabled: 'rgba(255, 255, 255, 0.22)',
+};
+
+/** @deprecated Use lightColors or darkColors directly. */
+export const colors: AppColors = lightColors;

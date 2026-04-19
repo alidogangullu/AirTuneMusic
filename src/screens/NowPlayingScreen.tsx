@@ -26,17 +26,15 @@ import {
 import { useTranslation } from 'react-i18next';
 import Svg, { Path } from 'react-native-svg';
 import LinearGradient from 'react-native-linear-gradient';
-import { NowPlayingBars } from '../components/NowPlayingBars';
 import { useImageColors } from '../hooks/useImageColors';
-import { usePlayer, PlaybackProgressProvider, usePlaybackProgress } from '../hooks/usePlayer';
+import { usePlayer, usePlaybackProgress } from '../hooks/usePlayer';
 import { PlaybackControls } from '../components/PlaybackControls';
 import { ContentNavigationContext } from '../navigation';
 import { radius, spacing } from '../theme/layout';
-import { colors as C } from '../theme/colors';
+import { lightColors as C } from '../theme/colors';
+import { useTheme } from '../theme';
 import { useStorefront } from '../hooks/useStorefront';
 import { fetchSongDetail } from '../api/apple-music/recommendations';
-import { TrackInfo } from '../services/musicPlayer';
-import { useLyrics } from '../hooks/useLyrics';
 import { LyricsView } from '../components/LyricsView';
 import { LyricIcon } from '../components/LyricIcon';
 import { NowPlayingTrackInfo, ARTWORK_SIZE } from '../components/NowPlayingTrackInfo';
@@ -123,7 +121,7 @@ const NowPlayingProgressBar = React.memo(({
         useNativeDriver: false,
       }),
     ]).start();
-  }, [isFocused]);
+  }, [isFocused, barHeightAnim, knobSizeAnim]);
 
   useEffect(() => {
     if (isBuffering || isLoading) {
@@ -138,7 +136,7 @@ const NowPlayingProgressBar = React.memo(({
       shimmerAnim.stopAnimation();
       shimmerAnim.setValue(-1);
     }
-  }, [isBuffering, isLoading]);
+  }, [isBuffering, isLoading, shimmerAnim]);
 
   const isFocusedRef = useRef(false);
   const isScrubbingRef = useRef(false);
@@ -404,11 +402,11 @@ export function NowPlayingScreen({
   isTabView = false,
 }: Readonly<NowPlayingScreenProps>): React.JSX.Element {
   const { t } = useTranslation();
+  const { colors: themeColors } = useTheme();
   const { state } = usePlayer();
   const { track, playbackState } = state;
   const isPlaying = playbackState === 'playing';
   const palette = useImageColors(track?.artworkUrl);
-  const paletteLoading = track?.artworkUrl && !palette;
 
   const [showInfo, setShowInfo] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
@@ -504,7 +502,7 @@ export function NowPlayingScreen({
       const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
       return (
         <LinearGradient
-          colors={[C.gradientStart, C.gradientEnd]}
+          colors={[themeColors.gradientStart, themeColors.gradientEnd]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.root}
@@ -516,22 +514,22 @@ export function NowPlayingScreen({
     // Select music warning
     return (
       <LinearGradient
-        colors={[C.gradientStart, C.gradientEnd]}
+        colors={[themeColors.gradientStart, themeColors.gradientEnd]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.root}
       >
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ fontSize: 20, color: C.textMuted, fontWeight: '600' }}>{t('nowPlaying.emptyState')}</Text>
+          <Text style={{ fontSize: 20, color: themeColors.textMuted, fontWeight: '600' }}>{t('nowPlaying.emptyState')}</Text>
         </View>
       </LinearGradient>
     );
   }
 
   // Final rendering values
-  const bg1 = palette?.darkMuted || palette?.dominant || C.nowPlayingDarkBg;
-  const bg2 = palette?.darkVibrant || palette?.muted || C.nowPlayingDarkBgDeep;
-  const accentColor = palette?.vibrant || palette?.lightVibrant || C.accent;
+  const bg1 = palette?.darkMuted || palette?.dominant || themeColors.nowPlayingDarkBg;
+  const bg2 = palette?.darkVibrant || palette?.muted || themeColors.nowPlayingDarkBgDeep;
+  const accentColor = palette?.vibrant || palette?.lightVibrant || themeColors.accent;
   // If we have a track, we show it, even if palette is loading or playback is pending.
   // The only reason to show a full screen spinner is if we have NO track info yet while loading.
 
@@ -543,7 +541,7 @@ export function NowPlayingScreen({
       style={styles.root}>
         {showLyrics && (
           <View
-            style={[StyleSheet.absoluteFill, { backgroundColor: C.overlayLight }]}
+            style={[StyleSheet.absoluteFill, { backgroundColor: themeColors.overlayLight }]}
             pointerEvents="none"
           />
         )}
