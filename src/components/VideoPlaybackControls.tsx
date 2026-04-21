@@ -75,11 +75,7 @@ export const VideoPlaybackControls = React.memo(({
           nextFocusDown={nextFocusDown}
           hasTVPreferredFocus
           onLayout={onLayoutPlayPause}>
-          {(focused) => isLoading ? (
-            <Svg width="24" height="24" viewBox="0 0 24 24" fill={iconColor(focused)}>
-              <Path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" opacity="0.3"/>
-            </Svg>
-          ) : isPlaying ? (
+          {(focused) => isPlaying ? (
             <Svg width="24" height="24" viewBox="0 0 24 24" fill={iconColor(focused)}>
               <Path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
             </Svg>

@@ -36,10 +36,14 @@ export function VideoPlayerModal({ queue, tokens, onClose }: Readonly<Props>) {
   const resetTimer = useCallback(() => {
     setShowControls(true);
     if (timerRef.current) clearTimeout(timerRef.current);
+
+    // Don't auto-hide if currently loading
+    if (playbackState === 'loading') return;
+
     timerRef.current = setTimeout(() => {
       setShowControls(false);
     }, 5000);
-  }, []);
+  }, [playbackState]);
 
   useTVEventHandler((evt) => {
     // Show controls on any remote interaction
@@ -56,21 +60,27 @@ export function VideoPlayerModal({ queue, tokens, onClose }: Readonly<Props>) {
   const canNext = currentIndex < queue.ids.length - 1;
   const canPrev = currentIndex > 0;
 
-  // Trigger initial playback after WebView loads
+  /**
+   * Trigger initial playback after WebView initial load.
+   * IMPORTANT: Do NOT add resetTimer to the dependencies. 
+   * resetTimer depends on playbackState, so including it would cause 
+   * this effect to re-run when loading finishes, creating a double-load loop.
+   */
   useEffect(() => {
     const timer = setTimeout(() => {
       webViewRef.current?.playQueue(queue.ids, queue.startIndex);
       resetTimer();
     }, 1500);
     return () => clearTimeout(timer);
-  }, [queue, resetTimer]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queue]);
 
   useEffect(() => {
     resetTimer();
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [resetTimer]);
+  }, [resetTimer, playbackState]); // Include playbackState to trigger when loading finishes
 
   const handleClose = useCallback(() => {
     webViewRef.current?.stop();
@@ -208,9 +218,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xxl,
   },
   topTrackInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
+    paddingTop: spacing.sm,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     flex: 1,
   },
   topArtwork: {

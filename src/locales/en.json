@@ -17,6 +17,7 @@
     "song": "Song",
     "album": "Album",
     "playlist": "Playlist",
+    "musicVideo": "Music Video",
     "exitPressAgain": "Press back again to exit"
   },
   "topBar": {

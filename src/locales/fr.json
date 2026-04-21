@@ -17,6 +17,7 @@
     "song": "Morceau",
     "album": "Album",
     "playlist": "Playlist",
+    "musicVideo": "Clip vidéo",
     "exitPressAgain": "Appuyez de nouveau pour quitter"
   },
   "topBar": {

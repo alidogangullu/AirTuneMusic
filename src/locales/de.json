@@ -17,6 +17,7 @@
     "song": "Titel",
     "album": "Album",
     "playlist": "Playlist",
+    "musicVideo": "Musikvideo",
     "exitPressAgain": "Zum Beenden erneut drücken"
   },
   "topBar": {

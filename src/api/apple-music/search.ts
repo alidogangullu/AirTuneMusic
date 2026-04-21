@@ -17,7 +17,7 @@ export async function searchCatalog(
     {
       params: {
         term: term.trim().replaceAll(/\s+/g, '+'),
-        types: 'songs,albums,artists,playlists',
+        types: 'songs,albums,artists,playlists,music-videos',
         limit,
       },
     },

@@ -17,6 +17,7 @@
     "song": "Şarkı",
     "album": "Albüm",
     "playlist": "Çalma Listesi",
+    "musicVideo": "Müzik Videosu",
     "exitPressAgain": "Çıkmak için tekrar basın"
   },
   "topBar": {

@@ -78,6 +78,7 @@ export function SearchScreen(): React.JSX.Element {
           if (r.songs?.data) { results.push(...r.songs.data); }
           if (r.albums?.data) { results.push(...r.albums.data); }
           if (r.playlists?.data) { results.push(...r.playlists.data); }
+          if (r['music-videos']?.data) { results.push(...r['music-videos'].data); }
           setSearchResults(results);
         })
         .catch(e => console.warn('[Search] search error:', e))
@@ -103,6 +104,7 @@ export function SearchScreen(): React.JSX.Element {
       albums: 'albums',
       artists: 'artists',
       playlists: 'playlists',
+      'music-videos': 'music-videos',
     };
     const contentType = typeMap[item.type] ?? item.type;
     addRecentSearch(item);
@@ -326,6 +328,7 @@ function RecentSearchCard({
     songs: t('common.song'),
     albums: t('common.album'),
     playlists: t('common.playlist'),
+    'music-videos': t('common.musicVideo'),
   };
   const typeLabel = TYPE_LABELS[item.type] ?? item.type;
   const subtitle = item.attributes?.artistName
@@ -386,6 +389,7 @@ function SearchResultRow({
     songs: t('library.songs'),
     albums: t('library.albums'),
     playlists: t('library.playlists'),
+    'music-videos': t('common.musicVideo'),
   };
   const typeLabel = TYPE_LABELS[item.type] ?? item.type;
 
