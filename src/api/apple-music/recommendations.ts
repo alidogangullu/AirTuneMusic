@@ -140,6 +140,21 @@ export async function fetchSongDetail(
 }
 
 /**
+ * Fetch top music video charts.
+ * GET /v1/catalog/{storefront}/charts?types=music-videos
+ */
+export async function fetchMusicVideoCharts(
+  storefront: string,
+  limit = 20,
+): Promise<{ name: string; data: any[] }[]> {
+  const { data } = await appleMusicApi.get<{ results: { 'music-videos': Array<{ name: string; data: any[] }> } }>(
+    `/catalog/${storefront}/charts`,
+    { params: { types: 'music-videos', limit } },
+  );
+  return data.results?.['music-videos'] ?? [];
+}
+
+/**
  * Fetch music video details.
  * GET /v1/catalog/{storefront}/music-videos/{id}
  */

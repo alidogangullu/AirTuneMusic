@@ -202,7 +202,7 @@ export function ContentDetailScreen({
     playPlaylist,
     playStation,
     playSong,
-    playMusicVideo,
+    playVideoQueue,
   } = usePlayer();
 
   const { openNowPlayingFullscreen } = useContentNavigation();
@@ -239,15 +239,16 @@ export function ContentDetailScreen({
           success = await playSong(contentId);
           break;
         case 'music-videos':
-          success = await playMusicVideo(contentId);
+          playVideoQueue({ ids: [contentId], startIndex: 0, tracks: [{ id: contentId, title: normalized.name ?? null, artistName: normalized.subtitle ?? null, artworkUrl: normalized.artworkUrl ?? null }] });
+          success = true;
           break;
       }
-      if (success) {
+      if (success && contentType !== 'music-videos') {
         openNowPlayingFullscreen();
       }
     };
     action().catch(e => console.warn('[Play]', e));
-  }, [contentId, contentType, normalized.tracks, playAlbum, playPlaylist, playStation, playSong, playMusicVideo, openNowPlayingFullscreen]);
+  }, [contentId, contentType, normalized, playAlbum, playPlaylist, playStation, playSong, playVideoQueue, openNowPlayingFullscreen]);
 
   const handleShuffle = useCallback(() => {
     const action = async () => {
@@ -266,17 +267,19 @@ export function ContentDetailScreen({
             switch (contentType) {
               case 'stations': return playStation(contentId);
               case 'songs': return playSong(contentId);
-              case 'music-videos': return playMusicVideo(contentId);
+              case 'music-videos':
+                playVideoQueue({ ids: [contentId], startIndex: 0, tracks: [{ id: contentId, title: normalized.name ?? null, artistName: normalized.subtitle ?? null, artworkUrl: normalized.artworkUrl ?? null }] });
+                return true;
               default: return false;
             }
           })();
       }
-      if (success) {
+      if (success && contentType !== 'music-videos') {
         openNowPlayingFullscreen();
       }
     };
     action().catch(e => console.warn('[Shuffle]', e));
-  }, [contentId, contentType, normalized.tracks, playAlbum, playPlaylist, playSong, playStation, playMusicVideo, openNowPlayingFullscreen]);
+  }, [contentId, contentType, normalized, playAlbum, playPlaylist, playSong, playStation, playVideoQueue, openNowPlayingFullscreen]);
 
   // Check if a track matches the currently playing item by comparing
   // title + artist (robust for both library and catalog content).

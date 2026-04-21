@@ -62,3 +62,19 @@ export async function fetchStorefront(): Promise<any> {
   const {data} = await appleMusicApi.get('/me/storefront');
   return data;
 }
+
+export async function fetchRecentlyPlayedVideos(limit = 20): Promise<any[]> {
+  const { data } = await appleMusicApi.get<{ data: any[] }>(
+    '/me/recent/played/tracks',
+    { params: { types: 'music-videos,library-music-videos', limit } },
+  );
+  return data.data ?? [];
+}
+
+export async function fetchLibraryMusicVideos(limit = 20): Promise<any[]> {
+  const { data } = await appleMusicApi.get<{ data: any[] }>(
+    '/me/library/music-videos',
+    { params: { limit } },
+  );
+  return data.data ?? [];
+}

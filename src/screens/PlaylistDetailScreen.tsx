@@ -17,9 +17,11 @@ import {
 import { useTranslation } from 'react-i18next';
 import {getArtworkUrl} from '../api/apple-music/recommendations';
 import {usePlaylistDetail} from '../hooks/usePlaylistDetail';
+import {usePlayer} from '../hooks/usePlayer';
 import {useTheme} from '../theme';
 import {radius, spacing} from '../theme/layout';
 import type {PlaylistTrack} from '../types/catalog';
+import { isVideoTrack, buildVideoQueue, buildSongTracks } from '../utils/trackUtils';
 
 const ARTWORK_SIZE = 300;
 const TRACK_THUMB_SIZE = 52;
@@ -37,6 +39,7 @@ export function PlaylistDetailScreen({
   const {colors} = useTheme();
   const styles = useStyles(colors);
   const {data, isLoading, error} = usePlaylistDetail(playlistId);
+  const { playPlaylist, playVideoQueue } = usePlayer();
 
   // Hardware back button support for Android TV remote
   useEffect(() => {
@@ -57,11 +60,20 @@ export function PlaylistDetailScreen({
     ? formatRelativeDate(attrs.lastModifiedDate)
     : null;
 
+  const handleTrackPress = useCallback((item: PlaylistTrack) => {
+    if (isVideoTrack(item.type)) {
+      playVideoQueue(buildVideoQueue(tracks, item.id));
+    } else {
+      const { tracks: songTracks, startIndex } = buildSongTracks(tracks, item.id);
+      playPlaylist(playlistId, startIndex, false, songTracks);
+    }
+  }, [tracks, playlistId, playPlaylist, playVideoQueue]);
+
   const renderTrack = useCallback(
     (renderInfo: {item: PlaylistTrack}) => (
-      <TrackRow item={renderInfo.item} styles={styles} />
+      <TrackRow item={renderInfo.item} styles={styles} onPress={handleTrackPress} />
     ),
-    [styles],
+    [styles, handleTrackPress],
   );
 
   let leftContent: React.ReactNode;
@@ -171,9 +183,11 @@ function PlaylistHeader({
 function TrackRow({
   item,
   styles,
+  onPress,
 }: Readonly<{
   item: PlaylistTrack;
   styles: ReturnType<typeof useStyles>;
+  onPress: (item: PlaylistTrack) => void;
 }>) {
   const thumbUrl = getArtworkUrl(item.attributes?.artwork?.url, TRACK_THUMB_SIZE, TRACK_THUMB_SIZE);
   const duration = item.attributes?.durationInMillis
@@ -186,6 +200,7 @@ function TrackRow({
         styles.trackRow,
         focused && styles.trackRowFocused,
       ]}
+      onPress={() => onPress(item)}
       focusable>
       <View style={styles.trackThumbContainer}>
         {thumbUrl ? (

@@ -16,9 +16,11 @@ import {
 import { useTranslation } from 'react-i18next';
 import { getArtworkUrl } from '../api/apple-music/recommendations';
 import { useAlbumDetail } from '../hooks/useAlbumDetail';
+import { usePlayer } from '../hooks/usePlayer';
 import { useTheme } from '../theme';
 import { radius, spacing } from '../theme/layout';
 import type { PlaylistTrack } from '../types/catalog';
+import { isVideoTrack, buildVideoQueue, buildSongTracks } from '../utils/trackUtils';
 
 const ARTWORK_SIZE = 300;
 const TRACK_THUMB_SIZE = 52;
@@ -36,6 +38,7 @@ export function AlbumDetailScreen({
   const { colors } = useTheme();
   const styles = useStyles(colors);
   const { data, isLoading, error } = useAlbumDetail(albumId);
+  const { playAlbum, playVideoQueue } = usePlayer();
 
   // Hardware back button support for Android TV remote
   useEffect(() => {
@@ -52,11 +55,20 @@ export function AlbumDetailScreen({
 
   const artworkUrl = getArtworkUrl(attrs?.artwork?.url, ARTWORK_SIZE, ARTWORK_SIZE);
 
+  const handleTrackPress = useCallback((item: PlaylistTrack) => {
+    if (isVideoTrack(item.type)) {
+      playVideoQueue(buildVideoQueue(tracks, item.id));
+    } else {
+      const { tracks: songTracks, startIndex } = buildSongTracks(tracks, item.id);
+      playAlbum(albumId, startIndex, false, songTracks);
+    }
+  }, [tracks, albumId, playAlbum, playVideoQueue]);
+
   const renderTrack = useCallback(
     (renderInfo: { item: PlaylistTrack; index: number }) => (
-      <TrackRow item={renderInfo.item} index={renderInfo.index} styles={styles} />
+      <TrackRow item={renderInfo.item} index={renderInfo.index} styles={styles} onPress={handleTrackPress} />
     ),
-    [styles],
+    [styles, handleTrackPress],
   );
 
   let leftContent: React.ReactNode;
@@ -165,10 +177,12 @@ function TrackRow({
   item,
   index,
   styles,
+  onPress,
 }: Readonly<{
   item: PlaylistTrack;
   index: number;
   styles: ReturnType<typeof useStyles>;
+  onPress: (item: PlaylistTrack) => void;
 }>) {
   const thumbUrl = getArtworkUrl(
     item.attributes?.artwork?.url,
@@ -182,6 +196,7 @@ function TrackRow({
   return (
     <Pressable
       style={({ focused }) => [styles.trackRow, focused && styles.trackRowFocused]}
+      onPress={() => onPress(item)}
       focusable>
       <Text style={styles.trackNumber}>{index + 1}</Text>
       <View style={styles.trackThumbContainer}>

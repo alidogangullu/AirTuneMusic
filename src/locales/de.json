@@ -13,7 +13,6 @@
     "minute": "1 Minute",
     "minutes": "{{count}} Minuten",
     "viewOptions": "Optionen anzeigen",
-    "comingSoon": "Demnächst",
     "artist": "Künstler",
     "song": "Titel",
     "album": "Album",
@@ -156,7 +155,9 @@
   },
   "videos": {
     "title": "Videos",
-    "comingSoon": "Demnächst"
+    "comingSoon": "Demnächst",
+    "recentlyPlayed": "Zuletzt angesehen",
+    "library": "In deiner Bibliothek"
   },
   "update": {
     "title": "Update erforderlich",

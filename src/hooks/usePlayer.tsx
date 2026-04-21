@@ -13,6 +13,7 @@ import {QuotaService} from '../services/quotaService';
 import {getDeveloperToken} from '../api/apple-music/getDeveloperToken';
 import {waitForToken, getMusicUserToken} from '../api/apple-music/musicUserToken';
 import {MusicKitWebView, MusicKitWebPlayerRef} from '../components/MusicKitWebView';
+import {VideoPlayerModal} from '../components/VideoPlayerModal';
 import type {
   PlaybackStateName,
   TrackInfo,
@@ -20,6 +21,19 @@ import type {
 } from '../services/musicPlayer';
 
 // ── State shape ─────────────────────────────────────────────────
+
+export interface VideoTrackMeta {
+  id: string;
+  title: string | null;
+  artistName: string | null;
+  artworkUrl: string | null;
+}
+
+export interface VideoQueue {
+  ids: string[];
+  startIndex: number;
+  tracks: VideoTrackMeta[];
+}
 
 export interface PlayerState {
   playbackState: PlaybackStateName;
@@ -38,6 +52,7 @@ export interface PlayerState {
   isLoading: boolean;
   rating: number;
   autoplay: boolean;
+  videoQueue: VideoQueue | null;
 }
 
 export interface ProgressState {
@@ -63,6 +78,7 @@ const initialState: PlayerState = {
   isLoading: false,
   rating: 0,
   autoplay: false,
+  videoQueue: null,
 };
 
 const initialProgress: ProgressState = {
@@ -80,6 +96,8 @@ interface PlayerContextValue {
   playStation: (stationId: string) => Promise<boolean>;
   playSong: (songId: string) => Promise<boolean>;
   playMusicVideo: (musicVideoId: string) => Promise<boolean>;
+  playVideoQueue: (queue: VideoQueue) => void;
+  stopVideo: () => void;
   play: () => void;
   pause: () => void;
   stop: () => void;
@@ -518,6 +536,21 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     [checkQuotaAndPlay],
   );
 
+  const playVideoQueue = useCallback((queue: VideoQueue) => {
+    if (activeEngineRef.current === 'web') {
+      webPlayerRef.current?.stop();
+    } else {
+      musicPlayer.stop();
+    }
+    activeEngineRef.current = 'web';
+    setState(s => ({...s, videoQueue: queue}));
+  }, []);
+
+  const stopVideo = useCallback(() => {
+    activeEngineRef.current = 'native';
+    setState(s => ({...s, videoQueue: null}));
+  }, []);
+
   const playMusicVideo = useCallback(
     async (musicVideoId: string) => {
       setState(s => ({...s, containerId: musicVideoId, isLoading: true}));
@@ -546,6 +579,8 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     playStation,
     playSong,
     playMusicVideo,
+    playVideoQueue,
+    stopVideo,
     play: () => {
       if (activeEngineRef.current === 'web') {
         webPlayerRef.current?.play();
@@ -686,6 +721,13 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         />
       )}
       </PlaybackProgressProvider>
+      {state.videoQueue && (
+        <VideoPlayerModal
+          queue={state.videoQueue}
+          tokens={tokens}
+          onClose={stopVideo}
+        />
+      )}
     </PlayerContext.Provider>
   );
 }

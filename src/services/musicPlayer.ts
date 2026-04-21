@@ -30,6 +30,7 @@ export interface TrackInfo {
   duration: number;
   trackIndex: number;
   playbackQueueId?: number;
+  kind?: 'song' | 'musicVideo';
 }
 
 export interface PlaybackStateInfo {

@@ -7,8 +7,14 @@ import {
   fetchRecommendations,
   fetchUserStorefront,
   fetchCatalogCharts,
+  fetchMusicVideoCharts,
 } from '../api/apple-music/recommendations';
+import {
+  fetchRecentlyPlayedVideos,
+  fetchLibraryMusicVideos,
+} from '../api/apple-music/library';
 import { RecommendationContent, PersonalRecommendation } from '../types/recommendations';
+import type { MusicVideoDetail } from '../types/catalog';
 
 const RECS_QUERY_KEY = ['apple-music', 'recommendations'] as const;
 const STOREFRONT_QUERY_KEY = ['apple-music', 'storefront'] as const;
@@ -38,6 +44,43 @@ export function useCharts(types = 'playlists,albums') {
     queryFn: () => fetchCatalogCharts(storefront!, types),
     enabled: !!storefront,
     staleTime: 30 * 60 * 1000, // 30 mins
+  });
+}
+
+export function useVideoCharts() {
+  const { data: storefront } = useStorefront();
+
+  return useQuery({
+    queryKey: ['apple-music', 'charts', 'music-videos', storefront],
+    queryFn: () => fetchMusicVideoCharts(storefront!),
+    enabled: !!storefront,
+    staleTime: 30 * 60 * 1000,
+    select: (charts) => charts.map(chart => ({
+      title: chart.name,
+      videos: chart.data as MusicVideoDetail[],
+    })),
+  });
+}
+
+export function useVideoRecommendations() {
+  return useQuery({
+    queryKey: ['apple-music', 'recommendations', 'music-videos'],
+    queryFn: async () => {
+      const recs = await fetchRecommendations();
+      const sections: { title: string; videos: MusicVideoDetail[] }[] = [];
+
+      for (const rec of recs.data) {
+        const videos = (rec.relationships?.contents?.data ?? []).filter(
+          c => c.type === 'music-videos',
+        ) as MusicVideoDetail[];
+        if (videos.length === 0) continue;
+        const title = rec.attributes?.title?.stringForDisplay ?? '';
+        sections.push({ title, videos });
+      }
+
+      return sections;
+    },
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -82,6 +125,24 @@ export type RecommendationSection = {
   isRadio: boolean;
   contents: RecommendationContent[];
 };
+
+export function useRecentlyPlayedVideos() {
+  return useQuery({
+    queryKey: ['apple-music', 'recent', 'music-videos'],
+    queryFn: () => fetchRecentlyPlayedVideos(),
+    staleTime: 5 * 60 * 1000,
+    select: (videos: any[]) =>
+      videos.filter(v => v.type === 'music-videos' || v.type === 'library-music-videos'),
+  });
+}
+
+export function useLibraryMusicVideos() {
+  return useQuery({
+    queryKey: ['apple-music', 'library', 'music-videos'],
+    queryFn: () => fetchLibraryMusicVideos(),
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 /**
  * Group recommendations into sections for display.
