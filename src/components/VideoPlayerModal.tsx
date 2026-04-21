@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   BackHandler,
-  Image,
   Modal,
   Pressable,
   StyleSheet,
@@ -153,13 +152,8 @@ export function VideoPlayerModal({ queue, tokens, onClose }: Readonly<Props>) {
             <View style={styles.topBar}>
 
               <View style={styles.topTrackInfo}>
-                {currentTrack?.artworkUrl && (
-                  <Image source={{ uri: currentTrack.artworkUrl }} style={styles.topArtwork} />
-                )}
-                <View style={styles.topTextContainer}>
-                  <Text style={styles.topTitle} numberOfLines={1}>{currentTrack?.title ?? ''}</Text>
-                  <Text style={styles.topArtist} numberOfLines={1}>{currentTrack?.artistName ?? ''}</Text>
-                </View>
+                <Text style={styles.topTitle} numberOfLines={1}>{currentTrack?.title ?? ''}</Text>
+                <Text style={styles.topArtist} numberOfLines={1}>{currentTrack?.artistName ?? ''}</Text>
               </View>
             </View>
 
@@ -210,9 +204,8 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: spacing.lg,
-    paddingHorizontal: spacing.xl,
-    gap: spacing.lg,
+    paddingTop: spacing.md,
+    paddingHorizontal: spacing.xxl,
   },
   topTrackInfo: {
     flexDirection: 'row',

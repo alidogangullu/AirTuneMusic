@@ -106,7 +106,7 @@ export async function fetchArtistDetail(
 ): Promise<ArtistDetailResponse> {
   const { data } = await appleMusicApi.get<ArtistDetailResponse>(
     `/catalog/${storefront}/artists/${id}`,
-    { params: { views: 'top-songs,latest-release,full-albums' } },
+    { params: { views: 'top-songs,latest-release,full-albums,top-music-videos' } },
   );
   return data;
 }

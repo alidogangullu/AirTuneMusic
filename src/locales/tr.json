@@ -51,7 +51,8 @@
     "albums": "Albümler",
     "songs": "Şarkılar",
     "signInPrompt": "Arşivinizi görmek için Apple Music'e giriş yapın.",
-    "loadError": "Arşiv yüklenemedi."
+    "loadError": "Arşiv yüklenemedi.",
+    "musicVideos": "Videolar"
   },
   "nowPlaying": {
     "emptyState": "Çalmak için bir şarkı seçin.",
@@ -90,6 +91,7 @@
     "topSongs": "En Popüler Şarkılar",
     "latestRelease": "Son Çıkan",
     "essentialAlbums": "Temel Albümler",
+    "musicVideos": "Müzik Videoları",
     "failedToLoad": "Sanatçı yüklenemedi",
     "madeForYou": "Senin İçin Hazırlandı",
     "single": "Single",

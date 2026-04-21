@@ -20,7 +20,12 @@ export function useLibraryInfiniteItems(category: LibraryCategoryId, limit = 25)
       ...data,
       pages: data.pages.map(page => ({
         ...page,
-        data: page.data.filter(item => item.type !== 'library-music-videos'),
+        data: category === 'music-videos'
+          ? page.data
+          : page.data.filter(item =>
+              item.type !== 'library-music-videos' &&
+              item.attributes?.name !== 'Unknown Album'
+            ),
       })),
     }),
   });

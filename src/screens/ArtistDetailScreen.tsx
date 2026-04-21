@@ -20,7 +20,7 @@ import { ContentDetailScreen } from './ContentDetailScreen';
 import { GradientBackground } from '../components/GradientBackground';
 import { useTheme } from '../theme';
 import { spacing } from '../theme/layout';
-import type { AlbumDetail, SongDetail } from '../types/catalog';
+import type { AlbumDetail, MusicVideoDetail, SongDetail } from '../types/catalog';
 
 export type ArtistDetailScreenProps = {
   artistId: string;
@@ -36,7 +36,7 @@ export function ArtistDetailScreen({
   const styles = useStyles(colors);
   const { data, isLoading, error } = useArtistDetail(artistId);
 
-  const { playSong } = usePlayer();
+  const { playSong, playVideoQueue } = usePlayer();
   const { openNowPlayingFullscreen } = useContentNavigation();
 
   const [selectedAlbumParams, setSelectedAlbumParams] = React.useState<{ id: string, type: 'albums' } | null>(null);
@@ -59,6 +59,7 @@ export function ArtistDetailScreen({
   const topSongs = React.useMemo(() => artist?.views?.['top-songs']?.data ?? [], [artist]);
   const latestRelease = artist?.views?.['latest-release']?.data?.[0];
   const essentialAlbums = artist?.views?.['full-albums']?.data ?? [];
+  const musicVideos = artist?.views?.['top-music-videos']?.data ?? [];
 
   const handlePlayArtist = useCallback(() => {
     if (topSongs.length > 0) {
@@ -84,6 +85,19 @@ export function ArtistDetailScreen({
       type: 'albums',
     });
   }, []);
+
+  const handleVideoPress = useCallback((video: MusicVideoDetail, allVideos: MusicVideoDetail[]) => {
+    playVideoQueue({
+      ids: allVideos.map(v => v.id),
+      startIndex: allVideos.findIndex(v => v.id === video.id),
+      tracks: allVideos.map(v => ({
+        id: v.id,
+        title: v.attributes?.name ?? null,
+        artistName: v.attributes?.artistName ?? null,
+        artworkUrl: v.attributes?.artwork?.url ?? null,
+      })),
+    });
+  }, [playVideoQueue]);
 
   if (isLoading) {
     const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
@@ -171,6 +185,28 @@ export function ArtistDetailScreen({
                 <EssentialAlbumCard
                   album={album}
                   onPress={() => handleAlbumPress(album)}
+                  styles={styles}
+                />
+              )}
+            />
+          </View>
+        )}
+
+        {/* ── Music Videos ────────────────────────────────── */}
+        {musicVideos.length > 0 && (
+          <View style={styles.albumsSection}>
+            <Text style={styles.sectionTitle}>{t('artist.musicVideos')}</Text>
+            <FlatList
+              horizontal
+              data={musicVideos}
+              keyExtractor={v => v.id}
+              showsHorizontalScrollIndicator={false}
+              nestedScrollEnabled
+              contentContainerStyle={styles.albumsList}
+              renderItem={({ item: video }) => (
+                <MusicVideoCard
+                  video={video}
+                  onPress={() => handleVideoPress(video, musicVideos)}
                   styles={styles}
                 />
               )}
@@ -324,6 +360,38 @@ function EssentialAlbumCard({
   );
 }
 
+function MusicVideoCard({
+  video,
+  onPress,
+  styles,
+}: Readonly<{
+  video: MusicVideoDetail;
+  onPress: () => void;
+  styles: ReturnType<typeof useStyles>;
+}>) {
+  const artworkUrl = getArtworkUrl(video.attributes?.artwork?.url, 400, 225);
+  const year = video.attributes?.releaseDate ? new Date(video.attributes.releaseDate).getFullYear() : '';
+
+  return (
+    <Pressable
+      style={({ focused }) => [styles.musicVideoCard, focused && styles.cardFocused]}
+      onPress={onPress}
+      focusable>
+      <View style={styles.musicVideoArtworkContainer}>
+        {artworkUrl ? (
+          <Image source={{ uri: artworkUrl }} style={styles.musicVideoArtwork} resizeMode="cover" />
+        ) : (
+          <View style={[styles.musicVideoArtwork, styles.placeholderBg]} />
+        )}
+      </View>
+      <View style={styles.musicVideoInfo}>
+        <Text style={styles.essentialAlbumName} numberOfLines={1}>{video.attributes?.name}</Text>
+        <Text style={styles.essentialAlbumYear}>{year}</Text>
+      </View>
+    </Pressable>
+  );
+}
+
 // ── Styles ───────────────────────────────────────────────────────
 
 function useStyles(c: {
@@ -412,8 +480,9 @@ function useStyles(c: {
     },
     topSongsList: {
       gap: spacing.md,
-      marginTop: spacing.sm,
-      marginLeft: spacing.sm,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.md,
+      paddingLeft: spacing.xs, // Small padding to allow focus scale without clipping
     },
     topSongsColumn: {
       flexDirection: 'column',
@@ -421,12 +490,14 @@ function useStyles(c: {
       width: 320, // Fixed width for each top song item (shorter width)
     },
     albumsSection: {
-      marginBottom: spacing.xxl,
+      marginBottom: spacing.xl, // Match topRow margin
     },
     albumsList: {
       gap: spacing.lg,
       paddingRight: spacing.xl,
-      paddingBottom: spacing.md,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.lg, // Extra room for scale
+      paddingLeft: spacing.xs,
     },
 
     // ── Cards ────────────────────────
@@ -443,7 +514,6 @@ function useStyles(c: {
       overflow: 'hidden',
       height: 152,
       marginTop: spacing.sm,
-      marginLeft: spacing.sm,
     },
     latestReleaseArtworkContainer: {
       width: 152,
@@ -516,8 +586,6 @@ function useStyles(c: {
       overflow: 'hidden',
       width: 400,
       height: 200,
-      marginTop: spacing.sm,
-      marginLeft: spacing.sm,
     },
     essentialAlbumArtworkContainer: {
       width: 200,
@@ -546,6 +614,26 @@ function useStyles(c: {
       fontSize: 13,
       color: c.textSubtle,
       lineHeight: 18,
+    },
+
+    // Music Video Card (16:9 ratio, 400x225)
+    musicVideoCard: {
+      flexDirection: 'column',
+      backgroundColor: c.glassBg,
+      borderRadius: 4,
+      overflow: 'hidden',
+      width: 320,
+    },
+    musicVideoArtworkContainer: {
+      width: 320,
+      height: 180,
+    },
+    musicVideoArtwork: {
+      width: '100%',
+      height: '100%',
+    },
+    musicVideoInfo: {
+      padding: spacing.sm,
     },
   });
 }

@@ -51,7 +51,8 @@
     "albums": "Álbumes",
     "songs": "Canciones",
     "signInPrompt": "Inicia sesión en Apple Music para ver tu biblioteca.",
-    "loadError": "No se pudo cargar la biblioteca."
+    "loadError": "No se pudo cargar la biblioteca.",
+    "musicVideos": "Videos"
   },
   "nowPlaying": {
     "emptyState": "Selecciona una canción para reproducir.",
@@ -90,6 +91,7 @@
     "topSongs": "Mejores canciones",
     "latestRelease": "Último lanzamiento",
     "essentialAlbums": "Álbumes esenciales",
+    "musicVideos": "Videos musicales",
     "failedToLoad": "Error al cargar el artista",
     "madeForYou": "Hecho para ti",
     "single": "Sencillo",

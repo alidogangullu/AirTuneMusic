@@ -22,6 +22,7 @@ import { radius, spacing } from '../theme/layout';
 import { getArtworkUrl } from '../api/apple-music/recommendations';
 import { getMusicUserToken } from '../api/apple-music/musicUserToken';
 import { useContentNavigation } from '../navigation';
+import { usePlayer } from '../hooks/usePlayer';
 import type { LibraryCategoryId, LibraryItem } from '../types/library';
 import { useLibraryInfiniteItems } from '../hooks/useLibraryItems';
 
@@ -33,6 +34,7 @@ const CATEGORIES_CONFIG: { id: LibraryCategoryId; labelKey: string }[] = [
   { id: 'artists', labelKey: 'library.artists' },
   { id: 'albums', labelKey: 'library.albums' },
   { id: 'songs', labelKey: 'library.songs' },
+  { id: 'music-videos', labelKey: 'library.musicVideos' },
 ];
 
 const GRID_COLUMNS = 4;
@@ -59,9 +61,12 @@ function LibraryGridItem({
     ARTWORK_SIZE * 2,
   );
   const { t } = useTranslation();
-  const name = item.attributes?.name ?? t('common.unknown');
+  const isMusicVideo = item.type === 'library-music-videos';
+  const name = (isMusicVideo ? catalogItem?.attributes?.name : undefined)
+    ?? item.attributes?.name
+    ?? t('common.unknown');
   const subtitle =
-    item.attributes?.artistName ?? item.attributes?.albumName ?? '';
+    item.attributes?.artistName ?? catalogItem?.attributes?.artistName ?? item.attributes?.albumName ?? '';
   const isArtist = item.type === 'library-artists';
 
   return (
@@ -105,6 +110,7 @@ export function LibraryScreen(): React.JSX.Element {
   const { colors } = useTheme();
   const styles = useStyles(colors);
   const { pushContent } = useContentNavigation();
+  const { playVideoQueue } = usePlayer();
 
   const [activeCategory, setActiveCategory] =
     useState<LibraryCategoryId>('recently-added');
@@ -130,12 +136,29 @@ export function LibraryScreen(): React.JSX.Element {
 
   const handleItemPress = useCallback(
     (item: LibraryItem) => {
+      // Video — launch video player directly
+      if (item.type === 'library-music-videos') {
+        const catalogItem = item.relationships?.catalog?.data?.[0];
+        const videoId = catalogItem?.id ?? item.attributes?.playParams?.catalogId ?? item.id;
+        const artworkUrl = item.attributes?.artwork?.url ?? catalogItem?.attributes?.artwork?.url ?? null;
+        playVideoQueue({
+          ids: [videoId],
+          startIndex: 0,
+          tracks: [{
+            id: videoId,
+            title: item.attributes?.name ?? null,
+            artistName: item.attributes?.artistName ?? null,
+            artworkUrl,
+          }],
+        });
+        return;
+      }
+
       const typeMap: Record<string, string> = {
         'library-albums': 'albums',
         'library-playlists': 'playlists',
         'library-artists': 'artists',
         'library-songs': 'songs',
-        'library-music-videos': 'music-videos',
       };
       const catalogItem = item.relationships?.catalog?.data?.[0];
       const catalogId = item.attributes?.playParams?.catalogId ?? catalogItem?.id ?? item.id;
@@ -147,13 +170,11 @@ export function LibraryScreen(): React.JSX.Element {
         attributes: {
           name: item.attributes?.name,
           artistName: item.attributes?.artistName,
-          artwork: artworkObj
-            ? { url: artworkObj.url }
-            : undefined,
+          artwork: artworkObj ? { url: artworkObj.url } : undefined,
         },
       });
     },
-    [pushContent],
+    [pushContent, playVideoQueue],
   );
 
   const handleCategoryPress = useCallback((id: LibraryCategoryId) => {
@@ -297,10 +318,10 @@ function useStyles(c: AppColors) {
     gridRow: {
       gap: spacing.sm,
       marginBottom: spacing.xl,
+      justifyContent: 'flex-start',
     },
     gridItem: {
-      flex: 1,
-      maxWidth: `${100 / GRID_COLUMNS}%` as any,
+      width: `${100 / GRID_COLUMNS}%` as any,
       alignItems: 'center',
     },
     gridItemFocused: {

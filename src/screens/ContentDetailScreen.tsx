@@ -22,6 +22,7 @@ import { usePlayer } from '../hooks/usePlayer';
 import { useContentNavigation } from '../navigation';
 import i18n from '../i18n';
 import { formatDuration, formatRelativeDate } from '../utils/dateUtils';
+import { isVideoTrack, buildVideoQueue, buildSongTracks } from '../utils/trackUtils';
 import { useTheme } from '../theme';
 import { radius, spacing } from '../theme/layout';
 import type {
@@ -97,7 +98,7 @@ function normalizePlaylists(item: PlaylistDetail): NormalizedDetail {
     meta: formattedDate ? t('detail.updated', { date: formattedDate }) : undefined,
     description: attrs?.description?.standard,
     artworkUrl: getArtworkUrl(attrs?.artwork?.url, ARTWORK_SIZE, ARTWORK_SIZE),
-    tracks: (item.relationships?.tracks?.data ?? []).filter(track => track.type !== 'music-videos' && track.type !== 'library-music-videos'),
+    tracks: item.relationships?.tracks?.data ?? [],
     kind: 'tracklist',
   };
 }
@@ -116,7 +117,7 @@ function normalizeAlbum(item: AlbumDetail): NormalizedDetail {
     subtitle: attrs?.artistName,
     meta: metaParts.join(' · '),
     artworkUrl: getArtworkUrl(attrs?.artwork?.url, ARTWORK_SIZE, ARTWORK_SIZE),
-    tracks: (item.relationships?.tracks?.data ?? []).filter(track => track.type !== 'music-videos' && track.type !== 'library-music-videos'),
+    tracks: item.relationships?.tracks?.data ?? [],
     kind: 'tracklist',
   };
 }
@@ -222,9 +223,18 @@ export function ContentDetailScreen({
   const normalized = normalizeDetail(item, contentType);
 
   const handlePlay = useCallback(() => {
+    const allVideos = normalized.tracks.length > 0 && normalized.tracks.every(t => isVideoTrack(t.type));
+    const songTracks = normalized.tracks.filter(t => !isVideoTrack(t.type));
+
+    if (allVideos) {
+      // Video-only playlist — launch video queue from first video
+      playVideoQueue(buildVideoQueue(normalized.tracks, normalized.tracks[0].id));
+      return;
+    }
+
     const action = async () => {
       let success = false;
-      const trackInfos = normalized.tracks.map(toTrackInfo);
+      const trackInfos = songTracks.map(toTrackInfo);
       switch (contentType) {
         case 'albums':
           success = await playAlbum(contentId, 0, false, trackInfos);
@@ -251,9 +261,18 @@ export function ContentDetailScreen({
   }, [contentId, contentType, normalized, playAlbum, playPlaylist, playStation, playSong, playVideoQueue, openNowPlayingFullscreen]);
 
   const handleShuffle = useCallback(() => {
+    const allVideos = normalized.tracks.length > 0 && normalized.tracks.every(t => isVideoTrack(t.type));
+    const songTracks = normalized.tracks.filter(t => !isVideoTrack(t.type));
+
+    if (allVideos) {
+      // Video-only playlist — shuffle video queue
+      playVideoQueue(buildVideoQueue(normalized.tracks, normalized.tracks[0].id, true));
+      return;
+    }
+
     const action = async () => {
       let success = false;
-      const trackInfos = normalized.tracks.map(toTrackInfo);
+      const trackInfos = songTracks.map(toTrackInfo);
       switch (contentType) {
         case 'albums':
           success = await playAlbum(contentId, 0, true, trackInfos);
@@ -261,18 +280,16 @@ export function ContentDetailScreen({
         case 'playlists':
           success = await playPlaylist(contentId, 0, true, trackInfos);
           break;
-        default:
-          // This is effectively play
-          success = await (async () => {
-            switch (contentType) {
-              case 'stations': return playStation(contentId);
-              case 'songs': return playSong(contentId);
-              case 'music-videos':
-                playVideoQueue({ ids: [contentId], startIndex: 0, tracks: [{ id: contentId, title: normalized.name ?? null, artistName: normalized.subtitle ?? null, artworkUrl: normalized.artworkUrl ?? null }] });
-                return true;
-              default: return false;
-            }
-          })();
+        case 'stations':
+          success = await playStation(contentId);
+          break;
+        case 'songs':
+          success = await playSong(contentId);
+          break;
+        case 'music-videos':
+          playVideoQueue({ ids: [contentId], startIndex: 0, tracks: [{ id: contentId, title: normalized.name ?? null, artistName: normalized.subtitle ?? null, artworkUrl: normalized.artworkUrl ?? null }] });
+          success = true;
+          break;
       }
       if (success && contentType !== 'music-videos') {
         openNowPlayingFullscreen();
@@ -322,19 +339,25 @@ export function ContentDetailScreen({
         return;
       }
 
+      // Video track — launch video queue
+      if (isVideoTrack(track.type)) {
+        playVideoQueue(buildVideoQueue(normalized.tracks, track.id));
+        return;
+      }
+
       const action = async () => {
         let success = false;
+        const songTracks = buildSongTracks(normalized.tracks, track.id);
         switch (contentType) {
           case 'albums':
-            success = await playAlbum(contentId, index, false, normalized.tracks.map(toTrackInfo));
+            success = await playAlbum(contentId, songTracks.startIndex, false, songTracks.tracks);
             break;
           case 'playlists':
-            success = await playPlaylist(contentId, index, false, normalized.tracks.map(toTrackInfo));
+            success = await playPlaylist(contentId, songTracks.startIndex, false, songTracks.tracks);
             break;
           case 'songs':
           case 'music-videos':
           case 'stations':
-            // Individual items or library songs without container
             success = await playSong(getCatalogSongId(track));
             break;
         }
@@ -344,7 +367,7 @@ export function ContentDetailScreen({
       };
       action().catch(e => console.warn('[TrackPress]', e));
     },
-    [contentId, contentType, normalized.tracks, playAlbum, playPlaylist, playSong, openNowPlayingFullscreen, isTrackNowPlaying],
+    [contentId, contentType, normalized.tracks, playAlbum, playPlaylist, playSong, playVideoQueue, openNowPlayingFullscreen, isTrackNowPlaying],
   );
 
   const renderTrack = useCallback(

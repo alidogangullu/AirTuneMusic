@@ -19,6 +19,7 @@ const ENDPOINT_MAP: Record<LibraryCategoryId, string> = {
   playlists: '/me/library/playlists',
   artists: '/me/library/artists',
   songs: '/me/library/songs',
+  'music-videos': '/me/library/music-videos',
 };
 
 export async function fetchLibraryItems(
@@ -31,8 +32,11 @@ export async function fetchLibraryItems(
   if (offset) {
     params.offset = offset;
   }
-  if (category === 'artists') {
+  if (category === 'artists' || category === 'music-videos') {
     params.include = 'catalog';
+  }
+  if (category === 'recently-added') {
+    params['include[library-music-videos]'] = 'catalog';
   }
   const {data} = await appleMusicApi.get<LibraryResponse>(endpoint, {params});
   return data;
@@ -43,7 +47,7 @@ export async function fetchLibraryPlaylistDetail(
 ): Promise<PlaylistDetailResponse> {
   const {data} = await appleMusicApi.get<PlaylistDetailResponse>(
     `/me/library/playlists/${id}`,
-    {params: {include: 'tracks', 'include[library-songs]': 'catalog'}},
+    {params: {include: 'tracks', 'include[library-songs]': 'catalog', 'include[library-music-videos]': 'catalog'}},
   );
   return data;
 }

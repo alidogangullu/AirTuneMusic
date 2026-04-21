@@ -51,7 +51,8 @@
     "albums": "Alben",
     "songs": "Titel",
     "signInPrompt": "Melden Sie sich bei Apple Music an, um Ihre Mediathek zu sehen.",
-    "loadError": "Mediathek konnte nicht geladen werden."
+    "loadError": "Mediathek konnte nicht geladen werden.",
+    "musicVideos": "Videos"
   },
   "nowPlaying": {
     "emptyState": "Wählen Sie einen Titel zum Abspielen.",
@@ -90,6 +91,7 @@
     "topSongs": "Top-Titel",
     "latestRelease": "Neueste Veröffentlichung",
     "essentialAlbums": "Wichtige Alben",
+    "musicVideos": "Musikvideos",
     "failedToLoad": "Künstler konnte nicht geladen werden",
     "madeForYou": "Für dich erstellt",
     "single": "Single",

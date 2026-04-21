@@ -51,7 +51,8 @@
     "albums": "Albums",
     "songs": "Songs",
     "signInPrompt": "Sign in to Apple Music to see your library.",
-    "loadError": "Could not load library."
+    "loadError": "Could not load library.",
+    "musicVideos": "Videos"
   },
   "nowPlaying": {
     "emptyState": "Select a song to play.",
@@ -90,6 +91,7 @@
     "topSongs": "Top Songs",
     "latestRelease": "Latest Release",
     "essentialAlbums": "Essential Albums",
+    "musicVideos": "Music Videos",
     "failedToLoad": "Failed to load artist",
     "madeForYou": "Made for You",
     "single": "Single",

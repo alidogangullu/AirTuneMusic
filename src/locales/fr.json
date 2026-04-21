@@ -51,7 +51,8 @@
     "albums": "Albums",
     "songs": "Morceaux",
     "signInPrompt": "Connectez-vous à Apple Music pour voir votre bibliothèque.",
-    "loadError": "Impossible de charger la bibliothèque."
+    "loadError": "Impossible de charger la bibliothèque.",
+    "musicVideos": "Vidéos"
   },
   "nowPlaying": {
     "emptyState": "Sélectionnez un morceau à lire.",
@@ -90,6 +91,7 @@
     "topSongs": "Morceaux populaires",
     "latestRelease": "Dernière sortie",
     "essentialAlbums": "Albums essentiels",
+    "musicVideos": "Clips vidéo",
     "failedToLoad": "Échec du chargement de l'artiste",
     "madeForYou": "Créé pour vous",
     "single": "Single",

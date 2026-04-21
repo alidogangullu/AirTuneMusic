@@ -29,8 +29,11 @@ export function trackToTrackInfo(track: PlaylistTrack, index: number): TrackInfo
   };
 }
 
-export function buildVideoQueue(tracks: PlaylistTrack[], selectedId: string): VideoQueue {
-  const videoTracks = tracks.filter(t => isVideoTrack(t.type));
+export function buildVideoQueue(tracks: PlaylistTrack[], selectedId: string, shuffle = false): VideoQueue {
+  let videoTracks = tracks.filter(t => isVideoTrack(t.type));
+  if (shuffle) {
+    videoTracks = [...videoTracks].sort(() => Math.random() - 0.5);
+  }
   const startIndex = Math.max(0, videoTracks.findIndex(t => t.id === selectedId));
   return {
     ids: videoTracks.map(getCatalogId),
