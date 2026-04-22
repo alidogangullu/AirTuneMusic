@@ -1,4 +1,4 @@
-package com.airtunemusic
+package com.adg.airtune
 
 import android.app.Application
 import com.facebook.react.PackageList
@@ -6,8 +6,8 @@ import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
-import com.airtunemusic.imagecolors.ImageColorsPackage
-import com.airtunemusic.musicplayer.MusicPlayerPackage
+import com.adg.airtune.imagecolors.ImageColorsPackage
+import com.adg.airtune.musicplayer.MusicPlayerPackage
 
 class MainApplication : Application(), ReactApplication {
 

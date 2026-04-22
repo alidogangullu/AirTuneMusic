@@ -1,4 +1,4 @@
-package com.airtunemusic.imagecolors
+package com.adg.airtune.imagecolors
 
 import android.graphics.BitmapFactory
 import android.util.Log
