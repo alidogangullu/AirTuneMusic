@@ -226,7 +226,7 @@ export function NowPlayingScreen({
       style={styles.root}>
         {showLyrics && (
           <View
-            style={[StyleSheet.absoluteFill, { backgroundColor: themeColors.overlayLight }]}
+            style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.45)' }]}
             pointerEvents="none"
           />
         )}
