@@ -118,7 +118,7 @@ const PlayerContext = createContext<PlayerContextValue | null>(null);
 
 const PlaybackProgressContext = createContext<ProgressState>(initialProgress);
 
-export function PlaybackProgressProvider({children}: {children: React.ReactNode}) {
+export function PlaybackProgressProvider({children}: Readonly<{children: React.ReactNode}>) {
   const [progress, setProgress] = useState<ProgressState>(initialProgress);
 
   useEffect(() => {
@@ -189,7 +189,7 @@ function buildVisualQueue(s: PlayerState, sdkQueue: TrackInfo[]): TrackInfo[] {
 
 // ── Provider ────────────────────────────────────────────────────
 
-export function PlayerProvider({children}: {children: React.ReactNode}) {
+export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>) {
   const {t} = useTranslation();
   const [state, setState] = useState<PlayerState>(initialState);
   const [showSettings, setShowSettings] = useState(false);
@@ -222,7 +222,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const subs = [
@@ -268,7 +268,6 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
           setState(s => {
             const newContainerId = (data as any).containerStoreId ?? s.containerId;
             const newContainerIndex = (data as any).containerIndex ?? s.containerIndex;
-            const isSameTrack = data.playbackQueueId === s.track?.playbackQueueId;
             
             // Build the merged queue using the NEW state properties locally
             const tempState = {
@@ -340,7 +339,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     return () => {
       subs.forEach(s => s.remove());
     };
-  }, []);
+  }, [t]);
 
   // Sync current state and pre-configure native module on mount
   useEffect(() => {
@@ -700,7 +699,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
                   return;
                 }
                 QuotaService.recordSongPlay();
-                lastTrackIdRef.current = (trackInfo as any).playbackQueueId;
+                lastTrackIdRef.current = trackInfo.playbackQueueId;
               }
               setState(s => ({...s, track: trackInfo}));
             }
@@ -716,7 +715,9 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
           }}
           onProgressChanged={data => {
             if (activeEngineRef.current === 'web') {
-              musicPlayer.emitManualPlaybackProgress(data);
+              musicPlayer.emitManualPlaybackProgress({
+                ...data,
+              });
               setState(s => ({
                 ...s,
                 isLoading: false,

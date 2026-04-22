@@ -168,7 +168,6 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
                 }
                 
                 val queue = builder.build()
-                p.stop()
                 p.prepare(queue, true)
                 promise.resolve(true)
             } catch (e: Exception) {
@@ -204,8 +203,7 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
                     builder.shuffleMode(PlaybackShuffleMode.SHUFFLE_MODE_SONGS)
                 }
                 val queue = builder.build()
-                Log.d(TAG, "playContainer: queue built, calling stop() then prepare(queue, autoPlay=true)")
-                p.stop()
+                Log.d(TAG, "playContainer: queue built, calling prepare(queue, autoPlay=true)")
                 p.prepare(queue, true)
                 Log.d(TAG, "playContainer: prepare() returned, playbackState=${p.playbackState}")
                 promise.resolve(true)
@@ -227,8 +225,7 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
                 Log.d(TAG, "playItem type=$itemType id=$itemId")
                 val queue =
                         CatalogPlaybackQueueItemProvider.Builder().items(itemType, itemId).build()
-                Log.d(TAG, "playItem: queue built, calling stop() then prepare(queue, autoPlay=true)")
-                p.stop()
+                Log.d(TAG, "playItem: queue built, calling prepare(queue, autoPlay=true)")
                 p.prepare(queue, true)
                 Log.d(TAG, "playItem: prepare() returned, playbackState=${p.playbackState}")
                 promise.resolve(true)
@@ -481,7 +478,7 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
     ) {
         Log.d(
                 TAG,
-                "onCurrentItemChanged: prev=${previousItem?.item?.title} -> cur=${currentItem?.item?.title}"
+            "onCurrentItemChanged: prev=${previousItem?.item?.title} -> cur=${currentItem?.item?.title}"
         )
 
         val containerStoreId = controller.currentContainerStoreId
