@@ -161,7 +161,8 @@
     "title": "Videos",
     "comingSoon": "Coming soon",
     "recentlyPlayed": "Recently Watched",
-    "library": "In Your Library"
+    "errorRestricted": "This video is not available in your region or with your subscription.",
+    "errorGeneric": "This video could not be played."
   },
   "update": {
     "title": "Update Required",

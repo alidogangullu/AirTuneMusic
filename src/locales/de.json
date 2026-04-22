@@ -160,7 +160,8 @@
     "title": "Videos",
     "comingSoon": "Demnächst",
     "recentlyPlayed": "Zuletzt angesehen",
-    "library": "In deiner Bibliothek"
+    "errorRestricted": "Dieses Video ist in deiner Region oder mit deinem Abonnement nicht verfügbar.",
+    "errorGeneric": "Dieses Video konnte nicht abgespielt werden."
   },
   "update": {
     "title": "Update erforderlich",

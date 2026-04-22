@@ -161,7 +161,8 @@
     "title": "Videolar",
     "comingSoon": "Yakında",
     "recentlyPlayed": "Son İzlenenler",
-    "library": "Kütüphanende"
+    "errorRestricted": "Bu video bölgenizde veya aboneliğinizle kullanılamıyor.",
+    "errorGeneric": "Bu video oynatılamadı."
   },
   "update": {
     "title": "Güncelleme Gerekli",

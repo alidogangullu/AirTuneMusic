@@ -9,7 +9,7 @@ import {
   findNodeHandle,
   useTVEventHandler,
 } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 import { MusicKitVideoWebView, MusicKitVideoWebViewRef } from './MusicKitVideoWebView';
 import { NowPlayingProgressBar, ExternalProgressState } from './NowPlayingProgressBar';
 import { VideoPlaybackControls } from './VideoPlaybackControls';
@@ -24,10 +24,12 @@ interface Props {
 }
 
 export function VideoPlayerModal({ queue, tokens, onClose }: Readonly<Props>) {
+  const { t } = useTranslation();
   const webViewRef = useRef<MusicKitVideoWebViewRef>(null);
 
   const [playbackState, setPlaybackState] = useState<string>('loading');
   const [currentIndex, setCurrentIndex] = useState(queue.startIndex);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showControls, setShowControls] = useState(true);
@@ -150,6 +152,13 @@ export function VideoPlayerModal({ queue, tokens, onClose }: Readonly<Props>) {
               setDuration(dur);
             }}
             onQueueIndexChanged={setCurrentIndex}
+            onError={(msg) => {
+              setErrorMessage(
+                msg.includes('restricted') || msg.includes('Content restricted')
+                  ? t('videos.errorRestricted')
+                  : t('videos.errorGeneric'),
+              );
+            }}
           />
         )}
 
@@ -196,6 +205,11 @@ export function VideoPlayerModal({ queue, tokens, onClose }: Readonly<Props>) {
               />
             </View>
           </>
+        )}
+        {errorMessage && (
+          <View style={styles.errorOverlay}>
+            <Text style={styles.errorOverlayText}>{errorMessage}</Text>
+          </View>
         )}
       </View>
     </Modal>
@@ -251,5 +265,18 @@ const styles = StyleSheet.create({
   dimOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  errorOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.xxl,
+  },
+  errorOverlayText: {
+    color: C.onDarkTextPrimary,
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });

@@ -160,7 +160,8 @@
     "title": "Vidéos",
     "comingSoon": "Bientôt disponible",
     "recentlyPlayed": "Récemment regardés",
-    "library": "Dans votre bibliothèque"
+    "errorRestricted": "Cette vidéo n'est pas disponible dans votre région ou avec votre abonnement.",
+    "errorGeneric": "Impossible de lire cette vidéo."
   },
   "update": {
     "title": "Mise à jour requise",

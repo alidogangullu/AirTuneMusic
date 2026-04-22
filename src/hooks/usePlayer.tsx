@@ -197,7 +197,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
   stateRef.current = state;
   const lastTrackIdRef = useRef<number | null>(null);
 
-  const activeEngineRef = useRef<'native' | 'web'>('native');
+  const activeEngineRef = useRef<'native' | 'web' | 'video'>('native');
   const webPlayerRef = useRef<MusicKitWebPlayerRef>(null);
   const [tokens, setTokens] = useState<{dev: string; user: string | null} | null>(null);
 
@@ -537,14 +537,29 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
   );
 
   const playVideoQueue = useCallback((queue: VideoQueue) => {
+    if (!QuotaService.canPlayNextSong()) {
+      const remaining = QuotaService.getRemainingTimeFormatted();
+      Alert.alert(
+        t('settings.pro.limitReached'),
+        t('settings.pro.limitReachedMessage', {
+          limit: QuotaService.HOURLY_LIMIT,
+          remaining: remaining,
+        }),
+        [
+          {text: t('common.cancel'), style: 'cancel'},
+          {text: t('common.viewOptions'), onPress: () => setShowSettings(true)},
+        ],
+      );
+      return;
+    }
     if (activeEngineRef.current === 'web') {
       webPlayerRef.current?.stop();
     } else {
       musicPlayer.stop();
     }
-    activeEngineRef.current = 'web';
+    activeEngineRef.current = 'video';
     setState(s => ({...s, videoQueue: queue}));
-  }, []);
+  }, [t]);
 
   const stopVideo = useCallback(() => {
     activeEngineRef.current = 'native';
@@ -721,7 +736,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         />
       )}
       </PlaybackProgressProvider>
-      {state.videoQueue && (
+      {state.videoQueue && tokens && (
         <VideoPlayerModal
           queue={state.videoQueue}
           tokens={tokens}

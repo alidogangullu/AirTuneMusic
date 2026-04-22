@@ -1,5 +1,5 @@
-import React, { useRef, useImperativeHandle, forwardRef } from 'react';
-import { StyleSheet } from 'react-native';
+import React, { useRef, useImperativeHandle, forwardRef, useState } from 'react';
+import { StyleSheet, View, Text } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 
 export interface MusicKitVideoWebViewRef {
@@ -25,16 +25,18 @@ interface Props {
 export const MusicKitVideoWebView = forwardRef<MusicKitVideoWebViewRef, Props>(
   ({ developerToken, musicUserToken, onPlaybackStateChanged, onTrackChanged, onProgressChanged, onQueueIndexChanged, onError }, ref) => {
     const webViewRef = useRef<WebView>(null);
+    const [scriptError, setScriptError] = useState(false);
 
     const inject = (js: string) => webViewRef.current?.injectJavaScript(`${js}\ntrue;`);
 
     useImperativeHandle(ref, () => ({
       playQueue: (ids: string[], startIndex: number) => {
+        const safeIndex = Math.max(0, Math.min(startIndex, ids.length - 1));
         inject(`
           (async function() {
             if (!window.music) return;
             window._videoIds = ${JSON.stringify(ids)};
-            window._videoIndex = ${startIndex};
+            window._videoIndex = ${safeIndex};
             await window._playCurrentVideo();
           })();
         `);
@@ -161,6 +163,9 @@ export const MusicKitVideoWebView = forwardRef<MusicKitVideoWebViewRef, Props>(
             window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Config: ' + err.message }));
           });
         };
+        mk.onerror = function() {
+          window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'MusicKit script failed to load' }));
+        };
         document.head.appendChild(mk);
       } catch(e) {
         window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Init: ' + e.message }));
@@ -180,13 +185,24 @@ export const MusicKitVideoWebView = forwardRef<MusicKitVideoWebViewRef, Props>(
         } else if (data.type === 'queueIndex' && onQueueIndexChanged) {
           onQueueIndexChanged(data.index);
         } else if (data.type === 'error') {
+          if (data.error.includes('MusicKit script failed to load')) {
+            setScriptError(true);
+          }
           onError?.(data.error);
-          console.warn('[VideoWebView]', data.error);
+          console.error('[VideoWebView]', data.error);
         }
       } catch (e) {
         console.warn('[VideoWebView] parse error', e);
       }
     };
+
+    if (scriptError) {
+      return (
+        <View style={[styles.webview, styles.errorContainer]}>
+          <Text style={styles.errorText}>Failed to load MusicKit SDK</Text>
+        </View>
+      );
+    }
 
     return (
       <WebView
@@ -213,5 +229,16 @@ const styles = StyleSheet.create({
   webview: {
     flex: 1,
     backgroundColor: '#000',
+  },
+  errorContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: '#ff3b30',
+    fontSize: 16,
+    textAlign: 'center',
+    fontWeight: '600',
   },
 });
