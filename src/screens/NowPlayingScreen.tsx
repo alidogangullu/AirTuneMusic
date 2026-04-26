@@ -8,7 +8,7 @@
  *   - D-pad Right → scrub +5 s
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   BackHandler,
@@ -23,7 +23,6 @@ import {
   findNodeHandle,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import Svg, { Path } from 'react-native-svg';
 import LinearGradient from 'react-native-linear-gradient';
 import { useImageColors } from '../hooks/useImageColors';
 import { usePlayer } from '../hooks/usePlayer';
@@ -76,7 +75,7 @@ const QueueItem = React.memo(({
         accentColor={accentColor}
         showBars={isCurrent}
         align="center"
-        style={{ opacity: showInfo ? 0 : 1 }}
+        style={showInfo ? styles.trackInfoHidden : styles.trackInfoVisible}
       />
     </View>
   );
@@ -204,8 +203,8 @@ export function NowPlayingScreen({
         end={{ x: 1, y: 1 }}
         style={styles.root}
       >
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ fontSize: 20, color: themeColors.textMuted, fontWeight: '600' }}>{t('nowPlaying.emptyState')}</Text>
+        <View style={styles.emptyStateContainer}>
+          <Text style={styles.emptyText}>{t('nowPlaying.emptyState')}</Text>
         </View>
       </LinearGradient>
     );
@@ -215,6 +214,78 @@ export function NowPlayingScreen({
   const bg1 = palette?.darkMuted || palette?.dominant || themeColors.nowPlayingDarkBg;
   const bg2 = palette?.darkVibrant || palette?.muted || themeColors.nowPlayingDarkBgDeep;
   const accentColor = palette?.vibrant || palette?.lightVibrant || themeColors.accent;
+  const initialQueueIndex = Math.max(activeIndex, 0);
+
+  let centerContent: React.ReactNode;
+  if (showLyrics) {
+    centerContent = (
+      <View style={styles.lyricsSplitView}>
+        <View style={styles.artworkSectionSide}>
+          <NowPlayingTrackInfo
+            track={track}
+            isPlaying={isPlaying}
+            isLoading={state.isLoading}
+            isBuffering={state.buffering}
+            accentColor={accentColor}
+            scaleAnim={scaleAnim}
+            showBars={true}
+            align="center"
+          />
+        </View>
+        <View style={[styles.lyricsSection, isTabView && styles.lyricsTabPadding]}>
+          <LyricsView />
+        </View>
+      </View>
+    );
+  } else if (showQueue) {
+    centerContent = (
+      <View style={styles.integratedQueueContainer}>
+        <FlatList
+          key={`queue-${state.shuffleMode}`}
+          ref={queueListRef}
+          data={state.queue}
+          horizontal
+          keyExtractor={(item) => item.playbackQueueId?.toString() ?? item.id}
+          showsHorizontalScrollIndicator={false}
+          removeClippedSubviews={true}
+          initialNumToRender={3}
+          maxToRenderPerBatch={3}
+          windowSize={5}
+          contentContainerStyle={[styles.queueListContent, { paddingHorizontal: HORIZONTAL_PADDING }]}
+          initialScrollIndex={initialQueueIndex}
+          getItemLayout={(_, index) => ({
+            length: ARTWORK_SIZE + 20,
+            offset: (ARTWORK_SIZE + 20) * index,
+            index,
+          })}
+          renderItem={({ item }) => (
+            <QueueItem
+              track={item}
+              isCurrent={item.playbackQueueId === (state.track as any)?.playbackQueueId}
+              isPlaying={isPlaying}
+              isLoading={state.isLoading}
+              isBuffering={state.buffering}
+              accentColor={accentColor}
+              showInfo={showInfo}
+            />
+          )}
+        />
+      </View>
+    );
+  } else {
+    centerContent = (
+      <NowPlayingTrackInfo
+        track={track}
+        isPlaying={isPlaying}
+        isLoading={state.isLoading}
+        isBuffering={state.buffering}
+        accentColor={accentColor}
+        scaleAnim={scaleAnim}
+        showBars={true}
+        align="center"
+      />
+    );
+  }
   // If we have a track, we show it, even if palette is loading or playback is pending.
   // The only reason to show a full screen spinner is if we have NO track info yet while loading.
 
@@ -226,76 +297,14 @@ export function NowPlayingScreen({
       style={styles.root}>
         {showLyrics && (
           <View
-            style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.45)' }]}
+            style={[StyleSheet.absoluteFill, styles.lyricsBackdrop]}
             pointerEvents="none"
           />
         )}
 
         {/* Centered content: artwork OR queue OR lyrics */}
         <View style={styles.content}>
-          {!showLyrics && !showQueue ? (
-            <NowPlayingTrackInfo
-              track={track}
-              isPlaying={isPlaying}
-              isLoading={state.isLoading}
-              isBuffering={state.buffering}
-              accentColor={accentColor}
-              scaleAnim={scaleAnim}
-              showBars={true}
-              align="center"
-            />
-          ) : !showLyrics && showQueue ? (
-            <View style={styles.integratedQueueContainer}>
-              <FlatList
-                key={`queue-${state.shuffleMode}`}
-                ref={queueListRef}
-                data={state.queue}
-                horizontal
-                keyExtractor={(item) => item.playbackQueueId?.toString() ?? item.id}
-                showsHorizontalScrollIndicator={false}
-                removeClippedSubviews={true}
-                initialNumToRender={3}
-                maxToRenderPerBatch={3}
-                windowSize={5}
-                contentContainerStyle={[styles.queueListContent, { paddingHorizontal: HORIZONTAL_PADDING }]}
-                initialScrollIndex={activeIndex >= 0 ? activeIndex : 0}
-                getItemLayout={(_, index) => ({
-                  length: ARTWORK_SIZE + 20,
-                  offset: (ARTWORK_SIZE + 20) * index,
-                  index,
-                })}
-                renderItem={({ item }) => (
-                  <QueueItem
-                    track={item}
-                    isCurrent={item.playbackQueueId === (state.track as any)?.playbackQueueId}
-                    isPlaying={isPlaying}
-                    isLoading={state.isLoading}
-                    isBuffering={state.buffering}
-                    accentColor={accentColor}
-                    showInfo={showInfo}
-                  />
-                )}
-              />
-            </View>
-          ) : (
-            <View style={styles.lyricsSplitView}>
-              <View style={styles.artworkSectionSide}>
-                <NowPlayingTrackInfo
-                  track={track}
-                  isPlaying={isPlaying}
-                  isLoading={state.isLoading}
-                  isBuffering={state.buffering}
-                  accentColor={accentColor}
-                  scaleAnim={scaleAnim}
-                  showBars={true}
-                  align="center"
-                />
-              </View>
-              <View style={[styles.lyricsSection, isTabView && styles.lyricsTabPadding]}>
-                <LyricsView />
-              </View>
-            </View>
-          )}
+          {centerContent}
         </View>
 
 
@@ -326,51 +335,87 @@ export function NowPlayingScreen({
                     {t('nowPlaying.durationFormat', { mins: Math.floor(track.duration / 60000), secs: Math.floor((track.duration % 60000) / 1000) })}
                   </Text>
                 </View>
-                <Pressable
-                  style={({ focused }) => [
-                    styles.gotoAlbumButton,
-                    focused && styles.gotoAlbumButtonFocused,
-                  ]}
-                  hasTVPreferredFocus={showInfo}
-                  onPress={async () => {
-                    if (track?.id && !isLiveRadio) {
-                      try {
-                        const detail = await fetchSongDetail(track.id, storefrontId);
-                        const albumId = detail.data[0]?.relationships?.albums?.data?.[0]?.id;
+                <View style={styles.infoActionButtons}>
+                  <Pressable
+                    style={({ focused }) => [
+                      styles.gotoAlbumButton,
+                      focused && styles.gotoAlbumButtonFocused,
+                    ]}
+                    hasTVPreferredFocus={showInfo}
+                    onPress={async () => {
+                      if (track?.id && !isLiveRadio) {
+                        try {
+                          const detail = await fetchSongDetail(track.id, storefrontId);
+                          const albumId = detail.data[0]?.relationships?.albums?.data?.[0]?.id;
 
-                        if (albumId) {
-                          pushContent({
-                            id: albumId,
-                            type: 'albums',
-                            attributes: {
-                              name: track.albumTitle ?? '',
-                            },
-                          });
-                          setShowInfo(false); // Close the info card
-                        }
-                      } catch (e) {
-                        console.warn('NowPlayingScreen: Failed to fetch album ID:', e);
-                        // Fallback: try containerId if available
-                        if (state.containerId) {
-                          pushContent({
-                            id: state.containerId,
-                            type: 'albums',
-                            attributes: {
-                              name: track.albumTitle ?? '',
-                            },
-                          });
-                          setShowInfo(false);
+                          if (albumId) {
+                            pushContent({
+                              id: albumId,
+                              type: 'albums',
+                              attributes: {
+                                name: track.albumTitle ?? '',
+                              },
+                            });
+                            setShowInfo(false); // Close the info card
+                          }
+                        } catch (e) {
+                          console.warn('NowPlayingScreen: Failed to fetch album ID:', e);
+                          // Fallback: try containerId if available
+                          if (state.containerId) {
+                            pushContent({
+                              id: state.containerId,
+                              type: 'albums',
+                              attributes: {
+                                name: track.albumTitle ?? '',
+                              },
+                            });
+                            setShowInfo(false);
+                          }
                         }
                       }
-                    }
-                  }}
-                  focusable={!isLiveRadio}>
-                  {({ focused }) => (
-                    <Text style={[styles.gotoAlbumText, focused && styles.gotoAlbumTextFocused]}>
-                      {t('nowPlaying.goToAlbum')}
-                    </Text>
-                  )}
-                </Pressable>
+                    }}
+                    focusable={!isLiveRadio}>
+                    {({ focused }) => (
+                      <Text style={[styles.gotoAlbumText, focused && styles.gotoAlbumTextFocused]}>
+                        {t('nowPlaying.goToAlbum')}
+                      </Text>
+                    )}
+                  </Pressable>
+
+                  <Pressable
+                    style={({ focused }) => [
+                      styles.gotoAlbumButton,
+                      focused && styles.gotoAlbumButtonFocused,
+                    ]}
+                    onPress={async () => {
+                      if (track?.id && !isLiveRadio) {
+                        try {
+                          const detail = await fetchSongDetail(track.id, storefrontId);
+                          const artistId = detail.data[0]?.relationships?.artists?.data?.[0]?.id;
+
+                          if (artistId) {
+                            pushContent({
+                              id: artistId,
+                              type: 'artists',
+                              attributes: {
+                                name: track.artistName ?? '',
+                              },
+                            });
+                            setShowInfo(false);
+                          }
+                        } catch (e) {
+                          console.warn('NowPlayingScreen: Failed to fetch artist ID:', e);
+                        }
+                      }
+                    }}
+                    focusable={!isLiveRadio}>
+                    {({ focused }) => (
+                      <Text style={[styles.gotoAlbumText, focused && styles.gotoAlbumTextFocused]}>
+                        {t('more.goToArtist')}
+                      </Text>
+                    )}
+                  </Pressable>
+                </View>
               </View>
             </View>
           </Pressable>
@@ -430,6 +475,21 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 20,
     color: C.onDarkTextMuted,
+    fontWeight: '600',
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  trackInfoVisible: {
+    opacity: 1,
+  },
+  trackInfoHidden: {
+    opacity: 0,
+  },
+  lyricsBackdrop: {
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
   },
   content: {
     flex: 1,
@@ -522,7 +582,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.sm,
     borderRadius: radius.md,
+  },
+  infoActionButtons: {
     marginLeft: spacing.lg,
+    gap: spacing.sm,
   },
   gotoAlbumButtonFocused: {
     backgroundColor: C.scrubKnobBg,
