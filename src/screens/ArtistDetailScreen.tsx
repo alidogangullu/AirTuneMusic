@@ -36,8 +36,8 @@ export function ArtistDetailScreen({
   const styles = useStyles(colors);
   const { data, isLoading, error } = useArtistDetail(artistId);
 
-  const { playSong, playVideoQueue } = usePlayer();
-  const { openNowPlayingFullscreen } = useContentNavigation();
+  const { playSong } = usePlayer();
+  const { openNowPlayingFullscreen, pushContent } = useContentNavigation();
 
   const [selectedAlbumParams, setSelectedAlbumParams] = React.useState<{ id: string, type: 'albums' } | null>(null);
 
@@ -86,18 +86,17 @@ export function ArtistDetailScreen({
     });
   }, []);
 
-  const handleVideoPress = useCallback((video: MusicVideoDetail, allVideos: MusicVideoDetail[]) => {
-    playVideoQueue({
-      ids: allVideos.map(v => v.id),
-      startIndex: allVideos.findIndex(v => v.id === video.id),
-      tracks: allVideos.map(v => ({
-        id: v.id,
-        title: v.attributes?.name ?? null,
-        artistName: v.attributes?.artistName ?? null,
-        artworkUrl: v.attributes?.artwork?.url ?? null,
-      })),
+  const handleVideoPress = useCallback((video: MusicVideoDetail) => {
+    pushContent({
+      id: video.id,
+      type: 'music-videos',
+      attributes: {
+        name: video.attributes?.name,
+        artistName: video.attributes?.artistName,
+        artwork: video.attributes?.artwork ? { url: video.attributes.artwork.url } : undefined,
+      },
     });
-  }, [playVideoQueue]);
+  }, [pushContent]);
 
   if (isLoading) {
     const LoadingIndicator = require('../components/LoadingIndicator').LoadingIndicator;
@@ -206,7 +205,7 @@ export function ArtistDetailScreen({
               renderItem={({ item: video }) => (
                 <MusicVideoCard
                   video={video}
-                  onPress={() => handleVideoPress(video, musicVideos)}
+                  onPress={() => handleVideoPress(video)}
                   styles={styles}
                 />
               )}

@@ -254,3 +254,51 @@ export async function removeFromLibrary(
   if (!typeKey || !libraryId) { return; }
   await appleMusicApi.delete(`/me/library/${typeKey}/${libraryId}`);
 }
+
+export type EditablePlaylist = {
+  id: string;
+  name: string;
+};
+
+/**
+ * Fetches user-created playlists from the library using the canEdit flag returned by the API.
+ * Paginates up to 5 pages to keep latency low.
+ */
+export async function fetchEditableLibraryPlaylists(limit = 100): Promise<EditablePlaylist[]> {
+  const results: EditablePlaylist[] = [];
+  let offset: string | undefined;
+  let page = 0;
+
+  do {
+    const params: Record<string, string | number> = { limit };
+    if (offset) { params.offset = offset; }
+
+    const { data } = await appleMusicApi.get<LibraryResponse>('/me/library/playlists', { params });
+
+    for (const item of data.data ?? []) {
+      const attrs = item.attributes as (typeof item.attributes & { canEdit?: boolean }) | undefined;
+      if (!attrs?.canEdit) { continue; }
+      const name = attrs?.name;
+      if (name) { results.push({ id: item.id, name }); }
+    }
+
+    offset = extractOffset(data.next);
+    page += 1;
+  } while (offset && page < 5);
+
+  return results;
+}
+
+/**
+ * Adds a catalog song to a library playlist.
+ * POST /v1/me/library/playlists/{id}/tracks
+ */
+export async function addTrackToPlaylist(
+  playlistLibraryId: string,
+  catalogSongId: string,
+): Promise<void> {
+  await appleMusicApi.post(
+    `/me/library/playlists/${playlistLibraryId}/tracks`,
+    { data: [{ id: catalogSongId, type: 'songs' }] },
+  );
+}

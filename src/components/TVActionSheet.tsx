@@ -9,8 +9,10 @@ import {
   Animated,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 
@@ -33,6 +35,8 @@ type Props = {
 export function TVActionSheet({ visible, onClose, items, busyKey, feedback }: Readonly<Props>) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.94)).current;
+  const { height: windowHeight } = useWindowDimensions();
+  const maxListHeight = windowHeight * 0.75;
 
   useEffect(() => {
     if (visible) {
@@ -55,32 +59,37 @@ export function TVActionSheet({ visible, onClose, items, busyKey, feedback }: Re
               <Text style={styles.feedbackText}>{feedback}</Text>
             </View>
           ) : null}
-          {items.map((item, index) => (
-            <Pressable
-              key={item.key}
-              style={({ focused }) => [
-                styles.item,
-                focused && !item.disabled && styles.itemFocused,
-                item.disabled && styles.itemDisabled,
-              ]}
-              focusable={!item.disabled}
-              hasTVPreferredFocus={index === 0}
-              onPress={async () => { if (!item.disabled) { await item.onPress(); } }}>
-              {({ focused }) => busyKey === item.key ? (
-                <ActivityIndicator size="small" color={focused ? '#1c1c1e' : '#ffffff'} />
-              ) : (
-                <Text style={[
-                  styles.itemText,
-                  focused && !item.disabled && styles.itemTextFocused,
-                  item.destructive && styles.itemTextDestructive,
-                  item.destructive && focused && styles.itemTextDestructiveFocused,
-                  item.disabled && styles.itemTextDisabled,
-                ]}>
-                  {item.label}
-                </Text>
-              )}
-            </Pressable>
-          ))}
+          <ScrollView
+            style={{ maxHeight: maxListHeight }}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}>
+            {items.map((item, index) => (
+              <Pressable
+                key={item.key}
+                style={({ focused }) => [
+                  styles.item,
+                  focused && !item.disabled && styles.itemFocused,
+                  item.disabled && styles.itemDisabled,
+                ]}
+                focusable={!item.disabled}
+                hasTVPreferredFocus={index === 0}
+                onPress={async () => { if (!item.disabled) { await item.onPress(); } }}>
+                {({ focused }) => busyKey === item.key ? (
+                  <ActivityIndicator size="small" color={focused ? '#1c1c1e' : '#ffffff'} />
+                ) : (
+                  <Text style={[
+                    styles.itemText,
+                    focused && !item.disabled && styles.itemTextFocused,
+                    item.destructive && styles.itemTextDestructive,
+                    item.destructive && focused && styles.itemTextDestructiveFocused,
+                    item.disabled && styles.itemTextDisabled,
+                  ]}>
+                    {item.label}
+                  </Text>
+                )}
+              </Pressable>
+            ))}
+          </ScrollView>
         </Animated.View>
       </Pressable>
     </Modal>
@@ -101,6 +110,9 @@ const styles = StyleSheet.create({
   menu: {
     width: ITEM_WIDTH,
     alignItems: 'stretch',
+    gap: 5,
+  },
+  listContent: {
     gap: 5,
   },
   feedbackRow: {

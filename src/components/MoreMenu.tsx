@@ -2,11 +2,13 @@
  * MoreMenu — Apple Music ••• actions for the content detail screen.
  * Delegates rendering to TVActionSheet.
  *
- *   albums       → Add to Library  |  Love  |  Go to Artist
- *   playlists    → Add to Library  |  Love
- *   songs        → Add to Library  |  Love  |  Go to Artist  |  Go to Album
- *   music-videos → Add to Library  |  Love  |  Go to Artist  |  Go to Album
- *   stations     → Love
+ *   albums       → Add to Library  |  Love  |  Dislike  |  Add to Playlist  |  Go to Artist
+ *   playlists    → Add to Library  |  Love  |  Dislike  |  Add to Playlist
+ *   songs        → Add to Library  |  Love  |  Dislike  |  Add to Playlist  |  Go to Artist  |  Go to Album
+ *   music-videos → Add to Library  |  Love  |  Dislike  |  Go to Artist  |  Go to Album
+ *   stations     → Love  |  Dislike
+ *
+ * "Add to Playlist" opens a secondary TVActionSheet listing the user's editable library playlists.
  */
 
 import React, { useCallback, useEffect, useState } from 'react';
@@ -15,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { TVActionSheet } from './TVActionSheet';
 import type { TVActionSheetItem } from './TVActionSheet';
 import { getRating, setRating as setUserRating } from '../api/apple-music/ratings';
-import { addToLibrary, removeFromLibrary, type LibraryMembershipSnapshot } from '../api/apple-music/library';
+import { addToLibrary, fetchEditableLibraryPlaylists, addTrackToPlaylist, type LibraryMembershipSnapshot, type EditablePlaylist } from '../api/apple-music/library';
 import {
   isInLibrarySnapshot,
   LIBRARY_MEMBERSHIP_QUERY_KEY,
@@ -73,26 +75,40 @@ type ActionState = {
   inLibrary: boolean;
   loadingLibrary: boolean;
   handleLove: () => Promise<void>;
+  handleDislike: () => Promise<void>;
   handleAddToLibrary: () => Promise<void>;
+  handleAddToPlaylist: () => void;
 };
 
+function buildLibraryLabel(t: Translate, inLibrary: boolean, loading: boolean): string {
+  if (loading) { return '…'; }
+  return inLibrary ? t('more.inLibrary') : t('more.addToLibrary');
+}
+
+function buildRatingLabel(t: Translate, rating: number, loading: boolean, activeValue: number, activeKey: string, inactiveKey: string): string {
+  if (loading) { return '…'; }
+  return rating === activeValue ? t(activeKey) : t(inactiveKey);
+}
+
 function actionItems(t: Translate, contentType: RecommendationContentType, state: ActionState): TVActionSheetItem[] {
-  const { rating, loadingRating, inLibrary, loadingLibrary, handleLove, handleAddToLibrary } = state;
+  const { rating, loadingRating, inLibrary, loadingLibrary, handleLove, handleDislike, handleAddToLibrary, handleAddToPlaylist } = state;
   const items: TVActionSheetItem[] = [];
+
   const supportsLibrary = contentType === 'songs' || contentType === 'albums' || contentType === 'playlists' || contentType === 'music-videos';
+  const supportsRating = supportsLibrary || contentType === 'stations';
+  const supportsPlaylist = contentType === 'songs' || contentType === 'albums' || contentType === 'playlists';
 
   if (supportsLibrary) {
-    let libraryLabel = t('more.addToLibrary');
-    if (loadingLibrary) { libraryLabel = '…'; }
-    else if (inLibrary) { libraryLabel = t('more.inLibrary'); }
-    items.push({ key: 'library', label: libraryLabel, onPress: handleAddToLibrary, disabled: loadingLibrary });
+    items.push({ key: 'library', label: buildLibraryLabel(t, inLibrary, loadingLibrary), onPress: handleAddToLibrary, disabled: loadingLibrary || inLibrary });
   }
-
-  const supportsRating = supportsLibrary || contentType === 'stations';
   if (supportsRating) {
-    let loveLabel = rating === 1 ? t('more.removeLove') : t('more.love');
-    if (loadingRating) { loveLabel = '…'; }
-    items.push({ key: 'love', label: loveLabel, onPress: handleLove });
+    items.push(
+      { key: 'love', label: buildRatingLabel(t, rating, loadingRating, 1, 'more.removeLove', 'more.love'), onPress: handleLove },
+      { key: 'dislike', label: buildRatingLabel(t, rating, loadingRating, -1, 'more.removeDislike', 'more.dislike'), onPress: handleDislike },
+    );
+  }
+  if (supportsPlaylist) {
+    items.push({ key: 'addToPlaylist', label: t('more.addToPlaylist'), onPress: handleAddToPlaylist });
   }
 
   return items;
@@ -118,6 +134,9 @@ export function MoreMenu({
   const [locallyAdded, setLocallyAdded] = useState(false);
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [playlists, setPlaylists] = useState<EditablePlaylist[]>([]);
+  const [playlistPickerVisible, setPlaylistPickerVisible] = useState(false);
+  const [loadingPlaylists, setLoadingPlaylists] = useState(false);
 
   const inLibrary = locallyAdded || membership.inLibrary;
   const loadingLibrary = !locallyAdded && membership.loading;
@@ -137,7 +156,7 @@ export function MoreMenu({
     async (key: string, fn: () => Promise<void>, successMsg: string) => {
       setBusyKey(key);
       try { await fn(); setFeedback(successMsg); }
-      catch { setFeedback(t('more.error')); }
+      catch (e) { console.error('[MoreMenu] action failed:', key, e); setFeedback(t('more.error')); }
       finally { setBusyKey(null); }
     },
     [t],
@@ -145,93 +164,83 @@ export function MoreMenu({
 
   const handleLove = useCallback(async () => {
     const newValue = rating === 1 ? 0 : 1;
-    await run('love', () => setUserRating(contentId, newValue, contentType), newValue === 1 ? t('more.loved') : t('more.loveRemoved'));
+    await run('love', () => setUserRating(contentId, newValue, contentType), '');
     setRating(newValue);
-  }, [rating, contentId, contentType, run, t]);
+  }, [rating, contentId, contentType, run]);
+
+  const handleDislike = useCallback(async () => {
+    const newValue = rating === -1 ? 0 : -1;
+    await run('dislike', () => setUserRating(contentId, newValue, contentType), '');
+    setRating(newValue);
+  }, [rating, contentId, contentType, run]);
+
+  const handleAddToPlaylist = useCallback(() => {
+    setLoadingPlaylists(true);
+    setPlaylists([]);
+    setPlaylistPickerVisible(true);
+    fetchEditableLibraryPlaylists()
+      .then(result => setPlaylists(result.length > 0 ? result : []))
+      .catch(() => setPlaylists([]))
+      .finally(() => setLoadingPlaylists(false));
+  }, []);
+
+  const handlePickPlaylist = useCallback(async (playlist: EditablePlaylist) => {
+    setPlaylistPickerVisible(false);
+    await run(
+      `playlist-${playlist.id}`,
+      () => addTrackToPlaylist(playlist.id, contentId),
+      '',
+    );
+  }, [contentId, run]);
 
   const handleAddToLibrary = useCallback(async () => {
-    const supportedType =
-      contentType === 'albums' ||
-      contentType === 'songs' ||
-      contentType === 'playlists' ||
-      contentType === 'music-videos';
-
-    if (!supportedType) {
-      return;
-    }
-
-    if (inLibrary) {
-      const removeId = membership.libraryId ?? contentId;
-      await run('library', () => removeFromLibrary(contentType, removeId), t('more.removedFromLibrary'));
-      setLocallyAdded(false);
-      queryClient.setQueryData<LibraryMembershipSnapshot>(
-        LIBRARY_MEMBERSHIP_QUERY_KEY,
-        previous => {
-          if (!previous) {
-            return previous;
-          }
-
-          const entry = previous[contentType];
-          const nextIds = entry.ids.filter(id => id !== contentId && id !== removeId);
-          const nextCatalogToLibrary = Object.fromEntries(
-            Object.entries(entry.catalogToLibrary).filter(
-              ([catalogId, libraryId]) => catalogId !== contentId && catalogId !== removeId && libraryId !== removeId,
-            ),
-          );
-
-          return {
-            ...previous,
-            [contentType]: {
-              ...entry,
-              ids: nextIds,
-              catalogToLibrary: nextCatalogToLibrary,
-            },
-          };
-        },
-      );
-      queryClient.invalidateQueries({ queryKey: LIBRARY_MEMBERSHIP_QUERY_KEY }).catch(() => undefined);
-      return;
-    }
-
-    await run('library', () => addToLibrary(contentType, contentId), t('more.addedToLibrary'));
+    await run('library', () => addToLibrary(contentType, contentId), '');
     setLocallyAdded(true);
     queryClient.setQueryData<LibraryMembershipSnapshot>(
       LIBRARY_MEMBERSHIP_QUERY_KEY,
       previous => {
-        if (!previous) {
+        if (!previous || isInLibrarySnapshot(previous, contentType, contentId)) {
           return previous;
         }
-
-        if (isInLibrarySnapshot(previous, contentType, contentId)) {
-          return previous;
-        }
-
-        const entry = previous[contentType];
+        const entry = previous[contentType as keyof LibraryMembershipSnapshot];
         return {
           ...previous,
-          [contentType]: {
-            ...entry,
-            ids: [...entry.ids, contentId],
-          },
+          [contentType]: { ...entry, ids: [...entry.ids, contentId] },
         };
       },
     );
-
     queryClient.invalidateQueries({ queryKey: LIBRARY_MEMBERSHIP_QUERY_KEY }).catch(() => undefined);
-  }, [contentId, contentType, inLibrary, membership.libraryId, queryClient, run, t]);
+  }, [contentId, contentType, queryClient, run]);
 
   const items: TVActionSheetItem[] = [
     ...navItems(t, contentType, relationships, onClose, onNavigateToArtist, onNavigateToAlbum),
-    ...actionItems(t, contentType, { rating, loadingRating, inLibrary, loadingLibrary, handleLove, handleAddToLibrary }),
+    ...actionItems(t, contentType, { rating, loadingRating, inLibrary, loadingLibrary, handleLove, handleDislike, handleAddToLibrary, handleAddToPlaylist }),
   ];
 
+  let playlistItems: TVActionSheetItem[];
+  if (loadingPlaylists) {
+    playlistItems = [{ key: 'loading', label: t('more.loadingPlaylists'), onPress: async () => {}, disabled: true }];
+  } else if (playlists.length === 0) {
+    playlistItems = [{ key: 'empty', label: t('more.noPlaylists'), onPress: async () => {}, disabled: true }];
+  } else {
+    playlistItems = playlists.map(pl => ({ key: pl.id, label: pl.name, onPress: () => handlePickPlaylist(pl) }));
+  }
+
   return (
-    <TVActionSheet
-      visible={visible}
-      onClose={onClose}
-      items={items}
-      busyKey={busyKey}
-      feedback={feedback}
-    />
+    <>
+      <TVActionSheet
+        visible={visible}
+        onClose={onClose}
+        items={items}
+        busyKey={busyKey}
+        feedback={feedback}
+      />
+      <TVActionSheet
+        visible={playlistPickerVisible}
+        onClose={() => setPlaylistPickerVisible(false)}
+        items={playlistItems}
+        busyKey={busyKey}
+      />
+    </>
   );
 }

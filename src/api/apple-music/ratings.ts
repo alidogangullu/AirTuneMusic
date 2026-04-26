@@ -16,10 +16,7 @@ export interface RatingResponse {
   data: RatingResource[];
 }
 
-// Maps content type to the Apple Music ratings endpoint segment.
-// library-playlists are catalog playlists in this context (not user-created),
-// so we use the catalog 'playlists' endpoint.
-const RATING_TYPE_MAP: Partial<Record<RecommendationContentType, string>> = {
+const CATALOG_RATING_TYPE_MAP: Partial<Record<RecommendationContentType, string>> = {
   songs: 'songs',
   albums: 'albums',
   playlists: 'playlists',
@@ -27,14 +24,33 @@ const RATING_TYPE_MAP: Partial<Record<RecommendationContentType, string>> = {
   stations: 'stations',
 };
 
+const LIBRARY_RATING_TYPE_MAP: Partial<Record<RecommendationContentType, string>> = {
+  songs: 'library-songs',
+  albums: 'library-albums',
+  playlists: 'library-playlists',
+  'music-videos': 'library-music-videos',
+};
+
+// Library resource IDs start with 'l.' (albums), 'i.' (songs), or 'p.' (playlists).
+function isLibraryId(id: string): boolean {
+  return id.startsWith('l.') || id.startsWith('i.') || id.startsWith('p.');
+}
+
+function ratingSegment(id: string, contentType: RecommendationContentType): string | undefined {
+  if (isLibraryId(id)) {
+    return LIBRARY_RATING_TYPE_MAP[contentType];
+  }
+  return CATALOG_RATING_TYPE_MAP[contentType];
+}
+
 export async function getRating(
   id: string,
   contentType: RecommendationContentType = 'songs',
 ): Promise<number> {
-  const ratingType = RATING_TYPE_MAP[contentType];
-  if (!ratingType) { return 0; }
+  const segment = ratingSegment(id, contentType);
+  if (!segment) { return 0; }
   try {
-    const response = await appleMusicApi.get<RatingResponse>(`/me/ratings/${ratingType}/${id}`);
+    const response = await appleMusicApi.get<RatingResponse>(`/me/ratings/${segment}/${id}`);
     return response.data.data[0]?.attributes.value ?? 0;
   } catch {
     return 0;
@@ -46,12 +62,12 @@ export async function setRating(
   value: number,
   contentType: RecommendationContentType = 'songs',
 ): Promise<void> {
-  const ratingType = RATING_TYPE_MAP[contentType];
-  if (!ratingType) { return; }
+  const segment = ratingSegment(id, contentType);
+  if (!segment) { return; }
   if (value === 0) {
-    await appleMusicApi.delete(`/me/ratings/${ratingType}/${id}`);
+    await appleMusicApi.delete(`/me/ratings/${segment}/${id}`);
   } else {
-    await appleMusicApi.put(`/me/ratings/${ratingType}/${id}`, {
+    await appleMusicApi.put(`/me/ratings/${segment}/${id}`, {
       type: 'rating',
       attributes: { value },
     });

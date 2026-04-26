@@ -22,7 +22,6 @@ import { radius, spacing } from '../theme/layout';
 import { getArtworkUrl } from '../api/apple-music/recommendations';
 import { getMusicUserToken } from '../api/apple-music/musicUserToken';
 import { useContentNavigation } from '../navigation';
-import { usePlayer } from '../hooks/usePlayer';
 import type { LibraryCategoryId, LibraryItem } from '../types/library';
 import { useLibraryInfiniteItems } from '../hooks/useLibraryItems';
 
@@ -110,7 +109,6 @@ export function LibraryScreen(): React.JSX.Element {
   const { colors } = useTheme();
   const styles = useStyles(colors);
   const { pushContent } = useContentNavigation();
-  const { playVideoQueue } = usePlayer();
 
   const [activeCategory, setActiveCategory] =
     useState<LibraryCategoryId>('recently-added');
@@ -136,20 +134,18 @@ export function LibraryScreen(): React.JSX.Element {
 
   const handleItemPress = useCallback(
     (item: LibraryItem) => {
-      // Video — launch video player directly
       if (item.type === 'library-music-videos') {
         const catalogItem = item.relationships?.catalog?.data?.[0];
-        const videoId = catalogItem?.id ?? item.attributes?.playParams?.catalogId ?? item.id;
-        const artworkUrl = item.attributes?.artwork?.url ?? catalogItem?.attributes?.artwork?.url ?? null;
-        playVideoQueue({
-          ids: [videoId],
-          startIndex: 0,
-          tracks: [{
-            id: videoId,
-            title: item.attributes?.name ?? null,
-            artistName: item.attributes?.artistName ?? null,
-            artworkUrl,
-          }],
+        const catalogId = item.attributes?.playParams?.catalogId ?? catalogItem?.id ?? item.id;
+        const artworkObj = item.attributes?.artwork ?? catalogItem?.attributes?.artwork;
+        pushContent({
+          id: catalogId,
+          type: 'music-videos',
+          attributes: {
+            name: item.attributes?.name,
+            artistName: item.attributes?.artistName,
+            artwork: artworkObj ? { url: artworkObj.url } : undefined,
+          },
         });
         return;
       }
@@ -174,7 +170,7 @@ export function LibraryScreen(): React.JSX.Element {
         },
       });
     },
-    [pushContent, playVideoQueue],
+    [pushContent],
   );
 
   const handleCategoryPress = useCallback((id: LibraryCategoryId) => {

@@ -225,6 +225,7 @@ export function ContentDetailScreen({
   const normalized = normalizeDetail(item, contentType);
 
   const [moreMenuVisible, setMoreMenuVisible] = useState(false);
+  const [selectedTrackMenu, setSelectedTrackMenu] = useState<PlaylistTrack | null>(null);
 
   const moreRelationships = useMemo((): MoreMenuRelationships => {
     if (!item) { return {}; }
@@ -397,12 +398,13 @@ export function ContentDetailScreen({
         showArtist={contentType === 'playlists'}
         showThumb={contentType === 'playlists'}
         onPress={() => handleTrackPress(renderInfo.index)}
+        onLongPress={() => setSelectedTrackMenu(renderInfo.item)}
         isNowPlaying={isTrackNowPlaying(renderInfo.item)}
         isPlaying={isPlaying}
         styles={styles}
       />
     ),
-    [styles, contentType, handleTrackPress, isPlaying, isTrackNowPlaying],
+    [styles, contentType, handleTrackPress, isPlaying, isTrackNowPlaying, setSelectedTrackMenu],
   );
 
   let rightContent: React.ReactNode;
@@ -468,6 +470,12 @@ export function ContentDetailScreen({
         relationships={moreRelationships}
         onNavigateToArtist={artistId => pushContent({ id: artistId, type: 'artists' })}
         onNavigateToAlbum={albumId => pushContent({ id: albumId, type: 'albums' })}
+      />
+      <MoreMenu
+        visible={selectedTrackMenu !== null}
+        onClose={() => setSelectedTrackMenu(null)}
+        contentId={selectedTrackMenu ? getCatalogSongId(selectedTrackMenu) : ''}
+        contentType="songs"
       />
       {/* ── Artwork (left) ───────────────────────────────── */}
       <View style={styles.artworkPanel}>
@@ -560,6 +568,7 @@ function TrackRow({
   showArtist,
   showThumb,
   onPress,
+  onLongPress,
   isNowPlaying,
   isPlaying,
   styles,
@@ -569,6 +578,7 @@ function TrackRow({
   showArtist: boolean;
   showThumb: boolean;
   onPress: () => void;
+  onLongPress?: () => void;
   isNowPlaying: boolean;
   isPlaying: boolean;
   styles: ReturnType<typeof useStyles>;
@@ -602,6 +612,7 @@ function TrackRow({
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       onPress={onPress}
+      onLongPress={onLongPress}
       style={[styles.trackRow, focused && styles.trackRowFocused]}
       focusable>
       {showThumb ? (
