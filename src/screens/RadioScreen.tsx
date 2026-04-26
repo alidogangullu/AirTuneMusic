@@ -7,7 +7,7 @@ import { RecommendationContent } from '../types/recommendations';
 
 export function RadioScreen(): React.JSX.Element {
   const { t } = useTranslation();
-  const { liveRadio, personalRadio, recentRadio, isLoading: radioLoading, error: radioError, refetch: refetchRadio } = useRadioStations();
+  const { liveRadio, recentRadio, isLoading: radioLoading, error: radioError, refetch: refetchRadio } = useRadioStations();
   const { data: recsData, isLoading: recsLoading, error: recsError, refetch: refetchRecs } = useRecommendations();
 
   const isLoading = radioLoading || recsLoading;
@@ -40,17 +40,7 @@ export function RadioScreen(): React.JSX.Element {
       });
     }
 
-    // 2. Personal Station
-    if (personalRadio.data?.data && personalRadio.data.data.length > 0) {
-      sections.push({
-        title: t('radio.personalStation') || 'Your Station',
-        isCategorical: true,
-        isRadio: true,
-        contents: personalRadio.data.data.map(mapStationToContent),
-      });
-    }
-
-    // 3. Recently Played
+    // 2. Recently Played
     if (recentRadio.data?.data && recentRadio.data.data.length > 0) {
       sections.push({
         title: t('radio.recentlyPlayed') || 'Recently Played',
@@ -60,14 +50,14 @@ export function RadioScreen(): React.JSX.Element {
       });
     }
 
-    // 4. Stations for You (from /me/recommendations)
+    // 3. Stations for You (from /me/recommendations)
     if (recsData?.data) {
       const allRecs = groupRecommendations(recsData.data);
       sections.push(...allRecs.filter(s => s.isRadio));
     }
 
     return sections;
-  }, [liveRadio.data, personalRadio.data, recentRadio.data, recsData, t]);
+  }, [liveRadio.data, recentRadio.data, recsData, t]);
 
   return (
     <RecommendationScreen

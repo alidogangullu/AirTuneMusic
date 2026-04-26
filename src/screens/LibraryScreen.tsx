@@ -312,12 +312,12 @@ function useStyles(c: AppColors) {
       paddingTop: spacing.sm,
     },
     gridRow: {
-      gap: spacing.sm,
       marginBottom: spacing.xl,
       justifyContent: 'flex-start',
     },
     gridItem: {
       width: `${100 / GRID_COLUMNS}%` as any,
+      paddingRight: spacing.sm,
       alignItems: 'center',
     },
     gridItemFocused: {
