@@ -5,7 +5,7 @@ import {
   type LibraryMembershipContentType,
   type LibraryMembershipSnapshot,
 } from '../api/apple-music/library';
-import {getMusicUserToken} from '../api/apple-music/musicUserToken';
+import {useMusicUserToken} from '../api/apple-music/musicUserToken';
 import type {RecommendationContentType} from '../types/recommendations';
 
 export const LIBRARY_MEMBERSHIP_QUERY_KEY = ['library-membership-snapshot'] as const;
@@ -54,7 +54,9 @@ export function getLibraryIdFromSnapshot(
 }
 
 export function useLibraryMembershipSnapshot() {
-  const hasUserToken = !!getMusicUserToken();
+  const token = useMusicUserToken();
+  const hasUserToken = !!token;
+
   return useQuery<LibraryMembershipSnapshot, Error>({
     queryKey: LIBRARY_MEMBERSHIP_QUERY_KEY,
     queryFn: () => fetchLibraryMembershipSnapshot(),

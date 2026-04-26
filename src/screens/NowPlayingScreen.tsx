@@ -295,167 +295,171 @@ export function NowPlayingScreen({
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.root}>
-        {showLyrics && (
-          <View
-            style={[StyleSheet.absoluteFill, styles.lyricsBackdrop]}
-            pointerEvents="none"
-          />
-        )}
+      {showLyrics && (
+        <View
+          style={[StyleSheet.absoluteFill, styles.lyricsBackdrop]}
+          pointerEvents="none"
+        />
+      )}
 
-        {/* Centered content: artwork OR queue OR lyrics */}
-        <View style={styles.content}>
-          {centerContent}
-        </View>
+      {/* Centered content: artwork OR queue OR lyrics */}
+      <View style={styles.content}>
+        {centerContent}
+      </View>
 
 
-        {/* Info Modal Panel */}
-        <Modal
-          visible={showInfo}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setShowInfo(false)}>
-          <Pressable
-            style={styles.modalOverlay}
-            onPress={() => setShowInfo(false)}
-            focusable={false}>
-            <View style={styles.infoMenuContainer}>
-              <View style={styles.infoCard}>
-                <Image
-                  source={{ uri: track.artworkUrl ?? '' }}
-                  style={styles.infoArtwork}
-                />
-                <View style={styles.infoMeta}>
-                  <Text style={styles.infoTitle} numberOfLines={1}>
-                    {track.title}
-                  </Text>
-                  <Text style={styles.infoArtistAlbum} numberOfLines={1}>
-                    {track.artistName} — {track.albumTitle}
-                  </Text>
-                  <Text style={styles.infoDuration}>
-                    {t('nowPlaying.durationFormat', { mins: Math.floor(track.duration / 60000), secs: Math.floor((track.duration % 60000) / 1000) })}
-                  </Text>
-                </View>
-                <View style={styles.infoActionButtons}>
-                  <Pressable
-                    style={({ focused }) => [
-                      styles.gotoAlbumButton,
-                      focused && styles.gotoAlbumButtonFocused,
-                    ]}
-                    hasTVPreferredFocus={showInfo}
-                    onPress={async () => {
-                      if (track?.id && !isLiveRadio) {
-                        try {
-                          const detail = await fetchSongDetail(track.id, storefrontId);
-                          const albumId = detail.data[0]?.relationships?.albums?.data?.[0]?.id;
+      {/* Info Modal Panel */}
+      <Modal
+        visible={showInfo}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowInfo(false)}>
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowInfo(false)}
+          focusable={false}>
+          <View style={styles.infoMenuContainer}>
+            <View style={styles.infoCard}>
+              <Image
+                source={{ uri: track.artworkUrl ?? '' }}
+                style={styles.infoArtwork}
+              />
+              <View style={styles.infoMeta}>
+                <Text style={styles.infoTitle} numberOfLines={1}>
+                  {track.title}
+                </Text>
+                <Text style={styles.infoArtistAlbum} numberOfLines={1}>
+                  {track.artistName} — {track.albumTitle}
+                </Text>
+                <Text style={styles.infoDuration}>
+                  {t('nowPlaying.durationFormat', { mins: Math.floor(track.duration / 60000), secs: Math.floor((track.duration % 60000) / 1000) })}
+                </Text>
+              </View>
+              <View style={styles.infoActionButtons}>
+                <Pressable
+                  style={({ focused }) => [
+                    styles.gotoAlbumButton,
+                    focused && styles.gotoAlbumButtonFocused,
+                  ]}
+                  hasTVPreferredFocus={showInfo}
+                  onPress={async () => {
+                    if (track?.id && !isLiveRadio) {
+                      try {
+                        const detail = await fetchSongDetail(track.id, storefrontId);
+                        const albumId = detail.data[0]?.relationships?.albums?.data?.[0]?.id;
 
-                          if (albumId) {
-                            pushContent({
-                              id: albumId,
-                              type: 'albums',
-                              attributes: {
-                                name: track.albumTitle ?? '',
-                              },
-                            });
-                            setShowInfo(false); // Close the info card
-                          }
-                        } catch (e) {
-                          console.warn('NowPlayingScreen: Failed to fetch album ID:', e);
-                          // Fallback: try containerId if available
-                          if (state.containerId) {
-                            pushContent({
-                              id: state.containerId,
-                              type: 'albums',
-                              attributes: {
-                                name: track.albumTitle ?? '',
-                              },
-                            });
-                            setShowInfo(false);
-                          }
+                        if (albumId) {
+                          pushContent({
+                            id: albumId,
+                            type: 'albums',
+                            attributes: {
+                              name: track.albumTitle ?? '',
+                            },
+                          });
+                          setShowInfo(false); // Close the info card
+                        } else {
+                          // No album relationship found - provide user feedback
+                          console.warn('NowPlayingScreen: No album relationship found for track');
+                          // Optionally show a toast or alert to the user
+                        }
+                      } catch (e) {
+                        console.warn('NowPlayingScreen: Failed to fetch album ID:', e);
+                        // Fallback: try containerId if available
+                        if (state.containerId) {
+                          pushContent({
+                            id: state.containerId,
+                            type: 'albums',
+                            attributes: {
+                              name: track.albumTitle ?? '',
+                            },
+                          });
+                          setShowInfo(false);
                         }
                       }
-                    }}
-                    focusable={!isLiveRadio}>
-                    {({ focused }) => (
-                      <Text style={[styles.gotoAlbumText, focused && styles.gotoAlbumTextFocused]}>
-                        {t('nowPlaying.goToAlbum')}
-                      </Text>
-                    )}
-                  </Pressable>
+                    }
+                  }}
+                  focusable={!isLiveRadio}>
+                  {({ focused }) => (
+                    <Text style={[styles.gotoAlbumText, focused && styles.gotoAlbumTextFocused]}>
+                      {t('nowPlaying.goToAlbum')}
+                    </Text>
+                  )}
+                </Pressable>
 
-                  <Pressable
-                    style={({ focused }) => [
-                      styles.gotoAlbumButton,
-                      focused && styles.gotoAlbumButtonFocused,
-                    ]}
-                    onPress={async () => {
-                      if (track?.id && !isLiveRadio) {
-                        try {
-                          const detail = await fetchSongDetail(track.id, storefrontId);
-                          const artistId = detail.data[0]?.relationships?.artists?.data?.[0]?.id;
+                <Pressable
+                  style={({ focused }) => [
+                    styles.gotoAlbumButton,
+                    focused && styles.gotoAlbumButtonFocused,
+                  ]}
+                  onPress={async () => {
+                    if (track?.id && !isLiveRadio) {
+                      try {
+                        const detail = await fetchSongDetail(track.id, storefrontId);
+                        const artistId = detail.data[0]?.relationships?.artists?.data?.[0]?.id;
 
-                          if (artistId) {
-                            pushContent({
-                              id: artistId,
-                              type: 'artists',
-                              attributes: {
-                                name: track.artistName ?? '',
-                              },
-                            });
-                            setShowInfo(false);
-                          }
-                        } catch (e) {
-                          console.warn('NowPlayingScreen: Failed to fetch artist ID:', e);
+                        if (artistId) {
+                          pushContent({
+                            id: artistId,
+                            type: 'artists',
+                            attributes: {
+                              name: track.artistName ?? '',
+                            },
+                          });
+                          setShowInfo(false);
                         }
+                      } catch (e) {
+                        console.warn('NowPlayingScreen: Failed to fetch artist ID:', e);
                       }
-                    }}
-                    focusable={!isLiveRadio}>
-                    {({ focused }) => (
-                      <Text style={[styles.gotoAlbumText, focused && styles.gotoAlbumTextFocused]}>
-                        {t('more.goToArtist')}
-                      </Text>
-                    )}
-                  </Pressable>
-                </View>
+                    }
+                  }}
+                  focusable={!isLiveRadio}>
+                  {({ focused }) => (
+                    <Text style={[styles.gotoAlbumText, focused && styles.gotoAlbumTextFocused]}>
+                      {t('more.goToArtist')}
+                    </Text>
+                  )}
+                </Pressable>
               </View>
             </View>
-          </Pressable>
-        </Modal>
-
-        {/* Progress and Info footer — at screen bottom */}
-        {!isLiveRadio && (
-          <View style={styles.footerContainer}>
-            {!showInfo && (
-              <>
-                <View
-                  ref={playbackControlsRef}
-                  onLayout={() => setPlaybackControlsNode(findNodeHandle(playbackControlsRef.current))}>
-                  <PlaybackControls
-                    nextFocusDown={progressBarNode}
-                    onLayoutButton={(node) => setPlaybackControlsNode(node)}
-                  />
-                </View>
-
-                <NowPlayingProgressBar
-                  isLiveRadio={isLiveRadio}
-                  isLoading={state.isLoading}
-                  isBuffering={state.buffering}
-                  isPlaying={isPlaying}
-                  playbackControlsNode={playbackControlsNode}
-                  infoButtonNode={infoButtonNode}
-                  onSetInfoButtonNode={setInfoButtonNode}
-                  onOpenInfo={() => setShowInfo(true)}
-                  showLyrics={showLyrics}
-                  onToggleLyrics={() => setShowLyrics(!showLyrics)}
-                  showQueue={showQueue}
-                  onToggleQueue={() => setShowQueue(!showQueue)}
-                  progressBarRef={progressBarRef}
-                  onLayoutProgress={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
-                />
-              </>
-            )}
           </View>
-        )}
-      </LinearGradient>
+        </Pressable>
+      </Modal>
+
+      {/* Progress and Info footer — at screen bottom */}
+      {!isLiveRadio && (
+        <View style={styles.footerContainer}>
+          {!showInfo && (
+            <>
+              <View
+                ref={playbackControlsRef}
+                onLayout={() => setPlaybackControlsNode(findNodeHandle(playbackControlsRef.current))}>
+                <PlaybackControls
+                  nextFocusDown={progressBarNode}
+                  onLayoutButton={(node) => setPlaybackControlsNode(node)}
+                />
+              </View>
+
+              <NowPlayingProgressBar
+                isLiveRadio={isLiveRadio}
+                isLoading={state.isLoading}
+                isBuffering={state.buffering}
+                isPlaying={isPlaying}
+                playbackControlsNode={playbackControlsNode}
+                infoButtonNode={infoButtonNode}
+                onSetInfoButtonNode={setInfoButtonNode}
+                onOpenInfo={() => setShowInfo(true)}
+                showLyrics={showLyrics}
+                onToggleLyrics={() => setShowLyrics(!showLyrics)}
+                showQueue={showQueue}
+                onToggleQueue={() => setShowQueue(!showQueue)}
+                progressBarRef={progressBarRef}
+                onLayoutProgress={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
+              />
+            </>
+          )}
+        </View>
+      )}
+    </LinearGradient>
   );
 }
 

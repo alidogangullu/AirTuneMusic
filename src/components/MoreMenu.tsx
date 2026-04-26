@@ -155,23 +155,35 @@ export function MoreMenu({
   const run = useCallback(
     async (key: string, fn: () => Promise<void>, successMsg: string) => {
       setBusyKey(key);
-      try { await fn(); setFeedback(successMsg); }
-      catch (e) { console.error('[MoreMenu] action failed:', key, e); setFeedback(t('more.error')); }
-      finally { setBusyKey(null); }
+      try {
+        await fn();
+        if (successMsg) setFeedback(successMsg);
+        return true;
+      } catch (e) {
+        console.error('[MoreMenu] action failed:', key, e);
+        setFeedback(t('more.error'));
+        return false;
+      } finally {
+        setBusyKey(null);
+      }
     },
     [t],
   );
 
   const handleLove = useCallback(async () => {
     const newValue = rating === 1 ? 0 : 1;
-    await run('love', () => setUserRating(contentId, newValue, contentType), '');
-    setRating(newValue);
+    const success = await run('love', () => setUserRating(contentId, newValue, contentType), '');
+    if (success) {
+      setRating(newValue);
+    }
   }, [rating, contentId, contentType, run]);
 
   const handleDislike = useCallback(async () => {
     const newValue = rating === -1 ? 0 : -1;
-    await run('dislike', () => setUserRating(contentId, newValue, contentType), '');
-    setRating(newValue);
+    const success = await run('dislike', () => setUserRating(contentId, newValue, contentType), '');
+    if (success) {
+      setRating(newValue);
+    }
   }, [rating, contentId, contentType, run]);
 
   const handleAddToPlaylist = useCallback(() => {
@@ -195,7 +207,8 @@ export function MoreMenu({
   }, [contentId, onClose, run]);
 
   const handleAddToLibrary = useCallback(async () => {
-    await run('library', () => addToLibrary(contentType, contentId), '');
+    const success = await run('library', () => addToLibrary(contentType, contentId), '');
+    if (!success) return;
     setLocallyAdded(true);
     queryClient.setQueryData<LibraryMembershipSnapshot>(
       LIBRARY_MEMBERSHIP_QUERY_KEY,

@@ -185,10 +185,10 @@
   "more": {
     "love": "Love",
     "removeLove": "Remove Love",
-    "addToLibrary": "+  Add to Library",
+    "addToLibrary": "+ Add to Library",
     "inLibrary": "In Library",
     "addToPlaylist": "Add to Playlist",
-    "loadingPlaylists": "Loading playlists…",
+    "loadingPlaylists": "Loading playlists...",
     "noPlaylists": "No playlists found",
     "dislike": "Dislike",
     "removeDislike": "Remove Dislike",

@@ -3,6 +3,8 @@
  * Persisted with MMKV so the user stays signed in until token expiry or sign out.
  */
 
+import { useSyncExternalStore } from 'react';
+
 import { createMMKV } from 'react-native-mmkv';
 
 const storage = createMMKV({ id: 'music-user-token' });
@@ -12,6 +14,25 @@ let musicUserToken: string | null = null;
 let isInitialized = false;
 let initPromise: Promise<string | null> | null = null;
 const { MusicPlayer } = require('react-native').NativeModules;
+
+let listeners: Array<() => void> = [];
+
+function emitChange() {
+  for (const listener of listeners) {
+    listener();
+  }
+}
+
+export function subscribeMusicUserToken(listener: () => void) {
+  listeners.push(listener);
+  return () => {
+    listeners = listeners.filter(l => l !== listener);
+  };
+}
+
+export function useMusicUserToken(): string | null {
+  return useSyncExternalStore(subscribeMusicUserToken, getMusicUserToken);
+}
 
 export function getMusicUserToken(): string | null {
   return musicUserToken;
@@ -30,6 +51,7 @@ export function setMusicUserToken(token: string | null): void {
   musicUserToken = token;
   isInitialized = true; // Mark as initialized so waitForToken doesn't reload
   initPromise = Promise.resolve(token); // UPDATE CASHED PROMISE!
+  emitChange();
   if (token) {
     storage.set(STORAGE_KEY, token);
     if (MusicPlayer?.saveUserToken) {
@@ -48,6 +70,7 @@ export function clearMusicUserToken(): void {
   isInitialized = false;
   initPromise = null;
   storage.remove(STORAGE_KEY);
+  emitChange();
   if (MusicPlayer?.clearUserToken) {
     MusicPlayer.clearUserToken().catch(() => {});
   }
@@ -78,6 +101,7 @@ export async function loadMusicUserToken(): Promise<string | null> {
 
       if (stored) {
         musicUserToken = stored;
+        emitChange();
       }
     } catch {
       // ignore
