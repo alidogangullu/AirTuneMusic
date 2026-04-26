@@ -63,7 +63,9 @@ export function TVActionSheet({ visible, onClose, items, busyKey, feedback }: Re
             style={{ maxHeight: maxListHeight }}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}>
-            {items.map((item, index) => (
+            {items.map((item, index) => {
+              const firstEnabledIndex = items.findIndex(i => !i.disabled);
+              return (
               <Pressable
                 key={item.key}
                 style={({ focused }) => [
@@ -72,7 +74,7 @@ export function TVActionSheet({ visible, onClose, items, busyKey, feedback }: Re
                   item.disabled && styles.itemDisabled,
                 ]}
                 focusable={!item.disabled}
-                hasTVPreferredFocus={index === 0}
+                hasTVPreferredFocus={index === firstEnabledIndex}
                 onPress={async () => { if (!item.disabled) { await item.onPress(); } }}>
                 {({ focused }) => busyKey === item.key ? (
                   <ActivityIndicator size="small" color={focused ? '#1c1c1e' : '#ffffff'} />
@@ -88,7 +90,8 @@ export function TVActionSheet({ visible, onClose, items, busyKey, feedback }: Re
                   </Text>
                 )}
               </Pressable>
-            ))}
+              );
+            })}
           </ScrollView>
         </Animated.View>
       </Pressable>

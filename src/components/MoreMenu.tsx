@@ -186,12 +186,13 @@ export function MoreMenu({
 
   const handlePickPlaylist = useCallback(async (playlist: EditablePlaylist) => {
     setPlaylistPickerVisible(false);
+    onClose();
     await run(
       `playlist-${playlist.id}`,
       () => addTrackToPlaylist(playlist.id, contentId),
       '',
     );
-  }, [contentId, run]);
+  }, [contentId, onClose, run]);
 
   const handleAddToLibrary = useCallback(async () => {
     await run('library', () => addToLibrary(contentType, contentId), '');

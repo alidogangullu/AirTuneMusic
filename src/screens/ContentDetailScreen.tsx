@@ -421,7 +421,7 @@ export function ContentDetailScreen({
     rightContent = (
       <FlatList
         data={normalized.tracks}
-        keyExtractor={t => t.id}
+        keyExtractor={(t, index) => `${t.id}-${index}`}
         renderItem={renderTrack}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
