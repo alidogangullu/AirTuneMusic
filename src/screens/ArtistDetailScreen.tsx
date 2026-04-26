@@ -126,7 +126,7 @@ export function ArtistDetailScreen({
             style={({ focused }) => [styles.playButton, focused && styles.playButtonFocused]}
             onPress={handlePlayArtist}
             focusable>
-            <Text style={styles.playButtonIcon}>▶</Text>
+            <View style={styles.playButtonIcon} />
           </Pressable>
           <Text style={styles.artistNameTitle}>{attrs?.name}</Text>
         </View>
@@ -448,9 +448,15 @@ function useStyles(c: {
       backgroundColor: c.buttonFocusedBg,
     },
     playButtonIcon: {
-      color: c.textOnDark,
-      fontSize: 28,
-      marginLeft: 4,
+      width: 0,
+      height: 0,
+      borderTopWidth: 12,
+      borderBottomWidth: 12,
+      borderLeftWidth: 22,
+      borderTopColor: 'transparent',
+      borderBottomColor: 'transparent',
+      borderLeftColor: c.textOnDark,
+      marginLeft: 6,
     },
     artistNameTitle: {
       fontSize: 48,
