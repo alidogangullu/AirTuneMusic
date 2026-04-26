@@ -180,5 +180,19 @@
     "notFoundMessage": "No se ha encontrado ninguna suscripción activa para esta cuenta.",
     "error": "Error",
     "errorMessage": "Error al comunicarse con la tienda. Por favor, inténtalo de nuevo más tarde."
+  },
+  "more": {
+    "love": "Me gusta",
+    "removeLove": "Quitar Me gusta",
+    "loved": "¡Te gusta!",
+    "loveRemoved": "Me gusta eliminado",
+    "addToLibrary": "+  Añadir a la biblioteca",
+    "addedToLibrary": "Añadido a la biblioteca",
+    "removedFromLibrary": "Eliminado de la biblioteca",
+    "inLibrary": "Quitar de la biblioteca",
+    "goToArtist": "Ir al artista",
+    "goToAlbum": "Ir al álbum",
+    "cancel": "Cancelar",
+    "error": "Algo salió mal"
   }
 }

@@ -3,7 +3,7 @@
  * Two-column Apple TV layout: left = metadata + track list, right = artwork + actions.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   BackHandler,
   FlatList,
@@ -20,6 +20,8 @@ import { useContentDetail } from '../hooks/useContentDetail';
 import { NowPlayingBars } from '../components/NowPlayingBars';
 import { usePlayer } from '../hooks/usePlayer';
 import { useContentNavigation } from '../navigation';
+import { MoreMenu } from '../components/MoreMenu';
+import type { MoreMenuRelationships } from '../components/MoreMenu';
 import i18n from '../i18n';
 import { formatDuration, formatRelativeDate } from '../utils/dateUtils';
 import { isVideoTrack, buildVideoQueue, buildSongTracks } from '../utils/trackUtils';
@@ -206,7 +208,7 @@ export function ContentDetailScreen({
     playVideoQueue,
   } = usePlayer();
 
-  const { openNowPlayingFullscreen } = useContentNavigation();
+  const { openNowPlayingFullscreen, pushContent } = useContentNavigation();
 
   const isPlaying = playerState.playbackState === 'playing';
   const isPaused = playerState.playbackState === 'paused';
@@ -221,6 +223,23 @@ export function ContentDetailScreen({
 
   const item = data?.data?.[0];
   const normalized = normalizeDetail(item, contentType);
+
+  const [moreMenuVisible, setMoreMenuVisible] = useState(false);
+
+  const moreRelationships = useMemo((): MoreMenuRelationships => {
+    if (!item) { return {}; }
+    const s = item as SongDetail | MusicVideoDetail;
+    const artistId = s.relationships?.artists?.data?.[0]?.id;
+    const artistName = item.attributes && 'artistName' in item.attributes
+      ? (item.attributes as { artistName?: string }).artistName
+      : undefined;
+    const albumId = (item as SongDetail).relationships?.albums?.data?.[0]?.id ??
+      (item as MusicVideoDetail).relationships?.albums?.data?.[0]?.id;
+    const albumName = item.attributes && 'albumName' in item.attributes
+      ? (item.attributes as { albumName?: string }).albumName
+      : undefined;
+    return { artistId, artistName, albumId, albumName };
+  }, [item]);
 
   const handlePlay = useCallback(() => {
     const allVideos = normalized.tracks.length > 0 && normalized.tracks.every(t => isVideoTrack(t.type));
@@ -409,6 +428,7 @@ export function ContentDetailScreen({
             contentType={contentType}
             onPlay={handlePlay}
             onShuffle={handleShuffle}
+            onMore={() => setMoreMenuVisible(true)}
             styles={styles}
           />
         }
@@ -423,6 +443,7 @@ export function ContentDetailScreen({
           contentType={contentType}
           onPlay={handlePlay}
           onShuffle={handleShuffle}
+          onMore={() => setMoreMenuVisible(true)}
           styles={styles}
         />
         <View style={styles.headerBlock}>
@@ -439,6 +460,15 @@ export function ContentDetailScreen({
 
   return (
     <View style={styles.root}>
+      <MoreMenu
+        visible={moreMenuVisible}
+        onClose={() => setMoreMenuVisible(false)}
+        contentId={contentId}
+        contentType={contentType}
+        relationships={moreRelationships}
+        onNavigateToArtist={artistId => pushContent({ id: artistId, type: 'artists' })}
+        onNavigateToAlbum={albumId => pushContent({ id: albumId, type: 'albums' })}
+      />
       {/* ── Artwork (left) ───────────────────────────────── */}
       <View style={styles.artworkPanel}>
         <View style={styles.artworkContainer}>
@@ -478,12 +508,14 @@ function ContentHeader({
   contentType,
   onPlay,
   onShuffle,
+  onMore,
   styles,
 }: Readonly<{
   normalized: NormalizedDetail;
   contentType: RecommendationContentType;
   onPlay: () => void;
   onShuffle: () => void;
+  onMore: () => void;
   styles: ReturnType<typeof useStyles>;
 }>) {
   const { t } = useTranslation();
@@ -516,7 +548,7 @@ function ContentHeader({
           <ActionButton icon="⇌" label={t('detail.shuffle')} onPress={onShuffle} styles={styles} />
         ) : null}
         <View style={styles.actionSpacer} />
-        <MoreButton styles={styles} />
+        <MoreButton styles={styles} onPress={onMore} />
       </View>
     </View>
   );
@@ -632,11 +664,13 @@ function ActionButton({
 
 function MoreButton({
   styles,
-}: Readonly<{ styles: ReturnType<typeof useStyles> }>) {
+  onPress,
+}: Readonly<{ styles: ReturnType<typeof useStyles>; onPress: () => void }>) {
   return (
     <Pressable
       style={({ focused }) => [styles.moreBtn, focused && styles.moreBtnFocused]}
-      focusable>
+      focusable
+      onPress={onPress}>
       <Text style={styles.moreBtnText}>•••</Text>
     </Pressable>
   );

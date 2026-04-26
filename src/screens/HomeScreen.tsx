@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
 import { usePlayer } from '../hooks/usePlayer';
 import { useAppStartup } from '../components/AppStartupProvider';
+import { useLibraryMembershipSnapshot } from '../hooks/useLibraryMembership';
 
 export type HomeScreenProps = {
   onSignOut?: () => void;
@@ -34,12 +35,12 @@ export function HomeScreen({
   const [selectedContent, setSelectedContent] =
     useState<RecommendationContent | null>(null);
   const [nowPlayingFullscreen, setNowPlayingFullscreen] = useState(false);
-  const { setShowSettings: setShowSettingsViaPlayer } = usePlayer();
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [lastOpened, setLastOpened] = useState<'detail' | 'now-playing' | null>(null);
 
   // When player hook triggers settings (quota reached), show it
   const { showSettings: playerWantsSettings, setShowSettings } = usePlayer();
+  useLibraryMembershipSnapshot();
   const isDetailOpen = selectedContent !== null;
   const [lastBackPressed, setLastBackPressed] = useState(0);
 

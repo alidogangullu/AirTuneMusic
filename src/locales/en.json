@@ -182,6 +182,20 @@
     "error": "Error",
     "errorMessage": "Failed to communicate with the Store. Please try again later."
   },
+  "more": {
+    "love": "Love",
+    "removeLove": "Remove Love",
+    "loved": "Loved!",
+    "loveRemoved": "Love removed",
+    "addToLibrary": "+  Add to Library",
+    "addedToLibrary": "Added to Library",
+    "removedFromLibrary": "Removed from Library",
+    "inLibrary": "Remove from Library",
+    "goToArtist": "Go to Artist",
+    "goToAlbum": "Go to Album",
+    "cancel": "Cancel",
+    "error": "Something went wrong"
+  },
   "subscriptionRequired": {
     "title": "Subscription Required",
     "message": "A paid Apple Music subscription is required to use AirTune Music. Please ensure your account has an active subscription and try again.",

@@ -180,5 +180,19 @@
     "notFoundMessage": "Aucun abonnement actif n'a été trouvé pour ce compte.",
     "error": "Erreur",
     "errorMessage": "Échec de la communication avec le Store. Veuillez réessayer plus tard."
+  },
+  "more": {
+    "love": "J'aime",
+    "removeLove": "Retirer J'aime",
+    "loved": "Aimé !",
+    "loveRemoved": "J'aime retiré",
+    "addToLibrary": "+  Ajouter à la bibliothèque",
+    "addedToLibrary": "Ajouté à la bibliothèque",
+    "removedFromLibrary": "Retiré de la bibliothèque",
+    "inLibrary": "Retirer de la bibliothèque",
+    "goToArtist": "Aller à l'artiste",
+    "goToAlbum": "Aller à l'album",
+    "cancel": "Annuler",
+    "error": "Une erreur s'est produite"
   }
 }

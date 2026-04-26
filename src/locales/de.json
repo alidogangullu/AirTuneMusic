@@ -180,5 +180,19 @@
     "notFoundMessage": "Kein aktives Abonnement für dieses Konto gefunden.",
     "error": "Fehler",
     "errorMessage": "Fehler bei der Kommunikation mit dem Store. Bitte versuchen Sie es später erneut."
+  },
+  "more": {
+    "love": "Gefällt mir",
+    "removeLove": "Gefällt mir entfernen",
+    "loved": "Gefällt dir!",
+    "loveRemoved": "Gefällt mir entfernt",
+    "addToLibrary": "+  Zur Mediathek hinzufügen",
+    "addedToLibrary": "Zur Mediathek hinzugefügt",
+    "removedFromLibrary": "Aus der Mediathek entfernt",
+    "inLibrary": "Aus der Mediathek entfernen",
+    "goToArtist": "Zum Interpreten",
+    "goToAlbum": "Zum Album",
+    "cancel": "Abbrechen",
+    "error": "Etwas ist schiefgelaufen"
   }
 }

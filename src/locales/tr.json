@@ -182,6 +182,20 @@
     "error": "Hata",
     "errorMessage": "Mağaza ile iletişim kurulamadı. Lütfen daha sonra tekrar deneyin."
   },
+  "more": {
+    "love": "Beğen",
+    "removeLove": "Beğeniyi Kaldır",
+    "loved": "Beğenildi!",
+    "loveRemoved": "Beğeni kaldırıldı",
+    "addToLibrary": "+  Kütüphaneye Ekle",
+    "addedToLibrary": "Kütüphaneye eklendi",
+    "removedFromLibrary": "Kütüphaneden kaldırıldı",
+    "inLibrary": "Kütüphaneden Kaldır",
+    "goToArtist": "Sanatçıya Git",
+    "goToAlbum": "Albüme Git",
+    "cancel": "İptal",
+    "error": "Bir şeyler yanlış gitti"
+  },
   "subscriptionRequired": {
     "title": "Abonelik Gerekli",
     "message": "AirTune Music'i kullanmak için ücretli bir Apple Music aboneliği gereklidir. Lütfen hesabınızın aktif bir aboneliği olduğundan emin olun ve tekrar deneyin.",

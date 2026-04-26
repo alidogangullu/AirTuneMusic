@@ -135,6 +135,7 @@ export async function fetchSongDetail(
 ): Promise<SongDetailResponse> {
   const { data } = await appleMusicApi.get<SongDetailResponse>(
     `/catalog/${storefront}/songs/${id}`,
+    { params: { include: 'artists,albums' } },
   );
   return data;
 }
@@ -164,6 +165,7 @@ export async function fetchMusicVideoDetail(
 ): Promise<MusicVideoDetailResponse> {
   const { data } = await appleMusicApi.get<MusicVideoDetailResponse>(
     `/catalog/${storefront}/music-videos/${id}`,
+    { params: { include: 'artists,albums' } },
   );
   return data;
 }
