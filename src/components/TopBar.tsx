@@ -132,20 +132,32 @@ export function TopBar({
         {NAV_TABS_CONFIG.map(tab => (
           <NavPressable
             key={tab.id}
-            style={({ focused }) => [
-              styles.tabPill,
-              focused && styles.tabPillFocused,
-            ]}
+            style={({ focused }) => {
+              const isActive = tab.id === activeTab;
+              return [
+                styles.tabPill,
+                isActive && styles.tabPillActive,
+                focused && styles.tabPillFocused,
+              ];
+            }}
             onPress={() => onTabPress(tab.id)}
             focusable={true}
             hasTVPreferredFocus={tab.id === activeTab}
             accessibilityLabel={t(tab.labelKey)}
             accessibilityRole="tab">
-            {({ focused }) => (
-              <Text style={[styles.tabText, focused && styles.tabTextFocused]}>
-                {t(tab.labelKey)}
-              </Text>
-            )}
+            {({ focused }) => {
+              const isActive = tab.id === activeTab;
+              return (
+                <Text
+                  style={[
+                    styles.tabText,
+                    isActive && styles.tabTextActive,
+                    focused && styles.tabTextFocused,
+                  ]}>
+                  {t(tab.labelKey)}
+                </Text>
+              );
+            }}
           </NavPressable>
         ))}
         <NavPressable
@@ -201,26 +213,45 @@ function useStyles(c: {
   onDarkTextFaint: string;
   onDarkTextSoft: string;
   onDarkTextPrimary: string;
+  onDarkButtonActiveBg: string;
   overlayLight: string;
   notificationBadge: string;
 }, transparent: boolean, dark: boolean) {
-  const cardBg = transparent
-    ? dark
-      ? c.overlayMedium
-      : c.glassBgDim
-    : c.navBarCardBg;
-  const avatarBg = transparent
-    ? dark
-      ? c.overlayMid
-      : c.onDarkControlBg
-    : c.navAvatarBg;
-  const avatarFocusBg = transparent
-    ? dark
-      ? c.overlayStrong
-      : c.onDarkBgMid
-    : c.navTabFocusedBg;
+  const pickTransparentOrSolid = (
+    transparentDarkColor: string,
+    transparentLightColor: string,
+    solidColor: string,
+  ): string => {
+    if (!transparent) {
+      return solidColor;
+    }
+    return dark ? transparentDarkColor : transparentLightColor;
+  };
+
+  const cardBg = pickTransparentOrSolid(
+    c.overlayMedium,
+    c.glassBgDim,
+    c.navBarCardBg,
+  );
+  const avatarBg = pickTransparentOrSolid(
+    c.overlayMid,
+    c.onDarkControlBg,
+    c.navAvatarBg,
+  );
+  const avatarFocusBg = pickTransparentOrSolid(
+    c.overlayStrong,
+    c.onDarkBgMid,
+    c.navTabFocusedBg,
+  );
   const textColor = transparent ? c.onDarkTextFaint : c.navTabText;
   const avatarTextColor = transparent ? c.onDarkTextSoft : c.navTabText;
+  let tabActiveBg = c.overlayMid;
+  if (dark) {
+    tabActiveBg = c.onDarkButtonActiveBg;
+  }
+  if (transparent && !dark) {
+    tabActiveBg = c.onDarkBgMid;
+  }
 
   const tabFocusedShadow =
     Platform.OS === 'ios'
@@ -283,6 +314,12 @@ function useStyles(c: {
       justifyContent: 'center',
       borderRadius: 999,
     },
+    tabPillActive: {
+      backgroundColor: tabActiveBg,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 6,
+      borderRadius: 999,
+    },
     tabPillFocused: {
       backgroundColor: c.navTabFocusedBg,
       paddingHorizontal: spacing.md,
@@ -295,6 +332,10 @@ function useStyles(c: {
       fontSize: 15,
       fontWeight: '500',
       color: textColor,
+    },
+    tabTextActive: {
+      color: c.onDarkTextPrimary,
+      fontWeight: '600',
     },
     tabTextFocused: {
       color: c.navTabTextFocused,
