@@ -113,7 +113,7 @@ function makeStyles(c: AppColors) {
   });
 }
 
-export function SubscriptionRequiredScreen({ onSignOut }: Props) {
+export function SubscriptionRequiredScreen({ onSignOut }: Readonly<Props>) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -149,7 +149,6 @@ export function SubscriptionRequiredScreen({ onSignOut }: Props) {
             onPress={onSignOut}
             hasTVPreferredFocus>
             {({ focused }) => (
-              <>
                 <View
                   style={[
                     styles.signOutBtn,
@@ -164,7 +163,6 @@ export function SubscriptionRequiredScreen({ onSignOut }: Props) {
                     {t('subscriptionRequired.signOut')}
                   </Text>
                 </View>
-              </>
             )}
           </Pressable>
         </View>

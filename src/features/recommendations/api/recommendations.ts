@@ -190,9 +190,9 @@ export function getArtworkUrl(
   const scaledH = Math.round(height * scale);
 
   const resolved = url
-    .replace(/\{w\}/g, String(scaledW))
-    .replace(/\{h\}/g, String(scaledH))
-    .replace(/\{f\}/g, 'jpg');
+    .replaceAll('{w}', String(scaledW))
+    .replaceAll('{h}', String(scaledH))
+    .replaceAll('{f}', 'jpg');
 
   return resolved;
 }

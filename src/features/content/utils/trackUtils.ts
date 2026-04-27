@@ -50,5 +50,5 @@ export function buildVideoQueue(tracks: PlaylistTrack[], selectedId: string, shu
 export function buildSongTracks(tracks: PlaylistTrack[], selectedId: string): { tracks: TrackInfo[]; startIndex: number } {
   const songTracks = tracks.filter(t => !isVideoTrack(t.type));
   const startIndex = Math.max(0, songTracks.findIndex(t => t.id === selectedId));
-  return { tracks: songTracks.map(trackToTrackInfo), startIndex };
+  return { tracks: songTracks.map((t, i) => trackToTrackInfo(t, i)), startIndex };
 }

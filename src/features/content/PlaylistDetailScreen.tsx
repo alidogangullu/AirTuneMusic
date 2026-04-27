@@ -3,7 +3,7 @@
  * Left: metadata + scrollable track list. Right: artwork + action buttons.
  */
 
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {
   ActivityIndicator,
   BackHandler,
@@ -52,7 +52,10 @@ export function PlaylistDetailScreen({
 
   const playlist = data?.data?.[0];
   const attrs = playlist?.attributes;
-  const tracks = playlist?.relationships?.tracks?.data ?? [];
+  const tracks = useMemo(
+    () => playlist?.relationships?.tracks?.data ?? [],
+    [playlist],
+  );
 
   const artworkUrl = getArtworkUrl(attrs?.artwork?.url, ARTWORK_SIZE, ARTWORK_SIZE);
 
@@ -93,7 +96,7 @@ export function PlaylistDetailScreen({
     leftContent = (
       <FlatList
         data={tracks}
-        keyExtractor={t => t.id}
+        keyExtractor={track => track.id}
         renderItem={renderTrack}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={

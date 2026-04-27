@@ -177,7 +177,7 @@ export const NowPlayingProgressBar = React.memo(({
         accessibilityRole="adjustable">
         {({ focused }) => (
           <View style={[styles.progressTrack, focused && styles.progressTrackFocused]}>
-            <View style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 3 }]}>
+            <View style={[StyleSheet.absoluteFill, styles.progressClip]}>
               <Animated.View
                 style={[
                   styles.progressFill,
@@ -307,6 +307,10 @@ const styles = StyleSheet.create({
   },
   progressTrackFocused: {
     height: 6,
+  },
+  progressClip: {
+    overflow: 'hidden',
+    borderRadius: 3,
   },
   progressFill: {
     position: 'absolute',

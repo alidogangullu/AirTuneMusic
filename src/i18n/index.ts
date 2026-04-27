@@ -12,7 +12,7 @@ import { queryClient } from '../api/queryClient';
 const storage = createMMKV({ id: 'i18n-storage' });
 const LANGUAGE_KEY = 'app_language';
 
-const SUPPORTED_LANGUAGES = ['en', 'tr', 'de', 'es', 'fr'];
+const SUPPORTED_LANGUAGES = new Set(['en', 'tr', 'de', 'es', 'fr']);
 
 const getDeviceLanguage = () => {
   if (Platform.OS === 'android') {
@@ -22,7 +22,7 @@ const getDeviceLanguage = () => {
     
     if (locale) {
       const lang = locale.split(/[_-]/)[0].toLowerCase();
-      if (SUPPORTED_LANGUAGES.includes(lang)) {
+      if (SUPPORTED_LANGUAGES.has(lang)) {
         return lang;
       }
     }

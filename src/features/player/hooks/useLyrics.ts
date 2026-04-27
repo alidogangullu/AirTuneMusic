@@ -60,7 +60,7 @@ export function useLyrics(enabled: boolean = true): UseLyricsResult {
             setError('Lyrics not found');
           }
         }
-      } catch (err) {
+      } catch {
         if (mounted) {
           setError('Failed to load lyrics');
         }

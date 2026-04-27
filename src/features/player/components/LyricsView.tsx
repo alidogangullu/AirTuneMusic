@@ -31,7 +31,7 @@ const LyricLineItem = React.memo(({ line, isActive }: LyricLineItemProps) => {
       duration: 350,
       useNativeDriver: true,
     }).start();
-  }, [isActive]);
+  }, [isActive, opacity]);
 
   return (
     <Animated.View

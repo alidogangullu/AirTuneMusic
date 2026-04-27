@@ -104,6 +104,7 @@ export const MusicKitWebView = forwardRef<MusicKitWebPlayerRef, Props>(
           true;
         `);
       },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }), [developerToken, musicUserToken, onPlaybackStateChanged, onTrackChanged, onCapabilitiesChanged, onProgressChanged, onQueueChanged]);
 
     const validUserToken = musicUserToken && musicUserToken !== 'null' ? musicUserToken : '';

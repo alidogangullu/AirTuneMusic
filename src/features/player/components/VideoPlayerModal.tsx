@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   BackHandler,
   Modal,
-  Pressable,
   StyleSheet,
   Text,
   View,
   findNodeHandle,
   useTVEventHandler,
 } from 'react-native';
+
 import { useTranslation } from 'react-i18next';
 import { MusicKitVideoWebView, MusicKitVideoWebViewRef } from './MusicKitVideoWebView';
 import { NowPlayingProgressBar, ExternalProgressState } from './NowPlayingProgressBar';

@@ -2,7 +2,7 @@ import React from 'react';
 import {Animated, Image, StyleSheet, Text, View} from 'react-native';
 import {NowPlayingBars} from './NowPlayingBars';
 import {spacing} from '../../../theme/layout';
-import { colors } from '../../../theme/colors';
+import { lightColors as colors } from '../../../theme/colors';
 import {TrackInfo} from '../../../services/musicPlayer';
 
 interface NowPlayingTrackInfoProps {

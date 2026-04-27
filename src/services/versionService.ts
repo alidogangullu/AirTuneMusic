@@ -64,7 +64,7 @@ export const checkAppVersion = async (): Promise<VersionCheckResult> => {
       latestVersion: latest_version,
     };
   } catch (error) {
-    console.warn('[VersionService] Versiyon kontrolü başarısız:', error);
+    console.warn('[VersionService] Version check failed:', error);
     // In case of error, assume up to date to not block the user
     return {
       status: 'up_to_date',

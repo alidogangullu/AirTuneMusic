@@ -48,22 +48,6 @@ export function SearchScreen(): React.JSX.Element {
     useRecentSearches();
   const { storefrontId } = useStorefront();
 
-  // Debounced search
-  useEffect(() => {
-    if (!searchTerm.trim()) {
-      setSearchResults([]);
-      setSearching(false);
-      return;
-    }
-    setSearching(true);
-    resetSearchTimer();
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-    };
-  }, [searchTerm]);
-
   const resetSearchTimer = useCallback(() => {
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
@@ -84,7 +68,23 @@ export function SearchScreen(): React.JSX.Element {
         .catch(e => console.warn('[Search] search error:', e))
         .finally(() => setSearching(false));
     }, 750);
-  }, [searchTerm]);
+  }, [searchTerm, storefrontId]);
+
+  // Debounced search
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setSearchResults([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    resetSearchTimer();
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchTerm, resetSearchTimer]);
 
   const handleKeyPress = useCallback((key: string) => {
     if (key === 'SPACE') {

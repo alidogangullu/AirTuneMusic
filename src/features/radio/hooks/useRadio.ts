@@ -11,14 +11,14 @@ export function useRadioStations() {
 
   const liveRadioQuery = useQuery({
     queryKey: ['apple-music', 'radio', 'live', storefront],
-    queryFn: () => fetchLiveRadioStations(storefront!),
+    queryFn: () => fetchLiveRadioStations(storefront),
     enabled: !!storefront,
     staleTime: 5 * 60 * 1000,
   });
 
   const personalRadioQuery = useQuery({
     queryKey: ['apple-music', 'radio', 'personal', storefront],
-    queryFn: () => fetchPersonalRadioStation(storefront!),
+    queryFn: () => fetchPersonalRadioStation(storefront),
     enabled: !!storefront,
     staleTime: 5 * 60 * 1000,
   });

@@ -55,7 +55,7 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun configure(devToken: String, usrToken: String, promise: Promise) {
-        ensureNativeLib() // Native kütüphaneyi açılışta yükle
+        ensureNativeLib() // Load native library on startup
         Log.d(
                 TAG,
                 "configure called, devToken=${devToken.take(20)}..., usrToken=${usrToken.take(20)}..."

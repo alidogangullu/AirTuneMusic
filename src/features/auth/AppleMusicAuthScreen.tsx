@@ -43,7 +43,7 @@ const LOCAL_SERVER_PORT = 8080;
 
 function startPolling(
   code: string,
-  pollRef: React.MutableRefObject<ReturnType<typeof setInterval> | null>,
+  pollRef: React.RefObject<ReturnType<typeof setInterval> | null>,
   setTokenPreview: (s: string) => void,
   setPairingMode: (b: boolean) => void,
   setStatus: (s: Status) => void,

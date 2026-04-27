@@ -14,13 +14,13 @@ export interface LyricsResponse {
  */
 function cleanText(text: string): string {
   return text
-    .replace(/\(feat\..*?\)/gi, '')
-    .replace(/\(with.*?\)/gi, '')
-    .replace(/- Single/gi, '')
-    .replace(/- Remastered/gi, '')
-    .replace(/- [0-9]{4} Remaster/gi, '')
-    .replace(/- EP/gi, '')
-    .replace(/\s\s+/g, ' ')
+    .replaceAll(/\(feat\..*?\)/gi, '')
+    .replaceAll(/\(with.*?\)/gi, '')
+    .replaceAll(/- Single/gi, '')
+    .replaceAll(/- Remastered/gi, '')
+    .replaceAll(/- \d{4} Remaster/gi, '')
+    .replaceAll(/- EP/gi, '')
+    .replaceAll(/\s\s+/g, ' ')
     .trim();
 }
 
@@ -49,7 +49,7 @@ export async function fetchLyrics(
       const data = await res.json();
       if (data.syncedLyrics) return data;
     }
-  } catch (e) { /* ignore */ }
+  } catch { /* ignore */ }
 
   // Strategy 2: Cleaned /api/get (Metadata Clutter Removal)
   const cleanedTrack = cleanText(trackName);
@@ -68,7 +68,7 @@ export async function fetchLyrics(
         const data = await res.json();
         if (data.syncedLyrics) return data;
       }
-    } catch (e) { /* ignore */ }
+    } catch { /* ignore */ }
   }
 
   // Strategy 3: Fuzzy Search Fallback

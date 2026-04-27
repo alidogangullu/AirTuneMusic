@@ -24,15 +24,15 @@ export function parseLRC(lrc: string): LyricLine[] {
     
     if (matches.length > 0) {
       // The text is what remains after removing all timestamps
-      const text = line.replace(timeRegex, '').trim();
+      const text = line.replaceAll(timeRegex, '').trim();
       
       for (const match of matches) {
-        const minutes = parseInt(match[1], 10);
-        const seconds = parseInt(match[2], 10);
+        const minutes = Number.parseInt(match[1], 10);
+        const seconds = Number.parseInt(match[2], 10);
         const millisecondsStr = match[3];
         
         // Handle 2-digit (centiseconds) vs 3-digit (milliseconds)
-        let milliseconds = parseInt(millisecondsStr, 10);
+        let milliseconds = Number.parseInt(millisecondsStr, 10);
         if (millisecondsStr.length === 2) {
           milliseconds *= 10;
         }
