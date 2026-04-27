@@ -1,8 +1,8 @@
 import {NativeModules, NativeEventEmitter, Platform} from 'react-native';
 import {getDeveloperToken} from '../api/apple-music/getDeveloperToken';
 import {waitForToken, getMusicUserToken, clearMusicUserToken} from '../api/apple-music/musicUserToken';
-import * as ratings from '../api/apple-music/ratings';
-import {clearRecentSearchesGlobal} from '../hooks/useRecentSearches';
+import * as ratings from '../features/content/api/ratings';
+import {clearRecentSearchesGlobal} from '../features/search/hooks/useRecentSearches';
 
 const {MusicPlayer} = NativeModules;
 

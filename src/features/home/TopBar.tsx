@@ -1,0 +1,400 @@
+/**
+ * Top navigation bar — Apple Music style.
+ * Avatar (left, outside card) + Card (tabs + search together).
+ * TV-friendly: focusable, D-pad navigable.
+ *
+ * Android TV: D-pad is the primary input. Press feedback uses onPress-triggered
+ * animation (not `pressed` state) because `pressed` does not fire for D-pad select.
+ */
+
+import React, { useCallback, useRef } from 'react';
+import {
+  Animated,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '../../theme';
+import { spacing } from '../../theme/layout';
+
+/** TopBar row height — avatar and card align to this. */
+const TOP_BAR_HEIGHT = 38;
+
+const PRESS_DURATION_MS = 80;
+
+function usePressFeedback() {
+  const scale = useRef(new Animated.Value(1)).current;
+  const trigger = useCallback(() => {
+    Animated.sequence([
+      Animated.timing(scale, {
+        toValue: 0.94,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scale, {
+        toValue: 1,
+        duration: PRESS_DURATION_MS,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [scale]);
+  return { scale, trigger };
+}
+
+function NavPressable({
+  onPress,
+  children,
+  style,
+  ...rest
+}: React.ComponentProps<typeof Pressable>) {
+  const { scale, trigger } = usePressFeedback();
+  const handlePress = useCallback(
+    (e: unknown) => {
+      trigger();
+      (onPress as (e?: unknown) => void)?.(e);
+    },
+    [trigger, onPress],
+  );
+  return (
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <Pressable {...rest} style={style} onPress={handlePress}>
+        {children}
+      </Pressable>
+    </Animated.View>
+  );
+}
+
+export type NavTabId =
+  | 'listen-now'
+  | 'browse'
+  | 'videos'
+  | 'radio'
+  | 'library'
+  | 'now-playing'
+  | 'search';
+
+const NAV_TABS_CONFIG: { id: NavTabId; labelKey: string }[] = [
+  { id: 'listen-now', labelKey: 'topBar.listenNow' },
+  { id: 'browse', labelKey: 'topBar.browse' },
+  { id: 'videos', labelKey: 'topBar.videos' },
+  { id: 'radio', labelKey: 'topBar.radio' },
+  { id: 'library', labelKey: 'topBar.library' },
+  { id: 'now-playing', labelKey: 'topBar.nowPlaying' },
+];
+
+export type TopBarProps = {
+  activeTab: NavTabId;
+  onTabPress: (tab: NavTabId) => void;
+  onAvatarPress?: () => void;
+  onSearchPress?: () => void;
+  onSettingsPress?: () => void;
+  transparent?: boolean;
+  dark?: boolean;
+  hasUpdate?: boolean;
+};
+
+export function TopBar({
+  activeTab,
+  onTabPress,
+  onAvatarPress,
+  onSearchPress,
+  onSettingsPress,
+  transparent = false,
+  dark = false,
+  hasUpdate = false,
+}: Readonly<TopBarProps>): React.JSX.Element {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useStyles(colors, transparent, dark);
+
+  return (
+    <View style={styles.wrap} focusable={false}>
+      <NavPressable
+        style={({ focused }) => [styles.avatar, focused && styles.avatarFocused]}
+        onPress={onAvatarPress}
+        focusable={true}
+        hasTVPreferredFocus={false}
+        accessibilityLabel={t('topBar.profile')}
+        accessibilityRole="button">
+        {({ focused }) => (
+          <View style={styles.silhouetteContainer}>
+            <View style={[styles.silhouetteHead, focused && styles.silhouetteFocused]} />
+            <View style={[styles.silhouetteBody, focused && styles.silhouetteFocused]} />
+          </View>
+        )}
+      </NavPressable>
+
+      <View style={styles.spacer} focusable={false} />
+      <View style={styles.card} focusable={false}>
+        {NAV_TABS_CONFIG.map(tab => (
+          <NavPressable
+            key={tab.id}
+            style={({ focused }) => {
+              const isActive = tab.id === activeTab;
+              return [
+                styles.tabPill,
+                isActive && styles.tabPillActive,
+                focused && styles.tabPillFocused,
+              ];
+            }}
+            onPress={() => onTabPress(tab.id)}
+            focusable={true}
+            hasTVPreferredFocus={tab.id === activeTab}
+            accessibilityLabel={t(tab.labelKey)}
+            accessibilityRole="tab">
+            {({ focused }) => {
+              const isActive = tab.id === activeTab;
+              return (
+                <Text
+                  style={[
+                    styles.tabText,
+                    isActive && styles.tabTextActive,
+                    focused && styles.tabTextFocused,
+                  ]}>
+                  {t(tab.labelKey)}
+                </Text>
+              );
+            }}
+          </NavPressable>
+        ))}
+        <NavPressable
+          style={({ focused }) => [
+            styles.searchPill,
+            focused && styles.searchPillFocused,
+          ]}
+          onPress={onSearchPress}
+          focusable={true}
+          hasTVPreferredFocus={false}
+          accessibilityLabel={t('topBar.search')}
+          accessibilityRole="button">
+          {({ focused }) => (
+            <Text style={[styles.searchIcon, focused && styles.tabTextFocused]}>
+              ⌕
+            </Text>
+          )}
+        </NavPressable>
+      </View>
+      <View style={styles.spacer} focusable={false} />
+      <View style={styles.settingsWrapper} focusable={false}>
+        <NavPressable
+          style={({ focused }) => [styles.avatar, focused && styles.avatarFocused]}
+          onPress={onSettingsPress}
+          focusable={true}
+          hasTVPreferredFocus={false}
+          accessibilityLabel={t('topBar.settings')}
+          accessibilityRole="button">
+          {({ focused }) => (
+            <Text style={[styles.settingsIcon, focused && styles.settingsIconFocused]}>
+              ⚙
+            </Text>
+          )}
+        </NavPressable>
+        {hasUpdate && <View style={styles.updateBadge} focusable={false} />}
+      </View>
+    </View>
+  );
+}
+
+function useStyles(c: {
+  navBarCardBg: string;
+  navTabFocusedBg: string;
+  navTabText: string;
+  navTabTextFocused: string;
+  navAvatarBg: string;
+  overlayMedium: string;
+  overlayMid: string;
+  overlayStrong: string;
+  glassBgDim: string;
+  onDarkControlBg: string;
+  onDarkBgMid: string;
+  onDarkTextFaint: string;
+  onDarkTextSoft: string;
+  onDarkTextPrimary: string;
+  onDarkButtonActiveBg: string;
+  overlayLight: string;
+  notificationBadge: string;
+}, transparent: boolean, dark: boolean) {
+  const pickTransparentOrSolid = (
+    transparentDarkColor: string,
+    transparentLightColor: string,
+    solidColor: string,
+  ): string => {
+    if (!transparent) {
+      return solidColor;
+    }
+    return dark ? transparentDarkColor : transparentLightColor;
+  };
+
+  const cardBg = pickTransparentOrSolid(
+    c.overlayMedium,
+    c.glassBgDim,
+    c.navBarCardBg,
+  );
+  const avatarBg = pickTransparentOrSolid(
+    c.overlayMid,
+    c.onDarkControlBg,
+    c.navAvatarBg,
+  );
+  const avatarFocusBg = pickTransparentOrSolid(
+    c.overlayStrong,
+    c.onDarkBgMid,
+    c.navTabFocusedBg,
+  );
+  const textColor = transparent ? c.onDarkTextFaint : c.navTabText;
+  const avatarTextColor = transparent ? c.onDarkTextSoft : c.navTabText;
+  let tabActiveBg = c.overlayMid;
+  if (dark) {
+    tabActiveBg = c.onDarkButtonActiveBg;
+  }
+  if (transparent && !dark) {
+    tabActiveBg = c.onDarkBgMid;
+  }
+
+  const tabFocusedShadow =
+    Platform.OS === 'ios'
+      ? {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      }
+      : { elevation: 2 };
+
+  return StyleSheet.create({
+    wrap: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: spacing.xl,
+      gap: spacing.md,
+      overflow: 'visible',
+    },
+    spacer: {
+      flex: 1,
+    },
+    avatar: {
+      width: TOP_BAR_HEIGHT,
+      height: TOP_BAR_HEIGHT,
+      borderRadius: TOP_BAR_HEIGHT / 2,
+      backgroundColor: avatarBg,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    avatarFocused: {
+      backgroundColor: avatarFocusBg,
+      transform: [{ scale: 1.05 }],
+    },
+    silhouetteContainer: {
+      width: '100%',
+      height: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      borderRadius: TOP_BAR_HEIGHT / 2,
+    },
+    silhouetteHead: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      backgroundColor: avatarTextColor,
+      marginTop: 4,
+    },
+    silhouetteBody: {
+      width: 22,
+      height: 18,
+      borderRadius: 10,
+      backgroundColor: avatarTextColor,
+      marginTop: 2,
+    },
+    tabPill: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: 4,
+      justifyContent: 'center',
+      borderRadius: 999,
+    },
+    tabPillActive: {
+      backgroundColor: tabActiveBg,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 6,
+      borderRadius: 999,
+    },
+    tabPillFocused: {
+      backgroundColor: c.navTabFocusedBg,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 6,
+      transform: [{ scale: 1.18 }],
+      borderRadius: 999,
+      ...tabFocusedShadow,
+    },
+    tabText: {
+      fontSize: 15,
+      fontWeight: '500',
+      color: textColor,
+    },
+    tabTextActive: {
+      color: c.onDarkTextPrimary,
+      fontWeight: '600',
+    },
+    tabTextFocused: {
+      color: c.navTabTextFocused,
+      fontWeight: '600',
+    },
+    searchPill: {
+      paddingHorizontal: spacing.lg,
+      paddingVertical: 4,
+      justifyContent: 'center',
+      borderRadius: 999,
+    },
+    searchPillFocused: {
+      backgroundColor: c.navTabFocusedBg,
+      paddingHorizontal: spacing.lg,
+      transform: [{ scale: 1.18 }],
+      ...tabFocusedShadow,
+    },
+    searchIcon: {
+      fontSize: 20,
+      color: textColor,
+      fontWeight: '600',
+    },
+    card: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'center',
+      borderRadius: 999,
+      backgroundColor: cardBg,
+      paddingHorizontal: 0,
+      paddingVertical: 0,
+      minHeight: TOP_BAR_HEIGHT,
+      gap: spacing.xs,
+      justifyContent: 'center',
+      overflow: 'visible',
+    },
+    settingsWrapper: {
+      position: 'relative' as const,
+    },
+    updateBadge: {
+      position: 'absolute' as const,
+      top: -2,
+      right: -2,
+      width: 13,
+      height: 13,
+      borderRadius: 7,
+      backgroundColor: c.notificationBadge,
+      borderWidth: 2,
+      borderColor: c.overlayLight,
+    },
+    silhouetteFocused: {
+      backgroundColor: c.onDarkTextPrimary,
+    },
+    settingsIcon: {
+      fontSize: 20,
+      color: avatarTextColor,
+      fontWeight: '600',
+    },
+    settingsIconFocused: {
+      color: c.onDarkTextPrimary,
+    },
+  });
+}

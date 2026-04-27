@@ -1,5 +1,5 @@
 import {useQuery} from '@tanstack/react-query';
-import {fetchStorefront} from '../api/apple-music';
+import {fetchStorefront} from '../features/library/api/library';
 
 interface StorefrontData {
   storefrontId: string;

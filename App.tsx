@@ -15,15 +15,15 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { GradientBackground } from './src/components/GradientBackground';
-import { HomeScreen } from './src/screens/HomeScreen';
-import { PlayerProvider } from './src/hooks/usePlayer';
+import { HomeScreen } from './src/features/home/HomeScreen';
+import { PlayerProvider } from './src/features/player/hooks/usePlayer';
 import { ThemeProvider, useTheme } from './src/theme';
-import { AppleMusicAuthScreen } from './src/screens/AppleMusicAuthScreen';
+import { AppleMusicAuthScreen } from './src/features/auth/AppleMusicAuthScreen';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
-import { ForceUpdateScreen } from './src/screens/ForceUpdateScreen';
-import { SubscriptionRequiredScreen } from './src/screens/SubscriptionRequiredScreen';
-import { AppStartupProvider, useAppStartup } from './src/components/AppStartupProvider';
+import { ForceUpdateScreen } from './src/features/bootstrap/ForceUpdateScreen';
+import { SubscriptionRequiredScreen } from './src/features/bootstrap/SubscriptionRequiredScreen';
+import { AppStartupProvider, useAppStartup } from './src/features/bootstrap/components/AppStartupProvider';
 import { handleLogout } from './src/services/musicPlayer';
 
 function AppContent(): React.JSX.Element {

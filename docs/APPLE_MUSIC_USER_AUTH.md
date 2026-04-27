@@ -75,11 +75,11 @@ So: **catalog-only** (search, browse, charts) → developer token is enough.
 - **Catalog-only (no login):** Developer token injected at build time; `appleMusicApi` adds `Authorization: Bearer`. No user auth needed.
 - **User library / playlists / recommendations:**
   1. **Add the MusicKit AAR** — Download from [Apple Developer Downloads](https://developer.apple.com/download/all/?q=Android%20MusicKit) and place the auth AAR in `android/app/libs/`. See `android/app/libs/README.md`.
-  2. **Sign in from JS:** Call `startAppleMusicAuth()` from `src/api/apple-music`. It launches the native sign-in UI and stores the Music User Token.
+  2. **Sign in from JS:** Call `startAppleMusicAuth()` from `src/features/auth/api/startAppleMusicAuth`. It launches the native sign-in UI and stores the Music User Token.
   3. **API client:** `appleMusicApi` automatically adds `Music-User-Token` to every request whose path contains `/me/` if a token is set (after sign-in).
   4. **Token storage:** In-memory for now (`musicUserToken.ts`). Optionally persist with AsyncStorage or secure storage and restore on launch; call `setMusicUserToken(token)` after restore.
 
-### JS API (from `src/api/apple-music`)
+### JS API
 
 | Export | Purpose |
 |--------|---------|
