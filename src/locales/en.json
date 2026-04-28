@@ -13,11 +13,11 @@
     "minute": "1 minute",
     "minutes": "{{count}} minutes",
     "viewOptions": "View Options",
-    "comingSoon": "Coming soon",
     "artist": "Artist",
     "song": "Song",
     "album": "Album",
     "playlist": "Playlist",
+    "musicVideo": "Music Video",
     "exitPressAgain": "Press back again to exit"
   },
   "topBar": {
@@ -52,7 +52,8 @@
     "albums": "Albums",
     "songs": "Songs",
     "signInPrompt": "Sign in to Apple Music to see your library.",
-    "loadError": "Could not load library."
+    "loadError": "Could not load library.",
+    "musicVideos": "Videos"
   },
   "nowPlaying": {
     "emptyState": "Select a song to play.",
@@ -91,6 +92,7 @@
     "topSongs": "Top Songs",
     "latestRelease": "Latest Release",
     "essentialAlbums": "Essential Albums",
+    "musicVideos": "Music Videos",
     "failedToLoad": "Failed to load artist",
     "madeForYou": "Made for You",
     "single": "Single",
@@ -141,6 +143,8 @@
       "restorePurchases": "Restore Purchases",
       "getProMonthly": "Get Pro (Monthly)"
     },
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
     "update": "Update Available",
     "support": "Support",
     "aboutInfo": {
@@ -155,7 +159,10 @@
   },
   "videos": {
     "title": "Videos",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "recentlyPlayed": "Recently Watched",
+    "errorRestricted": "This video is not available in your region or with your subscription.",
+    "errorGeneric": "This video could not be played."
   },
   "update": {
     "title": "Update Required",
@@ -174,6 +181,21 @@
     "notFoundMessage": "No active subscription was found for this account.",
     "error": "Error",
     "errorMessage": "Failed to communicate with the Store. Please try again later."
+  },
+  "more": {
+    "love": "Love",
+    "removeLove": "Remove Love",
+    "addToLibrary": "+ Add to Library",
+    "inLibrary": "In Library",
+    "addToPlaylist": "Add to Playlist",
+    "loadingPlaylists": "Loading playlists...",
+    "noPlaylists": "No playlists found",
+    "dislike": "Dislike",
+    "removeDislike": "Remove Dislike",
+    "goToArtist": "Go to Artist",
+    "goToAlbum": "Go to Album",
+    "cancel": "Cancel",
+    "error": "Something went wrong"
   },
   "subscriptionRequired": {
     "title": "Subscription Required",

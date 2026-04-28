@@ -13,11 +13,11 @@
     "minute": "1 dakika",
     "minutes": "{{count}} dakika",
     "viewOptions": "Seçenekleri Görüntüle",
-    "comingSoon": "Yakında",
     "artist": "Sanatçı",
     "song": "Şarkı",
     "album": "Albüm",
     "playlist": "Çalma Listesi",
+    "musicVideo": "Müzik Videosu",
     "exitPressAgain": "Çıkmak için tekrar basın"
   },
   "topBar": {
@@ -52,7 +52,8 @@
     "albums": "Albümler",
     "songs": "Şarkılar",
     "signInPrompt": "Arşivinizi görmek için Apple Music'e giriş yapın.",
-    "loadError": "Arşiv yüklenemedi."
+    "loadError": "Arşiv yüklenemedi.",
+    "musicVideos": "Videolar"
   },
   "nowPlaying": {
     "emptyState": "Çalmak için bir şarkı seçin.",
@@ -91,6 +92,7 @@
     "topSongs": "En Popüler Şarkılar",
     "latestRelease": "Son Çıkan",
     "essentialAlbums": "Temel Albümler",
+    "musicVideos": "Müzik Videoları",
     "failedToLoad": "Sanatçı yüklenemedi",
     "madeForYou": "Senin İçin Hazırlandı",
     "single": "Single",
@@ -141,6 +143,8 @@
       "restorePurchases": "Satın Almaları Geri Yükle",
       "getProMonthly": "Pro Al (Aylık)"
     },
+    "darkMode": "Koyu Mod",
+    "lightMode": "Açık Mod",
     "update": "Güncelleme Mevcut",
     "support": "Destek",
     "aboutInfo": {
@@ -155,7 +159,10 @@
   },
   "videos": {
     "title": "Videolar",
-    "comingSoon": "Yakında"
+    "comingSoon": "Yakında",
+    "recentlyPlayed": "Son İzlenenler",
+    "errorRestricted": "Bu video bölgenizde veya aboneliğinizle kullanılamıyor.",
+    "errorGeneric": "Bu video oynatılamadı."
   },
   "update": {
     "title": "Güncelleme Gerekli",
@@ -174,6 +181,21 @@
     "notFoundMessage": "Bu hesap için aktif bir abonelik bulunamadı.",
     "error": "Hata",
     "errorMessage": "Mağaza ile iletişim kurulamadı. Lütfen daha sonra tekrar deneyin."
+  },
+  "more": {
+    "love": "Beğen",
+    "removeLove": "Beğeniyi Kaldır",
+    "addToLibrary": "+ Kütüphaneye Ekle",
+    "inLibrary": "Kütüphanede",
+    "addToPlaylist": "Çalma Listesine Ekle",
+    "loadingPlaylists": "Çalma listeleri yükleniyor…",
+    "noPlaylists": "Çalma listesi bulunamadı",
+    "dislike": "Beğenme",
+    "removeDislike": "Beğenmemeyi Kaldır",
+    "goToArtist": "Sanatçıya Git",
+    "goToAlbum": "Albüme Git",
+    "cancel": "İptal",
+    "error": "Bir şeyler yanlış gitti"
   },
   "subscriptionRequired": {
     "title": "Abonelik Gerekli",

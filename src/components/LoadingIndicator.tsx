@@ -1,4 +1,5 @@
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { useTheme } from '../theme';
 
 const styles = StyleSheet.create({
   centered: {
@@ -11,10 +12,13 @@ const styles = StyleSheet.create({
   },
 });
 
-export const LoadingIndicator = () => (
-  <View style={styles.centered}>
-    <View style={styles.container}>
-      <ActivityIndicator size="large" color="#000" />
+export const LoadingIndicator = () => {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.centered}>
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color={colors.accent} />
+      </View>
     </View>
-  </View>
-);
+  );
+};

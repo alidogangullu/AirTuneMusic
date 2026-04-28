@@ -223,7 +223,7 @@ Use these when defining TypeScript interfaces for API responses.
 | `fetchSongDetail` | `GET /v1/catalog/{sf}/songs/{id}` | Developer token |
 | `fetchMusicVideoDetail` | `GET /v1/catalog/{sf}/music-videos/{id}` | Developer token |
 
-All functions live in `src/api/apple-music/recommendations.ts` and are re-exported from `src/api/apple-music/index.ts`.
+All functions live in `src/features/recommendations/api/recommendations.ts`.
 
 ### TypeScript types (`src/types/recommendations.ts`)
 
@@ -240,7 +240,7 @@ All functions live in `src/api/apple-music/recommendations.ts` and are re-export
 | `RecommendationContent` | Single item inside a recommendation row |
 | `PersonalRecommendation` | One row returned by `/me/recommendations` |
 
-Use `useContentDetail(id, type, storefront)` (`src/hooks/useContentDetail.ts`) to fetch and cache any content type via TanStack Query. The hook dispatches to the correct fetch function based on `type`.
+Use `useContentDetail(id, type, storefront)` (`src/features/content/hooks/useContentDetail.ts`) to fetch and cache any content type via TanStack Query. The hook dispatches to the correct fetch function based on `type`.
 
 ---
 

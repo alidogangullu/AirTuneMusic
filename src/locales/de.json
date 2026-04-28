@@ -13,11 +13,11 @@
     "minute": "1 Minute",
     "minutes": "{{count}} Minuten",
     "viewOptions": "Optionen anzeigen",
-    "comingSoon": "Demnächst",
     "artist": "Künstler",
     "song": "Titel",
     "album": "Album",
     "playlist": "Playlist",
+    "musicVideo": "Musikvideo",
     "exitPressAgain": "Zum Beenden erneut drücken"
   },
   "topBar": {
@@ -52,7 +52,8 @@
     "albums": "Alben",
     "songs": "Titel",
     "signInPrompt": "Melden Sie sich bei Apple Music an, um Ihre Mediathek zu sehen.",
-    "loadError": "Mediathek konnte nicht geladen werden."
+    "loadError": "Mediathek konnte nicht geladen werden.",
+    "musicVideos": "Videos"
   },
   "nowPlaying": {
     "emptyState": "Wählen Sie einen Titel zum Abspielen.",
@@ -91,6 +92,7 @@
     "topSongs": "Top-Titel",
     "latestRelease": "Neueste Veröffentlichung",
     "essentialAlbums": "Wichtige Alben",
+    "musicVideos": "Musikvideos",
     "failedToLoad": "Künstler konnte nicht geladen werden",
     "madeForYou": "Für dich erstellt",
     "single": "Single",
@@ -140,6 +142,8 @@
       "restorePurchases": "Käufe wiederherstellen",
       "getProMonthly": "Pro holen (Monatlich)"
     },
+    "darkMode": "Dunkelmodus",
+    "lightMode": "Hellmodus",
     "update": "Update verfügbar",
     "support": "Support",
     "aboutInfo": {
@@ -154,7 +158,10 @@
   },
   "videos": {
     "title": "Videos",
-    "comingSoon": "Demnächst"
+    "comingSoon": "Demnächst",
+    "recentlyPlayed": "Zuletzt angesehen",
+    "errorRestricted": "Dieses Video ist in deiner Region oder mit deinem Abonnement nicht verfügbar.",
+    "errorGeneric": "Dieses Video konnte nicht abgespielt werden."
   },
   "update": {
     "title": "Update erforderlich",
@@ -173,6 +180,21 @@
     "notFoundMessage": "Kein aktives Abonnement für dieses Konto gefunden.",
     "error": "Fehler",
     "errorMessage": "Fehler bei der Kommunikation mit dem Store. Bitte versuchen Sie es später erneut."
+  },
+  "more": {
+    "love": "Gefällt mir",
+    "removeLove": "Gefällt mir entfernen",
+    "addToLibrary": "+ Zur Mediathek hinzufügen",
+    "inLibrary": "In der Mediathek",
+    "addToPlaylist": "Zur Playlist hinzufügen",
+    "loadingPlaylists": "Playlists werden geladen…",
+    "noPlaylists": "Keine Playlists gefunden",
+    "dislike": "Nicht mögen",
+    "removeDislike": "Nicht mögen entfernen",
+    "goToArtist": "Zum Künstler",
+    "goToAlbum": "Zum Album",
+    "cancel": "Abbrechen",
+    "error": "Etwas ist schiefgelaufen"
   },
   "quotaLimit": {
     "title": "Limit erreicht",

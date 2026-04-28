@@ -112,7 +112,7 @@
 
       codeInput.addEventListener('input', function (e) {
         if (e.inputType === 'deleteContentBackward') return;
-        let val = e.target.value.replace(/[^0-9]/g, '');
+        let val = e.target.value.replaceAll(/\D/g, '');
         if (val.length >= 3) {
           val = val.slice(0, 3) + '-' + val.slice(3, 6);
         }
@@ -139,14 +139,14 @@
           try {
             const errData = await res.json();
             if (errData.error) errMsg = errData.error;
-          } catch (e) {}
+          } catch { /* JSON parse failed, use default error message */ }
           throw new Error(errMsg);
         }
       }
 
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
-        let code = codeInput.value.replace(/[^0-9]/g, '').trim();
+        let code = codeInput.value.replaceAll(/\D/g, '').trim();
         if (!code || code.length !== 6) return;
 
         btn.disabled = true;
@@ -182,7 +182,7 @@
       const urlParams = new URLSearchParams(window.location.search);
       const codeFromUrl = urlParams.get('code');
       if (codeFromUrl) {
-        let cleanCode = codeFromUrl.replace(/[^0-9]/g, '');
+        let cleanCode = codeFromUrl.replaceAll(/\D/g, '');
         if (cleanCode.length === 6) {
           codeInput.value = cleanCode.slice(0, 3) + '-' + cleanCode.slice(3, 6);
         }

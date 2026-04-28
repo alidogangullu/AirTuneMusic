@@ -195,7 +195,7 @@ export type MusicVideoDetail = {
     playParams?: {id: string; kind: string};
   };
   relationships?: {
-    albums?: {href?: string; data: unknown[]};
+    albums?: {href?: string; data: {id: string; type: string; href?: string}[]};
     artists?: {href?: string; data: {id: string; type: string; href?: string}[]};
   };
 };

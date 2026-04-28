@@ -294,7 +294,7 @@ private fun sendEvent(name: String, params: WritableMap) {
 
 ## React Hook & Provider
 
-### Key File: `src/hooks/usePlayer.tsx`
+### Key File: `src/features/player/hooks/usePlayer.tsx`
 
 - `PlayerProvider` wraps the app (inside `ThemeProvider` in `App.tsx`)
 - Subscribes to all native events on mount, unsubscribes on unmount
@@ -305,7 +305,7 @@ private fun sendEvent(name: String, params: WritableMap) {
 
 ## Screen Integration
 
-### Key File: `src/screens/ContentDetailScreen.tsx`
+### Key File: `src/features/content/ContentDetailScreen.tsx`
 
 ```typescript
 const {
@@ -666,10 +666,10 @@ adb shell am start -n com.airtunemusic/.MainActivity
 | `android/gradle.properties` | ARM-only architectures |
 | `android/app/build.gradle` | AAR fileTree dependency |
 | `src/services/musicPlayer.ts` | Typed JS wrapper for NativeModules.MusicPlayer |
-| `src/hooks/usePlayer.tsx` | PlayerProvider context + usePlayer hook |
+| `src/features/player/hooks/usePlayer.tsx` | PlayerProvider context + usePlayer hook |
 | `src/api/apple-music/musicUserToken.ts` | MMKV-persisted music user token store |
 | `src/api/apple-music/getDeveloperToken.ts` | Developer token fetch/cache |
-| `src/screens/ContentDetailScreen.tsx` | Play/shuffle/track-press handlers |
+| `src/features/content/ContentDetailScreen.tsx` | Play/shuffle/track-press handlers |
 | `App.tsx` | Wraps app with PlayerProvider |
 
 ---

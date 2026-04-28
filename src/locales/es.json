@@ -13,11 +13,11 @@
     "minute": "1 minuto",
     "minutes": "{{count}} minutos",
     "viewOptions": "Ver opciones",
-    "comingSoon": "Próximamente",
     "artist": "Artista",
     "song": "Canción",
     "album": "Álbum",
     "playlist": "Lista de reproducción",
+    "musicVideo": "Video musical",
     "exitPressAgain": "Presiona de nuevo para salir"
   },
   "topBar": {
@@ -52,7 +52,8 @@
     "albums": "Álbumes",
     "songs": "Canciones",
     "signInPrompt": "Inicia sesión en Apple Music para ver tu biblioteca.",
-    "loadError": "No se pudo cargar la biblioteca."
+    "loadError": "No se pudo cargar la biblioteca.",
+    "musicVideos": "Videos"
   },
   "nowPlaying": {
     "emptyState": "Selecciona una canción para reproducir.",
@@ -91,6 +92,7 @@
     "topSongs": "Mejores canciones",
     "latestRelease": "Último lanzamiento",
     "essentialAlbums": "Álbumes esenciales",
+    "musicVideos": "Videos musicales",
     "failedToLoad": "Error al cargar el artista",
     "madeForYou": "Hecho para ti",
     "single": "Sencillo",
@@ -140,6 +142,8 @@
       "restorePurchases": "Restaurar compras",
       "getProMonthly": "Obtener Pro (Mensual)"
     },
+    "darkMode": "Modo oscuro",
+    "lightMode": "Modo claro",
     "update": "Actualización disponible",
     "support": "Soporte",
     "aboutInfo": {
@@ -154,7 +158,10 @@
   },
   "videos": {
     "title": "Vídeos",
-    "comingSoon": "Próximamente"
+    "comingSoon": "Próximamente",
+    "recentlyPlayed": "Vistos recientemente",
+    "errorRestricted": "Este vídeo no está disponible en tu región o con tu suscripción.",
+    "errorGeneric": "Este vídeo no se pudo reproducir."
   },
   "update": {
     "title": "Actualización requerida",
@@ -173,6 +180,21 @@
     "notFoundMessage": "No se ha encontrado ninguna suscripción activa para esta cuenta.",
     "error": "Error",
     "errorMessage": "Error al comunicarse con la tienda. Por favor, inténtalo de nuevo más tarde."
+  },
+  "more": {
+    "love": "Me gusta",
+    "removeLove": "Quitar Me gusta",
+    "addToLibrary": "+ Añadir a la biblioteca",
+    "inLibrary": "En la biblioteca",
+    "addToPlaylist": "Añadir a lista de reproducción",
+    "loadingPlaylists": "Cargando listas de reproducción…",
+    "noPlaylists": "No se encontraron listas de reproducción",
+    "dislike": "No me gusta",
+    "removeDislike": "Quitar No me gusta",
+    "goToArtist": "Ir al artista",
+    "goToAlbum": "Ir al álbum",
+    "cancel": "Cancelar",
+    "error": "Algo salió mal"
   },
   "quotaLimit": {
     "title": "Límite alcanzado",

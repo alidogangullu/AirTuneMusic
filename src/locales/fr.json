@@ -13,11 +13,11 @@
     "minute": "1 minute",
     "minutes": "{{count}} minutes",
     "viewOptions": "Afficher les options",
-    "comingSoon": "Bientôt disponible",
     "artist": "Artiste",
     "song": "Morceau",
     "album": "Album",
     "playlist": "Playlist",
+    "musicVideo": "Clip vidéo",
     "exitPressAgain": "Appuyez de nouveau pour quitter"
   },
   "topBar": {
@@ -52,7 +52,8 @@
     "albums": "Albums",
     "songs": "Morceaux",
     "signInPrompt": "Connectez-vous à Apple Music pour voir votre bibliothèque.",
-    "loadError": "Impossible de charger la bibliothèque."
+    "loadError": "Impossible de charger la bibliothèque.",
+    "musicVideos": "Vidéos"
   },
   "nowPlaying": {
     "emptyState": "Sélectionnez un morceau à lire.",
@@ -91,6 +92,7 @@
     "topSongs": "Morceaux populaires",
     "latestRelease": "Dernière sortie",
     "essentialAlbums": "Albums essentiels",
+    "musicVideos": "Clips vidéo",
     "failedToLoad": "Échec du chargement de l'artiste",
     "madeForYou": "Créé pour vous",
     "single": "Single",
@@ -140,6 +142,8 @@
       "restorePurchases": "Restaurer les achats",
       "getProMonthly": "Passer à Pro (Mensuel)"
     },
+    "darkMode": "Mode sombre",
+    "lightMode": "Mode clair",
     "update": "Mise à jour disponible",
     "support": "Support",
     "aboutInfo": {
@@ -154,7 +158,10 @@
   },
   "videos": {
     "title": "Vidéos",
-    "comingSoon": "Bientôt disponible"
+    "comingSoon": "Bientôt disponible",
+    "recentlyPlayed": "Récemment regardés",
+    "errorRestricted": "Cette vidéo n'est pas disponible dans votre région ou avec votre abonnement.",
+    "errorGeneric": "Impossible de lire cette vidéo."
   },
   "update": {
     "title": "Mise à jour requise",
@@ -173,6 +180,21 @@
     "notFoundMessage": "Aucun abonnement actif n'a été trouvé pour ce compte.",
     "error": "Erreur",
     "errorMessage": "Échec de la communication avec le Store. Veuillez réessayer plus tard."
+  },
+  "more": {
+    "love": "J'aime",
+    "removeLove": "Retirer J'aime",
+    "addToLibrary": "+ Ajouter à la bibliothèque",
+    "inLibrary": "Dans la bibliothèque",
+    "addToPlaylist": "Ajouter à une playlist",
+    "loadingPlaylists": "Chargement des playlists…",
+    "noPlaylists": "Aucune playlist trouvée",
+    "dislike": "Je n'aime pas",
+    "removeDislike": "Retirer Je n'aime pas",
+    "goToArtist": "Aller à l'artiste",
+    "goToAlbum": "Aller à l'album",
+    "cancel": "Annuler",
+    "error": "Une erreur s'est produite"
   },
   "quotaLimit": {
     "title": "Limite atteinte",

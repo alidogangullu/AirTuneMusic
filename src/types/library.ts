@@ -42,4 +42,5 @@ export type LibraryCategoryId =
   | 'playlists'
   | 'artists'
   | 'albums'
-  | 'songs';
+  | 'songs'
+  | 'music-videos';
