@@ -20,6 +20,7 @@
 - **📱 TV Link Pairing**: Easy sign-in using your phone or PC via a local pairing server—no clunky TV keyboard required.
 - **🎼 Full Library Access**: Browse your playlists, albums, and "Listen Now" recommendations.
 - **📻 Apple Music Radio**: Stream your favorite stations and algorithmic radio.
+- **🛜 AirPlay**: Stream audio from iPhone's Apple Music directly to the TV via AirPlay.
 - **🚀 Performance**: Built on `react-native-tvos` for smooth performance on hardware.
 
 ---
@@ -57,11 +58,12 @@ AirTune is currently in **Closed Beta**. To install the app on your Android TV, 
 
 | Area      | Technology                             |
 | --------- | -------------------------------------- |
-| Framework | React Native (`react-native-tvos`)     |
-| Language  | TypeScript                             |
-| API       | Apple Music API (REST)                 |
-| Auth      | MusicKit JS (via Local Pairing Server) |
-| Lyrics    | [LRCLIB](https://lrclib.net/)          |
+| Framework   | React Native (`react-native-tvos`)     |
+| Language    | TypeScript                             |
+| API         | Apple Music API (REST)                 |
+| Auth        | MusicKit JS (via Local Pairing Server) |
+| Lyrics      | [LRCLIB](https://lrclib.net/)          |
+| AirPlay     | [jqssun/android-airplay-server](https://github.com/jqssun/android-airplay-server) (UxPlay-based) |
 
 ### Local Pairing Server (TV Link)
 

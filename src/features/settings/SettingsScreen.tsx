@@ -16,6 +16,7 @@ import { QuotaService } from '../../services/quotaService';
 import { IapService } from './iapService';
 import { spacing, radius } from '../../theme/layout';
 import { VersionCheckResult } from '../../services/versionService';
+import { useAirPlay } from '../airplay/useAirPlay';
 
 export type SettingsScreenProps = {
   onBack?: () => void;
@@ -32,6 +33,7 @@ export function SettingsScreen({
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const { t, i18n } = useTranslation();
   const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language'>('none');
+  const { enabled: airPlayEnabled, setEnabled: setAirPlayEnabled } = useAirPlay();
 
   const hasOptionalUpdate = updateInfo?.status === 'optional_update';
 
@@ -40,6 +42,7 @@ export function SettingsScreen({
     { id: 'Subscription', label: t('settings.subscription') },
     { id: 'Language', label: t('settings.language.title') },
     { id: 'DarkMode', label: themeMode === 'dark' ? t('settings.lightMode') : t('settings.darkMode') },
+    { id: 'AirPlay', label: 'AirPlay: ' + (airPlayEnabled ? t('common.on', 'Açık') : t('common.off', 'Kapalı')) },
     { id: 'Support', label: t('settings.support') },
     { id: 'About', label: t('settings.about') },
   ];
@@ -97,6 +100,8 @@ export function SettingsScreen({
       handleSubscriptionPress();
     } else if (item === 'Language') {
       setCurrentSubMenu('language');
+    } else if (item === 'AirPlay') {
+      setAirPlayEnabled(!airPlayEnabled);
     } else if (item === 'Support') {
       Alert.alert(t('settings.support'), 'gullualidogan@gmail.com');
     } else if (item === 'DarkMode') {

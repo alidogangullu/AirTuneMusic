@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { GradientBackground } from './src/components/GradientBackground';
 import { HomeScreen } from './src/features/home/HomeScreen';
 import { PlayerProvider } from './src/features/player/hooks/usePlayer';
+import { AirPlayProvider } from './src/features/airplay/useAirPlay';
 import { ThemeProvider, useTheme } from './src/theme';
 import { AppleMusicAuthScreen } from './src/features/auth/AppleMusicAuthScreen';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -107,7 +108,9 @@ function App(): React.JSX.Element {
       <ThemeProvider>
         <AppStartupProvider>
           <PlayerProvider>
-            <AppContent />
+            <AirPlayProvider>
+              <AppContent />
+            </AirPlayProvider>
           </PlayerProvider>
         </AppStartupProvider>
       </ThemeProvider>

@@ -36,6 +36,7 @@ import { useStorefront } from '../../hooks/useStorefront';
 import { fetchSongDetail } from '../recommendations/api/recommendations';
 import { LyricsView } from '../player/components/LyricsView';
 import { NowPlayingTrackInfo, ARTWORK_SIZE } from '../player/components/NowPlayingTrackInfo';
+import { useAirPlay } from '../airplay/useAirPlay';
 
 // ── Component ────────────────────────────────────────────────────
 
@@ -88,7 +89,15 @@ export function NowPlayingScreen({
   const { t } = useTranslation();
   const { colors: themeColors } = useTheme();
   const { state } = usePlayer();
-  const { track, playbackState } = state;
+  const airPlay = useAirPlay();
+  // Apple Music takes priority when actively playing or loading.
+  // When AirPlay connects, Apple Music is paused → playbackState becomes 'paused'.
+  // Only yield to AirPlay when Apple Music is paused/stopped/unknown.
+  const appleMusicPlaying =
+    state.playbackState === 'playing' || state.isLoading;
+  const isAirPlayMode = airPlay.active && !appleMusicPlaying;
+  const track = isAirPlayMode ? airPlay.track : state.track;
+  const playbackState = isAirPlayMode ? 'playing' as const : state.playbackState;
   const isPlaying = playbackState === 'playing';
   const palette = useImageColors(track?.artworkUrl);
 
@@ -171,7 +180,7 @@ export function NowPlayingScreen({
     }
   }, [showQueue, showInfo]);
 
-  const isLiveRadio = track ? (track.id?.startsWith('ra.') || track.duration === 0) : false;
+  const isLiveRadio = !isAirPlayMode && track ? (track.id?.startsWith('ra.') || track.duration === 0) : false;
 
   const progressBarRef = useRef<View>(null);
   const playbackControlsRef = useRef<View>(null);
@@ -428,34 +437,54 @@ export function NowPlayingScreen({
       {/* Progress and Info footer — at screen bottom */}
       {!isLiveRadio && (
         <View style={styles.footerContainer}>
-          {!showInfo && (
-            <>
-              <View
-                ref={playbackControlsRef}
-                onLayout={() => setPlaybackControlsNode(findNodeHandle(playbackControlsRef.current))}>
-                <PlaybackControls
-                  nextFocusDown={progressBarNode}
-                  onLayoutButton={(node) => setPlaybackControlsNode(node)}
-                />
-              </View>
+          {isAirPlayMode ? (
+            <NowPlayingProgressBar
+              isLiveRadio={false}
+              isLoading={false}
+              isBuffering={false}
+              isPlaying={true}
+              external={{
+                position: airPlay.positionMs,
+                duration: airPlay.durationMs,
+                isPlaying: true,
+                onSeekTo: () => {},
+                onPlay: () => {},
+                onPause: () => {},
+              }}
+              showExtras={false}
+              progressBarRef={progressBarRef}
+              onLayoutProgress={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
+            />
+          ) : (
+            !showInfo && (
+              <>
+                <View
+                  ref={playbackControlsRef}
+                  onLayout={() => setPlaybackControlsNode(findNodeHandle(playbackControlsRef.current))}>
+                  <PlaybackControls
+                    nextFocusDown={progressBarNode}
+                    onLayoutButton={(node) => setPlaybackControlsNode(node)}
+                  />
+                </View>
 
-              <NowPlayingProgressBar
-                isLiveRadio={isLiveRadio}
-                isLoading={state.isLoading}
-                isBuffering={state.buffering}
-                isPlaying={isPlaying}
-                playbackControlsNode={playbackControlsNode}
-                infoButtonNode={infoButtonNode}
-                onSetInfoButtonNode={setInfoButtonNode}
-                onOpenInfo={() => setShowInfo(true)}
-                showLyrics={showLyrics}
-                onToggleLyrics={() => setShowLyrics(!showLyrics)}
-                showQueue={showQueue}
-                onToggleQueue={() => setShowQueue(!showQueue)}
-                progressBarRef={progressBarRef}
-                onLayoutProgress={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
-              />
-            </>
+                <NowPlayingProgressBar
+                  isLiveRadio={isLiveRadio}
+                  isLoading={state.isLoading}
+                  isBuffering={state.buffering}
+                  isPlaying={isPlaying}
+                  playbackControlsNode={playbackControlsNode}
+                  infoButtonNode={infoButtonNode}
+                  onSetInfoButtonNode={setInfoButtonNode}
+                  onOpenInfo={() => setShowInfo(true)}
+                  showLyrics={showLyrics}
+                  onToggleLyrics={() => setShowLyrics(!showLyrics)}
+                  showQueue={showQueue}
+                  onToggleQueue={() => setShowQueue(!showQueue)}
+                  progressBarRef={progressBarRef}
+                  onLayoutProgress={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
+                />
+              </>
+            )
           )}
         </View>
       )}
