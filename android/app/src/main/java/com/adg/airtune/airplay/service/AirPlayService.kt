@@ -121,28 +121,8 @@ class AirPlayService : Service(), RaopCallbackHandler {
         createNotificationChannel()
         dacpController = DacpController(this)
         mediaSession = MediaSessionCompat(this, "AirPlay").apply {
-            setCallback(object : MediaSessionCompat.Callback() {
-                override fun onPlay() { _setPlaying(true); dacpController?.play() }
-                override fun onPause() { _setPlaying(false); dacpController?.pause() }
-                override fun onSkipToNext() { dacpController?.nextItem() }
-                override fun onSkipToPrevious() { dacpController?.prevItem() }
-            })
+            setCallback(null) // No callbacks for TV control
         }
-        mediaReceiver = object : BroadcastReceiver() {
-            override fun onReceive(ctx: Context, intent: Intent) {
-                when (intent.action) {
-                    ACTION_PLAY_PAUSE -> togglePlayPause()
-                    ACTION_NEXT -> dacpController?.nextItem()
-                    ACTION_PREV -> dacpController?.prevItem()
-                }
-            }
-        }
-        val filter = IntentFilter().apply {
-            addAction(ACTION_PLAY_PAUSE)
-            addAction(ACTION_NEXT)
-            addAction(ACTION_PREV)
-        }
-        ContextCompat.registerReceiver(this, mediaReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_NOT_STICKY
@@ -432,12 +412,7 @@ class AirPlayService : Service(), RaopCallbackHandler {
                       else PlaybackStateCompat.STATE_PAUSED
         val speed = if (isPlaying) 1f else 0f
         val state = PlaybackStateCompat.Builder()
-            .setActions(
-                PlaybackStateCompat.ACTION_PLAY or PlaybackStateCompat.ACTION_PAUSE or
-                PlaybackStateCompat.ACTION_PLAY_PAUSE or
-                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-            )
+            .setActions(0) // No actions (play, pause, skip, etc.)
             .setState(pbState, _positionMs.value, speed, SystemClock.elapsedRealtime())
             .build()
         mediaSession?.setPlaybackState(state)
@@ -498,15 +473,8 @@ class AirPlayService : Service(), RaopCallbackHandler {
                 builder.setStyle(
                     MediaNotificationCompat.MediaStyle()
                         .setMediaSession(token)
-                        .setShowActionsInCompactView(0, 1, 2)
+                        .setShowActionsInCompactView() // No actions
                 )
-                // Transport action buttons
-                builder.addAction(android.R.drawable.ic_media_previous, "Prev",
-                    _mediaAction(ACTION_PREV))
-                builder.addAction(android.R.drawable.ic_media_pause, "Pause",
-                    _mediaAction(ACTION_PLAY_PAUSE))
-                builder.addAction(android.R.drawable.ic_media_next, "Next",
-                    _mediaAction(ACTION_NEXT))
             }
         } else {
             builder.setContentTitle(getString(R.string.airplay_notification_title))
