@@ -170,18 +170,16 @@ class AirPlayService : Service(), RaopCallbackHandler {
         }
 
         // Apply settings from preferences
-        val maxFps = 60
-        val overscanned = false
         val audioLatencyMs = -1
-        val h265 = true
-        val alac = false
+        val h265 = false // Disable video codecs
+        val alac = true // Enable Lossless support since we have a software decoder
         val aac = true
 
         audioRenderer.swAlacEnabled = true
         NativeBridge.nativeSetH265Enabled(nativeHandle, h265)
         NativeBridge.nativeSetCodecs(nativeHandle, alac, aac)
-        NativeBridge.nativeSetPlist(nativeHandle, "maxFPS", maxFps)
-        NativeBridge.nativeSetPlist(nativeHandle, "overscanned", if (overscanned) 1 else 0)
+        NativeBridge.nativeSetPlist(nativeHandle, "maxFPS", 0) // No video FPS
+        NativeBridge.nativeSetPlist(nativeHandle, "overscanned", 0)
         if (audioLatencyMs >= 0) NativeBridge.nativeSetPlist(nativeHandle, "audio_delay_micros", audioLatencyMs * 1000)
 
         // Set display params
@@ -196,7 +194,7 @@ class AirPlayService : Service(), RaopCallbackHandler {
         videoRenderer.setResolution(w, h)
         _videoResolution.value = "${w}x${h}"
         _videoAspect.value = w.toFloat() / h
-        NativeBridge.nativeSetDisplaySize(nativeHandle, w, h, maxFps)
+        NativeBridge.nativeSetDisplaySize(nativeHandle, w, h, 60)
 
         val requestedPort = 7100
         val port = NativeBridge.nativeStart(nativeHandle, requestedPort)
@@ -208,7 +206,18 @@ class AirPlayService : Service(), RaopCallbackHandler {
 
         // Register mDNS services
         val raopTxt = NativeBridge.nativeGetRaopTxtRecords(nativeHandle) ?: emptyMap()
-        val airplayTxt = NativeBridge.nativeGetAirplayTxtRecords(nativeHandle) ?: emptyMap()
+        val airplayTxt = NativeBridge.nativeGetAirplayTxtRecords(nativeHandle)?.toMutableMap() ?: mutableMapOf()
+        
+        // Force audio-only by unsetting Video (0x4), Photo (0x80), and Screen Mirroring (0x800) bits
+        airplayTxt["features"]?.let { f ->
+            try {
+                val features = f.removePrefix("0x").toLong(16)
+                val audioOnlyFeatures = features and (0x4L or 0x80L or 0x800L).inv()
+                airplayTxt["features"] = "0x${java.lang.Long.toHexString(audioOnlyFeatures)}"
+                log("Modified features from $f to ${airplayTxt["features"]} for audio-only mode")
+            } catch (_: Exception) {}
+        }
+
         val raopName = NativeBridge.nativeGetRaopServiceName(nativeHandle) ?: "AirPlay"
         val serverName = NativeBridge.nativeGetServerName(nativeHandle) ?: name
 

@@ -36,6 +36,7 @@ import { useStorefront } from '../../hooks/useStorefront';
 import { fetchSongDetail } from '../recommendations/api/recommendations';
 import { LyricsView } from '../player/components/LyricsView';
 import { NowPlayingTrackInfo, ARTWORK_SIZE } from '../player/components/NowPlayingTrackInfo';
+import { AirPlayLogo } from '../player/components/AirPlayLogo';
 import { useAirPlay } from '../airplay/useAirPlay';
 
 // ── Component ────────────────────────────────────────────────────
@@ -297,6 +298,7 @@ export function NowPlayingScreen({
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.root}>
+
       {showLyrics && (
         <View
           style={[StyleSheet.absoluteFill, styles.lyricsBackdrop]}
@@ -434,6 +436,11 @@ export function NowPlayingScreen({
       {/* Progress and Info footer — at screen bottom */}
       {!isLiveRadio && (
         <View style={styles.footerContainer}>
+          {isAirPlayMode && !showInfo && (
+            <View style={styles.airPlayLogoFooter}>
+              <AirPlayLogo size={26} color="white" />
+            </View>
+          )}
           {isAirPlayMode ? (
             !showInfo && (
               <NowPlayingProgressBar
@@ -445,9 +452,9 @@ export function NowPlayingScreen({
                   position: airPlay.positionMs,
                   duration: airPlayDurationMs,
                   isPlaying: airPlay.isPlaying,
-                  onSeekTo: () => {},
-                  onPlay: () => {},
-                  onPause: () => {},
+                  onSeekTo: () => { },
+                  onPlay: () => { },
+                  onPause: () => { },
                 }}
                 isAirPlay={true}
                 showExtras={true}
@@ -547,6 +554,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: C.onDarkTextFaint,
     marginTop: spacing.xl,
+  },
+  airPlayLogoFooter: {
+    alignItems: 'flex-start',
+    marginLeft: spacing.xxl,
+    marginBottom: -spacing.sm,
+    opacity: 0.7,
   },
   artist: {
     fontSize: 12,

@@ -138,17 +138,18 @@ export function AirPlayProvider({ children }: Readonly<{ children: React.ReactNo
 
       airPlayReceiver.onModeChange(audioOnly => {
         console.log('[AirPlay] mode changed:', audioOnly ? 'audio-only' : 'video/idle');
-        setActive(audioOnly);
-        if (audioOnly) {
-          // AirPlay audio stream started — pause Apple Music so only one source plays
-          musicPlayer.pause();
-        } else {
-          console.log('[AirPlay] mode ended, clearing active track/progress');
+        if (!audioOnly) {
+          // If a video session starts or audio ends, clear state
+          setActive(false);
           setTrack(null);
           setPositionMs(0);
           setDurationMs(0);
           setIsPlaying(false);
+          return;
         }
+        setActive(true);
+        // AirPlay audio stream started — pause Apple Music so only one source plays
+        musicPlayer.pause();
       }),
 
       airPlayReceiver.onTrackChanged(info => {
