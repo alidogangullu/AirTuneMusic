@@ -140,6 +140,23 @@ class AirPlayModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
+    fun disconnect() {
+        Log.d(TAG, "disconnect() called")
+        val svc = service ?: return
+        // To drop the client, we stop and restart the native server.
+        svc.stopServer()
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            svc.startServer("AirTune")
+        }, 500)
+    }
+
+    @ReactMethod
+    fun pause() {
+        Log.d(TAG, "pause() called")
+        service?.dacpController?.pause()
+    }
+
+    @ReactMethod
     fun addListener(eventName: String) {
         listenerCount++
     }

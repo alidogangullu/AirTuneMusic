@@ -12,6 +12,7 @@ import * as musicPlayer from '../../../services/musicPlayer';
 import {QuotaService} from '../../../services/quotaService';
 import {getDeveloperToken} from '../../../api/apple-music/getDeveloperToken';
 import {waitForToken, getMusicUserToken} from '../../../api/apple-music/musicUserToken';
+import {airPlayReceiver} from '../../../services/airPlayReceiver';
 import {MusicKitWebView, MusicKitWebPlayerRef} from '../components/MusicKitWebView';
 import {VideoPlayerModal} from '../components/VideoPlayerModal';
 import type {
@@ -417,6 +418,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
           webPlayerRef.current?.stop();
           activeEngineRef.current = 'native';
         }
+        airPlayReceiver.disconnect();
         await playFn();
         // Quota is now recorded in onCurrentItemChanged to handle automatic transitions
         return true;
@@ -596,6 +598,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     playVideoQueue,
     stopVideo,
     play: () => {
+      airPlayReceiver.disconnect();
       if (activeEngineRef.current === 'web') {
         webPlayerRef.current?.play();
         setState(s => ({...s, playbackState: 'playing'}));

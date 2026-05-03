@@ -33,6 +33,12 @@ export const airPlayReceiver = {
   stop: (): Promise<boolean> =>
     getModule().stopReceiver(),
 
+  disconnect: (): void =>
+    getModule().disconnect(),
+
+  pause: (): void =>
+    getModule().pause(),
+
   onStateChanged: (cb: (state: AirPlayState) => void): EmitterSubscription =>
     getEmitter().addListener('onAirPlayStateChanged', ({ state }) => cb(state)),
 
