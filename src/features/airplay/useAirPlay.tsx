@@ -1,4 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Alert } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { createMMKV } from 'react-native-mmkv';
 import { airPlayReceiver, AirPlayTrackInfo, AirPlayState } from '../../services/airPlayReceiver';
 import * as musicPlayer from '../../services/musicPlayer';
@@ -49,6 +51,7 @@ function airPlayTrackToPlayerTrack(info: AirPlayTrackInfo): TrackInfo {
 
 export function AirPlayProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [enabled, setEnabled] = useState<boolean>(storage.getBoolean(AIRPLAY_ENABLED_KEY) ?? false);
+  const { t } = useTranslation();
   const [receiverState, setReceiverState] = useState<AirPlayState>('stopped');
   const [active, setActive] = useState(false);
   const [track, setTrack] = useState<TrackInfo | null>(null);
@@ -57,22 +60,58 @@ export function AirPlayProvider({ children }: Readonly<{ children: React.ReactNo
   const [connectionCount, setConnectionCount] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const setEnabledPersisted = useCallback((v: boolean) => {
-    storage.set(AIRPLAY_ENABLED_KEY, v);
-    setEnabled(v);
-  }, [setEnabled]);
-
-  // Start or stop the receiver when the setting changes
+  // Initial mount auto-start
   useEffect(() => {
     if (enabled) {
-      airPlayReceiver.start('AirTune');
+      airPlayReceiver.start('AirTune').catch(() => {
+        // If it fails on mount, disable it to prevent crashes
+        storage.set(AIRPLAY_ENABLED_KEY, false);
+        setEnabled(false);
+      });
+    }
+  }, []);
+
+  const setEnabledPersisted = useCallback((v: boolean) => {
+    if (v) {
+      Alert.alert(
+        t('airplay.warningTitle', 'Warning'),
+        t('airplay.warningMessage', 'Not every device supports this feature. If you experience any issues, please turn this off.'),
+        [
+          {
+            text: t('common.cancel', 'Cancel'),
+            style: 'cancel',
+          },
+          {
+            text: t('common.ok', 'OK'),
+            onPress: async () => {
+              try {
+                const success = await airPlayReceiver.start('AirTune');
+                if (success !== false) {
+                  storage.set(AIRPLAY_ENABLED_KEY, true);
+                  setEnabled(true);
+                } else {
+                  throw new Error('Start returned false');
+                }
+              } catch (error) {
+                Alert.alert(
+                  t('airplay.errorTitle', 'Error'),
+                  t('airplay.errorMessage', 'An error occurred. Your device might not support this feature.'),
+                  [{ text: t('common.ok', 'OK') }]
+                );
+              }
+            },
+          },
+        ]
+      );
     } else {
       airPlayReceiver.stop();
+      storage.set(AIRPLAY_ENABLED_KEY, false);
+      setEnabled(false);
       setActive(false);
       setTrack(null);
       setIsPlaying(false);
     }
-  }, [enabled]);
+  }, [t]);
 
   // Attach event listeners while enabled
   useEffect(() => {
