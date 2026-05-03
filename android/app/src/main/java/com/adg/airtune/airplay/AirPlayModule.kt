@@ -87,10 +87,13 @@ class AirPlayModule(private val reactContext: ReactApplicationContext) :
         }
 
         scope.launch {
-            svc.positionMs.collect { pos ->
+            while (true) {
+                kotlinx.coroutines.delay(1000)
+                val s = service ?: continue
+                if (!s.playing.value) continue
                 sendEvent("onAirPlayProgress", Arguments.createMap().apply {
-                    putDouble("positionMs", pos.toDouble())
-                    putDouble("durationMs", (service?.durationMs?.value ?: 0L).toDouble())
+                    putDouble("positionMs", s.currentPositionMs().toDouble())
+                    putDouble("durationMs", s.durationMs.value.toDouble())
                 })
             }
         }
@@ -107,6 +110,7 @@ class AirPlayModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun startReceiver(deviceName: String, promise: Promise) {
         try {
+            Log.d(TAG, "startReceiver() called for deviceName=$deviceName")
             val ctx = reactApplicationContext
             val intent = Intent(ctx, AirPlayService::class.java)
             ctx.bindService(intent, connection, Context.BIND_AUTO_CREATE)
@@ -125,6 +129,7 @@ class AirPlayModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun stopReceiver(promise: Promise) {
         try {
+            Log.d(TAG, "stopReceiver() called")
             service?.stopServer()
             try { reactApplicationContext.unbindService(connection) } catch (_: Exception) {}
             service = null

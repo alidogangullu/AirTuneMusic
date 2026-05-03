@@ -76,10 +76,24 @@ class AirPlayService : Service(), RaopCallbackHandler {
 
     @Volatile private var _progressBaseMs = 0L
     @Volatile private var _progressBaseTime = 0L
+    @Volatile private var _lastAudioDataTime = 0L
 
     fun currentPositionMs(): Long {
         if (_progressBaseTime == 0L || !_playing.value) return _positionMs.value
-        val elapsed = SystemClock.elapsedRealtime() - _progressBaseTime
+        val now = SystemClock.elapsedRealtime()
+        
+        // Watchdog: If no audio data for > 2s, the sender has likely paused or disconnected.
+        if (_lastAudioDataTime > 0 && now - _lastAudioDataTime > 2000) {
+            val lastElapsed = now - _progressBaseTime
+            _positionMs.value = (_progressBaseMs + lastElapsed).coerceIn(0, _durationMs.value)
+            _playing.value = false
+            _progressBaseTime = 0
+            return _positionMs.value
+        }
+
+        val elapsed = now - _progressBaseTime
+        // No watchdog on progress here because some senders don't send periodic updates.
+        // Just advance based on elapsed time.
         return (_progressBaseMs + elapsed).coerceIn(0, _durationMs.value)
     }
 
@@ -201,6 +215,13 @@ class AirPlayService : Service(), RaopCallbackHandler {
         nsdManager?.registerRaop(raopName, port, raopTxt)
         nsdManager?.registerAirplay(serverName, port, airplayTxt)
 
+        // EMULATOR_BRIDGE: log service info so the host can proxy mDNS
+        log("BRIDGE_RAOP_NAME=$raopName")
+        log("BRIDGE_AIRPLAY_NAME=$serverName")
+        log("BRIDGE_PORT=$port")
+        log("BRIDGE_RAOP_TXT=${raopTxt.entries.joinToString("|") { "${it.key}=${it.value}" }}")
+        log("BRIDGE_AIRPLAY_TXT=${airplayTxt.entries.joinToString("|") { "${it.key}=${it.value}" }}")
+
         _serverState.value = ServerState.RUNNING
         ContextCompat.startForegroundService(this, Intent(this, AirPlayService::class.java))
         startForeground(NOTIFICATION_ID, buildNotification())
@@ -266,6 +287,7 @@ class AirPlayService : Service(), RaopCallbackHandler {
     }
 
     override fun onAudioData(data: ByteArray, ct: Int, ntpTimeNs: Long, seqNum: Int) {
+        _lastAudioDataTime = SystemClock.elapsedRealtime()
         audioRenderer.feedAudio(data, ct, ntpTimeNs)
     }
 

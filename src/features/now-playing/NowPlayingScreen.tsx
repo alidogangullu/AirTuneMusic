@@ -98,8 +98,15 @@ export function NowPlayingScreen({
   const isAirPlayMode = airPlay.active && !appleMusicPlaying;
   const track = isAirPlayMode ? airPlay.track : state.track;
   const playbackState = isAirPlayMode ? 'playing' as const : state.playbackState;
-  const isPlaying = playbackState === 'playing';
+  const isPlaying = playbackState === 'playing' && (!isAirPlayMode || airPlay.isPlaying);
   const palette = useImageColors(track?.artworkUrl);
+  let airPlayDurationMs = 0;
+  if (isAirPlayMode) {
+    airPlayDurationMs = airPlay.durationMs;
+    if (airPlayDurationMs <= 0) {
+      airPlayDurationMs = track?.duration ?? 0;
+    }
+  }
 
   const [showInfo, setShowInfo] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
@@ -345,89 +352,93 @@ export function NowPlayingScreen({
                 </Text>
               </View>
               <View style={styles.infoActionButtons}>
-                <Pressable
-                  style={({ focused }) => [
-                    styles.gotoAlbumButton,
-                    focused && styles.gotoAlbumButtonFocused,
-                  ]}
-                  hasTVPreferredFocus={showInfo}
-                  onPress={async () => {
-                    if (track?.id && !isLiveRadio) {
-                      try {
-                        const detail = await fetchSongDetail(track.id, storefrontId);
-                        const albumId = detail.data[0]?.relationships?.albums?.data?.[0]?.id;
+                {!isAirPlayMode && (
+                  <>
+                    <Pressable
+                      style={({ focused }) => [
+                        styles.gotoAlbumButton,
+                        focused && styles.gotoAlbumButtonFocused,
+                      ]}
+                      hasTVPreferredFocus={showInfo}
+                      onPress={async () => {
+                        if (track?.id && !isLiveRadio) {
+                          try {
+                            const detail = await fetchSongDetail(track.id, storefrontId);
+                            const albumId = detail.data[0]?.relationships?.albums?.data?.[0]?.id;
 
-                        if (albumId) {
-                          pushContent({
-                            id: albumId,
-                            type: 'albums',
-                            attributes: {
-                              name: track.albumTitle ?? '',
-                            },
-                          });
-                          setShowInfo(false); // Close the info card
-                        } else {
-                          // No album relationship found - provide user feedback
-                          console.warn('NowPlayingScreen: No album relationship found for track');
-                          // Optionally show a toast or alert to the user
+                            if (albumId) {
+                              pushContent({
+                                id: albumId,
+                                type: 'albums',
+                                attributes: {
+                                  name: track.albumTitle ?? '',
+                                },
+                              });
+                              setShowInfo(false); // Close the info card
+                            } else {
+                              // No album relationship found - provide user feedback
+                              console.warn('NowPlayingScreen: No album relationship found for track');
+                              // Optionally show a toast or alert to the user
+                            }
+                          } catch (e) {
+                            console.warn('NowPlayingScreen: Failed to fetch album ID:', e);
+                            // Fallback: try containerId if available
+                            if (state.containerId) {
+                              pushContent({
+                                id: state.containerId,
+                                type: 'albums',
+                                attributes: {
+                                  name: track.albumTitle ?? '',
+                                },
+                              });
+                              setShowInfo(false);
+                            }
+                          }
                         }
-                      } catch (e) {
-                        console.warn('NowPlayingScreen: Failed to fetch album ID:', e);
-                        // Fallback: try containerId if available
-                        if (state.containerId) {
-                          pushContent({
-                            id: state.containerId,
-                            type: 'albums',
-                            attributes: {
-                              name: track.albumTitle ?? '',
-                            },
-                          });
-                          setShowInfo(false);
-                        }
-                      }
-                    }
-                  }}
-                  focusable={!isLiveRadio}>
-                  {({ focused }) => (
-                    <Text style={[styles.gotoAlbumText, focused && styles.gotoAlbumTextFocused]}>
-                      {t('nowPlaying.goToAlbum')}
-                    </Text>
-                  )}
-                </Pressable>
+                      }}
+                      focusable={!isLiveRadio}>
+                      {({ focused }) => (
+                        <Text style={[styles.gotoAlbumText, focused && styles.gotoAlbumTextFocused]}>
+                          {t('nowPlaying.goToAlbum')}
+                        </Text>
+                      )}
+                    </Pressable>
 
-                <Pressable
-                  style={({ focused }) => [
-                    styles.gotoAlbumButton,
-                    focused && styles.gotoAlbumButtonFocused,
-                  ]}
-                  onPress={async () => {
-                    if (track?.id && !isLiveRadio) {
-                      try {
-                        const detail = await fetchSongDetail(track.id, storefrontId);
-                        const artistId = detail.data[0]?.relationships?.artists?.data?.[0]?.id;
+                    <Pressable
+                      style={({ focused }) => [
+                        styles.gotoAlbumButton,
+                        focused && styles.gotoAlbumButtonFocused,
+                      ]}
+                      onPress={async () => {
+                        if (track?.id && !isLiveRadio) {
+                          try {
+                            const detail = await fetchSongDetail(track.id, storefrontId);
+                            const artistId = detail.data[0]?.relationships?.artists?.data?.[0]?.id;
 
-                        if (artistId) {
-                          pushContent({
-                            id: artistId,
-                            type: 'artists',
-                            attributes: {
-                              name: track.artistName ?? '',
-                            },
-                          });
-                          setShowInfo(false);
+                            if (artistId) {
+                              pushContent({
+                                id: artistId,
+                                type: 'artists',
+                                attributes: {
+                                  name: track.artistName ?? '',
+                                },
+                              });
+                              setShowInfo(false);
+                            }
+                          } catch (e) {
+                            console.warn('NowPlayingScreen: Failed to fetch artist ID:', e);
+                          }
                         }
-                      } catch (e) {
-                        console.warn('NowPlayingScreen: Failed to fetch artist ID:', e);
-                      }
-                    }
-                  }}
-                  focusable={!isLiveRadio}>
-                  {({ focused }) => (
-                    <Text style={[styles.gotoAlbumText, focused && styles.gotoAlbumTextFocused]}>
-                      {t('more.goToArtist')}
-                    </Text>
-                  )}
-                </Pressable>
+                      }}
+                      focusable={!isLiveRadio}>
+                      {({ focused }) => (
+                        <Text style={[styles.gotoAlbumText, focused && styles.gotoAlbumTextFocused]}>
+                          {t('more.goToArtist')}
+                        </Text>
+                      )}
+                    </Pressable>
+                  </>
+                )}
               </View>
             </View>
           </View>
@@ -440,18 +451,25 @@ export function NowPlayingScreen({
           {isAirPlayMode ? (
             <NowPlayingProgressBar
               isLiveRadio={false}
-              isLoading={false}
-              isBuffering={false}
-              isPlaying={true}
+              isLoading={airPlay.positionMs > 0 ? false : false}
+              isBuffering={airPlay.positionMs > 0 ? false : false}
+              isPlaying={airPlay.isPlaying}
               external={{
                 position: airPlay.positionMs,
-                duration: airPlay.durationMs,
-                isPlaying: true,
+                duration: airPlayDurationMs,
+                isPlaying: airPlay.isPlaying,
                 onSeekTo: () => {},
                 onPlay: () => {},
                 onPause: () => {},
               }}
-              showExtras={false}
+              isAirPlay={true}
+              showExtras={true}
+              onOpenInfo={() => setShowInfo(true)}
+              showLyrics={showLyrics}
+              onToggleLyrics={() => setShowLyrics(!showLyrics)}
+              showQueue={showQueue}
+              onToggleQueue={() => setShowQueue(!showQueue)}
+              focusable={true}
               progressBarRef={progressBarRef}
               onLayoutProgress={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
             />

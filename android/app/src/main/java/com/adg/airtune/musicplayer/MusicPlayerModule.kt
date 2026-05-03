@@ -300,16 +300,19 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun play() {
+        Log.d(TAG, "play() called")
         mainHandler.post { player?.play() }
     }
 
     @ReactMethod
     fun pause() {
+        Log.d(TAG, "pause() called")
         mainHandler.post { player?.pause() }
     }
 
     @ReactMethod
     fun stop() {
+        Log.d(TAG, "stop() called")
         mainHandler.post {
             player?.stop()
             stopProgressUpdates()

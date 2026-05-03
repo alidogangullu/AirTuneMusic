@@ -54,6 +54,8 @@ interface NowPlayingProgressBarProps {
   onToggleQueue?: () => void;
   progressBarRef?: React.RefObject<View | null>;
   onLayoutProgress?: () => void;
+  focusable?: boolean;
+  isAirPlay?: boolean;
 }
 
 export const NowPlayingProgressBar = React.memo(({
@@ -73,6 +75,8 @@ export const NowPlayingProgressBar = React.memo(({
   onToggleQueue,
   progressBarRef: externalProgressBarRef,
   onLayoutProgress,
+  focusable = true,
+  isAirPlay = false,
 }: NowPlayingProgressBarProps) => {
   const { t } = useTranslation();
 
@@ -81,7 +85,8 @@ export const NowPlayingProgressBar = React.memo(({
   const nativeProgress = usePlaybackProgress();
 
   const position = external?.position ?? nativeProgress.position;
-  const duration = external?.duration ?? nativeProgress.duration;
+  const fallbackDuration = nativePlayer.state.track?.duration ?? 0;
+  const duration = external?.duration ?? (nativeProgress.duration > 0 ? nativeProgress.duration : fallbackDuration);
   const seekTo = external?.onSeekTo ?? nativePlayer.seekTo;
   const play = external?.onPlay ?? nativePlayer.play;
   const pause = external?.onPause ?? nativePlayer.pause;
@@ -153,7 +158,7 @@ export const NowPlayingProgressBar = React.memo(({
   }, [isBuffering, isLoading, isLiveRadio]));
 
   const progress = (duration > 0 && !isLiveRadio) ? position / duration : 0;
-  const remainingMs = (duration > 0 && !isLiveRadio) ? duration - position : 0;
+  const remainingMs = (duration > 0 && !isLiveRadio) ? Math.max(0, duration - position) : 0;
   const scrubProgress = (duration > 0 && !isLiveRadio) ? pendingSeekMs / duration : 0;
 
   const internalProgressBarRef = useRef<View>(null);
@@ -169,7 +174,7 @@ export const NowPlayingProgressBar = React.memo(({
         style={styles.progressContainer}
         nextFocusUp={playbackControlsNode ?? undefined}
         nextFocusDown={infoButtonNode ?? undefined}
-        focusable={true}
+        focusable={focusable}
         onFocus={handleFocus}
         onBlur={handleBlur}
         onPress={handlePress}
@@ -268,13 +273,20 @@ export const NowPlayingProgressBar = React.memo(({
                     styles.infoButton,
                     showQueue && !focused && styles.infoButtonActive,
                     focused && styles.infoButtonFocused,
+                    isAirPlay && styles.infoButtonDisabled,
                     { alignSelf: 'flex-end', marginRight: -spacing.sm },
                   ]}
                   nextFocusUp={findNodeHandle(progressBarRef.current)}
                   onPress={onToggleQueue}
-                  focusable={true}>
+                  disabled={isAirPlay}>
                   {({ focused }) => {
-                    const iconColor = focused ? C.onDarkFocusedIcon : (showQueue ? C.onDarkTextPrimary : C.onDarkTextFaint);
+                    let iconColor = C.onDarkTextFaint;
+                    if (showQueue) {
+                      iconColor = C.onDarkTextPrimary;
+                    }
+                    if (focused) {
+                      iconColor = C.onDarkFocusedIcon;
+                    }
                     return (
                       <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <Path d="M3 12h18" />
@@ -381,6 +393,9 @@ const styles = StyleSheet.create({
   },
   infoButtonActive: {
     backgroundColor: C.onDarkButtonActiveBg,
+  },
+  infoButtonDisabled: {
+    opacity: 0.3,
   },
   infoButtonText: {
     fontSize: 16,
