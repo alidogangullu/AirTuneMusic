@@ -43,7 +43,7 @@ export function SettingsScreen({
     ...(hasOptionalUpdate ? [{ id: 'Update', label: t('settings.update') }] : []),
     { id: 'Subscription', label: t('settings.subscription') },
     { id: 'Language', label: t('settings.language.title') },
-    { id: 'DarkMode', label: themeMode === 'dark' ? t('settings.lightMode') : t('settings.darkMode') },
+    { id: 'DarkMode', label: t('settings.theme') + ': ' + (themeMode === 'dark' ? t('settings.themeDark') : t('settings.themeLight')) },
     { id: 'AirPlay', label: 'AirPlay: ' + (airPlayEnabled ? t('common.on', 'Açık') : t('common.off', 'Kapalı')) },
     { id: 'Support', label: t('settings.support') },
     { id: 'About', label: t('settings.about') },

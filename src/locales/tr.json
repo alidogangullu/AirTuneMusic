@@ -144,8 +144,9 @@
             "getProMonthly": "Pro Al (Aylık)",
             "airPlayUsage": "AirPlay Kullanımı: {{airPlayUsed}}/{{airPlayTotal}} dk."
         },
-        "darkMode": "Koyu Mod",
-        "lightMode": "Açık Mod",
+        "theme": "Tema",
+        "themeDark": "Koyu",
+        "themeLight": "Açık",
         "update": "Güncelleme Mevcut",
         "support": "Destek",
         "aboutInfo": {

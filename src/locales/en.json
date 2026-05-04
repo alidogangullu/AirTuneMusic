@@ -144,8 +144,9 @@
             "getProMonthly": "Get Pro (Monthly)",
             "airPlayUsage": "AirPlay Usage: {{airPlayUsed}}/{{airPlayTotal}} min."
         },
-        "darkMode": "Dark Mode",
-        "lightMode": "Light Mode",
+        "theme": "Theme",
+        "themeDark": "Dark",
+        "themeLight": "Light",
         "update": "Update Available",
         "support": "Support",
         "aboutInfo": {

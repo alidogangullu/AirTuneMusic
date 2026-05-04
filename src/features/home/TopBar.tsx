@@ -238,11 +238,6 @@ function useStyles(c: {
     c.onDarkControlBg,
     c.navAvatarBg,
   );
-  const avatarFocusBg = pickTransparentOrSolid(
-    c.overlayStrong,
-    c.onDarkBgMid,
-    c.navTabFocusedBg,
-  );
   const textColor = transparent ? c.onDarkTextFaint : c.navTabText;
   const avatarTextColor = transparent ? c.onDarkTextSoft : c.navTabText;
   let tabActiveBg = c.overlayMid;
@@ -283,8 +278,8 @@ function useStyles(c: {
       justifyContent: 'center',
     },
     avatarFocused: {
-      backgroundColor: avatarFocusBg,
-      transform: [{ scale: 1.05 }],
+      backgroundColor: '#FFFFFF',
+      transform: [{ scale: 1.1 }],
     },
     silhouetteContainer: {
       width: '100%',
@@ -386,7 +381,7 @@ function useStyles(c: {
       borderColor: c.overlayLight,
     },
     silhouetteFocused: {
-      backgroundColor: c.onDarkTextPrimary,
+      backgroundColor: '#000000',
     },
     settingsIcon: {
       fontSize: 20,
@@ -394,7 +389,7 @@ function useStyles(c: {
       fontWeight: '600',
     },
     settingsIconFocused: {
-      color: c.onDarkTextPrimary,
+      color: '#000000',
     },
   });
 }

@@ -143,8 +143,9 @@
             "getProMonthly": "Pro holen (Monatlich)",
             "airPlayUsage": "AirPlay-Nutzung: {{airPlayUsed}}/{{airPlayTotal}} Min."
         },
-        "darkMode": "Dunkelmodus",
-        "lightMode": "Hellmodus",
+        "theme": "Design",
+        "themeDark": "Dunkel",
+        "themeLight": "Hell",
         "update": "Update verfügbar",
         "support": "Support",
         "aboutInfo": {
