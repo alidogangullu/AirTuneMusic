@@ -203,7 +203,7 @@
         "warningMessage": "Tous les appareils ne prennent pas en charge cette fonctionnalité. Désactivez-la si vous rencontrez des problèmes.",
         "errorTitle": "Erreur AirPlay",
         "errorMessage": "Une erreur s'est produite. Votre appareil ne prend peut-être pas en charge cette fonctionnalité.",
-        "quotaTitle": "Limite de 2 heures atteinte",
+        "quotaTitle": "Limite AirPlay atteinte",
         "quotaMessage": "Vous avez utilisé {{used}}/{{total}} minutes de lecture AirPlay.\n\nLa limite se réinitialise dans : {{remaining}}."
     }
 }

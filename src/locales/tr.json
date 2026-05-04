@@ -209,7 +209,7 @@
         "warningMessage": "Her cihaz bu özelliği desteklemeyebilir. Sorun yaşarsanız lütfen kapatın.",
         "errorTitle": "AirPlay Hatası",
         "errorMessage": "Bir hata oluştu. Cihazınız bu özelliği desteklemiyor olabilir.",
-        "quotaTitle": "2 Saatlik Limit Doldu",
+        "quotaTitle": "AirPlay Limiti Doldu",
         "quotaMessage": "{{used}}/{{total}} dakika AirPlay yayını kullandınız.\n\nSınır şu süre içinde sıfırlanacak: {{remaining}}."
     }
 }

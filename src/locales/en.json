@@ -209,7 +209,7 @@
         "warningMessage": "Not every device supports this feature. If you experience any issues, please turn this off.",
         "errorTitle": "AirPlay Error",
         "errorMessage": "An error occurred. Your device might not support this feature.",
-        "quotaTitle": "Hourly Limit Reached",
+        "quotaTitle": "AirPlay Limit Reached",
         "quotaMessage": "You have used {{used}}/{{total}} minutes of AirPlay playback.\n\nLimit resets in: {{remaining}}."
     }
 }
