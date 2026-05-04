@@ -5,7 +5,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.media.AudioManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -296,28 +295,7 @@ class AirPlayService : Service(), RaopCallbackHandler {
     }
 
     override fun onVolumeChange(volume: Float) {
-        // AirPlay volume is in dB: -144 (mute) to 0 (max)
-        // iOS slider typically maps -30dB to 0dB linearly for its visual position.
-        val scale = when {
-            volume >= 0f -> 1f
-            volume <= -144f -> 0f
-            volume <= -30f -> 0.05f // Lowest audible step before mute
-            else -> {
-                // Linear mapping from [-30, 0] to [0, 1]
-                // This matches the visual position of the slider on iPhone
-                (volume + 30f) / 30f
-            }
-        }.coerceIn(0f, 1f)
-        
-        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        val maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-        val targetVol = (maxVol * scale).toInt()
-        
-        // Sync with system volume and show the UI bar on TV
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, AudioManager.FLAG_SHOW_UI)
-        
-        // Keep software volume at 100% to avoid double-attenuation
-        audioRenderer.setVolume(0f) // 0dB = 100% gain
+        // Volume is always at full; TV remote controls system volume independently
     }
 
     override fun onConnectionInit() {
