@@ -1,205 +1,214 @@
 {
-  "common": {
-    "loading": "Loading...",
-    "error": "Error",
-    "failedToLoad": "Failed to load",
-    "retry": "Retry",
-    "cancel": "Cancel",
-    "ok": "OK",
-    "unknown": "Unknown",
-    "noItems": "No items",
-    "appName": "AirTune Music",
-    "availableNow": "Available now",
-    "minute": "1 minute",
-    "minutes": "{{count}} minutes",
-    "viewOptions": "View Options",
-    "artist": "Artist",
-    "song": "Song",
-    "album": "Album",
-    "playlist": "Playlist",
-    "musicVideo": "Music Video",
-    "exitPressAgain": "Press back again to exit"
-  },
-  "topBar": {
-    "listenNow": "Listen Now",
-    "browse": "Browse",
-    "videos": "Videos",
-    "radio": "Radio",
-    "library": "Library",
-    "nowPlaying": "Now Playing",
-    "search": "Search",
-    "profile": "Profile",
-    "settings": "Settings"
-  },
-  "home": {
-    "signOutTitle": "Sign Out",
-    "signOutMessage": "Are you sure you want to sign out?",
-    "signOutConfirm": "Sign Out"
-  },
-  "search": {
-    "placeholder": "Artists, Songs, Lyrics and More",
-    "recent": "Recent Searches",
-    "clearRecent": "Clear Recent Searches",
-    "results": "Results for \"{{term}}\"",
-    "space": "SPACE"
-  },
-  "library": {
-    "title": "Library",
-    "recentlyAdded": "Recently Added",
-    "recentlyPlayed": "Recently Played",
-    "playlists": "Playlists",
-    "artists": "Artists",
-    "albums": "Albums",
-    "songs": "Songs",
-    "signInPrompt": "Sign in to Apple Music to see your library.",
-    "loadError": "Could not load library.",
-    "musicVideos": "Videos"
-  },
-  "nowPlaying": {
-    "emptyState": "Select a song to play.",
-    "goToAlbum": "Go to Album",
-    "info": "Info",
-    "progressBar": "Progress bar",
-    "durationFormat": "{{mins}} min, {{secs}} secs",
-    "showLyrics": "Show lyrics",
-    "hideLyrics": "Hide lyrics",
-    "showQueue": "Show queue",
-    "hideQueue": "Hide queue"
-  },
-  "lyrics": {
-    "notFound": "Lyrics not available",
-    "loading": "Loading lyrics..."
-  },
-  "detail": {
-    "failedToLoad": "Failed to load content",
-    "add": "Add",
-    "shuffle": "Shuffle",
-    "more": "More",
-    "play": "Play",
-    "songsCount": "{{count}} songs",
-    "updated": "Updated {{date}}",
-    "playlistBy": "Playlist by {{curator}}",
-    "noRecommendationsYet": "No recommendations yet",
-    "today": "Today",
-    "yesterday": "Yesterday",
-    "daysAgo": "{{count}} days ago",
-    "radioStation": "Radio Station",
-    "live": "🔴 Live",
-    "onDemand": "On Demand",
-    "failedToLoadAlbum": "Failed to load album"
-  },
-  "artist": {
-    "topSongs": "Top Songs",
-    "latestRelease": "Latest Release",
-    "essentialAlbums": "Essential Albums",
-    "musicVideos": "Music Videos",
-    "failedToLoad": "Failed to load artist",
-    "madeForYou": "Made for You",
-    "single": "Single",
-    "album": "Album"
-  },
-  "auth": {
-    "title": "Connect to Apple Music",
-    "subtitle": "Scan the QR code to connect, or visit the URL and enter the code below",
-    "scanPrompt": "Scan the QR code",
-    "visit": "Visit",
-    "getNewCode": "Get New Code",
-    "loading": "Loading...",
-    "linked": "Linked! Token received.",
-    "manualEntry": "Manual Token Entry (Reviewer Mode)",
-    "manualEntryTitle": "Enter Token Manually",
-    "manualEntryPlaceholder": "Paste Music User Token here...",
-    "pasteToken": "Paste Music User Token here...",
-    "connect": "Connect",
-    "signOut": "Clear token (sign out)",
-    "appleMusicAuth": "Apple Music Auth",
-    "androidTvSignIn": "Android TV – sign in API",
-    "connectTitle": "Connect to Apple Music",
-    "scanQR": "Scan the QR code",
-    "orVisitURL": "to connect, or visit the URL and enter the code below",
-    "visitURL": "VISIT URL",
-    "linkedMessage": "Linked! Token received.",
-    "paidSubscriptionRequired": "Paid Apple Music subscription is required."
-  },
-  "settings": {
-    "title": "Settings",
-    "language": {
-      "title": "Language",
-      "english": "English",
-      "turkish": "Turkish",
-      "german": "German",
-      "spanish": "Spanish",
-      "french": "French"
+    "common": {
+        "loading": "Loading...",
+        "error": "Error",
+        "failedToLoad": "Failed to load",
+        "retry": "Retry",
+        "cancel": "Cancel",
+        "ok": "OK",
+        "unknown": "Unknown",
+        "noItems": "No items",
+        "appName": "AirTune Music",
+        "availableNow": "Available now",
+        "minute": "1 minute",
+        "minutes": "{{count}} minutes",
+        "viewOptions": "View Options",
+        "artist": "Artist",
+        "song": "Song",
+        "album": "Album",
+        "playlist": "Playlist",
+        "musicVideo": "Music Video",
+        "exitPressAgain": "Press back again to exit"
     },
-    "subscription": "Subscription",
-    "about": "About",
-    "signOut": "Sign Out",
-    "pro": {
-      "title": "AirTune Pro",
-      "activeMessage": "You have an active AirTune Pro subscription. Enjoy unlimited music!",
-      "upgradeMessage": "Upgrade to Pro to remove the hourly limit ({{limit}} songs/hour).\n\nCurrent Usage: {{used}}/{{total}} songs.\n\nLimit resets in: {{remaining}}.",
-      "limitReached": "Limit Reached",
-      "limitReachedMessage": "You have reached your hourly limit of {{limit}} songs. Next play available in: {{remaining}}.",
-      "restorePurchases": "Restore Purchases",
-      "getProMonthly": "Get Pro (Monthly)"
+    "topBar": {
+        "listenNow": "Listen Now",
+        "browse": "Browse",
+        "videos": "Videos",
+        "radio": "Radio",
+        "library": "Library",
+        "nowPlaying": "Now Playing",
+        "search": "Search",
+        "profile": "Profile",
+        "settings": "Settings"
     },
-    "darkMode": "Dark Mode",
-    "lightMode": "Light Mode",
-    "update": "Update Available",
-    "support": "Support",
-    "aboutInfo": {
-      "title": "About AirTune Music",
-      "message": "AirTune Music is a third-party Apple Music client built exclusively using the official Apple Music API. We do not store any of your personal data; all information is fetched directly from Apple's servers to provide a seamless music experience."
+    "home": {
+        "signOutTitle": "Sign Out",
+        "signOutMessage": "Are you sure you want to sign out?",
+        "signOutConfirm": "Sign Out"
+    },
+    "search": {
+        "placeholder": "Artists, Songs, Lyrics and More",
+        "recent": "Recent Searches",
+        "clearRecent": "Clear Recent Searches",
+        "results": "Results for \"{{term}}\"",
+        "space": "SPACE"
+    },
+    "library": {
+        "title": "Library",
+        "recentlyAdded": "Recently Added",
+        "recentlyPlayed": "Recently Played",
+        "playlists": "Playlists",
+        "artists": "Artists",
+        "albums": "Albums",
+        "songs": "Songs",
+        "signInPrompt": "Sign in to Apple Music to see your library.",
+        "loadError": "Could not load library.",
+        "musicVideos": "Videos"
+    },
+    "nowPlaying": {
+        "emptyState": "Select a song to play.",
+        "goToAlbum": "Go to Album",
+        "info": "Info",
+        "progressBar": "Progress bar",
+        "durationFormat": "{{mins}} min, {{secs}} secs",
+        "showLyrics": "Show lyrics",
+        "hideLyrics": "Hide lyrics",
+        "showQueue": "Show queue",
+        "hideQueue": "Hide queue"
+    },
+    "lyrics": {
+        "notFound": "Lyrics not available",
+        "loading": "Loading lyrics..."
+    },
+    "detail": {
+        "failedToLoad": "Failed to load content",
+        "add": "Add",
+        "shuffle": "Shuffle",
+        "more": "More",
+        "play": "Play",
+        "songsCount": "{{count}} songs",
+        "updated": "Updated {{date}}",
+        "playlistBy": "Playlist by {{curator}}",
+        "noRecommendationsYet": "No recommendations yet",
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "daysAgo": "{{count}} days ago",
+        "radioStation": "Radio Station",
+        "live": "🔴 Live",
+        "onDemand": "On Demand",
+        "failedToLoadAlbum": "Failed to load album"
+    },
+    "artist": {
+        "topSongs": "Top Songs",
+        "latestRelease": "Latest Release",
+        "essentialAlbums": "Essential Albums",
+        "musicVideos": "Music Videos",
+        "failedToLoad": "Failed to load artist",
+        "madeForYou": "Made for You",
+        "single": "Single",
+        "album": "Album"
+    },
+    "auth": {
+        "title": "Connect to Apple Music",
+        "subtitle": "Scan the QR code to connect, or visit the URL and enter the code below",
+        "scanPrompt": "Scan the QR code",
+        "visit": "Visit",
+        "getNewCode": "Get New Code",
+        "loading": "Loading...",
+        "linked": "Linked! Token received.",
+        "manualEntry": "Manual Token Entry (Reviewer Mode)",
+        "manualEntryTitle": "Enter Token Manually",
+        "manualEntryPlaceholder": "Paste Music User Token here...",
+        "pasteToken": "Paste Music User Token here...",
+        "connect": "Connect",
+        "signOut": "Clear token (sign out)",
+        "appleMusicAuth": "Apple Music Auth",
+        "androidTvSignIn": "Android TV – sign in API",
+        "connectTitle": "Connect to Apple Music",
+        "scanQR": "Scan the QR code",
+        "orVisitURL": "to connect, or visit the URL and enter the code below",
+        "visitURL": "VISIT URL",
+        "linkedMessage": "Linked! Token received.",
+        "paidSubscriptionRequired": "Paid Apple Music subscription is required."
+    },
+    "settings": {
+        "title": "Settings",
+        "language": {
+            "title": "Language",
+            "english": "English",
+            "turkish": "Turkish",
+            "german": "German",
+            "spanish": "Spanish",
+            "french": "French"
+        },
+        "subscription": "Subscription",
+        "about": "About",
+        "signOut": "Sign Out",
+        "pro": {
+            "title": "AirTune Pro",
+            "activeMessage": "You have an active AirTune Pro subscription. Enjoy unlimited music!",
+            "upgradeMessage": "Upgrade to Pro for unlimited music and AirPlay streaming.\n\n🎵 Music: {{used}}/{{total}} songs used\n🛜 AirPlay: {{airPlayUsed}}/{{airPlayTotal}} min used\n\n⏱ Resets in: {{remaining}}",
+            "limitReached": "Limit Reached",
+            "limitReachedMessage": "You have reached your limit of {{limit}} songs. Next play available in: {{remaining}}.",
+            "restorePurchases": "Restore Purchases",
+            "getProMonthly": "Get Pro (Monthly)",
+            "airPlayUsage": "AirPlay Usage: {{airPlayUsed}}/{{airPlayTotal}} min."
+        },
+        "darkMode": "Dark Mode",
+        "lightMode": "Light Mode",
+        "update": "Update Available",
+        "support": "Support",
+        "aboutInfo": {
+            "title": "About AirTune Music",
+            "message": "AirTune Music is a third-party Apple Music client built exclusively using the official Apple Music API. We do not store any of your personal data; all information is fetched directly from Apple's servers to provide a seamless music experience."
+        }
+    },
+    "radio": {
+        "liveRadio": "Live Radio",
+        "personalStation": "Your Station",
+        "recentlyPlayed": "Recently Played"
+    },
+    "videos": {
+        "title": "Videos",
+        "comingSoon": "Coming soon",
+        "recentlyPlayed": "Recently Watched",
+        "errorRestricted": "This video is not available in your region or with your subscription.",
+        "errorGeneric": "This video could not be played."
+    },
+    "update": {
+        "title": "Update Required",
+        "message": "A new version of AirTune Music is available. Please update to continue using the app with latest features and improvements.",
+        "newVersion": "New Version: {{version}}",
+        "button": "Update Now"
+    },
+    "iap": {
+        "approved": "Approved",
+        "activeMessage": "Your AirTune Pro subscription is now active! 🚀",
+        "declined": "Declined",
+        "declinedMessage": "Your purchase was not successful. Please try again or check your account.",
+        "restored": "Restored",
+        "restoredMessage": "Your AirTune Pro status has been successfully restored! 🎉",
+        "notFound": "Not Found",
+        "notFoundMessage": "No active subscription was found for this account.",
+        "error": "Error",
+        "errorMessage": "Failed to communicate with the Store. Please try again later."
+    },
+    "more": {
+        "love": "Love",
+        "removeLove": "Remove Love",
+        "addToLibrary": "+ Add to Library",
+        "inLibrary": "In Library",
+        "addToPlaylist": "Add to Playlist",
+        "loadingPlaylists": "Loading playlists...",
+        "noPlaylists": "No playlists found",
+        "dislike": "Dislike",
+        "removeDislike": "Remove Dislike",
+        "goToArtist": "Go to Artist",
+        "goToAlbum": "Go to Album",
+        "cancel": "Cancel",
+        "error": "Something went wrong"
+    },
+    "subscriptionRequired": {
+        "title": "Subscription Required",
+        "message": "A paid Apple Music subscription is required to use AirTune Music. Please ensure your account has an active subscription and try again.",
+        "signOut": "Sign Out"
+    },
+    "airplay": {
+        "warningTitle": "Enable AirPlay Receiver",
+        "warningMessage": "Not every device supports this feature. If you experience any issues, please turn this off.",
+        "errorTitle": "AirPlay Error",
+        "errorMessage": "An error occurred. Your device might not support this feature.",
+        "quotaTitle": "Hourly Limit Reached",
+        "quotaMessage": "You have used {{used}}/{{total}} minutes of AirPlay playback.\n\nLimit resets in: {{remaining}}."
     }
-  },
-  "radio": {
-    "liveRadio": "Live Radio",
-    "personalStation": "Your Station",
-    "recentlyPlayed": "Recently Played"
-  },
-  "videos": {
-    "title": "Videos",
-    "comingSoon": "Coming soon",
-    "recentlyPlayed": "Recently Watched",
-    "errorRestricted": "This video is not available in your region or with your subscription.",
-    "errorGeneric": "This video could not be played."
-  },
-  "update": {
-    "title": "Update Required",
-    "message": "A new version of AirTune Music is available. Please update to continue using the app with latest features and improvements.",
-    "newVersion": "New Version: {{version}}",
-    "button": "Update Now"
-  },
-  "iap": {
-    "approved": "Approved",
-    "activeMessage": "Your AirTune Pro subscription is now active! 🚀",
-    "declined": "Declined",
-    "declinedMessage": "Your purchase was not successful. Please try again or check your account.",
-    "restored": "Restored",
-    "restoredMessage": "Your AirTune Pro status has been successfully restored! 🎉",
-    "notFound": "Not Found",
-    "notFoundMessage": "No active subscription was found for this account.",
-    "error": "Error",
-    "errorMessage": "Failed to communicate with the Store. Please try again later."
-  },
-  "more": {
-    "love": "Love",
-    "removeLove": "Remove Love",
-    "addToLibrary": "+ Add to Library",
-    "inLibrary": "In Library",
-    "addToPlaylist": "Add to Playlist",
-    "loadingPlaylists": "Loading playlists...",
-    "noPlaylists": "No playlists found",
-    "dislike": "Dislike",
-    "removeDislike": "Remove Dislike",
-    "goToArtist": "Go to Artist",
-    "goToAlbum": "Go to Album",
-    "cancel": "Cancel",
-    "error": "Something went wrong"
-  },
-  "subscriptionRequired": {
-    "title": "Subscription Required",
-    "message": "A paid Apple Music subscription is required to use AirTune Music. Please ensure your account has an active subscription and try again.",
-    "signOut": "Sign Out"
-  }
 }

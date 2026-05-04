@@ -13,6 +13,8 @@ import { GradientBackground } from '../../components/GradientBackground';
 import { useTheme } from '../../theme';
 import type { AppColors } from '../../theme/colors';
 import { QuotaService } from '../../services/quotaService';
+import { AirPlayQuotaService } from '../../services/airPlayQuotaService';
+import { QuotaPeriodService } from '../../services/quotaPeriodService';
 import { IapService } from './iapService';
 import { spacing, radius } from '../../theme/layout';
 import { VersionCheckResult } from '../../services/versionService';
@@ -56,15 +58,17 @@ export function SettingsScreen({
     }
 
     const usage = QuotaService.getUsageInfo();
-    const remaining = QuotaService.getRemainingTimeFormatted();
+    const airPlayUsage = AirPlayQuotaService.getUsageInfo();
+    const remaining = QuotaPeriodService.getRemainingFormatted() || t('common.availableNow');
 
     Alert.alert(
       t('settings.pro.title'),
       t('settings.pro.upgradeMessage', {
-        limit: QuotaService.HOURLY_LIMIT,
         used: usage.used,
         total: usage.total,
-        remaining: remaining,
+        airPlayUsed: Math.ceil(airPlayUsage.used / 60),
+        airPlayTotal: Math.round(airPlayUsage.total / 60),
+        remaining,
       }),
       [
         { text: t('common.cancel'), style: 'cancel' },

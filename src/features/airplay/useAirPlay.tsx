@@ -3,6 +3,8 @@ import { Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { createMMKV } from 'react-native-mmkv';
 import { airPlayReceiver, AirPlayTrackInfo, AirPlayState } from '../../services/airPlayReceiver';
+import { usePlayer } from '../player/hooks/usePlayer';
+import { AirPlayQuotaService } from '../../services/airPlayQuotaService';
 import * as musicPlayer from '../../services/musicPlayer';
 import type { TrackInfo } from '../../services/musicPlayer';
 
@@ -20,6 +22,9 @@ export interface AirPlayContext {
   durationMs: number;
   connectionCount: number;
   isPlaying: boolean;
+  quotaUsedMs: number;
+  quotaRemainingMs: number;
+  quotaExceeded: boolean;
 }
 
 const Ctx = createContext<AirPlayContext>({
@@ -32,6 +37,9 @@ const Ctx = createContext<AirPlayContext>({
   durationMs: 0,
   connectionCount: 0,
   isPlaying: false,
+  quotaUsedMs: 0,
+  quotaRemainingMs: AirPlayQuotaService.HOURLY_LIMIT_SECONDS * 1000,
+  quotaExceeded: false,
 });
 
 function airPlayTrackToPlayerTrack(info: AirPlayTrackInfo): TrackInfo {
@@ -60,7 +68,47 @@ export function AirPlayProvider({ children }: Readonly<{ children: React.ReactNo
   const [connectionCount, setConnectionCount] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // Initial mount auto-start
+  const [quotaUsedMs, setQuotaUsedMs] = useState(() => AirPlayQuotaService.getUsedSeconds() * 1000);
+  const quotaRemainingMs = AirPlayQuotaService.getRemainingMs();
+  const quotaExceeded = !AirPlayQuotaService.canPlay();
+
+  const { setShowSettings } = usePlayer();
+
+  const _showQuotaAlert = useCallback(() => {
+    const { used, total } = AirPlayQuotaService.getUsageInfo();
+    const usedMin = Math.ceil(used / 60);
+    const totalMin = Math.round(total / 60);
+    const remaining = AirPlayQuotaService.getRemainingTimeFormatted();
+    Alert.alert(
+      t('airplay.quotaTitle', 'Hourly Limit Reached'),
+      t('airplay.quotaMessage', 'You have used {{used}}/{{total}} minutes of AirPlay playback this hour.\n\nLimit resets in: {{remaining}}.', { used: usedMin, total: totalMin, remaining }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('common.viewOptions'), onPress: () => setShowSettings(true) },
+      ],
+    );
+  }, [t, setShowSettings]);
+
+  // Quota tick: record one second of playback while actively playing
+  useEffect(() => {
+    if (!active || !isPlaying) return;
+
+    const interval = setInterval(() => {
+      const wasAllowed = AirPlayQuotaService.canPlay();
+      AirPlayQuotaService.recordPlaybackSecond();
+      const usedMs = AirPlayQuotaService.getUsedSeconds() * 1000;
+      setQuotaUsedMs(usedMs);
+
+      if (wasAllowed && !AirPlayQuotaService.canPlay()) {
+        airPlayReceiver.disconnect();
+        _showQuotaAlert();
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [active, isPlaying, _showQuotaAlert]);
+
+  // Initial mount auto-start — intentionally runs once; enabled changes are handled below
   useEffect(() => {
     if (enabled) {
       airPlayReceiver.start('AirTune').catch(() => {
@@ -69,6 +117,7 @@ export function AirPlayProvider({ children }: Readonly<{ children: React.ReactNo
         setEnabled(false);
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const setEnabledPersisted = useCallback((v: boolean) => {
@@ -92,7 +141,7 @@ export function AirPlayProvider({ children }: Readonly<{ children: React.ReactNo
                 } else {
                   throw new Error('Start returned false');
                 }
-              } catch (error) {
+              } catch {
                 Alert.alert(
                   t('airplay.errorTitle', 'Error'),
                   t('airplay.errorMessage', 'An error occurred. Your device might not support this feature.'),
@@ -133,6 +182,10 @@ export function AirPlayProvider({ children }: Readonly<{ children: React.ReactNo
           setPositionMs(0);
           setDurationMs(0);
           setIsPlaying(false);
+        } else if (!AirPlayQuotaService.canPlay()) {
+          // Block reconnection while quota is exceeded
+          airPlayReceiver.disconnect();
+          _showQuotaAlert();
         }
       }),
 
@@ -180,7 +233,7 @@ export function AirPlayProvider({ children }: Readonly<{ children: React.ReactNo
     ];
 
     return () => subs.forEach(s => s.remove());
-  }, [enabled]);
+  }, [enabled, _showQuotaAlert]);
 
   // Handle auto-pause detection for AirPlay with a lenient timeout
   useEffect(() => {
@@ -197,8 +250,8 @@ export function AirPlayProvider({ children }: Readonly<{ children: React.ReactNo
   }, [positionMs, active]);
 
   const value = useMemo(
-    () => ({ enabled, setEnabled: setEnabledPersisted, active, receiverState, track, positionMs, durationMs, connectionCount, isPlaying }),
-    [enabled, setEnabledPersisted, active, receiverState, track, positionMs, durationMs, connectionCount, isPlaying],
+    () => ({ enabled, setEnabled: setEnabledPersisted, active, receiverState, track, positionMs, durationMs, connectionCount, isPlaying, quotaUsedMs, quotaRemainingMs, quotaExceeded }),
+    [enabled, setEnabledPersisted, active, receiverState, track, positionMs, durationMs, connectionCount, isPlaying, quotaUsedMs, quotaRemainingMs, quotaExceeded],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
