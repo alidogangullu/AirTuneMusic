@@ -5,6 +5,7 @@
         "failedToLoad": "Laden fehlgeschlagen",
         "retry": "Wiederholen",
         "cancel": "Abbrechen",
+        "back": "Zurück",
         "ok": "OK",
         "unknown": "Unbekannt",
         "noItems": "Keine Elemente",
@@ -147,6 +148,7 @@
         "themeDark": "Dunkel",
         "themeLight": "Hell",
         "announcements": "Ankündigungen",
+        "noAnnouncements": "Derzeit keine Ankündigungen.",
         "update": "Update verfügbar",
         "support": "Support",
         "aboutInfo": {

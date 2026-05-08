@@ -5,6 +5,7 @@
         "failedToLoad": "Échec du chargement",
         "retry": "Réessayer",
         "cancel": "Annuler",
+        "back": "Retour",
         "ok": "OK",
         "unknown": "Inconnu",
         "noItems": "Aucun élément",
@@ -147,6 +148,7 @@
         "themeDark": "Sombre",
         "themeLight": "Clair",
         "announcements": "Annonces",
+        "noAnnouncements": "Aucune annonce pour le moment.",
         "update": "Mise à jour disponible",
         "support": "Support",
         "aboutInfo": {

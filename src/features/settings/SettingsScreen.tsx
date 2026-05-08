@@ -45,7 +45,6 @@ export function SettingsScreen({
   const { enabled: airPlayEnabled, setEnabled: setAirPlayEnabled } = useAirPlay();
 
   const hasOptionalUpdate = updateInfo?.status === 'optional_update';
-  const hasAnnouncements = announcements.length > 0;
   const hasUnreadAnnouncements = announcements.some(a => !readAnnouncementIds.includes(a.id));
 
   const MENU_ITEMS = [
@@ -54,7 +53,7 @@ export function SettingsScreen({
     { id: 'Language', label: t('settings.language.title') },
     { id: 'DarkMode', label: t('settings.theme') + ': ' + (themeMode === 'dark' ? t('settings.themeDark') : t('settings.themeLight')) },
     { id: 'AirPlay', label: 'AirPlay: ' + (airPlayEnabled ? t('common.on', 'Açık') : t('common.off', 'Kapalı')) },
-    ...(hasAnnouncements ? [{ id: 'Announcements', label: t('settings.announcements') }] : []),
+    { id: 'Announcements', label: t('settings.announcements') },
     { id: 'Support', label: t('settings.support') },
     { id: 'About', label: t('settings.about') },
   ];
@@ -197,11 +196,14 @@ export function SettingsScreen({
     return (
       <>
         <SettingsMenuItem
-          label={"← " + t('common.cancel')}
+          label={"← " + t('common.back')}
           hasTVPreferredFocus
           onPress={() => setCurrentSubMenu('none')}
         />
         <View style={styles.divider} />
+        {announcements.length === 0 && (
+          <Text style={styles.noAnnouncementsText}>{t('settings.noAnnouncements')}</Text>
+        )}
         {announcements.map((ann) => {
           const isUnread = !readAnnouncementIds.includes(ann.id);
           return (
@@ -344,6 +346,12 @@ function makeStyles(c: AppColors) {
       marginTop: spacing.sm,
       marginBottom: spacing.xs,
       marginLeft: 24,
+    },
+    noAnnouncementsText: {
+      fontSize: 15,
+      color: c.settingsTextHint,
+      marginLeft: 24,
+      marginTop: spacing.sm,
     },
   });
 }

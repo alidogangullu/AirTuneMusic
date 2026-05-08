@@ -32,7 +32,10 @@ export const AnnouncementService = {
         `${ANNOUNCEMENTS_URL}?t=${Date.now()}`,
         { timeout: 5000 },
       );
-      return Array.isArray(response.data.announcements) ? response.data.announcements : [];
+      console.log('[AnnouncementService] Raw response:', JSON.stringify(response.data));
+      const list = Array.isArray(response.data.announcements) ? response.data.announcements : [];
+      console.log('[AnnouncementService] Parsed announcements:', list.length);
+      return list;
     } catch (error) {
       console.warn('[AnnouncementService] Fetch failed:', error);
       return [];

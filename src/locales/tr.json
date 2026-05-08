@@ -5,6 +5,7 @@
         "failedToLoad": "Yükleme başarısız",
         "retry": "Tekrar Dene",
         "cancel": "İptal",
+        "back": "Geri",
         "ok": "Tamam",
         "unknown": "Bilinmiyor",
         "noItems": "Öğe yok",
@@ -148,6 +149,7 @@
         "themeDark": "Koyu",
         "themeLight": "Açık",
         "announcements": "Duyurular",
+        "noAnnouncements": "Şu an için duyuru bulunmuyor.",
         "update": "Güncelleme Mevcut",
         "support": "Destek",
         "aboutInfo": {

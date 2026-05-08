@@ -5,6 +5,7 @@
         "failedToLoad": "Failed to load",
         "retry": "Retry",
         "cancel": "Cancel",
+        "back": "Back",
         "ok": "OK",
         "unknown": "Unknown",
         "noItems": "No items",
@@ -148,6 +149,7 @@
         "themeDark": "Dark",
         "themeLight": "Light",
         "announcements": "Announcements",
+        "noAnnouncements": "No announcements at this time.",
         "update": "Update Available",
         "support": "Support",
         "aboutInfo": {
