@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AppStartupService } from '../appStartupService';
 import { VersionCheckResult } from '../../../services/versionService';
+import { Announcement, AnnouncementService } from '../../../services/announcementService';
 
 interface AppStartupContextType {
   isInitialized: boolean;
@@ -8,6 +9,10 @@ interface AppStartupContextType {
   isAppleMusicSubscriber: boolean;
   setHasToken: (value: boolean) => void;
   updateInfo: VersionCheckResult | null;
+  announcements: Announcement[];
+  readAnnouncementIds: string[];
+  hasUnreadAnnouncements: boolean;
+  markAnnouncementRead: (id: string) => void;
 }
 
 const AppStartupContext = createContext<AppStartupContextType | undefined>(undefined);
@@ -17,6 +22,8 @@ export function AppStartupProvider({ children }: Readonly<{ children: React.Reac
   const [hasToken, setHasToken] = useState<boolean>(false);
   const [isAppleMusicSubscriber, setIsAppleMusicSubscriber] = useState<boolean>(true);
   const [updateInfo, setUpdateInfo] = useState<VersionCheckResult | null>(null);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [readAnnouncementIds, setReadAnnouncementIds] = useState<string[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -28,12 +35,12 @@ export function AppStartupProvider({ children }: Readonly<{ children: React.Reac
           setHasToken(data.hasToken);
           setIsAppleMusicSubscriber(data.isAppleMusicSubscriber);
           setUpdateInfo(data.updateInfo);
+          setAnnouncements(data.announcements);
+          setReadAnnouncementIds(AnnouncementService.getReadIds());
           setIsInitialized(true);
         }
       } catch (error) {
         console.error('[AppStartupProvider] Fatal startup error:', error);
-        // Even on error, we might want to set isInitialized to true 
-        // to show some error UI instead of just loading forever
         if (mounted) setIsInitialized(true);
       }
     }
@@ -46,13 +53,24 @@ export function AppStartupProvider({ children }: Readonly<{ children: React.Reac
     };
   }, []);
 
+  const markAnnouncementRead = React.useCallback((id: string) => {
+    AnnouncementService.markAsRead(id);
+    setReadAnnouncementIds(prev => prev.includes(id) ? prev : [...prev, id]);
+  }, []);
+
+  const hasUnreadAnnouncements = announcements.some(a => !readAnnouncementIds.includes(a.id));
+
   const value = React.useMemo(() => ({
     isInitialized,
     hasToken,
     isAppleMusicSubscriber,
     setHasToken,
     updateInfo,
-  }), [isInitialized, hasToken, isAppleMusicSubscriber, updateInfo]);
+    announcements,
+    readAnnouncementIds,
+    hasUnreadAnnouncements,
+    markAnnouncementRead,
+  }), [isInitialized, hasToken, isAppleMusicSubscriber, updateInfo, announcements, readAnnouncementIds, hasUnreadAnnouncements, markAnnouncementRead]);
 
   return (
     <AppStartupContext.Provider value={value}>

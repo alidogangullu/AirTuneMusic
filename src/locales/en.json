@@ -147,6 +147,7 @@
         "theme": "Theme",
         "themeDark": "Dark",
         "themeLight": "Light",
+        "announcements": "Announcements",
         "update": "Update Available",
         "support": "Support",
         "aboutInfo": {

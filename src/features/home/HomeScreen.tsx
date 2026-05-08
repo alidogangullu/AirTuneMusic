@@ -30,7 +30,7 @@ export function HomeScreen({
 }: Readonly<HomeScreenProps>): React.JSX.Element {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { updateInfo } = useAppStartup();
+  const { updateInfo, announcements, readAnnouncementIds, hasUnreadAnnouncements, markAnnouncementRead } = useAppStartup();
   const [activeTab, setActiveTab] = useState<NavTabId>('listen-now');
   const [selectedContent, setSelectedContent] =
     useState<RecommendationContent | null>(null);
@@ -132,6 +132,7 @@ export function HomeScreen({
           onSearchPress={() => setActiveTab('search')}
           onSettingsPress={() => setSettingsVisible(true)}
           hasUpdate={updateInfo?.status === 'optional_update'}
+          hasUnreadAnnouncements={hasUnreadAnnouncements}
         />
 
         {/* Modal ensures OS-level focus trapping — Android creates a new Window,
@@ -182,6 +183,9 @@ export function HomeScreen({
               handleSignOut();
             }}
             updateInfo={updateInfo}
+            announcements={announcements}
+            readAnnouncementIds={readAnnouncementIds}
+            onAnnouncementRead={markAnnouncementRead}
           />
         </Modal>
       </View>

@@ -94,6 +94,7 @@ export type TopBarProps = {
   transparent?: boolean;
   dark?: boolean;
   hasUpdate?: boolean;
+  hasUnreadAnnouncements?: boolean;
 };
 
 export function TopBar({
@@ -105,6 +106,7 @@ export function TopBar({
   transparent = false,
   dark = false,
   hasUpdate = false,
+  hasUnreadAnnouncements = false,
 }: Readonly<TopBarProps>): React.JSX.Element {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -192,7 +194,7 @@ export function TopBar({
             </Text>
           )}
         </NavPressable>
-        {hasUpdate && <View style={styles.updateBadge} focusable={false} />}
+        {(hasUpdate || hasUnreadAnnouncements) && <View style={styles.updateBadge} focusable={false} />}
       </View>
     </View>
   );

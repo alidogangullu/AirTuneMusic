@@ -18,26 +18,35 @@ import { QuotaPeriodService } from '../../services/quotaPeriodService';
 import { IapService } from './iapService';
 import { spacing, radius } from '../../theme/layout';
 import { VersionCheckResult } from '../../services/versionService';
+import { Announcement } from '../../services/announcementService';
 import { useAirPlay } from '../airplay/useAirPlay';
 
 export type SettingsScreenProps = {
   onBack?: () => void;
   onSignOut?: () => void;
   updateInfo?: VersionCheckResult | null;
+  announcements?: Announcement[];
+  readAnnouncementIds?: string[];
+  onAnnouncementRead?: (id: string) => void;
 };
 
 export function SettingsScreen({
   onBack,
   onSignOut,
   updateInfo,
+  announcements = [],
+  readAnnouncementIds = [],
+  onAnnouncementRead,
 }: Readonly<SettingsScreenProps>): React.JSX.Element {
   const { colors, themeMode, setThemeMode } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const { t, i18n } = useTranslation();
-  const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language'>('none');
+  const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language' | 'announcements'>('none');
   const { enabled: airPlayEnabled, setEnabled: setAirPlayEnabled } = useAirPlay();
 
   const hasOptionalUpdate = updateInfo?.status === 'optional_update';
+  const hasAnnouncements = announcements.length > 0;
+  const hasUnreadAnnouncements = announcements.some(a => !readAnnouncementIds.includes(a.id));
 
   const MENU_ITEMS = [
     ...(hasOptionalUpdate ? [{ id: 'Update', label: t('settings.update') }] : []),
@@ -45,8 +54,17 @@ export function SettingsScreen({
     { id: 'Language', label: t('settings.language.title') },
     { id: 'DarkMode', label: t('settings.theme') + ': ' + (themeMode === 'dark' ? t('settings.themeDark') : t('settings.themeLight')) },
     { id: 'AirPlay', label: 'AirPlay: ' + (airPlayEnabled ? t('common.on', 'Açık') : t('common.off', 'Kapalı')) },
+    ...(hasAnnouncements ? [{ id: 'Announcements', label: t('settings.announcements') }] : []),
     { id: 'Support', label: t('settings.support') },
     { id: 'About', label: t('settings.about') },
+  ];
+
+  const LANGUAGES = [
+    { id: 'en', label: t('settings.language.english') },
+    { id: 'tr', label: t('settings.language.turkish') },
+    { id: 'de', label: t('settings.language.german') },
+    { id: 'es', label: t('settings.language.spanish') },
+    { id: 'fr', label: t('settings.language.french') },
   ];
 
   const handleSubscriptionPress = async () => {
@@ -81,7 +99,6 @@ export function SettingsScreen({
           onPress: async () => {
             try {
               await IapService.subscribe('pro_monthly');
-              // The purchaseUpdatedListener in HomeScreen will catch the success and update the status
             } catch (err: any) {
               if (err.code !== 'E_USER_CANCELLED' && err.code !== 'user-cancelled') {
                 Alert.alert(t('common.error'), t('iap.errorMessage'));
@@ -98,6 +115,8 @@ export function SettingsScreen({
       if (updateInfo?.storeUrl) {
         Linking.openURL(updateInfo.storeUrl);
       }
+    } else if (item === 'Announcements') {
+      setCurrentSubMenu('announcements');
     } else if (item === 'Sign Out') {
       onSignOut?.();
     } else if (item === 'Subscription') {
@@ -126,13 +145,80 @@ export function SettingsScreen({
     }
   };
 
-  const LANGUAGES = [
-    { id: 'en', label: t('settings.language.english') },
-    { id: 'tr', label: t('settings.language.turkish') },
-    { id: 'de', label: t('settings.language.german') },
-    { id: 'es', label: t('settings.language.spanish') },
-    { id: 'fr', label: t('settings.language.french') },
-  ];
+  const renderSubMenu = () => {
+    if (currentSubMenu === 'none') {
+      return (
+        <>
+          {MENU_ITEMS.map((item, index) => (
+            <SettingsMenuItem
+              key={item.id}
+              label={item.label}
+              hasTVPreferredFocus={index === 0}
+              onPress={() => handleItemPress(item.id)}
+              labelColor={
+                item.id === 'Update' || (item.id === 'Announcements' && hasUnreadAnnouncements)
+                  ? colors.alertRed
+                  : undefined
+              }
+            />
+          ))}
+          <View style={styles.divider} />
+          <SettingsMenuItem
+            label={t('settings.signOut')}
+            onPress={() => handleItemPress('Sign Out')}
+          />
+        </>
+      );
+    }
+
+    if (currentSubMenu === 'language') {
+      return (
+        <>
+          <SettingsMenuItem
+            label={"← " + t('common.cancel')}
+            hasTVPreferredFocus
+            onPress={() => setCurrentSubMenu('none')}
+          />
+          <View style={styles.divider} />
+          {LANGUAGES.map((lang) => (
+            <SettingsMenuItem
+              key={lang.id}
+              label={lang.label + (i18n.language === lang.id ? ' ✓' : '')}
+              onPress={() => {
+                changeLanguage(lang.id as any);
+                setCurrentSubMenu('none');
+              }}
+            />
+          ))}
+        </>
+      );
+    }
+
+    return (
+      <>
+        <SettingsMenuItem
+          label={"← " + t('common.cancel')}
+          hasTVPreferredFocus
+          onPress={() => setCurrentSubMenu('none')}
+        />
+        <View style={styles.divider} />
+        {announcements.map((ann) => {
+          const isUnread = !readAnnouncementIds.includes(ann.id);
+          return (
+            <SettingsMenuItem
+              key={ann.id}
+              label={ann.title}
+              labelColor={isUnread ? colors.alertRed : undefined}
+              onPress={() => {
+                onAnnouncementRead?.(ann.id);
+                Alert.alert(ann.title, ann.body);
+              }}
+            />
+          );
+        })}
+      </>
+    );
+  };
 
   return (
     <GradientBackground
@@ -147,7 +233,7 @@ export function SettingsScreen({
       />
       <View style={styles.container}>
         <Text style={styles.title}>
-          {currentSubMenu === 'language' ? t('settings.language.title') : t('settings.title')}
+          {getSubMenuTitle(currentSubMenu, t)}
         </Text>
 
         <View style={styles.columns}>
@@ -166,49 +252,21 @@ export function SettingsScreen({
             style={styles.rightColumn}
             contentContainerStyle={styles.menuContent}
             showsVerticalScrollIndicator={false}>
-            {currentSubMenu === 'none' ? (
-              <>
-                {MENU_ITEMS.map((item, index) => (
-                  <SettingsMenuItem
-                    key={item.id}
-                    label={item.label}
-                    hasTVPreferredFocus={index === 0}
-                    onPress={() => handleItemPress(item.id)}
-                    labelColor={item.id === 'Update' ? colors.alertRed : undefined}
-                  />
-                ))}
-
-                <View style={styles.divider} />
-                <SettingsMenuItem
-                  label={t('settings.signOut')}
-                  onPress={() => handleItemPress('Sign Out')}
-                />
-              </>
-            ) : (
-              <>
-                <SettingsMenuItem
-                  label={"← " + t('common.cancel')}
-                  hasTVPreferredFocus
-                  onPress={() => setCurrentSubMenu('none')}
-                />
-                <View style={styles.divider} />
-                {LANGUAGES.map((lang) => (
-                  <SettingsMenuItem
-                    key={lang.id}
-                    label={lang.label + (i18n.language === lang.id ? ' ✓' : '')}
-                    onPress={() => {
-                      changeLanguage(lang.id as any);
-                      setCurrentSubMenu('none');
-                    }}
-                  />
-                ))}
-              </>
-            )}
+            {renderSubMenu()}
           </ScrollView>
         </View>
       </View>
     </GradientBackground>
   );
+}
+
+function getSubMenuTitle(
+  subMenu: 'none' | 'language' | 'announcements',
+  t: (key: string) => string,
+): string {
+  if (subMenu === 'language') return t('settings.language.title');
+  if (subMenu === 'announcements') return t('settings.announcements');
+  return t('settings.title');
 }
 
 function makeStyles(c: AppColors) {
