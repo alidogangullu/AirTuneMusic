@@ -47,10 +47,20 @@ export const QuotaConfigService = {
       );
       const quota = response.data.quota;
       if (!quota) return;
+
+      const isValidHours = (v: unknown): v is number => Number.isFinite(v) && (v as number) > 0;
+      const isValidCount = (v: unknown): v is number => Number.isFinite(v) && Number.isInteger(v) && (v as number) >= 0;
+
+      const invalid: string[] = [];
+      if (!isValidHours(quota.period_hours)) invalid.push('period_hours');
+      if (!isValidCount(quota.track_limit)) invalid.push('track_limit');
+      if (!isValidCount(quota.airplay_minutes)) invalid.push('airplay_minutes');
+      if (invalid.length) console.warn('[QuotaConfig] Invalid fields, using defaults:', invalid);
+
       const merged: QuotaConfig = {
-        period_hours: quota.period_hours ?? DEFAULTS.period_hours,
-        track_limit: quota.track_limit ?? DEFAULTS.track_limit,
-        airplay_minutes: quota.airplay_minutes ?? DEFAULTS.airplay_minutes,
+        period_hours: isValidHours(quota.period_hours) ? quota.period_hours : DEFAULTS.period_hours,
+        track_limit: isValidCount(quota.track_limit) ? quota.track_limit : DEFAULTS.track_limit,
+        airplay_minutes: isValidCount(quota.airplay_minutes) ? quota.airplay_minutes : DEFAULTS.airplay_minutes,
       };
       storage.set(CONFIG_KEY, JSON.stringify(merged));
       console.log('[QuotaConfig] Updated:', merged);

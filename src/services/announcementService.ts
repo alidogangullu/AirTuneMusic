@@ -15,7 +15,11 @@ function getReadIds(): string[] {
   const raw = storage.getString(READ_IDS_KEY);
   if (!raw) return [];
   try {
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
+      return parsed;
+    }
+    return [];
   } catch {
     return [];
   }
@@ -32,8 +36,18 @@ export const AnnouncementService = {
         `${ANNOUNCEMENTS_URL}?t=${Date.now()}`,
         { timeout: 5000 },
       );
-      console.log('[AnnouncementService] Raw response:', JSON.stringify(response.data));
-      const list = Array.isArray(response.data.announcements) ? response.data.announcements : [];
+      const raw = Array.isArray(response.data.announcements) ? response.data.announcements : [];
+      const list = raw.filter(
+        (a): a is Announcement =>
+          a !== null &&
+          typeof a === 'object' &&
+          typeof a.id === 'string' && a.id.length > 0 &&
+          typeof a.title === 'string' && a.title.length > 0 &&
+          typeof a.body === 'string' && a.body.length > 0,
+      );
+      if (list.length !== raw.length) {
+        console.warn('[AnnouncementService] Dropped malformed items:', raw.length - list.length);
+      }
       console.log('[AnnouncementService] Parsed announcements:', list.length);
       return list;
     } catch (error) {
