@@ -1,6 +1,7 @@
 import { createMMKV } from 'react-native-mmkv';
 import i18next from 'i18next';
 import { QuotaPeriodService } from './quotaPeriodService';
+import { QuotaConfigService } from './quotaConfigService';
 
 const storage = createMMKV({ id: 'quota-storage' });
 
@@ -9,10 +10,10 @@ const KEYS = {
   IS_PRO: 'is_pro',
 };
 
-const DEFAULT_LIMIT = 10;
-
 export class QuotaService {
-  static readonly HOURLY_LIMIT = DEFAULT_LIMIT;
+  static get HOURLY_LIMIT(): number {
+    return QuotaConfigService.getConfig().track_limit;
+  }
 
   static isProUser(): boolean {
     return storage.getBoolean(KEYS.IS_PRO) ?? false;
@@ -37,7 +38,7 @@ export class QuotaService {
 
   static canPlayNextSong(): boolean {
     if (this.isProUser()) return true;
-    return this._getCount() < DEFAULT_LIMIT;
+    return this._getCount() < this.HOURLY_LIMIT;
   }
 
   static recordSongPlay(): void {
@@ -59,7 +60,7 @@ export class QuotaService {
   }
 
   static getUsageInfo(): { used: number; total: number } {
-    if (this.isProUser()) return { used: 0, total: DEFAULT_LIMIT };
-    return { used: this._getCount(), total: DEFAULT_LIMIT };
+    if (this.isProUser()) return { used: 0, total: this.HOURLY_LIMIT };
+    return { used: this._getCount(), total: this.HOURLY_LIMIT };
   }
 }

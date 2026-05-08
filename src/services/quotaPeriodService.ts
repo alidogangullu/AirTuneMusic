@@ -1,4 +1,5 @@
 import { createMMKV } from 'react-native-mmkv';
+import { QuotaConfigService } from './quotaConfigService';
 
 const storage = createMMKV({ id: 'quota-period-storage' });
 
@@ -6,7 +7,9 @@ const KEYS = {
   PERIOD_START: 'quota_period_start',
 };
 
-export const PERIOD_MS = 2 * 60 * 60 * 1000; // 2 hours
+function getPeriodMs(): number {
+  return QuotaConfigService.getConfig().period_hours * 60 * 60 * 1000;
+}
 
 export class QuotaPeriodService {
   /**
@@ -16,7 +19,7 @@ export class QuotaPeriodService {
   static getActivePeriodStart(): number | null {
     const stored = storage.getNumber(KEYS.PERIOD_START);
     if (!stored) return null;
-    if (Date.now() - stored >= PERIOD_MS) return null; // expired
+    if (Date.now() - stored >= getPeriodMs()) return null; // expired
     return stored;
   }
 
@@ -33,7 +36,7 @@ export class QuotaPeriodService {
   static getRemainingMs(): number {
     const start = this.getActivePeriodStart();
     if (start === null) return 0;
-    return Math.max(0, PERIOD_MS - (Date.now() - start));
+    return Math.max(0, getPeriodMs() - (Date.now() - start));
   }
 
   /** Human-readable time remaining, empty string if no active period. */
