@@ -53,6 +53,7 @@ export function setMusicUserToken(token: string | null): void {
   initPromise = Promise.resolve(token); // UPDATE CASHED PROMISE!
   emitChange();
   if (token) {
+    console.log('[Auth] Apple Music user token received:', token);
     storage.set(STORAGE_KEY, token);
     if (MusicPlayer?.saveUserToken) {
       MusicPlayer.saveUserToken(token).catch(() => {});
