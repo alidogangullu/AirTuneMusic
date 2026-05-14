@@ -44,8 +44,9 @@ export class QuotaService {
   static recordSongPlay(): void {
     if (this.isProUser()) return;
     const periodStart = QuotaPeriodService.startIfNeeded();
+    const currentCount = this._getCount(); // read before syncing period to detect resets
     storage.set('play_count_period', periodStart);
-    storage.set(KEYS.PLAY_COUNT, this._getCount() + 1);
+    storage.set(KEYS.PLAY_COUNT, currentCount + 1);
   }
 
   static getTimeUntilNextSlot(): number {

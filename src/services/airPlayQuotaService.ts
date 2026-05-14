@@ -35,8 +35,9 @@ export class AirPlayQuotaService {
   static recordPlaybackSecond(): void {
     if (QuotaService.isProUser()) return;
     const periodStart = QuotaPeriodService.startIfNeeded();
+    const currentSeconds = this._getSeconds(); // read before syncing period to detect resets
     storage.set(KEYS.PLAY_SECONDS_PERIOD, periodStart);
-    storage.set(KEYS.PLAY_SECONDS, this._getSeconds() + 1);
+    storage.set(KEYS.PLAY_SECONDS, currentSeconds + 1);
   }
 
   static getUsedSeconds(): number {
