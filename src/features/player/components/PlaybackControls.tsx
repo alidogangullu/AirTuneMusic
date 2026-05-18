@@ -1,10 +1,14 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { StyleSheet, View, Pressable, findNodeHandle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 import { spacing, radius } from '../../../theme/layout';
 import { lightColors as C } from '../../../theme/colors';
 import { usePlayer } from '../hooks/usePlayer';
 import { ShuffleMode, RepeatMode } from '../../../services/musicPlayer';
+import { TVActionSheet } from '../../content/components/TVActionSheet';
+import type { TVActionSheetItem } from '../../content/components/TVActionSheet';
+import { fetchEditableLibraryPlaylists, addTrackToPlaylist, type EditablePlaylist } from '../../library/api/library';
 
 interface ControlButtonProps {
   onPress: () => void;
@@ -46,8 +50,14 @@ export const PlaybackControls = React.memo(({
   onLayoutButton?: (node: number | null) => void,
   isLive?: boolean,
 }) => {
-  const { state, setShuffleMode, setRepeatMode, toggleRating, toggleAutoplay, skipToPrevious, skipToNext } = usePlayer();
-  const { shuffleMode, repeatMode, rating, autoplay, track, isLoading, buffering, containerId } = state;
+  const { t } = useTranslation();
+  const { state, setShuffleMode, setRepeatMode, toggleRating, skipToPrevious, skipToNext } = usePlayer();
+  const { shuffleMode, repeatMode, rating, track, isLoading, buffering, containerId } = state;
+
+  const [playlistPickerVisible, setPlaylistPickerVisible] = useState(false);
+  const [playlists, setPlaylists] = useState<EditablePlaylist[]>([]);
+  const [loadingPlaylists, setLoadingPlaylists] = useState(false);
+  const [busyKey, setBusyKey] = useState<string | null>(null);
 
   const isDisabled = !track || isLoading || buffering || !!isLive;
   const isStation = containerId?.startsWith('ra.') || containerId?.startsWith('st.');
@@ -66,6 +76,38 @@ export const PlaybackControls = React.memo(({
     else { nextMode = RepeatMode.NONE; }
     setRepeatMode(nextMode);
   }, [repeatMode, setRepeatMode]);
+
+  const handleAddToPlaylistPress = useCallback(() => {
+    setLoadingPlaylists(true);
+    setPlaylists([]);
+    setPlaylistPickerVisible(true);
+    fetchEditableLibraryPlaylists()
+      .then(result => setPlaylists(result))
+      .catch(() => setPlaylists([]))
+      .finally(() => setLoadingPlaylists(false));
+  }, []);
+
+  const handlePickPlaylist = useCallback(async (playlist: EditablePlaylist) => {
+    if (!track?.id) return;
+    setPlaylistPickerVisible(false);
+    setBusyKey(`playlist-${playlist.id}`);
+    try {
+      await addTrackToPlaylist(playlist.id, track.id);
+    } catch (e) {
+      console.error('[PlaybackControls] addTrackToPlaylist failed:', e);
+    } finally {
+      setBusyKey(null);
+    }
+  }, [track]);
+
+  let playlistItems: TVActionSheetItem[];
+  if (loadingPlaylists) {
+    playlistItems = [{ key: 'loading', label: t('more.loadingPlaylists'), onPress: async () => {}, disabled: true }];
+  } else if (playlists.length === 0) {
+    playlistItems = [{ key: 'empty', label: t('more.noPlaylists'), onPress: async () => {}, disabled: true }];
+  } else {
+    playlistItems = playlists.map(pl => ({ key: pl.id, label: pl.name, onPress: () => handlePickPlaylist(pl) }));
+  }
 
   const iconColor = (focused: boolean, active: boolean) => {
     if (focused) return C.onDarkFocusedIcon;
@@ -135,15 +177,15 @@ export const PlaybackControls = React.memo(({
           )}
         </ControlButton>
 
-        {/* Autoplay */}
+        {/* Add to Playlist */}
         <ControlButton
-          onPress={toggleAutoplay}
-          active={autoplay}
+          onPress={handleAddToPlaylistPress}
           disabled={isDisabled || isStation}
           nextFocusDown={nextFocusDown}>
           {(focused) => (
-            <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={iconColor(focused, autoplay)} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <Path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z" />
+            <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={iconColor(focused, false)} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <Path d="M12 5v14" />
+              <Path d="M5 12h14" />
             </Svg>
           )}
         </ControlButton>
@@ -167,6 +209,13 @@ export const PlaybackControls = React.memo(({
           }}
         </ControlButton>
       </View>
+
+      <TVActionSheet
+        visible={playlistPickerVisible}
+        onClose={() => setPlaylistPickerVisible(false)}
+        items={playlistItems}
+        busyKey={busyKey}
+      />
     </View>
   );
 });

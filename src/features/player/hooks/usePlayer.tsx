@@ -52,7 +52,6 @@ export interface PlayerState {
   canSkipToNext: boolean;
   isLoading: boolean;
   rating: number;
-  autoplay: boolean;
   videoQueue: VideoQueue | null;
 }
 
@@ -78,7 +77,6 @@ const initialState: PlayerState = {
   canSkipToNext: false,
   isLoading: false,
   rating: 0,
-  autoplay: false,
   videoQueue: null,
 };
 
@@ -652,11 +650,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
         setState(s => ({...s, rating})); // Rollback
       }
     },
-    toggleAutoplay: () => {
-      const newValue = !stateRef.current.autoplay;
-      setState(s => ({...s, autoplay: newValue}));
-      musicPlayer.setAutoplay(newValue);
-    },
+    toggleAutoplay: () => {},
     isPlaying: state.playbackState === 'playing',
     showSettings,
     setShowSettings,

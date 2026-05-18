@@ -266,19 +266,17 @@ export const NowPlayingProgressBar = React.memo(({
                   )}
                 </Pressable>
               )}
-              {onToggleQueue && (
+              {onToggleQueue && !isAirPlay && (
                 <Pressable
                   ref={queueButtonRef}
                   style={({ focused }) => [
                     styles.infoButton,
                     showQueue && !focused && styles.infoButtonActive,
                     focused && styles.infoButtonFocused,
-                    isAirPlay && styles.infoButtonDisabled,
                     { alignSelf: 'flex-end', marginRight: -spacing.sm },
                   ]}
                   nextFocusUp={findNodeHandle(progressBarRef.current)}
-                  onPress={onToggleQueue}
-                  disabled={isAirPlay}>
+                  onPress={onToggleQueue}>
                   {({ focused }) => {
                     let iconColor = C.onDarkTextFaint;
                     if (showQueue) {
