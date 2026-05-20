@@ -11,6 +11,7 @@ import {Alert, BackHandler} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import * as musicPlayer from '../../../services/musicPlayer';
 import {QuotaService} from '../../../services/quotaService';
+import {AdSettingsService} from '../../../services/adSettingsService';
 import {RewardAdService} from '../../../services/rewardAdService';
 import {getDeveloperToken} from '../../../api/apple-music/getDeveloperToken';
 import {waitForToken, getMusicUserToken} from '../../../api/apple-music/musicUserToken';
@@ -290,7 +291,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
             bonus: QuotaService.BONUS_PLAYS_PER_AD,
           }),
           bonusPlays: QuotaService.BONUS_PLAYS_PER_AD,
-          autoWatchAfterMs: 5000,
+          autoWatchAfterMs: AdSettingsService.getAutoStartAd() ? 5000 : 0,
           limit: QuotaService.HOURLY_LIMIT,
           used: usage.used,
           total: usage.total,
@@ -299,6 +300,10 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
       });
 
       if (!shouldScheduleAutoStart) {
+        return;
+      }
+
+      if (!AdSettingsService.getAutoStartAd()) {
         return;
       }
 

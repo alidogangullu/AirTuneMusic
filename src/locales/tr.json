@@ -156,6 +156,10 @@
         "aboutInfo": {
             "title": "AirTune Music Hakkında",
             "message": "AirTune Music, yalnızca resmi Apple Music API'si kullanılarak oluşturulmuş üçüncü taraf bir Apple Music istemcisidir. Kişisel verilerinizin hiçbirini saklamıyoruz; tüm bilgiler, kesintisiz bir müzik deneyimi sağlamak için doğrudan Apple sunucularından alınır."
+        },
+        "adSettings": {
+            "title": "Reklam Tercihleri",
+            "autoStartAd": "Reklamı Otomatik Başlat"
         }
     },
     "radio": {
@@ -207,21 +211,21 @@
         "title": "Abonelik Gerekli",
         "message": "AirTune Music'i kullanmak için ücretli bir Apple Music aboneliği gereklidir. Lütfen hesabınızın aktif bir aboneliği olduğundan emin olun ve tekrar deneyin.",
         "signOut": "Oturumu Kapat"
-  },
-  "quotaLimit": {
-    "title": "Sınıra Ulaşıldı",
-    "message": "Ücretsiz dinleme sınırı olan {{limit}} şarkıya ulaştınız. Bir reklam izleyerek {{bonus}} ek hak kazanabilir veya Pro'ya geçebilirsiniz.",
-    "watchAd": "Kota Kazan +3",
-    "subscription": "Pro'yu Al",
-    "preparingAd": "Reklam hazırlanıyor...",
-    "adStarting": "Reklam başlıyor",
-    "autoStartCount": "Reklam {{count}} sn içinde",
-    "remainingLabel": "Sonraki hak: {{remaining}}",
-    "limitLabel": "Kullanım: {{used}}/{{total}}",
-    "rewardLabel": "+{{bonus}} bonus hak",
-    "skipAlertTitle": "Reklam atlandı",
-    "skipNoReward": "Reklamı atlamak bonus hak vermez.",
-    "adErrorFallback": "Reklam başlatılamadı. Lütfen tekrar deneyin veya abonelik seçeneklerini açın."
+    },
+    "quotaLimit": {
+        "title": "Sınıra Ulaşıldı",
+        "message": "Ücretsiz dinleme sınırı olan {{limit}} şarkıya ulaştınız. Bir reklam izleyerek {{bonus}} ek hak kazanabilir veya Pro'ya geçebilirsiniz.",
+        "watchAd": "Reklam İzle +3",
+        "subscription": "Pro'yu Al",
+        "preparingAd": "Reklam hazırlanıyor...",
+        "adStarting": "Reklam başlıyor",
+        "autoStartCount": "Reklam {{count}} sn içinde",
+        "remainingLabel": "Sonraki hak: {{remaining}}",
+        "limitLabel": "Kullanım: {{used}}/{{total}}",
+        "rewardLabel": "+{{bonus}} bonus hak",
+        "skipAlertTitle": "Reklam atlandı",
+        "skipNoReward": "Reklamı atlamak bonus hak vermez.",
+        "adErrorFallback": "Reklam başlatılamadı. Lütfen tekrar deneyin veya abonelik seçeneklerini açın."
     },
     "airplay": {
         "warningTitle": "AirPlay Alıcısını Etkinleştir",

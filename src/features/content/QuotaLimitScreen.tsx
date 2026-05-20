@@ -207,7 +207,8 @@ function makeStyles() {
 export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCancel }: Readonly<Props>): React.JSX.Element {
   const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(), []);
-  const [secondsLeft, setSecondsLeft] = useState(Math.ceil(request.autoWatchAfterMs / 1000));
+  const autoStartEnabled = request.autoWatchAfterMs > 0;
+  const [secondsLeft, setSecondsLeft] = useState(autoStartEnabled ? Math.ceil(request.autoWatchAfterMs / 1000) : 0);
   const [isStartingAd, setIsStartingAd] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const autoTriggeredRef = useRef(false);
@@ -242,6 +243,10 @@ export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCan
     setErrorMessage(null);
     setIsStartingAd(false);
 
+    if (!autoStartEnabled) {
+      return;
+    }
+
     const startedAt = Date.now();
     const interval = setInterval(() => {
       const elapsed = Date.now() - startedAt;
@@ -269,9 +274,11 @@ export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCan
               </View>
             </View>
 
-            <View style={styles.helperRow}>
-              <Text style={styles.countdown}>{t('quotaLimit.autoStartCount', { count: secondsLeft })}</Text>
-            </View>
+            {autoStartEnabled && (
+              <View style={styles.helperRow}>
+                <Text style={styles.countdown}>{t('quotaLimit.autoStartCount', { count: secondsLeft })}</Text>
+              </View>
+            )}
 
             <Text style={styles.skipNote}>{t('quotaLimit.skipNoReward')}</Text>
 
@@ -283,13 +290,27 @@ export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCan
 
           <View style={styles.actionRow}>
             <Pressable
+              onPress={onOpenSubscription}
+              style={({ focused }) => [
+                styles.actionButton,
+                styles.actionButtonSecondary,
+                focused && styles.actionButtonFocused,
+              ]}>
+              {() => (
+                <Text style={[styles.actionLabel, styles.actionLabelSecondary]}>
+                  {t('quotaLimit.subscription')}
+                </Text>
+              )}
+            </Pressable>
+
+            <Pressable
               hasTVPreferredFocus
               onPress={handleWatchAd}
               disabled={isStartingAd}
               style={({ focused }) => [
                 styles.actionButton,
                 styles.actionButtonSecondary,
-                focused && { borderColor: '#f0535b' },
+                focused && styles.actionButtonFocused,
                 isStartingAd && { opacity: 0.8 },
               ]}>
               {() => (
@@ -298,20 +319,6 @@ export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCan
                     {isStartingAd ? t('quotaLimit.preparingAd') : t('quotaLimit.watchAd')}
                   </Text>
                 </View>
-              )}
-            </Pressable>
-
-            <Pressable
-              onPress={onOpenSubscription}
-              style={({ focused }) => [
-                styles.actionButton,
-                styles.actionButtonPrimary,
-                focused && styles.actionButtonFocused,
-              ]}>
-              {({ focused }) => (
-                <Text style={[styles.actionLabel, focused && styles.actionLabelFocused]}>
-                  {t('quotaLimit.subscription')}
-                </Text>
               )}
             </Pressable>
 

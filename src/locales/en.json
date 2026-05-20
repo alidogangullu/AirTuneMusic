@@ -156,6 +156,10 @@
         "aboutInfo": {
             "title": "About AirTune Music",
             "message": "AirTune Music is a third-party Apple Music client built exclusively using the official Apple Music API. We do not store any of your personal data; all information is fetched directly from Apple's servers to provide a seamless music experience."
+        },
+        "adSettings": {
+            "title": "Ad Preferences",
+            "autoStartAd": "Auto-Start Ad"
         }
     },
     "radio": {
@@ -207,21 +211,21 @@
         "title": "Subscription Required",
         "message": "A paid Apple Music subscription is required to use AirTune Music. Please ensure your account has an active subscription and try again.",
         "signOut": "Sign Out"
-  },
-  "quotaLimit": {
-    "title": "Limit Reached",
-    "message": "You have reached the free playback limit of {{limit}} songs. Watch an ad to earn {{bonus}} more plays, or upgrade to Pro.",
-    "watchAd": "Earn Quota +3",
-    "subscription": "Get Pro",
-    "preparingAd": "Preparing ad...",
-    "adStarting": "Ad is starting",
-    "autoStartCount": "Ad starts in {{count}}s",
-    "remainingLabel": "Next play: {{remaining}}",
-    "limitLabel": "Usage: {{used}}/{{total}}",
-    "rewardLabel": "+{{bonus}} bonus plays",
-    "skipAlertTitle": "Ad skipped",
-    "skipNoReward": "Skipping the ad will not grant bonus plays.",
-    "adErrorFallback": "The ad could not be started. Please try again or open subscription options."
+    },
+    "quotaLimit": {
+        "title": "Limit Reached",
+        "message": "You have reached the free playback limit of {{limit}} songs. Watch an ad to earn {{bonus}} more plays, or upgrade to Pro.",
+        "watchAd": "Watch Ad +3",
+        "subscription": "Get Pro",
+        "preparingAd": "Preparing ad...",
+        "adStarting": "Ad is starting",
+        "autoStartCount": "Ad starts in {{count}}s",
+        "remainingLabel": "Next play: {{remaining}}",
+        "limitLabel": "Usage: {{used}}/{{total}}",
+        "rewardLabel": "+{{bonus}} bonus plays",
+        "skipAlertTitle": "Ad skipped",
+        "skipNoReward": "Skipping the ad will not grant bonus plays.",
+        "adErrorFallback": "The ad could not be started. Please try again or open subscription options."
     },
     "airplay": {
         "warningTitle": "Enable AirPlay Receiver",

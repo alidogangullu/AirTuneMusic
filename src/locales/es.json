@@ -155,6 +155,10 @@
         "aboutInfo": {
             "title": "Acerca de AirTune Music",
             "message": "AirTune Music es un cliente de Apple Music de terceros creado exclusivamente con la API oficial de Apple Music. No almacenamos ninguno de sus datos personales; toda la información se obtiene directamente de los servidores de Apple para proporcionar una experiencia musical perfecta."
+        },
+        "adSettings": {
+            "title": "Preferencias de anuncios",
+            "autoStartAd": "Iniciar anuncio automáticamente"
         }
     },
     "radio": {
@@ -201,21 +205,21 @@
         "goToAlbum": "Ir al álbum",
         "cancel": "Cancelar",
         "error": "Algo salió mal"
-  },
-  "quotaLimit": {
-    "title": "Límite alcanzado",
-    "message": "Has alcanzado el límite gratuito de {{limit}} canciones. Mira un anuncio para ganar {{bonus}} reproducciones más o cambia a Pro.",
-    "watchAd": "Ganar cuota +3",
-    "subscription": "Obtener Pro",
-    "preparingAd": "Preparando anuncio...",
-    "adStarting": "El anuncio está comenzando",
-    "autoStartCount": "El anuncio inicia en {{count}}s",
-    "remainingLabel": "Siguiente reproducción: {{remaining}}",
-    "limitLabel": "Uso: {{used}}/{{total}}",
-    "rewardLabel": "+{{bonus}} reproducciones extra",
-    "skipAlertTitle": "Anuncio omitido",
-    "skipNoReward": "Saltar el anuncio no otorgará reproducciones extra.",
-    "adErrorFallback": "No se pudo iniciar el anuncio. Inténtalo de nuevo o abre las opciones de suscripción."
+    },
+    "quotaLimit": {
+        "title": "Límite alcanzado",
+        "message": "Has alcanzado el límite gratuito de {{limit}} canciones. Mira un anuncio para ganar {{bonus}} reproducciones más o cambia a Pro.",
+        "watchAd": "Ver anuncio +3",
+        "subscription": "Obtener Pro",
+        "preparingAd": "Preparando anuncio...",
+        "adStarting": "El anuncio está comenzando",
+        "autoStartCount": "El anuncio inicia en {{count}}s",
+        "remainingLabel": "Siguiente reproducción: {{remaining}}",
+        "limitLabel": "Uso: {{used}}/{{total}}",
+        "rewardLabel": "+{{bonus}} reproducciones extra",
+        "skipAlertTitle": "Anuncio omitido",
+        "skipNoReward": "Saltar el anuncio no otorgará reproducciones extra.",
+        "adErrorFallback": "No se pudo iniciar el anuncio. Inténtalo de nuevo o abre las opciones de suscripción."
     },
     "airplay": {
         "warningTitle": "Activar receptor AirPlay",

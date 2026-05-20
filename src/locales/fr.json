@@ -155,6 +155,10 @@
         "aboutInfo": {
             "title": "À propos d'AirTune Music",
             "message": "AirTune Music est un client Apple Music tiers construit exclusivement à l'aide de l'API officielle Apple Music. Nous ne stockons aucune de vos données personnelles ; toutes les informations sont récupérées directement des serveurs d'Apple pour offrir une expérience musicale fluide."
+        },
+        "adSettings": {
+            "title": "Préférences pub",
+            "autoStartAd": "Démarrage automatique de la pub"
         }
     },
     "radio": {
@@ -201,21 +205,21 @@
         "goToAlbum": "Aller à l'album",
         "cancel": "Annuler",
         "error": "Une erreur s'est produite"
-  },
-  "quotaLimit": {
-    "title": "Limite atteinte",
-    "message": "Vous avez atteint la limite gratuite de {{limit}} chansons. Regardez une publicité pour gagner {{bonus}} écoutes supplémentaires, ou passez à Pro.",
-    "watchAd": "Gagner quota +3",
-    "subscription": "Obtenir Pro",
-    "preparingAd": "Préparation de la publicité...",
-    "adStarting": "La publicité démarre",
-    "autoStartCount": "Pub dans {{count}} s",
-    "remainingLabel": "Écoute suivante : {{remaining}}",
-    "limitLabel": "Utilisation : {{used}}/{{total}}",
-    "rewardLabel": "+{{bonus}} écoutes bonus",
-    "skipAlertTitle": "Publicité ignorée",
-    "skipNoReward": "Passer la publicité n'accorde pas d'écoutes bonus.",
-    "adErrorFallback": "Impossible de démarrer la publicité. Réessayez ou ouvrez les options d'abonnement."
+    },
+    "quotaLimit": {
+        "title": "Limite atteinte",
+        "message": "Vous avez atteint la limite gratuite de {{limit}} chansons. Regardez une publicité pour gagner {{bonus}} écoutes supplémentaires, ou passez à Pro.",
+        "watchAd": "Voir la pub +3",
+        "subscription": "Obtenir Pro",
+        "preparingAd": "Préparation de la publicité...",
+        "adStarting": "La publicité démarre",
+        "autoStartCount": "Pub dans {{count}} s",
+        "remainingLabel": "Écoute suivante : {{remaining}}",
+        "limitLabel": "Utilisation : {{used}}/{{total}}",
+        "rewardLabel": "+{{bonus}} écoutes bonus",
+        "skipAlertTitle": "Publicité ignorée",
+        "skipNoReward": "Passer la publicité n'accorde pas d'écoutes bonus.",
+        "adErrorFallback": "Impossible de démarrer la publicité. Réessayez ou ouvrez les options d'abonnement."
     },
     "airplay": {
         "warningTitle": "Activer le récepteur AirPlay",

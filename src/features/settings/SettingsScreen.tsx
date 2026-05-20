@@ -13,6 +13,7 @@ import { GradientBackground } from '../../components/GradientBackground';
 import { useTheme } from '../../theme';
 import type { AppColors } from '../../theme/colors';
 import { QuotaService } from '../../services/quotaService';
+import { AdSettingsService } from '../../services/adSettingsService';
 import { AirPlayQuotaService } from '../../services/airPlayQuotaService';
 import { QuotaPeriodService } from '../../services/quotaPeriodService';
 import { IapService } from './iapService';
@@ -41,7 +42,8 @@ export function SettingsScreen({
   const { colors, themeMode, setThemeMode } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const { t, i18n } = useTranslation();
-  const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language' | 'announcements'>('none');
+  const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language' | 'announcements' | 'adSettings'>('none');
+  const [autoStartAd, setAutoStartAd] = React.useState(() => AdSettingsService.getAutoStartAd());
   const { enabled: airPlayEnabled, setEnabled: setAirPlayEnabled } = useAirPlay();
 
   const hasOptionalUpdate = updateInfo?.status === 'optional_update';
@@ -53,6 +55,7 @@ export function SettingsScreen({
     { id: 'Language', label: t('settings.language.title') },
     { id: 'DarkMode', label: t('settings.theme') + ': ' + (themeMode === 'dark' ? t('settings.themeDark') : t('settings.themeLight')) },
     { id: 'AirPlay', label: 'AirPlay: ' + (airPlayEnabled ? t('common.on', 'Açık') : t('common.off', 'Kapalı')) },
+    { id: 'AdSettings', label: t('settings.adSettings.title') },
     { id: 'Announcements', label: t('settings.announcements') },
     { id: 'Support', label: t('settings.support') },
     { id: 'About', label: t('settings.about') },
@@ -114,6 +117,8 @@ export function SettingsScreen({
       if (updateInfo?.storeUrl) {
         Linking.openURL(updateInfo.storeUrl);
       }
+    } else if (item === 'AdSettings') {
+      setCurrentSubMenu('adSettings');
     } else if (item === 'Announcements') {
       setCurrentSubMenu('announcements');
     } else if (item === 'Sign Out') {
@@ -193,6 +198,27 @@ export function SettingsScreen({
       );
     }
 
+    if (currentSubMenu === 'adSettings') {
+      return (
+        <>
+          <SettingsMenuItem
+            label={"← " + t('common.back')}
+            hasTVPreferredFocus
+            onPress={() => setCurrentSubMenu('none')}
+          />
+          <View style={styles.divider} />
+          <SettingsMenuItem
+            label={t('settings.adSettings.autoStartAd') + ': ' + (autoStartAd ? t('common.on', 'Açık') : t('common.off', 'Kapalı'))}
+            onPress={() => {
+              const next = !autoStartAd;
+              AdSettingsService.setAutoStartAd(next);
+              setAutoStartAd(next);
+            }}
+          />
+        </>
+      );
+    }
+
     return (
       <>
         <SettingsMenuItem
@@ -263,11 +289,12 @@ export function SettingsScreen({
 }
 
 function getSubMenuTitle(
-  subMenu: 'none' | 'language' | 'announcements',
+  subMenu: 'none' | 'language' | 'announcements' | 'adSettings',
   t: (key: string) => string,
 ): string {
   if (subMenu === 'language') return t('settings.language.title');
   if (subMenu === 'announcements') return t('settings.announcements');
+  if (subMenu === 'adSettings') return t('settings.adSettings.title');
   return t('settings.title');
 }
 
