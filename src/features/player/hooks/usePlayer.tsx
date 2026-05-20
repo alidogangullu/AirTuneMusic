@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {Alert} from 'react-native';
+import {Alert, BackHandler} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import * as musicPlayer from '../../../services/musicPlayer';
 import {QuotaService} from '../../../services/quotaService';
@@ -115,7 +115,7 @@ interface PlayerContextValue {
   showSettings: boolean;
   setShowSettings: (show: boolean) => void;
   quotaRecoveryRequest: QuotaRecoveryRequest | null;
-  requestQuotaRecovery: (retryAction?: () => Promise<void>) => void;
+  requestQuotaRecovery: (retryAction?: () => Promise<void>, onSuccess?: () => void) => void;
   dismissQuotaRecovery: () => void;
   startQuotaRewardAd: () => Promise<boolean>;
 }
@@ -204,6 +204,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   stateRef.current = state;
   const lastTrackIdRef = useRef<number | null>(null);
   const pendingQuotaRetryRef = useRef<(() => Promise<void>) | null>(null);
+  const pendingQuotaSuccessRef = useRef<(() => void) | null>(null);
   const quotaRecoveryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const quotaRewardInFlightRef = useRef(false);
 
@@ -221,6 +222,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   const dismissQuotaRecovery = useCallback(() => {
     clearQuotaRecoveryTimer();
     pendingQuotaRetryRef.current = null;
+    pendingQuotaSuccessRef.current = null;
     setQuotaRecoveryRequest(null);
   }, [clearQuotaRecoveryTimer]);
 
@@ -233,15 +235,24 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     clearQuotaRecoveryTimer();
 
     try {
-      await RewardAdService.showRewardedAd();
       QuotaService.addBonusPlays();
 
       const retryAction = pendingQuotaRetryRef.current;
+      const onSuccess = pendingQuotaSuccessRef.current;
       dismissQuotaRecovery();
 
       if (retryAction) {
         await retryAction();
       }
+
+      const backGuard = BackHandler.addEventListener('hardwareBackPress', () => true);
+      try {
+        await RewardAdService.showRewardedAd();
+      } finally {
+        setTimeout(() => backGuard.remove(), 500);
+      }
+
+      onSuccess?.();
 
       return true;
     } finally {
@@ -250,9 +261,12 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   }, [clearQuotaRecoveryTimer, dismissQuotaRecovery, quotaRecoveryRequest]);
 
   const requestQuotaRecovery = useCallback(
-    (retryAction?: () => Promise<void>) => {
+    (retryAction?: () => Promise<void>, onSuccess?: () => void) => {
       if (retryAction && !pendingQuotaRetryRef.current) {
         pendingQuotaRetryRef.current = retryAction;
+      }
+      if (onSuccess && !pendingQuotaSuccessRef.current) {
+        pendingQuotaSuccessRef.current = onSuccess;
       }
 
       let shouldScheduleAutoStart = false;
@@ -365,7 +379,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
 
   useEffect(() => {
     const subs = [
-      musicPlayer.addEventListener('onPlaybackStateChanged', data => {
+      musicPlayer.addEventListener('onPlaybackStateChanged', (data) => {
         setState(s => ({
           ...s,
           playbackState: data.state,
@@ -467,7 +481,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     return () => {
       subs.forEach(subscription => subscription.remove());
     };
-  }, [t]);
+  }, [t, handleNativePlaybackQueueChanged, handleNativeShuffleModeChanged]);
 
   useEffect(() => {
     let mounted = true;
@@ -805,6 +819,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     playPlaylist,
     playSong,
     playStation,
+    playVideoQueue,
     quotaRecoveryRequest,
     requestQuotaRecovery,
     seekTo,
@@ -812,6 +827,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     showSettings,
     startQuotaRewardAd,
     state,
+    stopVideo,
   ]);
 
   return (

@@ -205,7 +205,7 @@
   "quotaLimit": {
     "title": "Límite alcanzado",
     "message": "Has alcanzado el límite gratuito de {{limit}} canciones. Mira un anuncio para ganar {{bonus}} reproducciones más o cambia a Pro.",
-    "watchAd": "Obtener +3 Cuota",
+    "watchAd": "Ganar cuota +3",
     "subscription": "Obtener Pro",
     "preparingAd": "Preparando anuncio...",
     "adStarting": "El anuncio está comenzando",

@@ -211,7 +211,7 @@
   "quotaLimit": {
     "title": "Sınıra Ulaşıldı",
     "message": "Ücretsiz dinleme sınırı olan {{limit}} şarkıya ulaştınız. Bir reklam izleyerek {{bonus}} ek hak kazanabilir veya Pro'ya geçebilirsiniz.",
-    "watchAd": "Kota Al +3",
+    "watchAd": "Kota Kazan +3",
     "subscription": "Pro'yu Al",
     "preparingAd": "Reklam hazırlanıyor...",
     "adStarting": "Reklam başlıyor",

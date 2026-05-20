@@ -205,7 +205,7 @@
   "quotaLimit": {
     "title": "Limit erreicht",
     "message": "Sie haben das kostenlose Wiedergabelimit von {{limit}} Songs erreicht. Sehen Sie sich eine Anzeige an, um {{bonus}} weitere Wiedergaben zu erhalten, oder wechseln Sie zu Pro.",
-    "watchAd": "Kontingent +3 erhalten",
+    "watchAd": "Kontingent verdienen +3",
     "subscription": "Hol Dir Pro",
     "preparingAd": "Anzeige wird vorbereitet...",
     "adStarting": "Anzeige startet",

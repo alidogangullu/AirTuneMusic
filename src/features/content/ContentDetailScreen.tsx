@@ -24,6 +24,7 @@ import { MoreMenu } from './components/MoreMenu';
 import { useAirPlay } from '../airplay/useAirPlay';
 import type { MoreMenuRelationships } from './components/MoreMenu';
 import i18n from '../../i18n';
+import { QuotaService } from '../../services/quotaService';
 import { formatDuration, formatRelativeDate } from './utils/dateUtils';
 import { isVideoTrack, buildVideoQueue, buildSongTracks } from './utils/trackUtils';
 import { useTheme } from '../../theme';
@@ -207,6 +208,7 @@ export function ContentDetailScreen({
     playStation,
     playSong,
     playVideoQueue,
+    requestQuotaRecovery,
   } = usePlayer();
   const airPlay = useAirPlay();
 
@@ -351,7 +353,7 @@ export function ContentDetailScreen({
 
       return false;
     },
-    [isPlaying, isPaused, playerState.track],
+    [isAirPlayMode, isPlaying, isPaused, playerState.track],
   );
 
   const handleTrackPress = useCallback(
@@ -371,9 +373,25 @@ export function ContentDetailScreen({
         return;
       }
 
-      const action = async () => {
-        let success = false;
+      const playAction = async () => {
         const songTracks = buildSongTracks(normalized.tracks, track.id);
+        switch (contentType) {
+          case 'albums':
+            await playAlbum(contentId, songTracks.startIndex, false, songTracks.tracks);
+            break;
+          case 'playlists':
+            await playPlaylist(contentId, songTracks.startIndex, false, songTracks.tracks);
+            break;
+          case 'songs':
+          case 'music-videos':
+          case 'stations':
+            await playSong(getCatalogSongId(track));
+            break;
+        }
+      };
+      const action = async () => {
+        const songTracks = buildSongTracks(normalized.tracks, track.id);
+        let success = false;
         switch (contentType) {
           case 'albums':
             success = await playAlbum(contentId, songTracks.startIndex, false, songTracks.tracks);
@@ -391,9 +409,12 @@ export function ContentDetailScreen({
           openNowPlayingFullscreen();
         }
       };
+      if (!QuotaService.canPlayNextSong()) {
+        requestQuotaRecovery(playAction, openNowPlayingFullscreen);
+      }
       action().catch(e => console.warn('[TrackPress]', e));
     },
-    [contentId, contentType, normalized.tracks, playAlbum, playPlaylist, playSong, playVideoQueue, openNowPlayingFullscreen, isTrackNowPlaying],
+    [contentId, contentType, normalized.tracks, playAlbum, playPlaylist, playSong, playVideoQueue, openNowPlayingFullscreen, isTrackNowPlaying, requestQuotaRecovery],
   );
 
   const renderTrack = useCallback(
