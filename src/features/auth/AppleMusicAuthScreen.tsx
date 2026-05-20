@@ -62,6 +62,7 @@ function startPolling(
       if (res.ok) {
         const data = (await res.json()) as { musicUserToken?: string };
         if (data.musicUserToken) {
+          console.log('[Auth] Music user token acquired from TV Link server');
           if (pollRef.current) {
             clearInterval(pollRef.current);
             pollRef.current = null;
@@ -272,6 +273,21 @@ function makeStyles(c: AppColors) {
 
     getNewCodeBtnText: { fontSize: 16, fontWeight: '700', color: c.alertRed },
     getNewCodeBtnTextFocused: { color: c.onDarkTextPrimary },
+    manualEntryBtn: {
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      marginBottom: -12,
+      minWidth: 108,
+      alignSelf: 'center',
+    },
+    manualEntryBtnSpacing: {
+      marginTop: 6,
+    },
+    manualEntryBtnText: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: c.alertRed,
+    },
     qrContainer: {
       backgroundColor: c.screenBackground,
       padding: spacing.sm, // Reduced from md
@@ -307,6 +323,12 @@ function makeStyles(c: AppColors) {
       fontWeight: '700',
       color: c.onDarkTextPrimary,
       marginBottom: spacing.lg,
+    },
+    modalHint: {
+      fontSize: 13,
+      lineHeight: 19,
+      color: c.alertRed,
+      marginBottom: spacing.md,
     },
     textInput: {
       backgroundColor: c.modalInputBg,
@@ -362,6 +384,7 @@ export function AppleMusicAuthScreen({
   const [linkCode, setLinkCode] = useState<string>(() => generateLinkCode());
   const [restoring, setRestoring] = useState(true);
   const [newCodeBtnFocused, setNewCodeBtnFocused] = useState(false);
+  const [manualEntryBtnFocused, setManualEntryBtnFocused] = useState(false);
   const [localServerIp, setLocalServerIp] = useState<string>('');
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [showManualInput, setShowManualInput] = useState(false);
@@ -595,6 +618,27 @@ export function AppleMusicAuthScreen({
                   {t('auth.getNewCode')}
                 </Text>
               </Pressable>
+
+              <Pressable
+                style={({ focused }) => [
+                  styles.getNewCodeBtn,
+                  styles.manualEntryBtn,
+                  styles.manualEntryBtnSpacing,
+                  focused && styles.getNewCodeBtnFocused,
+                ]}
+                onPress={() => setShowManualInput(true)}
+                onFocus={() => setManualEntryBtnFocused(true)}
+                onBlur={() => setManualEntryBtnFocused(false)}
+                focusable={true}
+                hasTVPreferredFocus={false}>
+                <Text
+                  style={[
+                    styles.manualEntryBtnText,
+                    manualEntryBtnFocused && styles.getNewCodeBtnTextFocused,
+                  ]}>
+                  {t('auth.manualEntry')}
+                </Text>
+              </Pressable>
             </>
           )}
         </View>
@@ -616,6 +660,9 @@ export function AppleMusicAuthScreen({
             <Text style={styles.modalTitle}>
               {t('auth.manualEntryTitle')}
             </Text>
+            <Text style={styles.modalHint}>
+              {t('auth.manualEntryHint')}
+            </Text>
             <TextInput
               style={styles.textInput}
               placeholder={t('auth.manualEntryPlaceholder')}
@@ -627,19 +674,31 @@ export function AppleMusicAuthScreen({
             />
             <View style={styles.modalButtons}>
               <Pressable
-                style={[styles.modalButton, { backgroundColor: colors.modalBorder }]}
-                onPress={() => setShowManualInput(false)}>
+                style={({ focused }) => [
+                  styles.modalButton,
+                  { backgroundColor: colors.modalBorder },
+                  focused && { opacity: 0.8, transform: [{ scale: 1.05 }] },
+                ]}
+                onPress={() => setShowManualInput(false)}
+                focusable={true}
+                hasTVPreferredFocus={true}>
                 <Text style={{ color: colors.onDarkTextPrimary }}>{t('common.cancel')}</Text>
               </Pressable>
               <Pressable
-                style={[styles.modalButton, { backgroundColor: colors.alertRed }]}
+                style={({ focused }) => [
+                  styles.modalButton,
+                  { backgroundColor: colors.alertRed },
+                  focused && { opacity: 0.9, transform: [{ scale: 1.05 }] },
+                ]}
                 onPress={() => {
                   if (manualToken.trim()) {
                     setMusicUserToken(manualToken.trim());
                     musicPlayer.syncTokens();
                     onAuthSuccess?.();
                   }
-                }}>
+                }}
+                focusable={true}
+                hasTVPreferredFocus={false}>
                 <Text style={{ color: colors.onDarkTextPrimary, fontWeight: 'bold' }}>{t('auth.connect')}</Text>
               </Pressable>
             </View>

@@ -260,12 +260,6 @@ export async function setRating(songId: string, value: number): Promise<void> {
   await ratings.addRating(songId, value);
 }
 
-export function setAutoplay(enabled: boolean): void {
-  // Placeholder: Some SDKs handle this automatically or via a flag.
-  // We'll store it in a local variable or use a bridge method if found.
-  console.log('[musicPlayer] setAutoplay:', enabled);
-}
-
 export function setKeepAwake(enabled: boolean): void {
   MusicPlayer?.setKeepAwake(enabled);
 }

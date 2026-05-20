@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { usePlayer, usePlaybackProgress } from './usePlayer';
 import { fetchLyrics, LyricsResponse } from '../api/lrclib';
 import { parseLRC, LyricLine } from '../utils/lrcParser';
+import { useAirPlay } from '../../airplay/useAirPlay';
 
 export interface UseLyricsResult {
   lyrics: LyricLine[];
@@ -12,8 +13,15 @@ export interface UseLyricsResult {
 
 export function useLyrics(enabled: boolean = true): UseLyricsResult {
   const { state } = usePlayer();
-  const { track } = state;
-  const { position } = usePlaybackProgress();
+  const airPlay = useAirPlay();
+  
+  // Apple Music takes priority only if actively playing or loading.
+  // When AirPlay is active and Apple Music is paused, we use AirPlay data.
+  const isAirPlayActive = airPlay.active && (state.playbackState !== 'playing' && !state.isLoading);
+  
+  const track = isAirPlayActive ? airPlay.track : state.track;
+  const { position: nativePosition } = usePlaybackProgress();
+  const position = isAirPlayActive ? airPlay.positionMs : nativePosition;
 
   const shouldFetch = enabled && !!track?.title && !!track?.artistName;
   const [lyricsData, setLyricsData] = useState<LyricsResponse | null>(null);
@@ -76,6 +84,7 @@ export function useLyrics(enabled: boolean = true): UseLyricsResult {
     return () => {
       mounted = false;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- track primitives used intentionally to avoid object reference churn
   }, [track?.id, track?.title, track?.artistName, enabled]);
 
   // Parse lyrics
@@ -88,7 +97,8 @@ export function useLyrics(enabled: boolean = true): UseLyricsResult {
   const currentLineIndex = useMemo(() => {
     if (parsedLyrics.length === 0) return -1;
 
-    const SYNC_OFFSET_MS = 400; // Offset to start lyrics slightly earlier
+    // AirPlay has ~1000ms native delay, so increase offset to compensate
+    const SYNC_OFFSET_MS = isAirPlayActive ? 2500 : 500; // Offset to start lyrics slightly earlier
     const adjustedPosition = position + SYNC_OFFSET_MS;
 
     // Find the last line whose time is <= adjusted position
@@ -101,7 +111,7 @@ export function useLyrics(enabled: boolean = true): UseLyricsResult {
       }
     }
     return index;
-  }, [parsedLyrics, position]);
+  }, [parsedLyrics, position, isAirPlayActive]);
 
   return {
     lyrics: parsedLyrics,

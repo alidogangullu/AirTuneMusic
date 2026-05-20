@@ -8,6 +8,7 @@ import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.adg.airtune.imagecolors.ImageColorsPackage
 import com.adg.airtune.musicplayer.MusicPlayerPackage
+import com.adg.airtune.airplay.AirPlayPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -18,6 +19,7 @@ class MainApplication : Application(), ReactApplication {
         PackageList(this).packages.apply {
           add(MusicPlayerPackage())
           add(ImageColorsPackage())
+          add(AirPlayPackage())
         },
     )
   }

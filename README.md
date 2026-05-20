@@ -20,6 +20,7 @@
 - **📱 TV Link Pairing**: Easy sign-in using your phone or PC via a local pairing server—no clunky TV keyboard required.
 - **🎼 Full Library Access**: Browse your playlists, albums, and "Listen Now" recommendations.
 - **📻 Apple Music Radio**: Stream your favorite stations and algorithmic radio.
+- **🛜 AirPlay**: Stream audio from iPhone's Apple Music directly to the TV via AirPlay.
 - **🚀 Performance**: Built on `react-native-tvos` for smooth performance on hardware.
 
 ---
@@ -40,16 +41,21 @@
 
 ---
 
-## 🧪 Testing (Closed Beta)
+## 📲 Download
 
-AirTune is currently in **Closed Beta**. To install the app on your Android TV, please follow these steps:
+Available on the **Google Play Store**:
 
-1. **Join the Testers Group**: [Join our Google Group](https://groups.google.com/g/airtune-testers/) first. You must join using the same Google account you use for the Play Store.
-2. **Opt-in to Testing**: After joining the group, [Opt-in to the Testing Program](https://play.google.com/apps/testing/com.adg.airtune) here.
-3. **Download the app**: Once opted in, download it directly from the [Play Store](https://play.google.com/store/apps/details?id=com.adg.airtune).
+[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width="200">](https://play.google.com/store/apps/details?id=com.adg.airtune)
 
-> [!NOTE]
-> If you were a tester of the previous version, you're already in the Google Group — you can skip step 1 and download the new listing directly once it's live.
+~~## 🧪 Testing (Closed Beta)~~
+
+~~AirTune is currently in **Closed Beta**. To install the app on your Android TV, please follow these steps:~~
+
+~~1. **Join the Testers Group**: [Join our Google Group](https://groups.google.com/g/airtune-testers/) first. You must join using the same Google account you use for the Play Store.~~
+~~2. **Opt-in to Testing**: After joining the group, [Opt-in to the Testing Program](https://play.google.com/apps/testing/com.adg.airtune) here.~~
+~~3. **Download the app**: Once opted in, download it directly from the [Play Store](https://play.google.com/store/apps/details?id=com.adg.airtune).~~
+
+~~> If you were a tester of the previous version, you're already in the Google Group — you can skip step 1 and download the new listing directly once it's live.~~
 
 ---
 
@@ -57,11 +63,12 @@ AirTune is currently in **Closed Beta**. To install the app on your Android TV, 
 
 | Area      | Technology                             |
 | --------- | -------------------------------------- |
-| Framework | React Native (`react-native-tvos`)     |
-| Language  | TypeScript                             |
-| API       | Apple Music API (REST)                 |
-| Auth      | MusicKit JS (via Local Pairing Server) |
-| Lyrics    | [LRCLIB](https://lrclib.net/)          |
+| Framework   | React Native (`react-native-tvos`)     |
+| Language    | TypeScript                             |
+| API         | Apple Music API (REST)                 |
+| Auth        | MusicKit JS (via Local Pairing Server) |
+| Lyrics      | [LRCLIB](https://lrclib.net/)          |
+| AirPlay     | [jqssun/android-airplay-server](https://github.com/jqssun/android-airplay-server) (UxPlay-based) |
 
 ### Local Pairing Server (TV Link)
 

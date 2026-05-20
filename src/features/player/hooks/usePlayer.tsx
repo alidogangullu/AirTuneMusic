@@ -14,6 +14,7 @@ import {QuotaService} from '../../../services/quotaService';
 import {RewardAdService} from '../../../services/rewardAdService';
 import {getDeveloperToken} from '../../../api/apple-music/getDeveloperToken';
 import {waitForToken, getMusicUserToken} from '../../../api/apple-music/musicUserToken';
+import {airPlayReceiver} from '../../../services/airPlayReceiver';
 import {MusicKitWebView, MusicKitWebPlayerRef} from '../components/MusicKitWebView';
 import {VideoPlayerModal} from '../components/VideoPlayerModal';
 import type {QuotaRecoveryRequest} from '../../content/QuotaLimitScreen';
@@ -54,7 +55,6 @@ export interface PlayerState {
   canSkipToNext: boolean;
   isLoading: boolean;
   rating: number;
-  autoplay: boolean;
   videoQueue: VideoQueue | null;
 }
 
@@ -80,7 +80,6 @@ const initialState: PlayerState = {
   canSkipToNext: false,
   isLoading: false,
   rating: 0,
-  autoplay: false,
   videoQueue: null,
 };
 
@@ -532,6 +531,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
           webPlayerRef.current?.stop();
           activeEngineRef.current = 'native';
         }
+        airPlayReceiver.disconnect();
         await playFn();
         // Quota is now recorded in onCurrentItemChanged to handle automatic transitions
         return true;
@@ -697,6 +697,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     playVideoQueue,
     stopVideo,
     play: () => {
+      airPlayReceiver.disconnect();
       if (activeEngineRef.current === 'web') {
         webPlayerRef.current?.play();
         setState(s => ({...s, playbackState: 'playing'}));
@@ -788,11 +789,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
         setState(s => ({...s, rating}));
       }
     },
-    toggleAutoplay: () => {
-      const newValue = !stateRef.current.autoplay;
-      setState(s => ({...s, autoplay: newValue}));
-      musicPlayer.setAutoplay(newValue);
-    },
+    toggleAutoplay: () => {},
     isPlaying: state.playbackState === 'playing',
     showSettings,
     setShowSettings,

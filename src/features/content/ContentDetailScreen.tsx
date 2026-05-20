@@ -21,6 +21,7 @@ import { NowPlayingBars } from '../player/components/NowPlayingBars';
 import { usePlayer } from '../player/hooks/usePlayer';
 import { useContentNavigation } from '../home/navigation';
 import { MoreMenu } from './components/MoreMenu';
+import { useAirPlay } from '../airplay/useAirPlay';
 import type { MoreMenuRelationships } from './components/MoreMenu';
 import i18n from '../../i18n';
 import { formatDuration, formatRelativeDate } from './utils/dateUtils';
@@ -207,8 +208,12 @@ export function ContentDetailScreen({
     playSong,
     playVideoQueue,
   } = usePlayer();
+  const airPlay = useAirPlay();
 
   const { openNowPlayingFullscreen, pushContent } = useContentNavigation();
+
+  const appleMusicPlaying = playerState.playbackState === 'playing' || playerState.isLoading;
+  const isAirPlayMode = airPlay.active && !appleMusicPlaying;
 
   const isPlaying = playerState.playbackState === 'playing';
   const isPaused = playerState.playbackState === 'paused';
@@ -320,6 +325,9 @@ export function ContentDetailScreen({
   // title + artist (robust for both library and catalog content).
   const isTrackNowPlaying = useCallback(
     (track: PlaylistTrack): boolean => {
+      // If AirPlay is active and Apple Music is not playing, don't show any local now-playing indicators
+      if (isAirPlayMode) { return false; }
+
       if (!(isPlaying || isPaused)) { return false; }
       const currentTrack = playerState.track;
       if (!currentTrack) { return false; }

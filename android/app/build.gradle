@@ -108,8 +108,8 @@ android {
         applicationId "com.adg.airtune"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 4
-        versionName "1.6"
+        versionCode 9
+        versionName "1.9.1"
     }
     signingConfigs {
         debug {
@@ -127,6 +127,7 @@ android {
             }
         }
     }
+
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
@@ -157,6 +158,9 @@ dependencies {
 
     // Android Palette — extract dominant colors from artwork
     implementation("androidx.palette:palette:1.0.0")
+
+    // AirPlay — MediaSession ve MediaCompat için
+    implementation("androidx.media:media:1.7.0")
 
 
     if (hermesEnabled.toBoolean()) {

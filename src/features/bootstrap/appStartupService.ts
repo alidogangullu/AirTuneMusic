@@ -1,6 +1,8 @@
 import { loadMusicUserToken } from '../../api/apple-music/musicUserToken';
 import { checkAppleMusicSubscription } from './api/subscription';
 import { checkAppVersion, VersionCheckResult } from '../../services/versionService';
+import { AnnouncementService, Announcement } from '../../services/announcementService';
+import { QuotaConfigService } from '../../services/quotaConfigService';
 import { IapService } from '../settings/iapService';
 import { ensureConfigured } from '../../services/musicPlayer';
 
@@ -8,6 +10,7 @@ export interface StartupData {
   hasToken: boolean;
   isAppleMusicSubscriber: boolean;
   updateInfo: VersionCheckResult;
+  announcements: Announcement[];
 }
 
 export const AppStartupService = {
@@ -18,9 +21,11 @@ export const AppStartupService = {
     console.log('[AppStart] Starting initialization...');
     
     // 1. Version check and Token check in parallel
-    const [updateInfo, token] = await Promise.all([
+    const [updateInfo, token, announcements] = await Promise.all([
       checkAppVersion(),
       loadMusicUserToken(),
+      AnnouncementService.fetchAnnouncements(),
+      QuotaConfigService.fetchAndUpdate(),
     ]);
 
     const hasToken = token !== null && token.length > 0;
@@ -59,6 +64,7 @@ export const AppStartupService = {
       hasToken,
       isAppleMusicSubscriber,
       updateInfo,
+      announcements,
     };
   },
 

@@ -21,6 +21,7 @@ export type MainLayoutProps = {
   onSearchPress?: () => void;
   onSettingsPress?: () => void;
   hasUpdate?: boolean;
+  hasUnreadAnnouncements?: boolean;
 };
 
 const SCREENS: Record<NavTabId, React.ComponentType<{ isTabView?: boolean }>> = {
@@ -40,6 +41,7 @@ export function MainLayout({
   onSearchPress,
   onSettingsPress,
   hasUpdate = false,
+  hasUnreadAnnouncements = false,
 }: Readonly<MainLayoutProps>): React.JSX.Element {
   const { themeMode } = useTheme();
   const Screen = SCREENS[activeTab];
@@ -57,6 +59,7 @@ export function MainLayout({
           onSearchPress={onSearchPress}
           onSettingsPress={onSettingsPress}
           hasUpdate={hasUpdate}
+          hasUnreadAnnouncements={hasUnreadAnnouncements}
           transparent
           dark={themeMode === 'dark' ? activeTab === 'now-playing' : activeTab !== 'now-playing'}
         />

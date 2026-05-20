@@ -26,14 +26,21 @@ class ImageColorsModule(
     fun getColors(uri: String, promise: Promise) {
         Thread {
             try {
-                val connection = URL(uri).openConnection() as HttpURLConnection
-                connection.connectTimeout = 10_000
-                connection.readTimeout = 10_000
-                connection.doInput = true
-                connection.connect()
+                val bitmap = if (uri.startsWith("data:")) {
+                    val base64Data = uri.substringAfter(",")
+                    val bytes = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT)
+                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                } else {
+                    val connection = URL(uri).openConnection() as HttpURLConnection
+                    connection.connectTimeout = 10_000
+                    connection.readTimeout = 10_000
+                    connection.doInput = true
+                    connection.connect()
 
-                val bitmap = BitmapFactory.decodeStream(connection.inputStream)
-                connection.disconnect()
+                    val b = BitmapFactory.decodeStream(connection.inputStream)
+                    connection.disconnect()
+                    b
+                }
 
                 if (bitmap == null) {
                     promise.reject("DECODE_ERROR", "Failed to decode image")
