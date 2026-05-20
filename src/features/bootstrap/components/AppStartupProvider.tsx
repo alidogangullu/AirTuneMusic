@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AppStartupService } from '../appStartupService';
 import { VersionCheckResult } from '../../../services/versionService';
 import { Announcement, AnnouncementService } from '../../../services/announcementService';
-import { initializeLevelPlay } from '../../../services/levelPlay';
+import { initializeUnityAds } from '../../../services/unityAds';
 
 interface AppStartupContextType {
   isInitialized: boolean;
@@ -31,8 +31,8 @@ export function AppStartupProvider({ children }: Readonly<{ children: React.Reac
 
     async function runStartup() {
       try {
-        void initializeLevelPlay().catch(error => {
-          console.error('[AppStartupProvider] LevelPlay init error:', error);
+        initializeUnityAds().catch(error => {
+          console.error('[AppStartupProvider] Unity Ads init error:', error);
         });
 
         const data = await AppStartupService.init();

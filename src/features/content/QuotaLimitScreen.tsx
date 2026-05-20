@@ -24,7 +24,7 @@ type Props = Readonly<{
 function getAdErrorMessage(errorCode: string, t: ReturnType<typeof useTranslation>['t']): string | null {
   switch (errorCode) {
     case 'AD_CONFIGURATION_MISSING':
-      return 'LevelPlay ads are not configured yet. Add the app key and ad unit id.';
+      return 'Unity Ads are not configured yet. Add the game ID and ad unit ID to app.json.';
     case 'AD_NOT_READY':
       return 'Ad is not ready yet. Please try again in a moment.';
     case 'AD_DISPLAY_FAILED':
