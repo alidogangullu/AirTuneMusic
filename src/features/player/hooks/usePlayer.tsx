@@ -847,9 +847,9 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
           musicUserToken={tokens.user}
           onPlaybackStateChanged={stateName => {
             if (activeEngineRef.current === 'web') {
-               const isLoading = stateName === 'loading';
-               const mappedState: PlaybackStateName = isLoading ? 'unknown' : (stateName as PlaybackStateName);
-               setState(s => ({...s, playbackState: mappedState, isLoading}));
+              const isLoading = stateName === 'loading';
+              const mappedState: PlaybackStateName = isLoading ? 'unknown' : (stateName as PlaybackStateName);
+              setState(s => ({...s, playbackState: mappedState, isLoading}));
             }
           }}
           onTrackChanged={trackInfo => {
@@ -864,7 +864,12 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
                 QuotaService.recordSongPlay();
                 lastTrackIdRef.current = trackInfo.playbackQueueId;
               }
-              setState(s => ({...s, track: trackInfo}));
+              setState(s => ({...s, track: trackInfo, rating: 0}));
+              if (trackInfo.id) {
+                musicPlayer.getRating(trackInfo.id).then(r => {
+                  setState(s => ({...s, rating: r}));
+                });
+              }
             }
           }}
           onCapabilitiesChanged={data => {

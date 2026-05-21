@@ -180,7 +180,7 @@ export const PlaybackControls = React.memo(({
         {/* Add to Playlist */}
         <ControlButton
           onPress={handleAddToPlaylistPress}
-          disabled={isDisabled || isStation}
+          disabled={isDisabled}
           nextFocusDown={nextFocusDown}>
           {(focused) => (
             <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={iconColor(focused, false)} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

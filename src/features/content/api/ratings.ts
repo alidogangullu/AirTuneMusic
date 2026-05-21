@@ -64,14 +64,26 @@ export async function setRating(
 ): Promise<void> {
   const segment = ratingSegment(id, contentType);
   if (!segment) { return; }
-  if (value === 0) {
-    await appleMusicApi.delete(`/me/ratings/${segment}/${id}`);
-  } else {
-    await appleMusicApi.put(`/me/ratings/${segment}/${id}`, {
-      type: 'rating',
-      attributes: { value },
-    });
+
+  const ratingCall = value === 0
+    ? appleMusicApi.delete(`/me/ratings/${segment}/${id}`)
+    : appleMusicApi.put(`/me/ratings/${segment}/${id}`, { type: 'rating', attributes: { value } });
+
+  // For catalog songs, mirror iOS behavior: add to library + Favorites playlist on love,
+  // remove from Favorites on unlike. Library IDs (i. prefix) are already in the library.
+  const isCatalogSong = contentType === 'songs' && !isLibraryId(id);
+  // For catalog songs on love: add to library + Favorites playlist.
+  // On unlike: just deleting the rating is enough — Apple Music removes it from Favorites automatically.
+  // (There is no DELETE /me/favorites endpoint in the API.)
+  let extraCalls: Promise<unknown>[] = [];
+  if (isCatalogSong && value === 1) {
+    extraCalls = [
+      appleMusicApi.post(`/me/library?ids[songs]=${id}`, {}).catch(() => {}),
+      appleMusicApi.post(`/me/favorites?ids[songs]=${id}`, {}).catch(() => {}),
+    ];
   }
+
+  await Promise.all([ratingCall, ...extraCalls]);
 }
 
 // Legacy alias for existing callers
