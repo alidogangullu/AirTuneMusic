@@ -46,6 +46,7 @@ export function HomeScreen({
     quotaRecoveryRequest,
     dismissQuotaRecovery,
     startQuotaRewardAd,
+    adInFlight,
   } = usePlayer();
   useLibraryMembershipSnapshot();
   const isDetailOpen = selectedContent !== null;
@@ -148,7 +149,7 @@ export function HomeScreen({
         <Modal
           visible={nowPlayingFullscreen && (lastOpened === 'now-playing' || !isDetailOpen)}
           animationType="none"
-          onRequestClose={closeNowPlayingFullscreen}>
+          onRequestClose={() => { if (!adInFlight) closeNowPlayingFullscreen(); }}>
           <NowPlayingScreen onBack={closeNowPlayingFullscreen} />
         </Modal>
 
@@ -157,7 +158,7 @@ export function HomeScreen({
         <Modal
           visible={isDetailOpen && (lastOpened === 'detail' || !nowPlayingFullscreen)}
           animationType="none"
-          onRequestClose={popContent}>
+          onRequestClose={() => { if (!adInFlight) popContent(); }}>
           {selectedContent !== null && (
             <GradientBackground
               startColor={colors.gradientStart}

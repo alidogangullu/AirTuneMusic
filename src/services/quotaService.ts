@@ -11,7 +11,7 @@ const KEYS = {
   BONUS_PLAYS: 'bonus_plays',
 };
 
-const DEFAULT_BONUS_PLAYS = 3;
+const DEFAULT_BONUS_PLAYS = 2;
 
 export class QuotaService {
   static get HOURLY_LIMIT(): number {
@@ -38,6 +38,13 @@ export class QuotaService {
 
     const current = this.getBonusPlaysRemaining();
     storage.set(KEYS.BONUS_PLAYS, current + count);
+  }
+
+  static revokeBonusPlays(count: number = this.BONUS_PLAYS_PER_AD): void {
+    if (this.isProUser() || count <= 0) return;
+
+    const current = this.getBonusPlaysRemaining();
+    storage.set(KEYS.BONUS_PLAYS, Math.max(0, current - count));
   }
 
   private static consumeBonusPlay(): boolean {
@@ -93,6 +100,12 @@ export class QuotaService {
 
   static getRemainingTimeFormatted(): string {
     const ms = this.getTimeUntilNextSlot();
+    if (ms <= 0) return i18next.t('common.availableNow');
+    return QuotaPeriodService.getRemainingFormatted();
+  }
+
+  static getPeriodRemainingFormatted(): string {
+    const ms = QuotaPeriodService.getRemainingMs();
     if (ms <= 0) return i18next.t('common.availableNow');
     return QuotaPeriodService.getRemainingFormatted();
   }

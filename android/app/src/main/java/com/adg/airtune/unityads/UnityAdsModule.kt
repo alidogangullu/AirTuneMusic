@@ -86,7 +86,11 @@ class UnityAdsModule(private val reactContext: ReactApplicationContext) :
                                 placementId: String,
                                 state: UnityAds.UnityAdsShowCompletionState,
                             ) {
-                                promise.resolve(true)
+                                if (state == UnityAds.UnityAdsShowCompletionState.SKIPPED) {
+                                    promise.reject("AD_SKIPPED", "Ad was skipped.")
+                                } else {
+                                    promise.resolve(true)
+                                }
                             }
                         },
                     )

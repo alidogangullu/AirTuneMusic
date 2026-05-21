@@ -410,7 +410,10 @@ export function ContentDetailScreen({
         }
       };
       if (!QuotaService.canPlayNextSong()) {
-        requestQuotaRecovery(playAction, openNowPlayingFullscreen);
+        requestQuotaRecovery(async () => {
+          await playAction();
+          openNowPlayingFullscreen();
+        });
       }
       action().catch(e => console.warn('[TrackPress]', e));
     },

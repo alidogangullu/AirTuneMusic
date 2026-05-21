@@ -116,9 +116,10 @@ interface PlayerContextValue {
   showSettings: boolean;
   setShowSettings: (show: boolean) => void;
   quotaRecoveryRequest: QuotaRecoveryRequest | null;
-  requestQuotaRecovery: (retryAction?: () => Promise<void>, onSuccess?: () => void) => void;
+  requestQuotaRecovery: (retryAction?: () => Promise<void>) => void;
   dismissQuotaRecovery: () => void;
   startQuotaRewardAd: () => Promise<boolean>;
+  adInFlight: boolean;
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -201,76 +202,63 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   const [state, setState] = useState<PlayerState>(initialState);
   const [showSettings, setShowSettings] = useState(false);
   const [quotaRecoveryRequest, setQuotaRecoveryRequest] = useState<QuotaRecoveryRequest | null>(null);
+  const [adInFlight, setAdInFlight] = useState(false);
   const stateRef = useRef(state);
   stateRef.current = state;
   const lastTrackIdRef = useRef<number | null>(null);
   const pendingQuotaRetryRef = useRef<(() => Promise<void>) | null>(null);
-  const pendingQuotaSuccessRef = useRef<(() => void) | null>(null);
-  const quotaRecoveryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const quotaRewardInFlightRef = useRef(false);
+  const requestQuotaRecoveryRef = useRef<(retryAction?: () => Promise<void>) => void>(() => {});
+  const adInFlightRef = useRef(false);
 
   const activeEngineRef = useRef<'native' | 'web' | 'video'>('native');
   const webPlayerRef = useRef<MusicKitWebPlayerRef>(null);
   const [tokens, setTokens] = useState<{dev: string; user: string | null} | null>(null);
 
-  const clearQuotaRecoveryTimer = useCallback(() => {
-    if (quotaRecoveryTimerRef.current) {
-      clearTimeout(quotaRecoveryTimerRef.current);
-      quotaRecoveryTimerRef.current = null;
-    }
+  const dismissQuotaRecovery = useCallback(() => {
+    pendingQuotaRetryRef.current = null;
+    setQuotaRecoveryRequest(null);
   }, []);
 
-  const dismissQuotaRecovery = useCallback(() => {
-    clearQuotaRecoveryTimer();
-    pendingQuotaRetryRef.current = null;
-    pendingQuotaSuccessRef.current = null;
-    setQuotaRecoveryRequest(null);
-  }, [clearQuotaRecoveryTimer]);
-
   const startQuotaRewardAd = useCallback(async (): Promise<boolean> => {
-    if (!quotaRecoveryRequest || quotaRewardInFlightRef.current) {
-      return false;
+    if (!quotaRecoveryRequest || adInFlightRef.current) return false;
+
+    adInFlightRef.current = true;
+    setAdInFlight(true);
+    const retryAction = pendingQuotaRetryRef.current;
+    dismissQuotaRecovery();
+
+    // Start the track before showing the ad so music plays immediately
+    if (retryAction) {
+      await retryAction();
     }
 
-    quotaRewardInFlightRef.current = true;
-    clearQuotaRecoveryTimer();
+    // Block hardware back for the full ad duration (video + end card)
+    const backSub = BackHandler.addEventListener('hardwareBackPress', () => true);
 
     try {
+      await RewardAdService.showRewardedAd();
+      // COMPLETED: grant bonus plays
       QuotaService.addBonusPlays();
-
-      const retryAction = pendingQuotaRetryRef.current;
-      const onSuccess = pendingQuotaSuccessRef.current;
-      dismissQuotaRecovery();
-
-      if (retryAction) {
-        await retryAction();
-      }
-
-      const backGuard = BackHandler.addEventListener('hardwareBackPress', () => true);
-      try {
-        await RewardAdService.showRewardedAd();
-      } finally {
-        setTimeout(() => backGuard.remove(), 500);
-      }
-
-      onSuccess?.();
-
       return true;
+    } catch {
+      // SKIPPED (back during video) or load failure — no bonus, music keeps playing
+      return false;
     } finally {
-      quotaRewardInFlightRef.current = false;
+      adInFlightRef.current = false;
+      backSub.remove();
+      // Delay clearing adInFlight to block the back event that leaks from
+      // Unity's Activity closing before React can update onRequestClose.
+      setTimeout(() => setAdInFlight(false), 1000);
     }
-  }, [clearQuotaRecoveryTimer, dismissQuotaRecovery, quotaRecoveryRequest]);
+  }, [dismissQuotaRecovery, quotaRecoveryRequest]);
 
   const requestQuotaRecovery = useCallback(
-    (retryAction?: () => Promise<void>, onSuccess?: () => void) => {
+    (retryAction?: () => Promise<void>) => {
+      if (adInFlightRef.current) return;
+
       if (retryAction && !pendingQuotaRetryRef.current) {
         pendingQuotaRetryRef.current = retryAction;
       }
-      if (onSuccess && !pendingQuotaSuccessRef.current) {
-        pendingQuotaSuccessRef.current = onSuccess;
-      }
-
-      let shouldScheduleAutoStart = false;
 
       setQuotaRecoveryRequest(existingRequest => {
         if (existingRequest) {
@@ -279,7 +267,6 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
 
         const usage = QuotaService.getUsageInfo();
         const remaining = QuotaService.getRemainingTimeFormatted();
-        shouldScheduleAutoStart = true;
 
         return {
           title: t('quotaLimit.title'),
@@ -298,22 +285,11 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
           remaining,
         };
       });
-
-      if (!shouldScheduleAutoStart) {
-        return;
-      }
-
-      if (!AdSettingsService.getAutoStartAd()) {
-        return;
-      }
-
-      clearQuotaRecoveryTimer();
-      quotaRecoveryTimerRef.current = setTimeout(() => {
-        startQuotaRewardAd();
-      }, 5000);
     },
-    [clearQuotaRecoveryTimer, startQuotaRewardAd, t],
+    [t],
   );
+
+  requestQuotaRecoveryRef.current = requestQuotaRecovery;
 
   const updateTrackRating = useCallback((trackId: string) => {
     musicPlayer.getRating(trackId).then(rating => {
@@ -395,28 +371,18 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
       musicPlayer.addEventListener('onCurrentItemChanged', data => {
         // Enforce quota on track transitions (manual or automatic)
         if (data.playbackQueueId !== undefined && data.playbackQueueId !== lastTrackIdRef.current) {
-          if (!QuotaService.canPlayNextSong()) {
-            musicPlayer.stop();
-            const remaining = QuotaService.getRemainingTimeFormatted();
-            Alert.alert(
-              t('settings.pro.limitReached'),
-              t('settings.pro.limitReachedMessage', {
-                limit: QuotaService.HOURLY_LIMIT,
-                remaining: remaining,
-              }),
-              [
-                {text: t('common.cancel'), style: 'cancel'},
-                {
-                  text: t('common.viewOptions'),
-                  onPress: () => setShowSettings(true),
-                },
-              ],
-            );
-            return;
+          if (QuotaService.canPlayNextSong()) {
+            QuotaService.recordSongPlay();
+            lastTrackIdRef.current = data.playbackQueueId;
+          } else if (!adInFlightRef.current) {
+            musicPlayer.pause();
+            const queueId = data.playbackQueueId;
+            requestQuotaRecoveryRef.current(async () => {
+              QuotaService.recordSongPlay();
+              lastTrackIdRef.current = queueId;
+              musicPlayer.play();
+            });
           }
-          // Quota available, record the play and update tracking
-          QuotaService.recordSongPlay();
-          lastTrackIdRef.current = data.playbackQueueId;
         }
 
         if (data.playbackQueueId === undefined) return;
@@ -540,7 +506,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   // Sync current state and pre-configure native module on mount
   const checkQuotaAndPlay = useCallback(
     async (playFn: () => Promise<void>): Promise<boolean> => {
-      if (!QuotaService.canPlayNextSong()) {
+      if (!QuotaService.canPlayNextSong() && !adInFlightRef.current) {
         requestQuotaRecovery(playFn);
         return false;
       }
@@ -816,7 +782,9 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     requestQuotaRecovery,
     dismissQuotaRecovery,
     startQuotaRewardAd,
+    adInFlight,
   }), [
+    adInFlight,
     dismissQuotaRecovery,
     getQueue,
     playAlbum,

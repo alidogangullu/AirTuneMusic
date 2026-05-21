@@ -1,238 +1,240 @@
 {
-    "common": {
-        "loading": "Yükleniyor...",
-        "error": "Hata",
-        "failedToLoad": "Yükleme başarısız",
-        "retry": "Tekrar Dene",
-        "cancel": "İptal",
-        "back": "Geri",
-        "ok": "Tamam",
-        "unknown": "Bilinmiyor",
-        "noItems": "Öğe yok",
-        "appName": "AirTune Music",
-        "availableNow": "Şimdi mevcut",
-        "minute": "1 dakika",
-        "minutes": "{{count}} dakika",
-        "viewOptions": "Seçenekleri Görüntüle",
-        "artist": "Sanatçı",
-        "song": "Şarkı",
-        "album": "Albüm",
-        "playlist": "Çalma Listesi",
-        "musicVideo": "Müzik Videosu",
-        "exitPressAgain": "Çıkmak için tekrar basın"
+  "common": {
+    "loading": "Yükleniyor...",
+    "error": "Hata",
+    "failedToLoad": "Yükleme başarısız",
+    "retry": "Tekrar Dene",
+    "cancel": "İptal",
+    "back": "Geri",
+    "ok": "Tamam",
+    "unknown": "Bilinmiyor",
+    "noItems": "Öğe yok",
+    "appName": "AirTune Music",
+    "availableNow": "Şimdi mevcut",
+    "minute": "1 dakika",
+    "minutes": "{{count}} dakika",
+    "viewOptions": "Seçenekleri Görüntüle",
+    "artist": "Sanatçı",
+    "song": "Şarkı",
+    "album": "Albüm",
+    "playlist": "Çalma Listesi",
+    "musicVideo": "Müzik Videosu",
+    "exitPressAgain": "Çıkmak için tekrar basın"
+  },
+  "topBar": {
+    "listenNow": "Şimdi Dinle",
+    "browse": "Göz At",
+    "videos": "Videolar",
+    "radio": "Radyo",
+    "library": "Arşiv",
+    "nowPlaying": "Şu An Çalınan",
+    "search": "Ara",
+    "profile": "Profil",
+    "settings": "Ayarlar"
+  },
+  "home": {
+    "signOutTitle": "Oturumu Kapat",
+    "signOutMessage": "Oturumu kapatmak istediğinize emin misiniz?",
+    "signOutConfirm": "Oturumu Kapat"
+  },
+  "search": {
+    "placeholder": "Sanatçılar, Şarkılar, Sözler ve Daha Fazlası",
+    "recent": "Son Aramalar",
+    "clearRecent": "Son Aramaları Temizle",
+    "results": "\"{{term}}\" için sonuçlar",
+    "space": "BOŞLUK"
+  },
+  "library": {
+    "title": "Arşiv",
+    "recentlyAdded": "Son Eklenenler",
+    "recentlyPlayed": "Son Çalınanlar",
+    "playlists": "Çalma Listeleri",
+    "artists": "Sanatçılar",
+    "albums": "Albümler",
+    "songs": "Şarkılar",
+    "signInPrompt": "Arşivinizi görmek için Apple Music'e giriş yapın.",
+    "loadError": "Arşiv yüklenemedi.",
+    "musicVideos": "Videolar"
+  },
+  "nowPlaying": {
+    "emptyState": "Çalmak için bir şarkı seçin.",
+    "goToAlbum": "Albüme Git",
+    "info": "Bilgi",
+    "progressBar": "İlerleme çubuğu",
+    "durationFormat": "{{mins}} dk, {{secs}} sn",
+    "showLyrics": "Sözleri göster",
+    "hideLyrics": "Sözleri gizle",
+    "showQueue": "Sıradakileri göster",
+    "hideQueue": "Sıradakileri gizle",
+    "quotaStatus": "{{used}}/{{total}}{{bonus}} · {{remaining}}",
+    "airPlayConnected": "AirPlay"
+  },
+  "lyrics": {
+    "notFound": "Şarkı sözleri bulunamadı",
+    "loading": "Şarkı sözleri yükleniyor..."
+  },
+  "detail": {
+    "failedToLoad": "İçerik yüklenemedi",
+    "add": "Ekle",
+    "shuffle": "Karıştır",
+    "more": "Daha Fazla",
+    "play": "Oynat",
+    "songsCount": "{{count}} şarkı",
+    "updated": "{{date}} güncellendi",
+    "playlistBy": "{{curator}} çalma listesi",
+    "noRecommendationsYet": "Henüz öneri yok",
+    "today": "Bugün",
+    "yesterday": "Dün",
+    "daysAgo": "{{count}} gün önce",
+    "radioStation": "Radyo İstasyonu",
+    "live": "🔴 Canlı",
+    "onDemand": "İsteğe Bağlı",
+    "failedToLoadAlbum": "Albüm yüklenemedi"
+  },
+  "artist": {
+    "topSongs": "En Popüler Şarkılar",
+    "latestRelease": "Son Çıkan",
+    "essentialAlbums": "Temel Albümler",
+    "musicVideos": "Müzik Videoları",
+    "failedToLoad": "Sanatçı yüklenemedi",
+    "madeForYou": "Senin İçin Hazırlandı",
+    "single": "Single",
+    "album": "Albüm"
+  },
+  "auth": {
+    "title": "Apple Music'e Bağlan",
+    "subtitle": "Bağlanmak için QR kodunu tarayın veya URL'yi ziyaret edip aşağıdaki kodu girin",
+    "scanPrompt": "QR kodunu tarayın",
+    "visit": "Ziyaret Et",
+    "getNewCode": "Yeni Kod Al",
+    "loading": "Yükleniyor...",
+    "linked": "Bağlandı! Token alındı.",
+    "manualEntry": "Token Gir",
+    "manualEntryTitle": "Token'ı Manuel Gir",
+    "manualEntryHint": "Sadece geliştirme, test ve inceleme içindir. Token yoksa QR auth kullanın.",
+    "manualEntryPlaceholder": "Müzik Kullanıcı Token'ını buraya yapıştırın...",
+    "pasteToken": "Music User Token'ı buraya yapıştırın...",
+    "connect": "Bağlan",
+    "signOut": "Token'ı temizle (oturumu kapat)",
+    "appleMusicAuth": "Apple Music Kimlik Doğrulama",
+    "androidTvSignIn": "Android TV – giriş API'si",
+    "connectTitle": "Apple Music'e Bağlan",
+    "scanQR": "QR kodunu tarayın",
+    "orVisitURL": "veya URL'yi ziyaret edin ve aşağıdaki kodu girin",
+    "visitURL": "ZİYARET EDİLECEK URL",
+    "linkedMessage": "Bağlandı! Token alındı.",
+    "paidSubscriptionRequired": "Ücretli Apple Music aboneliği gereklidir."
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "language": {
+      "title": "Dil",
+      "english": "İngilizce",
+      "turkish": "Türkçe",
+      "german": "Almanca",
+      "spanish": "İspanyolca",
+      "french": "Fransızca"
     },
-    "topBar": {
-        "listenNow": "Şimdi Dinle",
-        "browse": "Göz At",
-        "videos": "Videolar",
-        "radio": "Radyo",
-        "library": "Arşiv",
-        "nowPlaying": "Şu An Çalınan",
-        "search": "Ara",
-        "profile": "Profil",
-        "settings": "Ayarlar"
+    "subscription": "Abonelik",
+    "about": "Hakkında",
+    "signOut": "Çıkış Yap",
+    "pro": {
+      "title": "AirTune Pro",
+      "activeMessage": "Aktif bir AirTune Pro aboneliğiniz var. Sınırsız müziğin tadını çıkarın!",
+      "upgradeMessage": "Sınırsız müzik ve AirPlay yayını için Pro'ya yükseltin.\n\n🎵 Müzik: {{used}}/{{total}} şarkı kullanıldı\n🛜 AirPlay: {{airPlayUsed}}/{{airPlayTotal}} dk kullanıldı\n\n⏱ Sıfırlanma: {{remaining}}",
+      "limitReached": "Sınıra Ulaşıldı",
+      "limitReachedMessage": "{{limit}} şarkılık sınırınıza ulaştınız. Bir sonraki şarkı şurada mevcut: {{remaining}}.",
+      "restorePurchases": "Satın Almaları Geri Yükle",
+      "getProMonthly": "Pro Al (Aylık)",
+      "airPlayUsage": "AirPlay Kullanımı: {{airPlayUsed}}/{{airPlayTotal}} dk."
     },
-    "home": {
-        "signOutTitle": "Oturumu Kapat",
-        "signOutMessage": "Oturumu kapatmak istediğinize emin misiniz?",
-        "signOutConfirm": "Oturumu Kapat"
+    "theme": "Tema",
+    "themeDark": "Koyu",
+    "themeLight": "Açık",
+    "announcements": "Duyurular",
+    "noAnnouncements": "Şu an için duyuru bulunmuyor.",
+    "update": "Güncelleme Mevcut",
+    "support": "Destek",
+    "aboutInfo": {
+      "title": "AirTune Music Hakkında",
+      "message": "AirTune Music, yalnızca resmi Apple Music API'si kullanılarak oluşturulmuş üçüncü taraf bir Apple Music istemcisidir. Kişisel verilerinizin hiçbirini saklamıyoruz; tüm bilgiler, kesintisiz bir müzik deneyimi sağlamak için doğrudan Apple sunucularından alınır."
     },
-    "search": {
-        "placeholder": "Sanatçılar, Şarkılar, Sözler ve Daha Fazlası",
-        "recent": "Son Aramalar",
-        "clearRecent": "Son Aramaları Temizle",
-        "results": "\"{{term}}\" için sonuçlar",
-        "space": "BOŞLUK"
-    },
-    "library": {
-        "title": "Arşiv",
-        "recentlyAdded": "Son Eklenenler",
-        "recentlyPlayed": "Son Çalınanlar",
-        "playlists": "Çalma Listeleri",
-        "artists": "Sanatçılar",
-        "albums": "Albümler",
-        "songs": "Şarkılar",
-        "signInPrompt": "Arşivinizi görmek için Apple Music'e giriş yapın.",
-        "loadError": "Arşiv yüklenemedi.",
-        "musicVideos": "Videolar"
-    },
-    "nowPlaying": {
-        "emptyState": "Çalmak için bir şarkı seçin.",
-        "goToAlbum": "Albüme Git",
-        "info": "Bilgi",
-        "progressBar": "İlerleme çubuğu",
-        "durationFormat": "{{mins}} dk, {{secs}} sn",
-        "showLyrics": "Sözleri göster",
-        "hideLyrics": "Sözleri gizle",
-        "showQueue": "Sıradakileri göster",
-        "hideQueue": "Sıradakileri gizle"
-    },
-    "lyrics": {
-        "notFound": "Şarkı sözleri bulunamadı",
-        "loading": "Şarkı sözleri yükleniyor..."
-    },
-    "detail": {
-        "failedToLoad": "İçerik yüklenemedi",
-        "add": "Ekle",
-        "shuffle": "Karıştır",
-        "more": "Daha Fazla",
-        "play": "Oynat",
-        "songsCount": "{{count}} şarkı",
-        "updated": "{{date}} güncellendi",
-        "playlistBy": "{{curator}} çalma listesi",
-        "noRecommendationsYet": "Henüz öneri yok",
-        "today": "Bugün",
-        "yesterday": "Dün",
-        "daysAgo": "{{count}} gün önce",
-        "radioStation": "Radyo İstasyonu",
-        "live": "🔴 Canlı",
-        "onDemand": "İsteğe Bağlı",
-        "failedToLoadAlbum": "Albüm yüklenemedi"
-    },
-    "artist": {
-        "topSongs": "En Popüler Şarkılar",
-        "latestRelease": "Son Çıkan",
-        "essentialAlbums": "Temel Albümler",
-        "musicVideos": "Müzik Videoları",
-        "failedToLoad": "Sanatçı yüklenemedi",
-        "madeForYou": "Senin İçin Hazırlandı",
-        "single": "Single",
-        "album": "Albüm"
-    },
-    "auth": {
-        "title": "Apple Music'e Bağlan",
-        "subtitle": "Bağlanmak için QR kodunu tarayın veya URL'yi ziyaret edip aşağıdaki kodu girin",
-        "scanPrompt": "QR kodunu tarayın",
-        "visit": "Ziyaret Et",
-        "getNewCode": "Yeni Kod Al",
-        "loading": "Yükleniyor...",
-        "linked": "Bağlandı! Token alındı.",
-        "manualEntry": "Token Gir",
-        "manualEntryTitle": "Token'ı Manuel Gir",
-        "manualEntryHint": "Sadece geliştirme, test ve inceleme içindir. Token yoksa QR auth kullanın.",
-        "manualEntryPlaceholder": "Müzik Kullanıcı Token'ını buraya yapıştırın...",
-        "pasteToken": "Music User Token'ı buraya yapıştırın...",
-        "connect": "Bağlan",
-        "signOut": "Token'ı temizle (oturumu kapat)",
-        "appleMusicAuth": "Apple Music Kimlik Doğrulama",
-        "androidTvSignIn": "Android TV – giriş API'si",
-        "connectTitle": "Apple Music'e Bağlan",
-        "scanQR": "QR kodunu tarayın",
-        "orVisitURL": "veya URL'yi ziyaret edin ve aşağıdaki kodu girin",
-        "visitURL": "ZİYARET EDİLECEK URL",
-        "linkedMessage": "Bağlandı! Token alındı.",
-        "paidSubscriptionRequired": "Ücretli Apple Music aboneliği gereklidir."
-    },
-    "settings": {
-        "title": "Ayarlar",
-        "language": {
-            "title": "Dil",
-            "english": "İngilizce",
-            "turkish": "Türkçe",
-            "german": "Almanca",
-            "spanish": "İspanyolca",
-            "french": "Fransızca"
-        },
-        "subscription": "Abonelik",
-        "about": "Hakkında",
-        "signOut": "Çıkış Yap",
-        "pro": {
-            "title": "AirTune Pro",
-            "activeMessage": "Aktif bir AirTune Pro aboneliğiniz var. Sınırsız müziğin tadını çıkarın!",
-            "upgradeMessage": "Sınırsız müzik ve AirPlay yayını için Pro'ya yükseltin.\n\n🎵 Müzik: {{used}}/{{total}} şarkı kullanıldı\n🛜 AirPlay: {{airPlayUsed}}/{{airPlayTotal}} dk kullanıldı\n\n⏱ Sıfırlanma: {{remaining}}",
-            "limitReached": "Sınıra Ulaşıldı",
-            "limitReachedMessage": "{{limit}} şarkılık sınırınıza ulaştınız. Bir sonraki şarkı şurada mevcut: {{remaining}}.",
-            "restorePurchases": "Satın Almaları Geri Yükle",
-            "getProMonthly": "Pro Al (Aylık)",
-            "airPlayUsage": "AirPlay Kullanımı: {{airPlayUsed}}/{{airPlayTotal}} dk."
-        },
-        "theme": "Tema",
-        "themeDark": "Koyu",
-        "themeLight": "Açık",
-        "announcements": "Duyurular",
-        "noAnnouncements": "Şu an için duyuru bulunmuyor.",
-        "update": "Güncelleme Mevcut",
-        "support": "Destek",
-        "aboutInfo": {
-            "title": "AirTune Music Hakkında",
-            "message": "AirTune Music, yalnızca resmi Apple Music API'si kullanılarak oluşturulmuş üçüncü taraf bir Apple Music istemcisidir. Kişisel verilerinizin hiçbirini saklamıyoruz; tüm bilgiler, kesintisiz bir müzik deneyimi sağlamak için doğrudan Apple sunucularından alınır."
-        },
-        "adSettings": {
-            "title": "Reklam Tercihleri",
-            "autoStartAd": "Reklamı Otomatik Başlat"
-        }
-    },
-    "radio": {
-        "liveRadio": "Canlı Radyo",
-        "personalStation": "Senin İstasyonun",
-        "recentlyPlayed": "Son Çalınanlar"
-    },
-    "videos": {
-        "title": "Videolar",
-        "comingSoon": "Yakında",
-        "recentlyPlayed": "Son İzlenenler",
-        "errorRestricted": "Bu video bölgenizde veya aboneliğinizle kullanılamıyor.",
-        "errorGeneric": "Bu video oynatılamadı."
-    },
-    "update": {
-        "title": "Güncelleme Gerekli",
-        "message": "AirTune Music'in yeni bir sürümü mevcut. En son özellikler ve iyileştirmelerle uygulamayı kullanmaya devam etmek için lütfen güncelleyin.",
-        "newVersion": "Yeni Sürüm: {{version}}",
-        "button": "Şimdi Güncelle"
-    },
-    "iap": {
-        "approved": "Onaylandı",
-        "activeMessage": "AirTune Pro aboneliğiniz artık aktif! 🚀",
-        "declined": "Reddedildi",
-        "declinedMessage": "Satın alma işleminiz başarılı olmadı. Lütfen tekrar deneyin veya hesabınızı kontrol edin.",
-        "restored": "Geri Yüklendi",
-        "restoredMessage": "AirTune Pro durumunuz başarıyla geri yüklendi! 🎉",
-        "notFound": "Bulunamadı",
-        "notFoundMessage": "Bu hesap için aktif bir abonelik bulunamadı.",
-        "error": "Hata",
-        "errorMessage": "Mağaza ile iletişim kurulamadı. Lütfen daha sonra tekrar deneyin."
-    },
-    "more": {
-        "love": "Beğen",
-        "removeLove": "Beğeniyi Kaldır",
-        "addToLibrary": "+ Kütüphaneye Ekle",
-        "inLibrary": "Kütüphanede",
-        "addToPlaylist": "Çalma Listesine Ekle",
-        "loadingPlaylists": "Çalma listeleri yükleniyor…",
-        "noPlaylists": "Çalma listesi bulunamadı",
-        "dislike": "Beğenme",
-        "removeDislike": "Beğenmemeyi Kaldır",
-        "goToArtist": "Sanatçıya Git",
-        "goToAlbum": "Albüme Git",
-        "cancel": "İptal",
-        "error": "Bir şeyler yanlış gitti"
-    },
-    "subscriptionRequired": {
-        "title": "Abonelik Gerekli",
-        "message": "AirTune Music'i kullanmak için ücretli bir Apple Music aboneliği gereklidir. Lütfen hesabınızın aktif bir aboneliği olduğundan emin olun ve tekrar deneyin.",
-        "signOut": "Oturumu Kapat"
-    },
-    "quotaLimit": {
-        "title": "Sınıra Ulaşıldı",
-        "message": "Ücretsiz dinleme sınırı olan {{limit}} şarkıya ulaştınız. Bir reklam izleyerek {{bonus}} ek hak kazanabilir veya Pro'ya geçebilirsiniz.",
-        "watchAd": "Reklam İzle +3",
-        "subscription": "Pro'yu Al",
-        "preparingAd": "Reklam hazırlanıyor...",
-        "adStarting": "Reklam başlıyor",
-        "autoStartCount": "Reklam {{count}} sn içinde",
-        "remainingLabel": "Sonraki hak: {{remaining}}",
-        "limitLabel": "Kullanım: {{used}}/{{total}}",
-        "rewardLabel": "+{{bonus}} bonus hak",
-        "skipAlertTitle": "Reklam atlandı",
-        "skipNoReward": "Reklamı atlamak bonus hak vermez.",
-        "adErrorFallback": "Reklam başlatılamadı. Lütfen tekrar deneyin veya abonelik seçeneklerini açın."
-    },
-    "airplay": {
-        "warningTitle": "AirPlay Alıcısını Etkinleştir",
-        "warningMessage": "Her cihaz bu özelliği desteklemeyebilir. Sorun yaşarsanız lütfen kapatın.",
-        "errorTitle": "AirPlay Hatası",
-        "errorMessage": "Bir hata oluştu. Cihazınız bu özelliği desteklemiyor olabilir.",
-        "quotaTitle": "AirPlay Limiti Doldu",
-        "quotaMessage": "{{used}}/{{total}} dakika AirPlay yayını kullandınız.\n\nSınır şu süre içinde sıfırlanacak: {{remaining}}."
+    "adSettings": {
+      "title": "Reklam Tercihleri",
+      "autoStartAd": "Reklamı Otomatik Başlat"
     }
+  },
+  "radio": {
+    "liveRadio": "Canlı Radyo",
+    "personalStation": "Senin İstasyonun",
+    "recentlyPlayed": "Son Çalınanlar"
+  },
+  "videos": {
+    "title": "Videolar",
+    "comingSoon": "Yakında",
+    "recentlyPlayed": "Son İzlenenler",
+    "errorRestricted": "Bu video bölgenizde veya aboneliğinizle kullanılamıyor.",
+    "errorGeneric": "Bu video oynatılamadı."
+  },
+  "update": {
+    "title": "Güncelleme Gerekli",
+    "message": "AirTune Music'in yeni bir sürümü mevcut. En son özellikler ve iyileştirmelerle uygulamayı kullanmaya devam etmek için lütfen güncelleyin.",
+    "newVersion": "Yeni Sürüm: {{version}}",
+    "button": "Şimdi Güncelle"
+  },
+  "iap": {
+    "approved": "Onaylandı",
+    "activeMessage": "AirTune Pro aboneliğiniz artık aktif! 🚀",
+    "declined": "Reddedildi",
+    "declinedMessage": "Satın alma işleminiz başarılı olmadı. Lütfen tekrar deneyin veya hesabınızı kontrol edin.",
+    "restored": "Geri Yüklendi",
+    "restoredMessage": "AirTune Pro durumunuz başarıyla geri yüklendi! 🎉",
+    "notFound": "Bulunamadı",
+    "notFoundMessage": "Bu hesap için aktif bir abonelik bulunamadı.",
+    "error": "Hata",
+    "errorMessage": "Mağaza ile iletişim kurulamadı. Lütfen daha sonra tekrar deneyin."
+  },
+  "more": {
+    "love": "Beğen",
+    "removeLove": "Beğeniyi Kaldır",
+    "addToLibrary": "+ Kütüphaneye Ekle",
+    "inLibrary": "Kütüphanede",
+    "addToPlaylist": "Çalma Listesine Ekle",
+    "loadingPlaylists": "Çalma listeleri yükleniyor…",
+    "noPlaylists": "Çalma listesi bulunamadı",
+    "dislike": "Beğenme",
+    "removeDislike": "Beğenmemeyi Kaldır",
+    "goToArtist": "Sanatçıya Git",
+    "goToAlbum": "Albüme Git",
+    "cancel": "İptal",
+    "error": "Bir şeyler yanlış gitti"
+  },
+  "subscriptionRequired": {
+    "title": "Abonelik Gerekli",
+    "message": "AirTune Music'i kullanmak için ücretli bir Apple Music aboneliği gereklidir. Lütfen hesabınızın aktif bir aboneliği olduğundan emin olun ve tekrar deneyin.",
+    "signOut": "Oturumu Kapat"
+  },
+  "quotaLimit": {
+    "title": "Sınıra Ulaşıldı",
+    "message": "Ücretsiz dinleme sınırı olan {{limit}} şarkıya ulaştınız. Bir reklam izleyerek {{bonus}} ek hak kazanabilir veya Pro'ya geçebilirsiniz.",
+    "watchAd": "Reklam İzle +3",
+    "subscription": "Pro'yu Al",
+    "preparingAd": "Reklam hazırlanıyor...",
+    "adStarting": "Reklam başlıyor",
+    "autoStartCount": "Reklam {{count}} sn içinde",
+    "remainingLabel": "Sonraki hak: {{remaining}}",
+    "limitLabel": "Kullanım: {{used}}/{{total}}",
+    "rewardLabel": "+{{bonus}} bonus hak",
+    "skipAlertTitle": "Reklam atlandı",
+    "skipNoReward": "Reklamı atlamak bonus hak vermez.",
+    "adErrorFallback": "Reklam başlatılamadı. Lütfen tekrar deneyin veya abonelik seçeneklerini açın."
+  },
+  "airplay": {
+    "warningTitle": "AirPlay Alıcısını Etkinleştir",
+    "warningMessage": "Her cihaz bu özelliği desteklemeyebilir. Sorun yaşarsanız lütfen kapatın.",
+    "errorTitle": "AirPlay Hatası",
+    "errorMessage": "Bir hata oluştu. Cihazınız bu özelliği desteklemiyor olabilir.",
+    "quotaTitle": "AirPlay Limiti Doldu",
+    "quotaMessage": "{{used}}/{{total}} dakika AirPlay yayını kullandınız.\n\nSınır şu süre içinde sıfırlanacak: {{remaining}}."
+  }
 }

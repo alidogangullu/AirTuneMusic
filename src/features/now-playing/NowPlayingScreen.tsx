@@ -38,6 +38,7 @@ import { LyricsView } from '../player/components/LyricsView';
 import { NowPlayingTrackInfo, ARTWORK_SIZE } from '../player/components/NowPlayingTrackInfo';
 import { AirPlayLogo } from '../player/components/AirPlayLogo';
 import { useAirPlay } from '../airplay/useAirPlay';
+import { QuotaService } from '../../services/quotaService';
 
 // ── Component ────────────────────────────────────────────────────
 
@@ -292,6 +293,12 @@ export function NowPlayingScreen({
   // If we have a track, we show it, even if palette is loading or playback is pending.
   // The only reason to show a full screen spinner is if we have NO track info yet while loading.
 
+  const isPro = QuotaService.isProUser();
+  const quotaInfo = isPro ? null : QuotaService.getUsageInfo();
+  const bonusPlays = isPro ? 0 : QuotaService.getBonusPlaysRemaining();
+  const quotaRemaining = isPro ? null : QuotaService.getPeriodRemainingFormatted();
+  const showAirPlayIndicator = airPlay.connectionCount > 0 || airPlay.active;
+
   return (
     <LinearGradient
       colors={[bg1, bg2]}
@@ -471,6 +478,31 @@ export function NowPlayingScreen({
           ) : (
             !showInfo && (
               <>
+                {(quotaInfo || showAirPlayIndicator) && (
+                  <View style={styles.statusRow} pointerEvents="none">
+                    {quotaInfo && (
+                      <View style={styles.statusPill}>
+                        <Text style={styles.statusPillText}>
+                          {t('nowPlaying.quotaStatus', {
+                            used: quotaInfo.used,
+                            total: quotaInfo.total,
+                            bonus: bonusPlays > 0 ? ` +${bonusPlays}` : '',
+                            remaining: quotaRemaining,
+                          })}
+                        </Text>
+                      </View>
+                    )}
+                    {showAirPlayIndicator && (
+                      <View style={styles.statusPill}>
+                        <AirPlayLogo size={13} color="rgba(255,255,255,0.85)" />
+                        <Text style={styles.statusPillText}>
+                          {t('nowPlaying.airPlayConnected')}
+                          {airPlay.connectionCount > 1 ? ` ×${airPlay.connectionCount}` : ''}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                )}
                 <View
                   ref={playbackControlsRef}
                   onLayout={() => setPlaybackControlsNode(findNodeHandle(playbackControlsRef.current))}>
@@ -692,5 +724,25 @@ const styles = StyleSheet.create({
     paddingLeft: spacing.xxl,
     paddingRight: 80,
     paddingBottom: 100, // Clear the progress bar and footer buttons
+  },
+  statusRow: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.xxl,
+    marginBottom: 3,
+  },
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  statusPillText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.85)',
   },
 });

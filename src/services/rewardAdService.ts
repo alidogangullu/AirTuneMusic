@@ -5,7 +5,8 @@ import { initializeUnityAds } from './unityAds';
 
 const { UnityAdsModule } = NativeModules;
 
-const REQUEST_TIMEOUT_MS = 15000;
+// Load + full video playback + end card can exceed 15s easily — use a generous timeout.
+const REQUEST_TIMEOUT_MS = 300000;
 
 export const RewardAdService = {
   async showRewardedAd(adUnitIdOverride?: string): Promise<boolean> {
