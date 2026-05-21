@@ -215,6 +215,10 @@ export function SettingsScreen({
               setAutoStartAd(next);
             }}
           />
+          <View style={styles.adHintContainer}>
+            <Text style={styles.adHintTitle}>{t('settings.adSettings.adHintTitle')}</Text>
+            <Text style={styles.adHintText}>{t('settings.adSettings.adHint')}</Text>
+          </View>
         </>
       );
     }
@@ -379,6 +383,22 @@ function makeStyles(c: AppColors) {
       color: c.settingsTextHint,
       marginLeft: 24,
       marginTop: spacing.sm,
+    },
+    adHintContainer: {
+      marginTop: spacing.lg,
+      padding: spacing.md,
+      borderRadius: radius.lg,
+    },
+    adHintTitle: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: c.settingsTextSubdued,
+      marginBottom: spacing.sm,
+    },
+    adHintText: {
+      fontSize: 14,
+      lineHeight: 22,
+      color: c.settingsTextSubdued,
     },
   });
 }

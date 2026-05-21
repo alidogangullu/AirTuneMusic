@@ -160,7 +160,9 @@
     },
     "adSettings": {
       "title": "Préférences pub",
-      "autoStartAd": "Démarrage automatique de la pub"
+      "autoStartAd": "Démarrage automatique de la pub",
+      "adHintTitle": "Comment passer la publicité ?",
+      "adHint": "Regardez la publicité jusqu'à la fin. Une fois le minuteur écoulé, un bouton apparaîtra en haut à droite :\n\n• Bouton de fermeture (✕) : appuyez sur la touche Retour de votre télécommande.\n\n• Bouton Suivant (⏭) : naviguez jusqu'à ce bouton avec les touches directionnelles et appuyez sur Sélectionner. Un nouvel écran avec un bouton de fermeture (✕) apparaîtra — appuyez sur Retour pour quitter."
     }
   },
   "radio": {

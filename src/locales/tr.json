@@ -161,7 +161,9 @@
     },
     "adSettings": {
       "title": "Reklam Tercihleri",
-      "autoStartAd": "Reklamı Otomatik Başlat"
+      "autoStartAd": "Reklamı Otomatik Başlat",
+      "adHintTitle": "Reklam nasıl geçilir?",
+      "adHint": "Reklamı izleyin. Süre dolunca sağ üstte bir buton belirecek:\n\n• Kapatma butonu (✕) çıkarsa: kumandanın geri tuşuyla reklamı kapatabilirsiniz.\n\n• İleri butonu (⏭) çıkarsa: kumanda yön tuşlarıyla butonun üzerine gelin ve tıklayın. Açılan ekranda sağ üstteki kapatma butonunu (✕) görünce kumandanın geri tuşuyla çıkış yapabilirsiniz."
     }
   },
   "radio": {

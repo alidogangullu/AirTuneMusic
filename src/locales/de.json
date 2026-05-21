@@ -160,7 +160,9 @@
     },
     "adSettings": {
       "title": "Werbepräferenzen",
-      "autoStartAd": "Werbung automatisch starten"
+      "autoStartAd": "Werbung automatisch starten",
+      "adHintTitle": "Wie überspringt man die Werbung?",
+      "adHint": "Schauen Sie die Werbung bis zum Ende an. Sobald der Timer abläuft, erscheint oben rechts eine Schaltfläche:\n\n• Schließen-Schaltfläche (✕): Drücken Sie die Zurück-Taste auf Ihrer Fernbedienung.\n\n• Weiter-Schaltfläche (⏭): Navigieren Sie mit den Richtungstasten zu dieser Schaltfläche und drücken Sie Auswählen. Anschließend erscheint ein neuer Bildschirm mit einer Schließen-Schaltfläche (✕) — drücken Sie die Zurück-Taste zum Beenden."
     }
   },
   "radio": {

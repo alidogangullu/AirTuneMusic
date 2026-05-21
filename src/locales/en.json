@@ -161,7 +161,9 @@
     },
     "adSettings": {
       "title": "Ad Preferences",
-      "autoStartAd": "Auto-Start Ad"
+      "autoStartAd": "Auto-Start Ad",
+      "adHintTitle": "How to skip the ad?",
+      "adHint": "Watch the ad until it finishes. Once the timer ends, a button will appear in the top-right corner:\n\n• If a close button (✕) appears: press the Back button on your remote to dismiss the ad.\n\n• If a skip button (⏭) appears: navigate to it using the directional buttons on your remote and press select. A new screen with a close button (✕) will appear in the top-right corner — press the Back button on your remote to exit."
     }
   },
   "radio": {
