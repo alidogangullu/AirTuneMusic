@@ -246,6 +246,11 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     } finally {
       adInFlightRef.current = false;
       backSub.remove();
+      // WebView doesn't regain audio focus automatically when Unity releases it —
+      // explicitly resume so playback continues after the ad (both COMPLETED and SKIPPED).
+      if (activeEngineRef.current === 'web') {
+        webPlayerRef.current?.play();
+      }
       // Delay clearing adInFlight to block the back event that leaks from
       // Unity's Activity closing before React can update onRequestClose.
       setTimeout(() => setAdInFlight(false), 1000);
@@ -319,6 +324,34 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     }
     musicPlayer.play();
   }, []);
+
+  // Consume 1 quota play every 3 minutes while a live radio station is playing.
+  useEffect(() => {
+    const isLiveRadioPlaying = () => {
+      const { track, playbackState } = stateRef.current;
+      return (
+        activeEngineRef.current === 'web' &&
+        playbackState === 'playing' &&
+        !QuotaService.isProUser() &&
+        (track?.id?.startsWith('ra.') || track?.duration === 0)
+      );
+    };
+
+    if (!isLiveRadioPlaying()) return;
+
+    const interval = setInterval(() => {
+      if (!isLiveRadioPlaying()) return;
+
+      if (QuotaService.canPlayNextSong()) {
+        QuotaService.recordSongPlay();
+      } else {
+        webPlayerRef.current?.pause();
+        requestQuotaRecoveryRef.current(resumeCurrentPlayback);
+      }
+    }, 3 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [state.playbackState, state.track, resumeCurrentPlayback]);
 
   const handleNativePlaybackQueueChanged = useCallback((queueCount: number) => {
     musicPlayer.getQueue().then(sdkQueue => {

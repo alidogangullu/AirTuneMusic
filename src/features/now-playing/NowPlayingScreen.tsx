@@ -440,6 +440,22 @@ export function NowPlayingScreen({
         </Pressable>
       </Modal>
 
+      {/* Quota status pill for live radio (no progress bar footer) */}
+      {isLiveRadio && quotaInfo && (
+        <View style={[styles.statusRow, { marginBottom: 26 }]} pointerEvents="none">
+          <View style={styles.statusPill}>
+            <Text style={styles.statusPillText}>
+              {t('nowPlaying.quotaStatus', {
+                used: quotaInfo.used,
+                total: quotaInfo.total,
+                bonus: bonusPlays > 0 ? ` +${bonusPlays}` : '',
+                remaining: quotaRemaining,
+              })}
+            </Text>
+          </View>
+        </View>
+      )}
+
       {/* Progress and Info footer — at screen bottom */}
       {!isLiveRadio && (
         <View style={styles.footerContainer}>
