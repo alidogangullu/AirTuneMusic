@@ -161,8 +161,9 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
                 
                 val builder = CatalogPlaybackQueueItemProvider.Builder()
                 builder.items(MediaItemType.SONG, *idsList.toTypedArray())
-                builder.startItemIndex(startIndex)
-                
+                if (!shuffle) {
+                    builder.startItemIndex(startIndex)
+                }
                 if (shuffle) {
                     builder.shuffleMode(PlaybackShuffleMode.SHUFFLE_MODE_SONGS)
                 }
@@ -198,7 +199,9 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
                 val builder =
                         CatalogPlaybackQueueItemProvider.Builder()
                                 .containers(containerType, containerId)
-                                .startItemIndex(startIndex)
+                if (!shuffle) {
+                    builder.startItemIndex(startIndex)
+                }
                 if (shuffle) {
                     builder.shuffleMode(PlaybackShuffleMode.SHUFFLE_MODE_SONGS)
                 }
