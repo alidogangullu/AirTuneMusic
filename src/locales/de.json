@@ -19,7 +19,9 @@
     "album": "Album",
     "playlist": "Playlist",
     "musicVideo": "Musikvideo",
-    "exitPressAgain": "Zum Beenden erneut drücken"
+    "exitPressAgain": "Zum Beenden erneut drücken",
+    "on": "Ein",
+    "off": "Aus"
   },
   "topBar": {
     "listenNow": "Jetzt hören",

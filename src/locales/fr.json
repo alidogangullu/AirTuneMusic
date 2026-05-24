@@ -19,7 +19,9 @@
     "album": "Album",
     "playlist": "Playlist",
     "musicVideo": "Clip vidéo",
-    "exitPressAgain": "Appuyez de nouveau pour quitter"
+    "exitPressAgain": "Appuyez de nouveau pour quitter",
+    "on": "Activé",
+    "off": "Désactivé"
   },
   "topBar": {
     "listenNow": "Écouter",

@@ -54,7 +54,7 @@ export function SettingsScreen({
     { id: 'Subscription', label: t('settings.subscription') },
     { id: 'Language', label: t('settings.language.title') },
     { id: 'DarkMode', label: t('settings.theme') + ': ' + (themeMode === 'dark' ? t('settings.themeDark') : t('settings.themeLight')) },
-    { id: 'AirPlay', label: 'AirPlay: ' + (airPlayEnabled ? t('common.on', 'Açık') : t('common.off', 'Kapalı')) },
+    { id: 'AirPlay', label: 'AirPlay: ' + (airPlayEnabled ? t('common.on', 'On') : t('common.off', 'Off')) },
     { id: 'AdSettings', label: t('settings.adSettings.title') },
     { id: 'Announcements', label: t('settings.announcements') },
     { id: 'Support', label: t('settings.support') },
@@ -208,7 +208,7 @@ export function SettingsScreen({
           />
           <View style={styles.divider} />
           <SettingsMenuItem
-            label={t('settings.adSettings.autoStartAd') + ': ' + (autoStartAd ? t('common.on', 'Açık') : t('common.off', 'Kapalı'))}
+            label={t('settings.adSettings.autoStartAd') + ': ' + (autoStartAd ? t('common.on', 'On') : t('common.off', 'Off'))}
             onPress={() => {
               const next = !autoStartAd;
               AdSettingsService.setAutoStartAd(next);
