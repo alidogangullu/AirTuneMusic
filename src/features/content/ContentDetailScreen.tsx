@@ -430,7 +430,7 @@ export function ContentDetailScreen({
         onPress={() => handleTrackPress(renderInfo.index)}
         onLongPress={() => setSelectedTrackMenu(renderInfo.item)}
         isNowPlaying={isTrackNowPlaying(renderInfo.item)}
-        isPlaying={isPlaying}
+        isPlaying={isPlaying && !playerState.isLoading}
         styles={styles}
       />
     ),

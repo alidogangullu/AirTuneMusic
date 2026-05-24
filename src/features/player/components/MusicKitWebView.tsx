@@ -5,6 +5,7 @@ import * as musicPlayer from '../../../services/musicPlayer';
 
 export interface MusicKitWebPlayerRef {
   playStation: (stationId: string) => void;
+  playSong: (songId: string) => void;
   pause: () => void;
   play: () => void;
   stop: () => void;
@@ -22,13 +23,37 @@ interface Props {
   onCapabilitiesChanged?: (data: { canSkipToNext: boolean; canSkipToPrevious: boolean }) => void;
   onProgressChanged?: (data: { position: number; duration: number; buffered: number }) => void;
   onQueueChanged?: (queue: any[]) => void;
+  onError?: (error: string) => void;
 }
 
 export const MusicKitWebView = forwardRef<MusicKitWebPlayerRef, Props>(
-  ({ developerToken, musicUserToken, onPlaybackStateChanged, onTrackChanged, onCapabilitiesChanged, onProgressChanged, onQueueChanged }, ref) => {
+  ({ developerToken, musicUserToken, onPlaybackStateChanged, onTrackChanged, onCapabilitiesChanged, onProgressChanged, onQueueChanged, onError }, ref) => {
     const webViewRef = useRef<WebView>(null);
 
     useImperativeHandle(ref, () => ({
+      playSong: (songId: string) => {
+        const safeSongId = JSON.stringify(songId);
+        webViewRef.current?.injectJavaScript(`
+          (async function() {
+            if (window.music) {
+              async function attempt(retryCount) {
+                try {
+                  await window.music.authorize();
+                  await window.music.setQueue({ songs: [${safeSongId}], startPlaying: true });
+                } catch(e) {
+                  if (retryCount > 0) {
+                    setTimeout(() => attempt(retryCount - 1), 1000);
+                  } else {
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'playSong Error: ' + e.message }));
+                  }
+                }
+              }
+              attempt(1);
+            }
+          })();
+          true;
+        `);
+      },
       playStation: (stationId: string) => {
         const safeStationId = JSON.stringify(stationId);
         webViewRef.current?.injectJavaScript(`
@@ -261,6 +286,7 @@ export const MusicKitWebView = forwardRef<MusicKitWebPlayerRef, Props>(
           onQueueChanged(data.queue);
         } else if (data.type === 'error') {
           console.warn('[MusicKit Web Error]', data.error);
+          if (onError) onError(data.error as string);
         }
       } catch (e) {
         console.warn('[MusicKit] Failed to parse WebView message:', e);

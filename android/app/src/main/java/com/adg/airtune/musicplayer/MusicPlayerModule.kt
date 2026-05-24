@@ -50,6 +50,7 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
     private val mainHandler = Handler(Looper.getMainLooper())
     private var progressRunnable: Runnable? = null
     private var currentQueueItems: List<PlayerQueueItem> = emptyList()
+    private var endStallCount = 0
 
     // ── Configure ───────────────────────────────────────────────
 
@@ -522,6 +523,7 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
         val map =
                 Arguments.createMap().apply {
                     putString("title", queueItem.item.title)
+                    putString("id", queueItem.item.subscriptionStoreId ?: "")
                     putDouble("endPosition", endPosition.toDouble())
                 }
         sendEvent("onItemEnded", map)
@@ -595,6 +597,7 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
 
     private fun startProgressUpdates() {
         stopProgressUpdates()
+        endStallCount = 0
         val runnable =
                 object : Runnable {
                     override fun run() {
@@ -614,6 +617,23 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
                                         putDouble("buffered", buf.toDouble())
                                     }
                             sendEvent("onPlaybackProgress", map)
+
+                            // Detect track stuck at end: pos near dur but SDK never advances
+                            if (pos >= 0 && dur > 0 && pos >= dur - 1000) {
+                                endStallCount++
+                                if (endStallCount >= 4) {
+                                    Log.w(TAG, "Track stuck at end (pos=$pos dur=$dur), notifying JS to skip")
+                                    endStallCount = 0
+                                    val stuckMap = Arguments.createMap().apply {
+                                        putDouble("position", pos.toDouble())
+                                        putDouble("duration", dur.toDouble())
+                                    }
+                                    sendEvent("onTrackStuckAtEnd", stuckMap)
+                                }
+                            } else {
+                                endStallCount = 0
+                            }
+
                             mainHandler.postDelayed(this, PROGRESS_INTERVAL_MS)
                         }
                     }

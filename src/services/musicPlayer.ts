@@ -80,7 +80,8 @@ type EventMap = {
   onPlaybackQueueChanged: {count: number};
   onShuffleModeChanged: {shuffleMode: number};
   onRepeatModeChanged: {repeatMode: number};
-  onItemEnded: {title: string; endPosition: number};
+  onItemEnded: {title: string; id: string; endPosition: number};
+  onTrackStuckAtEnd: {position: number; duration: number};
 };
 
 type EventName = keyof EventMap;
