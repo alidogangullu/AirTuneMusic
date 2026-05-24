@@ -212,6 +212,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
 
   const activeEngineRef = useRef<'native' | 'web' | 'video'>('native');
   const webPlayerRef = useRef<MusicKitWebPlayerRef>(null);
+  const restartContainerFromIndexRef = useRef<((index: number) => Promise<boolean>) | null>(null);
   const [tokens, setTokens] = useState<{dev: string; user: string | null} | null>(null);
   const nativePlaybackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const webFallbackActiveRef = useRef(false);
@@ -219,6 +220,25 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   const webSeekingRef = useRef(false);
   const lastNativeItemChangedRef = useRef<{id: string; time: number} | null>(null);
   const webFallbackIsImmediateFailRef = useRef(false);
+  const quotaRetryTrackIdRef = useRef<string | null>(null);
+  const quotaRecoveryQueueIdRef = useRef<number | null>(null);
+
+  const startNativeStallTimer = useCallback((trackId: string, delayMs = 7000) => {
+    if (nativePlaybackTimeoutRef.current) clearTimeout(nativePlaybackTimeoutRef.current);
+    nativePlaybackTimeoutRef.current = setTimeout(() => {
+      nativePlaybackTimeoutRef.current = null;
+      if (activeEngineRef.current !== 'native') return;
+      activeEngineRef.current = 'web';
+      webFallbackActiveRef.current = true;
+      webFallbackHadRealProgressRef.current = false;
+
+      musicPlayer.pause();
+      setState(s => ({...s, isLoading: true}));
+      const tok = getMusicUserToken();
+      if (tok) webPlayerRef.current?.updateUserToken(tok);
+      webPlayerRef.current?.playSong(trackId);
+    }, delayMs);
+  }, []);
 
   const dismissQuotaRecovery = useCallback(() => {
     pendingQuotaRetryRef.current = null;
@@ -252,9 +272,21 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     } finally {
       adInFlightRef.current = false;
       backSub.remove();
-      // WebView doesn't regain audio focus automatically when Unity releases it —
-      // explicitly resume so playback continues after the ad (both COMPLETED and SKIPPED).
-      if (activeEngineRef.current === 'web') {
+      const failedTrackId = quotaRetryTrackIdRef.current;
+      quotaRetryTrackIdRef.current = null;
+      if (failedTrackId && activeEngineRef.current === 'native') {
+        // Native failed to play during the ad — start WebKit now
+        activeEngineRef.current = 'web';
+        webFallbackActiveRef.current = true;
+        webFallbackHadRealProgressRef.current = false;
+        webFallbackIsImmediateFailRef.current = true;
+        setState(s => ({...s, isLoading: true}));
+        const tok = getMusicUserToken();
+        if (tok) webPlayerRef.current?.updateUserToken(tok);
+        webPlayerRef.current?.playSong(failedTrackId);
+      } else if (activeEngineRef.current === 'web') {
+        // WebView doesn't regain audio focus automatically when Unity releases it —
+        // explicitly resume so playback continues after the ad (both COMPLETED and SKIPPED).
         webPlayerRef.current?.play();
       }
       // Delay clearing adInFlight to block the back event that leaks from
@@ -410,7 +442,8 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
         // Do NOT cancel on 'stopped' — it fires transiently during automatic track transitions
         // and would prevent the fallback from triggering on the next track.
         // Explicit stop/pause UI actions clear the timer directly in their handlers.
-        if (data.state === 'paused') {
+        // Only cancel stall timer on a real user-initiated pause, not ad/quota pauses
+        if (data.state === 'paused' && !adInFlightRef.current) {
           if (nativePlaybackTimeoutRef.current) {
             clearTimeout(nativePlaybackTimeoutRef.current);
             nativePlaybackTimeoutRef.current = null;
@@ -423,18 +456,26 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
           if (QuotaService.canPlayNextSong()) {
             QuotaService.recordSongPlay();
             lastTrackIdRef.current = data.playbackQueueId;
-          } else if (!adInFlightRef.current) {
+          } else if (!adInFlightRef.current && !pendingQuotaRetryRef.current) {
             musicPlayer.pause();
             const queueId = data.playbackQueueId;
+            const trackId = data.id;
+            quotaRecoveryQueueIdRef.current = queueId;
             requestQuotaRecoveryRef.current(async () => {
               QuotaService.recordSongPlay();
               lastTrackIdRef.current = queueId;
               musicPlayer.play();
+              // Store track ID so finally can start WebKit if native fails during the ad
+              if (trackId) quotaRetryTrackIdRef.current = trackId;
             });
           }
         }
 
         if (data.playbackQueueId === undefined) return;
+
+        // Ignore chaos SDK events while quota recovery is pending —
+        // only skip events for tracks OTHER than the recovery track itself.
+        if (pendingQuotaRetryRef.current && data.playbackQueueId !== quotaRecoveryQueueIdRef.current) return;
 
         // New track starting — show loading until real progress (pos>0) arrives
         if (activeEngineRef.current === 'native') {
@@ -447,24 +488,9 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
         }
 
         // Stall detection: if native doesn't deliver real progress within 10s, fall back to WebKit
-        if (activeEngineRef.current === 'native' && data.id) {
-          if (nativePlaybackTimeoutRef.current) {
-            clearTimeout(nativePlaybackTimeoutRef.current);
-            nativePlaybackTimeoutRef.current = null;
-          }
-          const trackId = data.id;
-          nativePlaybackTimeoutRef.current = setTimeout(() => {
-            nativePlaybackTimeoutRef.current = null;
-            if (activeEngineRef.current !== 'native') return;
-            activeEngineRef.current = 'web';
-            webFallbackActiveRef.current = true;
-            webFallbackHadRealProgressRef.current = false;
-            musicPlayer.pause(); // Stop native so it doesn't fire spurious events
-            setState(s => ({...s, isLoading: true}));
-            const tok = getMusicUserToken();
-            if (tok) webPlayerRef.current?.updateUserToken(tok);
-            webPlayerRef.current?.playSong(trackId);
-          }, 10000);
+        // Skip during quota recovery — finally handles WebKit fallback after the ad
+        if (activeEngineRef.current === 'native' && data.id && !pendingQuotaRetryRef.current && !quotaRetryTrackIdRef.current) {
+          startNativeStallTimer(data.id);
         }
 
         // Rebuild visual queue and update state atomically to prevent NowPlaying jitter
@@ -506,6 +532,10 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
           clearTimeout(nativePlaybackTimeoutRef.current);
           nativePlaybackTimeoutRef.current = null;
         }
+        // Native produced real progress → quota recovery doesn't need WebKit fallback
+        if (data.position > 0 && quotaRetryTrackIdRef.current) {
+          quotaRetryTrackIdRef.current = null;
+        }
         setState(s => ({
           ...s,
           isLoading: data.position > 0 ? false : s.isLoading,
@@ -530,6 +560,8 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
       musicPlayer.addEventListener('onItemEnded', data => {
         console.log('[MusicPlayer] Item ended:', data.title, 'endPos:', data.endPosition);
         if (activeEngineRef.current !== 'native') return;
+        // Skip immediate-fail if quota recovery is pending — finally will handle WebKit
+        if (pendingQuotaRetryRef.current || quotaRetryTrackIdRef.current) return;
         // Immediate-fail detection: if onItemEnded fires within 1s of onCurrentItemChanged
         // for the same track with endPosition=0, the track failed instantly → WebKit fallback
         const last = lastNativeItemChangedRef.current;
@@ -560,16 +592,22 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
       }),
       musicPlayer.addEventListener('onTrackStuckAtEnd', () => {
         if (activeEngineRef.current !== 'native') return;
-        console.log('[MusicPlayer] Track stuck at end, skipping to next');
-        musicPlayer.skipToNext();
-        musicPlayer.play();
+        console.log('[MusicPlayer] Track stuck at end, rebuilding queue from next track');
+        const nextContainerIndex = stateRef.current.containerIndex + 1;
+        const nextTrack = stateRef.current.containerTracks?.[nextContainerIndex];
+        if (nextTrack && restartContainerFromIndexRef.current) {
+          restartContainerFromIndexRef.current(nextContainerIndex);
+        } else {
+          musicPlayer.skipToNext();
+          musicPlayer.play();
+        }
       }),
     ];
 
     return () => {
       subs.forEach(subscription => subscription.remove());
     };
-  }, [t, handleNativePlaybackQueueChanged, handleNativeShuffleModeChanged]);
+  }, [t, handleNativePlaybackQueueChanged, handleNativeShuffleModeChanged, startNativeStallTimer]);
 
   useEffect(() => {
     let mounted = true;
@@ -654,6 +692,8 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
 
   const playAlbum = useCallback(
     async (albumId: string, startIndex = 0, shuffle = false, tracks?: TrackInfo[]) => {
+      restartContainerFromIndexRef.current = (idx: number) =>
+        playAlbum(albumId, idx, false, tracks);
       setState(s => ({
         ...s,
         containerId: albumId,
@@ -674,6 +714,8 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
 
   const playPlaylist = useCallback(
     async (playlistId: string, startIndex = 0, shuffle = false, tracks?: TrackInfo[]) => {
+      restartContainerFromIndexRef.current = (idx: number) =>
+        playPlaylist(playlistId, idx, false, tracks);
       setState(s => ({
         ...s,
         containerId: playlistId,
