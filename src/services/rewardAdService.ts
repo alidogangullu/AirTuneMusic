@@ -8,6 +8,10 @@ const { UnityAdsModule } = NativeModules;
 // Load + full video playback + end card can exceed 15s easily — use a generous timeout.
 const REQUEST_TIMEOUT_MS = 300000;
 
+// DEV ONLY — set to simulate ad outcomes without a real network ad.
+// 'success' | 'LOAD_FAILED' | 'AD_SKIPPED' | null (null = real ad)
+export const devAdSimulate = { value: null as 'success' | 'LOAD_FAILED' | 'AD_SKIPPED' | 'NO_ACTIVITY' | 'SHOW_FAILED' | null };
+
 export const RewardAdService = {
   async showRewardedAd(adUnitIdOverride?: string): Promise<boolean> {
     const adUnitId = adUnitIdOverride || UNITY_ADS_REWARDED_AD_UNIT_ID;
@@ -17,6 +21,13 @@ export const RewardAdService = {
         new Error('Unity Ads rewarded ad unit id is missing. Set UNITY_ADS_REWARDED_AD_UNIT_ID in src/config/unityAds.ts.'),
         { code: 'AD_CONFIGURATION_MISSING' },
       );
+    }
+
+    if (__DEV__ && devAdSimulate.value !== null) {
+      const sim = devAdSimulate.value;
+      await new Promise<void>(r => setTimeout(r, 800));
+      if (sim === 'success') return true;
+      throw Object.assign(new Error(`[DEV] Simulated ad result: ${sim}`), { code: sim });
     }
 
     await initializeUnityAds();
@@ -44,9 +55,13 @@ export const RewardAdService = {
             settled = true;
             clearTimeout(timeout);
             const nativeCode = error.code ?? '';
-            let code = 'AD_DISPLAY_FAILED';
-            if (nativeCode === 'AD_SKIPPED') code = 'AD_SKIPPED';
-            else if (nativeCode === 'LOAD_FAILED') code = 'AD_LOAD_FAILED';
+            const codeMap: Record<string, string> = {
+              AD_SKIPPED: 'AD_SKIPPED',
+              LOAD_FAILED: 'AD_LOAD_FAILED',
+              NO_ACTIVITY: 'AD_NO_ACTIVITY',
+              SHOW_FAILED: 'AD_SHOW_FAILED',
+            };
+            const code = codeMap[nativeCode] ?? 'AD_DISPLAY_FAILED';
             reject(Object.assign(new Error(error.message || 'Ad failed.'), { code }));
           }
         });

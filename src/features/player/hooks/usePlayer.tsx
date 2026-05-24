@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {Alert, BackHandler} from 'react-native';
+import {Alert, BackHandler, ToastAndroid} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import * as musicPlayer from '../../../services/musicPlayer';
 import {QuotaService} from '../../../services/quotaService';
@@ -222,8 +222,9 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   const webFallbackIsImmediateFailRef = useRef(false);
   const quotaRetryTrackIdRef = useRef<string | null>(null);
   const quotaRecoveryQueueIdRef = useRef<number | null>(null);
+  const suppressAutoStartRef = useRef(false);
 
-  const startNativeStallTimer = useCallback((trackId: string, delayMs = 7000) => {
+  const startNativeStallTimer = useCallback((trackId: string, delayMs = 10000) => {
     if (nativePlaybackTimeoutRef.current) clearTimeout(nativePlaybackTimeoutRef.current);
     nativePlaybackTimeoutRef.current = setTimeout(() => {
       nativePlaybackTimeoutRef.current = null;
@@ -245,6 +246,35 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     setQuotaRecoveryRequest(null);
   }, []);
 
+  const handleAdResult = useCallback((succeeded: boolean) => {
+    if (!succeeded) {
+      quotaRetryTrackIdRef.current = null;
+      suppressAutoStartRef.current = true;
+      requestQuotaRecoveryRef.current(async () => {
+        if (activeEngineRef.current === 'web') {
+          webPlayerRef.current?.play();
+        } else {
+          musicPlayer.play();
+        }
+      });
+      return;
+    }
+    const failedTrackId = quotaRetryTrackIdRef.current;
+    quotaRetryTrackIdRef.current = null;
+    if (failedTrackId && activeEngineRef.current === 'native') {
+      activeEngineRef.current = 'web';
+      webFallbackActiveRef.current = true;
+      webFallbackHadRealProgressRef.current = false;
+      webFallbackIsImmediateFailRef.current = true;
+      setState(s => ({...s, isLoading: true}));
+      const tok = getMusicUserToken();
+      if (tok) webPlayerRef.current?.updateUserToken(tok);
+      webPlayerRef.current?.playSong(failedTrackId);
+    } else if (activeEngineRef.current === 'web') {
+      webPlayerRef.current?.play();
+    }
+  }, []);
+
   const startQuotaRewardAd = useCallback(async (): Promise<boolean> => {
     if (!quotaRecoveryRequest || adInFlightRef.current) return false;
 
@@ -261,39 +291,40 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     // Block hardware back for the full ad duration (video + end card)
     const backSub = BackHandler.addEventListener('hardwareBackPress', () => true);
 
+    let adFailed = false;
+
     try {
       await RewardAdService.showRewardedAd();
       // COMPLETED: grant bonus plays
       QuotaService.addBonusPlays();
       return true;
-    } catch {
-      // SKIPPED (back during video) or load failure — no bonus, music keeps playing
+    } catch (err) {
+      const code = (err as {code?: string}).code;
+      adFailed = true;
+
+      // Stop music — optimistic playback is revoked on any ad failure or skip
+      if (activeEngineRef.current === 'web') {
+        webPlayerRef.current?.pause();
+      } else {
+        musicPlayer.pause();
+      }
+
+      if (code !== 'AD_SKIPPED') {
+        ToastAndroid.show(t('quotaLimit.adLoadFailed'), ToastAndroid.SHORT);
+      }
+
       return false;
     } finally {
       adInFlightRef.current = false;
       backSub.remove();
-      const failedTrackId = quotaRetryTrackIdRef.current;
-      quotaRetryTrackIdRef.current = null;
-      if (failedTrackId && activeEngineRef.current === 'native') {
-        // Native failed to play during the ad — start WebKit now
-        activeEngineRef.current = 'web';
-        webFallbackActiveRef.current = true;
-        webFallbackHadRealProgressRef.current = false;
-        webFallbackIsImmediateFailRef.current = true;
-        setState(s => ({...s, isLoading: true}));
-        const tok = getMusicUserToken();
-        if (tok) webPlayerRef.current?.updateUserToken(tok);
-        webPlayerRef.current?.playSong(failedTrackId);
-      } else if (activeEngineRef.current === 'web') {
-        // WebView doesn't regain audio focus automatically when Unity releases it —
-        // explicitly resume so playback continues after the ad (both COMPLETED and SKIPPED).
-        webPlayerRef.current?.play();
-      }
+
+      handleAdResult(!adFailed);
+
       // Delay clearing adInFlight to block the back event that leaks from
       // Unity's Activity closing before React can update onRequestClose.
       setTimeout(() => setAdInFlight(false), 1000);
     }
-  }, [dismissQuotaRecovery, quotaRecoveryRequest]);
+  }, [dismissQuotaRecovery, handleAdResult, quotaRecoveryRequest, t]);
 
   const requestQuotaRecovery = useCallback(
     (retryAction?: () => Promise<void>) => {
@@ -310,6 +341,8 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
 
         const usage = QuotaService.getUsageInfo();
         const remaining = QuotaService.getRemainingTimeFormatted();
+        const suppress = suppressAutoStartRef.current;
+        suppressAutoStartRef.current = false;
 
         return {
           title: t('quotaLimit.title'),
@@ -321,7 +354,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
             bonus: QuotaService.BONUS_PLAYS_PER_AD,
           }),
           bonusPlays: QuotaService.BONUS_PLAYS_PER_AD,
-          autoWatchAfterMs: AdSettingsService.getAutoStartAd() ? 5000 : 0,
+          autoWatchAfterMs: (!suppress && AdSettingsService.getAutoStartAd()) ? 5000 : 0,
           limit: QuotaService.HOURLY_LIMIT,
           used: usage.used,
           total: usage.total,

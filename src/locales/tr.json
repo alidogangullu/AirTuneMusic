@@ -229,7 +229,8 @@
     "rewardLabel": "+{{bonus}} bonus hak",
     "skipAlertTitle": "Reklam atlandı",
     "skipNoReward": "Reklamı atlamak bonus hak vermez.",
-    "adErrorFallback": "Reklam başlatılamadı. Lütfen tekrar deneyin veya abonelik seçeneklerini açın."
+    "adErrorFallback": "Reklam başlatılamadı. Lütfen tekrar deneyin veya abonelik seçeneklerini açın.",
+    "adLoadFailed": "Reklam yüklenemedi"
   },
   "airplay": {
     "warningTitle": "AirPlay Alıcısını Etkinleştir",
