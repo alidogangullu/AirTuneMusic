@@ -148,7 +148,13 @@
       "limitReachedMessage": "{{limit}} şarkılık sınırınıza ulaştınız. Bir sonraki şarkı şurada mevcut: {{remaining}}.",
       "restorePurchases": "Satın Almaları Geri Yükle",
       "getProMonthly": "Pro Al (Aylık)",
-      "airPlayUsage": "AirPlay Kullanımı: {{airPlayUsed}}/{{airPlayTotal}} dk."
+      "airPlayUsage": "AirPlay Kullanımı: {{airPlayUsed}}/{{airPlayTotal}} dk.",
+      "usageTitle": "Kullanım",
+      "usageMusic": "Müzik",
+      "resetsIn": "⏱ Yenileme: {{remaining}}",
+      "featureMusic": "∞ Sınırsız müzik dinleme",
+      "featureAirPlay": "∞ Sınırsız AirPlay yayını",
+      "featureAdFree": "✦ Reklamsız deneyim"
     },
     "theme": "Tema",
     "themeDark": "Koyu",

@@ -100,6 +100,7 @@ export const NowPlayingProgressBar = React.memo(({
 
   useEffect(() => {
     if (isBuffering || isLoading) {
+      shimmerAnim.setValue(-1);
       Animated.loop(
         Animated.timing(shimmerAnim, { toValue: 1, duration: 1200, useNativeDriver: true })
       ).start();

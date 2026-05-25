@@ -147,7 +147,13 @@
       "limitReachedMessage": "Has alcanzado tu límite de {{limit}} canciones. Próxima reproducción disponible en: {{remaining}}.",
       "restorePurchases": "Restaurar compras",
       "getProMonthly": "Obtener Pro (Mensual)",
-      "airPlayUsage": "Uso de AirPlay: {{airPlayUsed}}/{{airPlayTotal}} min."
+      "airPlayUsage": "Uso de AirPlay: {{airPlayUsed}}/{{airPlayTotal}} min.",
+      "usageTitle": "Uso",
+      "usageMusic": "Música",
+      "resetsIn": "⏱ Se reinicia en: {{remaining}}",
+      "featureMusic": "∞ Reproducción de música ilimitada",
+      "featureAirPlay": "∞ Streaming AirPlay ilimitado",
+      "featureAdFree": "✦ Experiencia sin anuncios"
     },
     "theme": "Tema",
     "themeDark": "Oscuro",

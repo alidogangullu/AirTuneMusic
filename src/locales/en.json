@@ -148,7 +148,13 @@
       "limitReachedMessage": "You have reached your limit of {{limit}} songs. Next play available in: {{remaining}}.",
       "restorePurchases": "Restore Purchases",
       "getProMonthly": "Get Pro (Monthly)",
-      "airPlayUsage": "AirPlay Usage: {{airPlayUsed}}/{{airPlayTotal}} min."
+      "airPlayUsage": "AirPlay Usage: {{airPlayUsed}}/{{airPlayTotal}} min.",
+      "usageTitle": "Usage",
+      "usageMusic": "Music",
+      "resetsIn": "⏱ Resets in: {{remaining}}",
+      "featureMusic": "∞ Unlimited music playback",
+      "featureAirPlay": "∞ Unlimited AirPlay streaming",
+      "featureAdFree": "✦ Ad-free experience"
     },
     "theme": "Theme",
     "themeDark": "Dark",

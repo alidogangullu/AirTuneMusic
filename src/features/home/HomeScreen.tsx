@@ -38,6 +38,7 @@ export function HomeScreen({
   const selectedContent = contentStack.at(-1) ?? null;
   const [nowPlayingFullscreen, setNowPlayingFullscreen] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [settingsInitialSubMenu, setSettingsInitialSubMenu] = useState<'none' | 'subscription'>('none');
   const [lastOpened, setLastOpened] = useState<'detail' | 'now-playing' | null>(null);
 
   // When player hook triggers settings (quota reached), show it
@@ -154,7 +155,14 @@ export function HomeScreen({
           visible={nowPlayingFullscreen && (lastOpened === 'now-playing' || !isDetailOpen)}
           animationType="none"
           onRequestClose={() => { if (!adInFlight) closeNowPlayingFullscreen(); }}>
-          <NowPlayingScreen onBack={closeNowPlayingFullscreen} />
+          <NowPlayingScreen
+            onBack={closeNowPlayingFullscreen}
+            onOpenSubscription={() => {
+              closeNowPlayingFullscreen();
+              setSettingsInitialSubMenu('subscription');
+              setSettingsVisible(true);
+            }}
+          />
         </Modal>
 
         {/* Modal ensures OS-level focus trapping — Android creates a new Window,
@@ -190,7 +198,8 @@ export function HomeScreen({
           onRequestClose={() => setSettingsVisible(false)}>
           {settingsVisible && (
             <SettingsScreen
-              onBack={() => setSettingsVisible(false)}
+              initialSubMenu={settingsInitialSubMenu}
+              onBack={() => { setSettingsVisible(false); setSettingsInitialSubMenu('none'); }}
               onSignOut={() => {
                 setSettingsVisible(false);
                 handleSignOut();
@@ -216,6 +225,7 @@ export function HomeScreen({
               }}
               onOpenSubscription={() => {
                 dismissQuotaRecovery();
+                setSettingsInitialSubMenu('subscription');
                 setSettingsVisible(true);
               }}
               onCancel={dismissQuotaRecovery}

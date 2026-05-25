@@ -66,7 +66,7 @@ function makeStyles() {
   return StyleSheet.create({
     root: {
       flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.92)',
+      backgroundColor: 'rgba(0, 0, 0, 0.7)',
     },
     overlay: {
       flex: 1,

@@ -147,7 +147,13 @@
       "limitReachedMessage": "Sie haben Ihr Limit von {{limit}} Titeln erreicht. Nächstes Abspielen verfügbar in: {{remaining}}.",
       "restorePurchases": "Käufe wiederherstellen",
       "getProMonthly": "Pro holen (Monatlich)",
-      "airPlayUsage": "AirPlay-Nutzung: {{airPlayUsed}}/{{airPlayTotal}} Min."
+      "airPlayUsage": "AirPlay-Nutzung: {{airPlayUsed}}/{{airPlayTotal}} Min.",
+      "usageTitle": "Nutzung",
+      "usageMusic": "Musik",
+      "resetsIn": "⏱ Zurücksetzen in: {{remaining}}",
+      "featureMusic": "∞ Unbegrenzte Musikwiedergabe",
+      "featureAirPlay": "∞ Unbegrenztes AirPlay-Streaming",
+      "featureAdFree": "✦ Werbefreies Erlebnis"
     },
     "theme": "Design",
     "themeDark": "Dunkel",

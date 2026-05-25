@@ -29,6 +29,7 @@ export type SettingsScreenProps = {
   announcements?: Announcement[];
   readAnnouncementIds?: string[];
   onAnnouncementRead?: (id: string) => void;
+  initialSubMenu?: 'none' | 'language' | 'announcements' | 'adSettings' | 'subscription';
 };
 
 export function SettingsScreen({
@@ -38,11 +39,12 @@ export function SettingsScreen({
   announcements = [],
   readAnnouncementIds = [],
   onAnnouncementRead,
+  initialSubMenu = 'none',
 }: Readonly<SettingsScreenProps>): React.JSX.Element {
   const { colors, themeMode, setThemeMode } = useTheme();
-  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const styles = useMemo(() => makeStyles(colors, themeMode), [colors, themeMode]);
   const { t, i18n } = useTranslation();
-  const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language' | 'announcements' | 'adSettings'>('none');
+  const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language' | 'announcements' | 'adSettings' | 'subscription'>(initialSubMenu);
   const [autoStartAd, setAutoStartAd] = React.useState(() => AdSettingsService.getAutoStartAd());
   const { enabled: airPlayEnabled, setEnabled: setAirPlayEnabled } = useAirPlay();
 
@@ -69,49 +71,6 @@ export function SettingsScreen({
     { id: 'fr', label: t('settings.language.french') },
   ];
 
-  const handleSubscriptionPress = async () => {
-    const isPro = QuotaService.isProUser();
-
-    if (isPro) {
-      Alert.alert(t('settings.pro.title'), t('settings.pro.activeMessage'));
-      return;
-    }
-
-    const usage = QuotaService.getUsageInfo();
-    const airPlayUsage = AirPlayQuotaService.getUsageInfo();
-    const remaining = QuotaPeriodService.getRemainingFormatted() || t('common.availableNow');
-
-    Alert.alert(
-      t('settings.pro.title'),
-      t('settings.pro.upgradeMessage', {
-        used: usage.used,
-        total: usage.total,
-        airPlayUsed: Math.ceil(airPlayUsage.used / 60),
-        airPlayTotal: Math.round(airPlayUsage.total / 60),
-        remaining,
-      }),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('settings.pro.restorePurchases'),
-          onPress: () => IapService.restorePurchases()
-        },
-        {
-          text: t('settings.pro.getProMonthly'),
-          onPress: async () => {
-            try {
-              await IapService.subscribe('pro_monthly');
-            } catch (err: any) {
-              if (err.code !== 'E_USER_CANCELLED' && err.code !== 'user-cancelled') {
-                Alert.alert(t('common.error'), t('iap.errorMessage'));
-              }
-            }
-          }
-        },
-      ]
-    );
-  };
-
   const handleItemPress = (item: string) => {
     if (item === 'Update') {
       if (updateInfo?.storeUrl) {
@@ -124,7 +83,7 @@ export function SettingsScreen({
     } else if (item === 'Sign Out') {
       onSignOut?.();
     } else if (item === 'Subscription') {
-      handleSubscriptionPress();
+      setCurrentSubMenu('subscription');
     } else if (item === 'Language') {
       setCurrentSubMenu('language');
     } else if (item === 'AirPlay') {
@@ -194,6 +153,87 @@ export function SettingsScreen({
               }}
             />
           ))}
+        </>
+      );
+    }
+
+    if (currentSubMenu === 'subscription') {
+      const isPro = QuotaService.isProUser();
+      const usage = QuotaService.getUsageInfo();
+      const airPlayUsage = AirPlayQuotaService.getUsageInfo();
+      const remaining = QuotaPeriodService.getRemainingFormatted() || t('common.availableNow');
+      const musicPct = Math.min(usage.used / usage.total, 1);
+      const airPlayUsedMin = Math.ceil(airPlayUsage.used / 60);
+      const airPlayTotalMin = Math.round(airPlayUsage.total / 60);
+      const airPlayPct = Math.min(airPlayUsage.used / airPlayUsage.total, 1);
+
+      return (
+        <>
+          <SettingsMenuItem
+            label={"← " + t('common.back')}
+            onPress={() => setCurrentSubMenu('none')}
+          />
+          <View style={styles.divider} />
+
+          {isPro ? (
+            <View style={styles.proActiveCard}>
+              <Text style={styles.proActiveBadge}>✦ PRO</Text>
+              <Text style={styles.proActiveTitle}>{t('settings.pro.title')}</Text>
+              <Text style={styles.proActiveSubtitle}>{t('settings.pro.activeMessage')}</Text>
+            </View>
+          ) : (
+            <>
+              <SettingsMenuItem
+                label={t('settings.pro.getProMonthly')}
+                hasTVPreferredFocus
+                onPress={async () => {
+                  try {
+                    await IapService.subscribe('pro_monthly');
+                  } catch (err: any) {
+                    if (err.code !== 'E_USER_CANCELLED' && err.code !== 'user-cancelled') {
+                      Alert.alert(t('common.error'), t('iap.errorMessage'));
+                    }
+                  }
+                }}
+              />
+
+              <View style={styles.adHintContainer}>
+                <Text style={styles.adHintTitle}>{t('settings.pro.title')}</Text>
+                {([
+                  t('settings.pro.featureMusic'),
+                  t('settings.pro.featureAirPlay'),
+                  t('settings.pro.featureAdFree'),
+                ] as string[]).map((feat) => (
+                  <Text key={feat} style={styles.adHintText}>{feat}</Text>
+                ))}
+              </View>
+
+              <View style={[styles.adHintContainer, styles.adHintContainerNoTop]}>
+                <Text style={styles.adHintTitle}>{t('settings.pro.usageTitle')}</Text>
+                <View style={styles.usageRow}>
+                  <Text style={styles.adHintText}>{t('settings.pro.usageMusic')}</Text>
+                  <Text style={styles.adHintText}>{usage.used} / {usage.total}</Text>
+                </View>
+                <View style={styles.progressTrack}>
+                  <View style={[styles.progressFill, { width: `${musicPct * 100}%` }]} />
+                </View>
+                <View style={[styles.usageRow, { marginTop: spacing.md }]}>
+                  <Text style={styles.adHintText}>AirPlay</Text>
+                  <Text style={styles.adHintText}>{airPlayUsedMin} / {airPlayTotalMin} min</Text>
+                </View>
+                <View style={styles.progressTrack}>
+                  <View style={[styles.progressFill, { width: `${airPlayPct * 100}%` }]} />
+                </View>
+                <Text style={[styles.adHintText, { marginTop: spacing.md }]}>{t('settings.pro.resetsIn', { remaining })}</Text>
+              </View>
+
+              <View style={styles.divider} />
+              <SettingsMenuItem
+                label={t('settings.pro.restorePurchases')}
+                onPress={() => IapService.restorePurchases()}
+              />
+            </>
+          )}
         </>
       );
     }
@@ -293,16 +333,17 @@ export function SettingsScreen({
 }
 
 function getSubMenuTitle(
-  subMenu: 'none' | 'language' | 'announcements' | 'adSettings',
+  subMenu: 'none' | 'language' | 'announcements' | 'adSettings' | 'subscription',
   t: (key: string) => string,
 ): string {
   if (subMenu === 'language') return t('settings.language.title');
   if (subMenu === 'announcements') return t('settings.announcements');
   if (subMenu === 'adSettings') return t('settings.adSettings.title');
+  if (subMenu === 'subscription') return t('settings.pro.title');
   return t('settings.title');
 }
 
-function makeStyles(c: AppColors) {
+function makeStyles(c: AppColors, themeMode: 'light' | 'dark') {
   return StyleSheet.create({
     backArea: {
       position: 'absolute',
@@ -385,9 +426,13 @@ function makeStyles(c: AppColors) {
       marginTop: spacing.sm,
     },
     adHintContainer: {
-      marginTop: spacing.lg,
+      marginTop: spacing.sm,
+      marginHorizontal: spacing.md,
       padding: spacing.md,
       borderRadius: radius.lg,
+    },
+    adHintContainerNoTop: {
+      marginTop: 0,
     },
     adHintTitle: {
       fontSize: 15,
@@ -399,6 +444,54 @@ function makeStyles(c: AppColors) {
       fontSize: 14,
       lineHeight: 22,
       color: c.settingsTextSubdued,
+    },
+    // ── Subscription sub-menu ─────────────────────────────────────────────────
+    proActiveCard: {
+      marginHorizontal: spacing.md,
+      marginBottom: spacing.md,
+      padding: spacing.xl,
+      borderRadius: radius.xl,
+      backgroundColor: c.glassCardBg,
+      borderWidth: 1,
+      borderColor: c.alertRed,
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    proActiveBadge: {
+      fontSize: 13,
+      fontWeight: '800',
+      letterSpacing: 2,
+      color: c.alertRed,
+      textTransform: 'uppercase',
+    },
+    proActiveTitle: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: c.textOnDark,
+      textAlign: 'center',
+    },
+    proActiveSubtitle: {
+      fontSize: 14,
+      color: c.settingsTextSubdued,
+      textAlign: 'center',
+      lineHeight: 20,
+    },
+    usageRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.xs,
+    },
+    progressTrack: {
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: themeMode === 'dark' ? c.buttonFocusedBg : c.overlayLight,
+      overflow: 'hidden',
+    },
+    progressFill: {
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: c.alertRed,
     },
   });
 }

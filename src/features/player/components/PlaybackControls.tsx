@@ -18,9 +18,10 @@ interface ControlButtonProps {
   disabled?: boolean;
   nextFocusDown?: number | null;
   onLayout?: (node: number | null) => void;
+  hasTVPreferredFocus?: boolean;
 }
 
-function ControlButton({ onPress, active, activeTransparent, children, disabled, nextFocusDown, onLayout }: Readonly<ControlButtonProps>) {
+function ControlButton({ onPress, active, activeTransparent, children, disabled, nextFocusDown, onLayout, hasTVPreferredFocus }: Readonly<ControlButtonProps>) {
   const buttonRef = useRef<View | null>(null);
 
   return (
@@ -29,6 +30,7 @@ function ControlButton({ onPress, active, activeTransparent, children, disabled,
       onPress={onPress}
       disabled={disabled}
       nextFocusDown={nextFocusDown}
+      hasTVPreferredFocus={hasTVPreferredFocus}
       onLayout={() => onLayout?.(findNodeHandle(buttonRef.current))}
       style={({ focused }) => [
         styles.button,
@@ -130,6 +132,7 @@ export const PlaybackControls = React.memo(({
           onPress={skipToNext}
           disabled={isNextDisabled}
           nextFocusDown={nextFocusDown}
+          hasTVPreferredFocus
           onLayout={(node: number | null) => onLayoutButton?.(node)}>
           {(focused) => (
             <Svg width="24" height="24" viewBox="0 0 24 24" fill={iconColor(focused, true)}>

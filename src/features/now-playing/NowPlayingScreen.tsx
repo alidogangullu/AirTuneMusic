@@ -45,6 +45,7 @@ import { QuotaService } from '../../services/quotaService';
 interface NowPlayingScreenProps {
   onBack?: () => void;
   isTabView?: boolean;
+  onOpenSubscription?: () => void;
 }
 
 // ── Sub-component: Queue Item ──────────────────────────────────────
@@ -87,6 +88,7 @@ const QueueItem = React.memo(({
 export function NowPlayingScreen({
   onBack,
   isTabView = false,
+  onOpenSubscription,
 }: Readonly<NowPlayingScreenProps>): React.JSX.Element {
   const { t } = useTranslation();
   const { colors: themeColors } = useTheme();
@@ -495,18 +497,26 @@ export function NowPlayingScreen({
             !showInfo && (
               <>
                 {(quotaInfo || showAirPlayIndicator) && (
-                  <View style={styles.statusRow} pointerEvents="none">
+                  <View style={styles.statusRow}>
                     {quotaInfo && (
-                      <View style={styles.statusPill}>
-                        <Text style={styles.statusPillText}>
-                          {t('nowPlaying.quotaStatus', {
-                            used: quotaInfo.used,
-                            total: quotaInfo.total,
-                            bonus: bonusPlays > 0 ? ` +${bonusPlays}` : '',
-                            remaining: quotaRemaining,
-                          })}
-                        </Text>
-                      </View>
+                      <Pressable
+                        onPress={onOpenSubscription}
+                        focusable={!!onOpenSubscription}
+                        style={({ focused }) => [
+                          styles.statusPill,
+                          focused && styles.statusPillFocused,
+                        ]}>
+                        {({ focused }) => (
+                          <Text style={[styles.statusPillText, focused && styles.statusPillTextFocused]}>
+                            {t('nowPlaying.quotaStatus', {
+                              used: quotaInfo.used,
+                              total: quotaInfo.total,
+                              bonus: bonusPlays > 0 ? ` +${bonusPlays}` : '',
+                              remaining: quotaRemaining,
+                            })}
+                          </Text>
+                        )}
+                      </Pressable>
                     )}
                     {showAirPlayIndicator && (
                       <View style={styles.statusPill}>
@@ -760,5 +770,12 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
     color: 'rgba(255,255,255,0.85)',
+  },
+  statusPillFocused: {
+    backgroundColor: C.scrubKnobBg,
+    transform: [{ scale: 1.05 }],
+  },
+  statusPillTextFocused: {
+    color: C.onDarkFocusedIcon,
   },
 });
