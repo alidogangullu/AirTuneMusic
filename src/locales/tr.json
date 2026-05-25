@@ -159,7 +159,7 @@
     "support": "Destek",
     "aboutInfo": {
       "title": "AirTune Music Hakkında",
-      "message": "AirTune Music, yalnızca resmi Apple Music API'si kullanılarak oluşturulmuş üçüncü taraf bir Apple Music istemcisidir. Kişisel verilerinizin hiçbirini saklamıyoruz; tüm bilgiler, kesintisiz bir müzik deneyimi sağlamak için doğrudan Apple sunucularından alınır."
+      "message": "AirTune Music, yalnızca resmi Apple Music API'si kullanılarak oluşturulmuş üçüncü taraf bir Apple Music istemcisidir. Kişisel verilerinizin hiçbirini saklamıyoruz; tüm bilgiler doğrudan Apple sunucularından alınır. Senkronize şarkı sözleri, ücretsiz ve açık kaynaklı bir veritabanı olan LRCLib (lrclib.net) tarafından sağlanmaktadır. Reklamlar Unity Ads aracılığıyla sunulmaktadır."
     },
     "adSettings": {
       "title": "Reklam Tercihleri",

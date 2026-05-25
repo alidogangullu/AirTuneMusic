@@ -158,7 +158,7 @@
     "support": "Support",
     "aboutInfo": {
       "title": "Über AirTune Music",
-      "message": "AirTune Music ist ein Drittanbieter-Client für Apple Music, der ausschließlich über die offizielle Apple Music API erstellt wurde. Wir speichern keine Ihrer persönlichen Daten; alle Informationen werden direkt von Apple-Servern abgerufen, um ein nahtloses Musikerlebnis zu bieten."
+      "message": "AirTune Music ist ein Drittanbieter-Client für Apple Music, der ausschließlich über die offizielle Apple Music API erstellt wurde. Wir speichern keine Ihrer persönlichen Daten; alle Informationen werden direkt von Apple-Servern abgerufen. Synchronisierte Liedtexte werden von LRCLib (lrclib.net), einer freien und offenen Liedtextdatenbank, bereitgestellt. Werbung wird über Unity Ads ausgeliefert."
     },
     "adSettings": {
       "title": "Werbepräferenzen",

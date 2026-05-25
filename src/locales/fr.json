@@ -158,7 +158,7 @@
     "support": "Support",
     "aboutInfo": {
       "title": "À propos d'AirTune Music",
-      "message": "AirTune Music est un client Apple Music tiers construit exclusivement à l'aide de l'API officielle Apple Music. Nous ne stockons aucune de vos données personnelles ; toutes les informations sont récupérées directement des serveurs d'Apple pour offrir une expérience musicale fluide."
+      "message": "AirTune Music est un client Apple Music tiers construit exclusivement à l'aide de l'API officielle Apple Music. Nous ne stockons aucune de vos données personnelles ; toutes les informations sont récupérées directement des serveurs d'Apple. Les paroles synchronisées sont fournies par LRCLib (lrclib.net), une base de données de paroles libre et ouverte. Les publicités sont diffusées via Unity Ads."
     },
     "adSettings": {
       "title": "Préférences pub",
