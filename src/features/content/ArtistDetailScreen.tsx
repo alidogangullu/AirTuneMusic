@@ -3,7 +3,6 @@ import {
   BackHandler,
   FlatList,
   Image,
-  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,8 +15,6 @@ import { formatFullDate } from './utils/dateUtils';
 import { useArtistDetail } from './hooks/useArtistDetail';
 import { usePlayer } from '../player/hooks/usePlayer';
 import { useContentNavigation } from '../home/navigation';
-import { ContentDetailScreen } from './ContentDetailScreen';
-import { GradientBackground } from '../../components/GradientBackground';
 import { useTheme } from '../../theme';
 import { spacing } from '../../theme/layout';
 import type { AlbumDetail, MusicVideoDetail, SongDetail } from '../../types/catalog';
@@ -39,20 +36,14 @@ export function ArtistDetailScreen({
   const { playSong } = usePlayer();
   const { openNowPlayingFullscreen, pushContent } = useContentNavigation();
 
-  const [selectedAlbumParams, setSelectedAlbumParams] = React.useState<{ id: string, type: 'albums' } | null>(null);
-
   // Hardware back button support for Android TV remote
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (selectedAlbumParams) {
-        setSelectedAlbumParams(null);
-      } else {
-        onBack();
-      }
+      onBack();
       return true;
     });
     return () => sub.remove();
-  }, [onBack, selectedAlbumParams]);
+  }, [onBack]);
 
   const artist = data?.data?.[0];
   const attrs = artist?.attributes;
@@ -80,11 +71,16 @@ export function ArtistDetailScreen({
   }, [playSong, openNowPlayingFullscreen]);
 
   const handleAlbumPress = useCallback((album: AlbumDetail) => {
-    setSelectedAlbumParams({
+    pushContent({
       id: album.id,
       type: 'albums',
+      attributes: {
+        name: album.attributes?.name,
+        artistName: album.attributes?.artistName,
+        artwork: album.attributes?.artwork ? { url: album.attributes.artwork.url } : undefined,
+      },
     });
-  }, []);
+  }, [pushContent]);
 
   const handleVideoPress = useCallback((video: MusicVideoDetail) => {
     pushContent({
@@ -118,7 +114,6 @@ export function ArtistDetailScreen({
   }
 
   return (
-    <>
       <ScrollView style={styles.root} contentContainerStyle={styles.scrollContent}>
         {/* ── Header ──────────────────────────────────────── */}
         <View style={styles.header}>
@@ -213,24 +208,6 @@ export function ArtistDetailScreen({
           </View>
         )}
       </ScrollView>
-
-      <Modal
-        visible={selectedAlbumParams !== null}
-        animationType="none"
-        onRequestClose={() => setSelectedAlbumParams(null)}>
-        {selectedAlbumParams !== null && (
-          <GradientBackground
-            startColor={colors.gradientStart}
-            endColor={colors.gradientEnd}>
-            <ContentDetailScreen
-              contentId={selectedAlbumParams.id}
-              contentType={selectedAlbumParams.type}
-              onBack={() => setSelectedAlbumParams(null)}
-            />
-          </GradientBackground>
-        )}
-      </Modal>
-    </>
   );
 }
 

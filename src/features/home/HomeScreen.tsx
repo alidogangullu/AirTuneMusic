@@ -33,8 +33,9 @@ export function HomeScreen({
   const { colors } = useTheme();
   const { updateInfo, announcements, readAnnouncementIds, hasUnreadAnnouncements, markAnnouncementRead } = useAppStartup();
   const [activeTab, setActiveTab] = useState<NavTabId>('listen-now');
-  const [selectedContent, setSelectedContent] =
-    useState<RecommendationContent | null>(null);
+  const [contentStack, setContentStack] =
+    useState<RecommendationContent[]>([]);
+  const selectedContent = contentStack.at(-1) ?? null;
   const [nowPlayingFullscreen, setNowPlayingFullscreen] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [lastOpened, setLastOpened] = useState<'detail' | 'now-playing' | null>(null);
@@ -49,7 +50,7 @@ export function HomeScreen({
     adInFlight,
   } = usePlayer();
   useLibraryMembershipSnapshot();
-  const isDetailOpen = selectedContent !== null;
+  const isDetailOpen = contentStack.length > 0;
   const [lastBackPressed, setLastBackPressed] = useState(0);
 
   // Handle back button for tab navigation and double-back exit
@@ -92,13 +93,16 @@ export function HomeScreen({
   }, [playerWantsSettings, setShowSettings]);
 
   const pushContent = useCallback((content: RecommendationContent) => {
-    setSelectedContent(content);
+    setContentStack(prev => [...prev, content]);
     setLastOpened('detail');
   }, []);
 
   const popContent = useCallback(() => {
-    setSelectedContent(null);
-  }, []);
+    setContentStack(prev => prev.slice(0, -1));
+    if (nowPlayingFullscreen) {
+      setLastOpened('now-playing');
+    }
+  }, [nowPlayingFullscreen]);
 
   const openNowPlayingFullscreen = useCallback(() => {
     setNowPlayingFullscreen(true);
