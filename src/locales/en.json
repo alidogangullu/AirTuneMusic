@@ -147,7 +147,7 @@
       "limitReached": "Limit Reached",
       "limitReachedMessage": "You have reached your limit of {{limit}} songs. Next play available in: {{remaining}}.",
       "restorePurchases": "Restore Purchases",
-      "getProMonthly": "Get Pro (Monthly)",
+      "getProMonthly": "Upgrade to Pro",
       "airPlayUsage": "AirPlay Usage: {{airPlayUsed}}/{{airPlayTotal}} min.",
       "usageTitle": "Usage",
       "usageMusic": "Music",

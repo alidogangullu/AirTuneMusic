@@ -147,7 +147,7 @@
       "limitReached": "Sınıra Ulaşıldı",
       "limitReachedMessage": "{{limit}} şarkılık sınırınıza ulaştınız. Bir sonraki şarkı şurada mevcut: {{remaining}}.",
       "restorePurchases": "Satın Almaları Geri Yükle",
-      "getProMonthly": "Pro Al (Aylık)",
+      "getProMonthly": "Pro'ya Yükselt",
       "airPlayUsage": "AirPlay Kullanımı: {{airPlayUsed}}/{{airPlayTotal}} dk.",
       "usageTitle": "Kullanım",
       "usageMusic": "Müzik",

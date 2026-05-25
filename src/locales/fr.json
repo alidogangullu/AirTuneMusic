@@ -146,7 +146,7 @@
       "limitReached": "Limite atteinte",
       "limitReachedMessage": "Vous avez atteint votre limite de {{limit}} morceaux. Prochaine lecture disponible dans : {{remaining}}.",
       "restorePurchases": "Restaurer les achats",
-      "getProMonthly": "Passer à Pro (Mensuel)",
+      "getProMonthly": "Passer à Pro",
       "airPlayUsage": "Utilisation AirPlay : {{airPlayUsed}}/{{airPlayTotal}} min.",
       "usageTitle": "Utilisation",
       "usageMusic": "Musique",

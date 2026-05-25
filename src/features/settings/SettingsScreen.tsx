@@ -46,7 +46,20 @@ export function SettingsScreen({
   const { t, i18n } = useTranslation();
   const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language' | 'announcements' | 'adSettings' | 'subscription'>(initialSubMenu);
   const [autoStartAd, setAutoStartAd] = React.useState(() => AdSettingsService.getAutoStartAd());
+  const [proPrice, setProPrice] = React.useState<string | null>(null);
   const { enabled: airPlayEnabled, setEnabled: setAirPlayEnabled } = useAirPlay();
+
+  React.useEffect(() => {
+    if (currentSubMenu !== 'subscription' || QuotaService.isProUser()) return;
+    IapService.getProducts().then(products => {
+      if (!products) return;
+      const product = products.find((p: any) => p.productId === 'pro_monthly') as any;
+      const offers = product?.subscriptionOfferDetailsAndroid;
+      const phases = offers?.[offers.length - 1]?.pricingPhases?.pricingPhaseList;
+      const price = phases?.[phases.length - 1]?.formattedPrice;
+      if (price) setProPrice(price);
+    });
+  }, [currentSubMenu]);
 
   const hasOptionalUpdate = updateInfo?.status === 'optional_update';
   const hasUnreadAnnouncements = announcements.some(a => !readAnnouncementIds.includes(a.id));
@@ -184,7 +197,7 @@ export function SettingsScreen({
           ) : (
             <>
               <SettingsMenuItem
-                label={t('settings.pro.getProMonthly')}
+                label={proPrice ? `${t('settings.pro.getProMonthly')} · ${proPrice}` : t('settings.pro.getProMonthly')}
                 hasTVPreferredFocus
                 onPress={async () => {
                   try {
@@ -197,8 +210,8 @@ export function SettingsScreen({
                 }}
               />
 
-              <View style={styles.adHintContainer}>
-                <Text style={styles.adHintTitle}>{t('settings.pro.title')}</Text>
+              <View style={[styles.adHintContainer, styles.adHintContainerFirst]}>
+                <Text style={styles.adHintTitle}>{t('settings.subscription')}</Text>
                 {([
                   t('settings.pro.featureMusic'),
                   t('settings.pro.featureAirPlay'),
@@ -339,7 +352,7 @@ function getSubMenuTitle(
   if (subMenu === 'language') return t('settings.language.title');
   if (subMenu === 'announcements') return t('settings.announcements');
   if (subMenu === 'adSettings') return t('settings.adSettings.title');
-  if (subMenu === 'subscription') return t('settings.pro.title');
+  if (subMenu === 'subscription') return t('settings.subscription');
   return t('settings.title');
 }
 
@@ -433,6 +446,9 @@ function makeStyles(c: AppColors, themeMode: 'light' | 'dark') {
     },
     adHintContainerNoTop: {
       marginTop: 0,
+    },
+    adHintContainerFirst: {
+      marginTop: -4,
     },
     adHintTitle: {
       fontSize: 15,
