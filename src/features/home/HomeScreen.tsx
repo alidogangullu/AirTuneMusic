@@ -184,17 +184,19 @@ export function HomeScreen({
           visible={settingsVisible}
           animationType="none"
           onRequestClose={() => setSettingsVisible(false)}>
-          <SettingsScreen
-            onBack={() => setSettingsVisible(false)}
-            onSignOut={() => {
-              setSettingsVisible(false);
-              handleSignOut();
-            }}
-            updateInfo={updateInfo}
-            announcements={announcements}
-            readAnnouncementIds={readAnnouncementIds}
-            onAnnouncementRead={markAnnouncementRead}
-          />
+          {settingsVisible && (
+            <SettingsScreen
+              onBack={() => setSettingsVisible(false)}
+              onSignOut={() => {
+                setSettingsVisible(false);
+                handleSignOut();
+              }}
+              updateInfo={updateInfo}
+              announcements={announcements}
+              readAnnouncementIds={readAnnouncementIds}
+              onAnnouncementRead={markAnnouncementRead}
+            />
+          )}
         </Modal>
 
         <Modal

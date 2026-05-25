@@ -655,55 +655,57 @@ export function AppleMusicAuthScreen({
         transparent
         animationType="fade"
         onRequestClose={() => setShowManualInput(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {t('auth.manualEntryTitle')}
-            </Text>
-            <Text style={styles.modalHint}>
-              {t('auth.manualEntryHint')}
-            </Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder={t('auth.manualEntryPlaceholder')}
-              placeholderTextColor={colors.modalInputPlaceholder}
-              value={manualToken}
-              onChangeText={setManualToken}
-              multiline
-              numberOfLines={4}
-            />
-            <View style={styles.modalButtons}>
-              <Pressable
-                style={({ focused }) => [
-                  styles.modalButton,
-                  { backgroundColor: colors.modalBorder },
-                  focused && { opacity: 0.8, transform: [{ scale: 1.05 }] },
-                ]}
-                onPress={() => setShowManualInput(false)}
-                focusable={true}
-                hasTVPreferredFocus={true}>
-                <Text style={{ color: colors.onDarkTextPrimary }}>{t('common.cancel')}</Text>
-              </Pressable>
-              <Pressable
-                style={({ focused }) => [
-                  styles.modalButton,
-                  { backgroundColor: colors.alertRed },
-                  focused && { opacity: 0.9, transform: [{ scale: 1.05 }] },
-                ]}
-                onPress={() => {
-                  if (manualToken.trim()) {
-                    setMusicUserToken(manualToken.trim());
-                    musicPlayer.syncTokens();
-                    onAuthSuccess?.();
-                  }
-                }}
-                focusable={true}
-                hasTVPreferredFocus={false}>
-                <Text style={{ color: colors.onDarkTextPrimary, fontWeight: 'bold' }}>{t('auth.connect')}</Text>
-              </Pressable>
+        {showManualInput && (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>
+                {t('auth.manualEntryTitle')}
+              </Text>
+              <Text style={styles.modalHint}>
+                {t('auth.manualEntryHint')}
+              </Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder={t('auth.manualEntryPlaceholder')}
+                placeholderTextColor={colors.modalInputPlaceholder}
+                value={manualToken}
+                onChangeText={setManualToken}
+                multiline
+                numberOfLines={4}
+              />
+              <View style={styles.modalButtons}>
+                <Pressable
+                  style={({ focused }) => [
+                    styles.modalButton,
+                    { backgroundColor: colors.modalBorder },
+                    focused && { opacity: 0.8, transform: [{ scale: 1.05 }] },
+                  ]}
+                  onPress={() => setShowManualInput(false)}
+                  focusable={true}
+                  hasTVPreferredFocus={true}>
+                  <Text style={{ color: colors.onDarkTextPrimary }}>{t('common.cancel')}</Text>
+                </Pressable>
+                <Pressable
+                  style={({ focused }) => [
+                    styles.modalButton,
+                    { backgroundColor: colors.alertRed },
+                    focused && { opacity: 0.9, transform: [{ scale: 1.05 }] },
+                  ]}
+                  onPress={() => {
+                    if (manualToken.trim()) {
+                      setMusicUserToken(manualToken.trim());
+                      musicPlayer.syncTokens();
+                      onAuthSuccess?.();
+                    }
+                  }}
+                  focusable={true}
+                  hasTVPreferredFocus={false}>
+                  <Text style={{ color: colors.onDarkTextPrimary, fontWeight: 'bold' }}>{t('auth.connect')}</Text>
+                </Pressable>
+              </View>
             </View>
           </View>
-        </View>
+        )}
       </Modal>
     </View>
   );
