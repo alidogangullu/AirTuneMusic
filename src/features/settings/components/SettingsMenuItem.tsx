@@ -5,6 +5,7 @@ import type { AppColors } from '../../../theme/colors';
 
 export type SettingsMenuItemProps = {
   label: string;
+  sublabel?: string;
   onPress?: () => void;
   hasTVPreferredFocus?: boolean;
   labelColor?: string;
@@ -12,6 +13,7 @@ export type SettingsMenuItemProps = {
 
 export function SettingsMenuItem({
   label,
+  sublabel,
   onPress,
   hasTVPreferredFocus = false,
   labelColor,
@@ -33,14 +35,25 @@ export function SettingsMenuItem({
         accessibilityRole="button">
         {({ focused }) => (
           <>
-            <Text
-              style={[
-                styles.label,
-                focused ? styles.labelFocused : styles.labelUnfocused,
-                labelColor ? { color: labelColor } : undefined,
-              ]}>
-              {label}
-            </Text>
+            <View style={styles.labelRow}>
+              <Text
+                style={[
+                  styles.label,
+                  focused ? styles.labelFocused : styles.labelUnfocused,
+                  labelColor ? { color: labelColor } : undefined,
+                ]}>
+                {label}
+              </Text>
+              {sublabel ? (
+                <Text
+                  style={[
+                    styles.sublabel,
+                    focused ? styles.labelFocused : styles.sublabelUnfocused,
+                  ]}>
+                  {' · '}{sublabel}
+                </Text>
+              ) : null}
+            </View>
             <Text
               style={[
                 styles.chevron,
@@ -75,9 +88,20 @@ function makeStyles(c: AppColors) {
     rowUnfocused: {
       backgroundColor: 'transparent',
     },
+    labelRow: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+    },
     label: {
       fontSize: 17,
       fontWeight: '500',
+    },
+    sublabel: {
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    sublabelUnfocused: {
+      color: c.settingsTextSubdued,
     },
     labelFocused: {
       color: c.textOnDark,

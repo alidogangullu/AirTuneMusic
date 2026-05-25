@@ -53,11 +53,8 @@ export function SettingsScreen({
     if (currentSubMenu !== 'subscription' || QuotaService.isProUser()) return;
     IapService.getProducts().then(products => {
       if (!products) return;
-      const product = products.find((p: any) => p.productId === 'pro_monthly') as any;
-      const offers = product?.subscriptionOfferDetailsAndroid;
-      const phases = offers?.[offers.length - 1]?.pricingPhases?.pricingPhaseList;
-      const price = phases?.[phases.length - 1]?.formattedPrice;
-      if (price) setProPrice(price);
+      const product = products.find((p: any) => p.id === 'pro_monthly') as any;
+      if (product?.displayPrice) setProPrice(product.displayPrice);
     });
   }, [currentSubMenu]);
 
@@ -197,7 +194,8 @@ export function SettingsScreen({
           ) : (
             <>
               <SettingsMenuItem
-                label={proPrice ? `${t('settings.pro.getProMonthly')} · ${proPrice}` : t('settings.pro.getProMonthly')}
+                label={t('settings.pro.getProMonthly')}
+                sublabel={proPrice ?? 'undefined'}
                 hasTVPreferredFocus
                 onPress={async () => {
                   try {
@@ -211,7 +209,7 @@ export function SettingsScreen({
               />
 
               <View style={[styles.adHintContainer, styles.adHintContainerFirst]}>
-                <Text style={styles.adHintTitle}>{t('settings.subscription')}</Text>
+                <Text style={styles.adHintTitle}>{t('settings.pro.featuresTitle')}</Text>
                 {([
                   t('settings.pro.featureMusic'),
                   t('settings.pro.featureAirPlay'),

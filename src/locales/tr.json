@@ -154,7 +154,8 @@
       "resetsIn": "⏱ Yenileme: {{remaining}}",
       "featureMusic": "∞ Sınırsız müzik dinleme",
       "featureAirPlay": "∞ Sınırsız AirPlay yayını",
-      "featureAdFree": "✦ Reklamsız deneyim"
+      "featureAdFree": "✦ Reklamsız deneyim",
+      "featuresTitle": "AirTune Music Pro"
     },
     "theme": "Tema",
     "themeDark": "Koyu",

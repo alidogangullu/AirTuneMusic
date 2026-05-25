@@ -153,7 +153,8 @@
       "resetsIn": "⏱ Zurücksetzen in: {{remaining}}",
       "featureMusic": "∞ Unbegrenzte Musikwiedergabe",
       "featureAirPlay": "∞ Unbegrenztes AirPlay-Streaming",
-      "featureAdFree": "✦ Werbefreies Erlebnis"
+      "featureAdFree": "✦ Werbefreies Erlebnis",
+      "featuresTitle": "AirTune Music Pro"
     },
     "theme": "Design",
     "themeDark": "Dunkel",
