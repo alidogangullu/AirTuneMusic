@@ -226,7 +226,8 @@
     "skipAlertTitle": "Anuncio omitido",
     "skipNoReward": "Saltar el anuncio no otorgará reproducciones extra.",
     "adErrorFallback": "No se pudo iniciar el anuncio. Inténtalo de nuevo o abre las opciones de suscripción.",
-    "adLoadFailed": "No se pudo cargar el anuncio"
+    "adLoadFailed": "No se pudo cargar el anuncio",
+    "adSkipped": "No completaste el anuncio, no se ha ganado cuota"
   },
   "airplay": {
     "warningTitle": "Activar receptor AirPlay",

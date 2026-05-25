@@ -309,7 +309,9 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
         musicPlayer.pause();
       }
 
-      if (code !== 'AD_SKIPPED') {
+      if (code === 'AD_SKIPPED') {
+        ToastAndroid.show(t('quotaLimit.adSkipped'), ToastAndroid.LONG);
+      } else {
         ToastAndroid.show(t('quotaLimit.adLoadFailed'), ToastAndroid.SHORT);
       }
 
@@ -889,6 +891,18 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     playVideoQueue,
     stopVideo,
     play: () => {
+      if (!QuotaService.canPlayNextSong() && !adInFlightRef.current) {
+        suppressAutoStartRef.current = true;
+        requestQuotaRecovery(async () => {
+          airPlayReceiver.disconnect();
+          if (activeEngineRef.current === 'web') {
+            webPlayerRef.current?.play();
+          } else {
+            musicPlayer.play();
+          }
+        });
+        return;
+      }
       airPlayReceiver.disconnect();
       if (activeEngineRef.current === 'web') {
         webPlayerRef.current?.play();

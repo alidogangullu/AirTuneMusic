@@ -226,7 +226,8 @@
     "skipAlertTitle": "Anzeige übersprungen",
     "skipNoReward": "Das Überspringen der Anzeige gewährt keine Bonus-Wiedergaben.",
     "adErrorFallback": "Die Anzeige konnte nicht gestartet werden. Bitte versuchen Sie es erneut oder öffnen Sie die Abonnementoptionen.",
-    "adLoadFailed": "Anzeige konnte nicht geladen werden"
+    "adLoadFailed": "Anzeige konnte nicht geladen werden",
+    "adSkipped": "Anzeige nicht vollständig gesehen, kein Kontingent erhalten"
   },
   "airplay": {
     "warningTitle": "AirPlay-Empfänger aktivieren",

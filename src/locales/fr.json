@@ -226,7 +226,8 @@
     "skipAlertTitle": "Publicité ignorée",
     "skipNoReward": "Passer la publicité n'accorde pas d'écoutes bonus.",
     "adErrorFallback": "Impossible de démarrer la publicité. Réessayez ou ouvrez les options d'abonnement.",
-    "adLoadFailed": "Impossible de charger la publicité"
+    "adLoadFailed": "Impossible de charger la publicité",
+    "adSkipped": "Vous n'avez pas terminé la publicité, aucun quota accordé"
   },
   "airplay": {
     "warningTitle": "Activer le récepteur AirPlay",
