@@ -28,6 +28,7 @@
     }
     h1 { margin: 0 0 8px; font-size: 1.5rem; }
     .sub { color: #999; font-size: 0.9rem; margin-bottom: 24px; }
+    .sub .highlight { color: #f0535b; font-weight: 600; }
     label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: #bbb; }
     input {
       width: 100%;
@@ -69,11 +70,11 @@
 </head>
 <body>
   <div class="card">
-    <h1>Connect to TV</h1>
-    <p class="sub">Enter the code shown on your Android TV to connect <span style="color: #f0535b; font-weight: 600;">AirTune Music</span> with your <span style="color: #f0535b; font-weight: 600;">Apple Music</span> account.</p>
+    <h1 id="title"></h1>
+    <p class="sub" id="subtitle"></p>
 
     <form id="form" autocomplete="off">
-      <label for="code">TV code</label>
+      <label for="code" id="codeLabel"></label>
       <input
         id="code"
         type="text"
@@ -84,7 +85,7 @@
         autocomplete="one-time-code"
         required
       />
-      <button type="submit" id="btn">Sign in with Apple Music</button>
+      <button type="submit" id="btn"></button>
     </form>
 
     <div id="message" class="message" role="alert"></div>
@@ -92,6 +93,124 @@
 
   <script>
     (function () {
+      // subtitle is an array of segments: plain strings or { highlight: true, text: string }
+      const TRANSLATIONS = {
+        en: {
+          title: 'Connect to TV',
+          subtitle: [
+            'Enter the code shown on your TV to sign in to ',
+            { highlight: true, text: 'AirTune Music' },
+            ' with your ',
+            { highlight: true, text: 'Apple Music' },
+            ' account.',
+          ],
+          codeLabel: 'TV code',
+          button: 'Sign in with Apple Music',
+          popupInfo: 'Make sure the code matches the one on your TV. A pop-up window will open for Apple Music sign-in. If nothing appears, please allow pop-ups for this page in your browser settings and try again.',
+          success: 'Success! If the entered code matched, the TV connection is complete. You can close this page.',
+          popupBlocked: 'The sign-in pop-up was blocked or closed. Please allow pop-ups for this page in your browser settings, then try again.',
+          subscriptionRequired: 'An active Apple Music subscription is required. Please check your account and try again.',
+          networkError: 'Could not connect to the TV app. Make sure your phone and TV are on the same Wi-Fi network and try again.',
+        },
+        tr: {
+          title: "TV'ye Bağlan",
+          subtitle: [
+            "TV'de gösterilen kodu girerek ",
+            { highlight: true, text: 'AirTune Music' },
+            "'e ",
+            { highlight: true, text: 'Apple Music' },
+            ' hesabınızla giriş yapın.',
+          ],
+          codeLabel: 'TV kodu',
+          button: 'Apple Music ile Giriş Yap',
+          popupInfo: 'Girdiğiniz kodun TV\'deki kodla eşleştiğinden emin olun. Apple Music girişi için bir açılır pencere açılacak. Hiçbir şey görünmüyorsa, tarayıcı ayarlarınızda bu sayfa için açılır pencerelere izin verin ve tekrar deneyin.',
+          success: 'Başarılı! Girilen kod eşleşti ise TV bağlantısı tamamlandı. Bu sayfayı kapatabilirsiniz.',
+          popupBlocked: 'Giriş penceresi engellendi veya kapatıldı. Tarayıcı ayarlarınızda bu sayfa için açılır pencerelere izin verin ve tekrar deneyin.',
+          subscriptionRequired: 'Aktif bir Apple Music aboneliği gereklidir. Hesabınızı kontrol edip tekrar deneyin.',
+          networkError: 'TV uygulamasına bağlanılamadı. Telefonunuzun ve TV\'nizin aynı Wi-Fi ağında olduğundan emin olun ve tekrar deneyin.',
+        },
+        de: {
+          title: 'Mit TV verbinden',
+          subtitle: [
+            'Geben Sie den auf dem TV angezeigten Code ein, um sich bei ',
+            { highlight: true, text: 'AirTune Music' },
+            ' mit Ihrem ',
+            { highlight: true, text: 'Apple Music' },
+            '-Konto anzumelden.',
+          ],
+          codeLabel: 'TV-Code',
+          button: 'Mit Apple Music anmelden',
+          popupInfo: 'Stellen Sie sicher, dass der eingegebene Code mit dem auf dem TV übereinstimmt. Ein Pop-up-Fenster wird für die Apple Music-Anmeldung geöffnet. Falls nichts erscheint, erlauben Sie Pop-ups für diese Seite in Ihren Browsereinstellungen und versuchen Sie es erneut.',
+          success: 'Erfolgreich! Wenn der eingegebene Code übereinstimmt, ist die TV-Verbindung abgeschlossen. Sie können diese Seite schließen.',
+          popupBlocked: 'Das Anmelde-Pop-up wurde blockiert oder geschlossen. Erlauben Sie Pop-ups für diese Seite in Ihren Browsereinstellungen und versuchen Sie es erneut.',
+          subscriptionRequired: 'Ein aktives Apple Music-Abonnement ist erforderlich. Bitte überprüfen Sie Ihr Konto und versuchen Sie es erneut.',
+          networkError: 'Verbindung zur TV-App fehlgeschlagen. Stellen Sie sicher, dass Ihr Telefon und Ihr TV im selben WLAN sind, und versuchen Sie es erneut.',
+        },
+        es: {
+          title: 'Conectar al TV',
+          subtitle: [
+            'Introduce el código que aparece en el TV para iniciar sesión en ',
+            { highlight: true, text: 'AirTune Music' },
+            ' con tu cuenta de ',
+            { highlight: true, text: 'Apple Music' },
+            '.',
+          ],
+          codeLabel: 'Código del TV',
+          button: 'Iniciar sesión con Apple Music',
+          popupInfo: 'Asegúrate de que el código introducido coincide con el que aparece en el TV. Se abrirá una ventana emergente para iniciar sesión en Apple Music. Si no aparece nada, permite las ventanas emergentes para esta página en la configuración de tu navegador e inténtalo de nuevo.',
+          success: '¡Éxito! Si el código introducido coincide, la conexión con el TV se ha completado. Puedes cerrar esta página.',
+          popupBlocked: 'La ventana emergente de inicio de sesión fue bloqueada o cerrada. Permite las ventanas emergentes para esta página en la configuración de tu navegador e inténtalo de nuevo.',
+          subscriptionRequired: 'Se requiere una suscripción activa de Apple Music. Comprueba tu cuenta e inténtalo de nuevo.',
+          networkError: 'No se pudo conectar a la app del TV. Asegúrate de que tu teléfono y el TV estén en la misma red Wi-Fi e inténtalo de nuevo.',
+        },
+        fr: {
+          title: 'Connecter au TV',
+          subtitle: [
+            'Entrez le code affiché sur le TV pour vous connecter à ',
+            { highlight: true, text: 'AirTune Music' },
+            ' avec votre compte ',
+            { highlight: true, text: 'Apple Music' },
+            '.',
+          ],
+          codeLabel: 'Code TV',
+          button: 'Se connecter avec Apple Music',
+          popupInfo: "Assurez-vous que le code saisi correspond à celui affiché sur le TV. Une fenêtre pop-up s'ouvrira pour la connexion Apple Music. Si rien n'apparaît, autorisez les pop-ups pour cette page dans les paramètres de votre navigateur et réessayez.",
+          success: 'Succès ! Si le code saisi correspond, la connexion TV est établie. Vous pouvez fermer cette page.',
+          popupBlocked: 'La fenêtre pop-up de connexion a été bloquée ou fermée. Autorisez les pop-ups pour cette page dans les paramètres de votre navigateur et réessayez.',
+          subscriptionRequired: 'Un abonnement Apple Music actif est requis. Veuillez vérifier votre compte et réessayer.',
+          networkError: "Impossible de se connecter à l'app TV. Assurez-vous que votre téléphone et votre TV sont sur le même réseau Wi-Fi et réessayez.",
+        },
+      };
+
+      function detectLang() {
+        const langs = navigator.languages || [navigator.language || 'en'];
+        for (const lang of langs) {
+          const code = lang.split('-')[0].toLowerCase();
+          if (TRANSLATIONS[code]) return code;
+        }
+        return 'en';
+      }
+
+      const lang = detectLang();
+      const t = TRANSLATIONS[lang];
+
+      document.documentElement.lang = lang;
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('codeLabel').textContent = t.codeLabel;
+      document.getElementById('btn').textContent = t.button;
+
+      const subtitleEl = document.getElementById('subtitle');
+      t.subtitle.forEach(function (segment) {
+        if (typeof segment === 'string') {
+          subtitleEl.appendChild(document.createTextNode(segment));
+        } else {
+          const span = document.createElement('span');
+          span.className = 'highlight';
+          span.textContent = segment.text;
+          subtitleEl.appendChild(span);
+        }
+      });
+
       // Base URL of your backend. Use '' for same origin, or e.g. 'https://api.example.com'
       const API_BASE = '';
 
@@ -119,9 +238,16 @@
         e.target.value = val;
       });
 
+      function fetchWithTimeout(url, options, timeoutMs) {
+        const controller = new AbortController();
+        const timer = setTimeout(function () { controller.abort(); }, timeoutMs);
+        return fetch(url, Object.assign({}, options, { signal: controller.signal }))
+          .finally(function () { clearTimeout(timer); });
+      }
+
       async function getDeveloperToken() {
         const url = API_BASE ? API_BASE + '/api/tv-link/developer-token' : '/api/tv-link/developer-token';
-        const res = await fetch(url);
+        const res = await fetchWithTimeout(url, {}, 10000);
         if (!res.ok) throw new Error('Could not get developer token');
         const data = await res.json();
         return data.developerToken;
@@ -129,11 +255,11 @@
 
       async function sendTokenToBackend(code, musicUserToken) {
         const url = API_BASE ? API_BASE + '/api/tv-link' : '/api/tv-link';
-        const res = await fetch(url, {
+        const res = await fetchWithTimeout(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code: code.trim(), musicUserToken })
-        });
+        }, 10000);
         if (!res.ok) {
           let errMsg = 'Failed to link device';
           try {
@@ -150,28 +276,37 @@
         if (!code || code.length !== 6) return;
 
         btn.disabled = true;
-        hideMessage();
+        showMessage(t.popupInfo, 'info');
 
+        let authorizationAttempted = false;
         try {
           const developerToken = await getDeveloperToken();
           if (!developerToken) throw new Error('Missing developer token');
 
           await MusicKit.configure({ developerToken });
           const music = MusicKit.getInstance();
+
+          authorizationAttempted = true;
           const musicUserToken = await music.authorize();
+          authorizationAttempted = false;
+
           if (!musicUserToken) throw new Error('No token returned');
 
           await sendTokenToBackend(code, musicUserToken);
-          showMessage('Success! Your TV is now linked. You can close this page.', 'success');
+          showMessage(t.success, 'success');
           form.reset();
         } catch (err) {
           let msg = err.message || String(err);
-          
-          // If the error is about authorization, it's almost always a missing subscription
-          if (msg.toLowerCase().includes('unauthorized') || msg.toLowerCase().includes('forbidden')) {
-            msg = 'An active Apple Music subscription is required. Please check your account and try again.';
+          const msgLower = msg.toLowerCase();
+
+          if (err.name === 'AbortError' || err instanceof TypeError && (msgLower.includes('failed to fetch') || msgLower.includes('failed to parse url') || msgLower.includes('networkerror') || msgLower.includes('network request failed'))) {
+            msg = t.networkError;
+          } else if (authorizationAttempted && (msgLower.includes('popup') || msgLower.includes('pop-up') || msgLower.includes('blocked') || msgLower.includes('cancel') || msgLower.includes('user_cancel'))) {
+            msg = t.popupBlocked;
+          } else if (msgLower.includes('unauthorized') || msgLower.includes('forbidden')) {
+            msg = t.subscriptionRequired;
           }
-          
+
           showMessage(msg, 'error');
         } finally {
           btn.disabled = false;
