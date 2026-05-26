@@ -18,7 +18,7 @@ import * as TVLinkServer from './tvLinkServer';
 import type { AppColors } from '../../theme/colors';
 import { useTheme } from '../../theme';
 import { radius, spacing, buttonMinHeight } from '../../theme/layout';
-import * as musicPlayer from '../../services/musicPlayer';
+import * as musicPlayer from '../player/musicPlayer';
 
 
 import { DEV_SERVER } from '../../config/devServer';

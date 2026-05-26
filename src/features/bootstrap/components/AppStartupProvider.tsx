@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AppStartupService } from '../appStartupService';
-import { VersionCheckResult } from '../../../services/versionService';
-import { Announcement, AnnouncementService } from '../../../services/announcementService';
-import { initializeUnityAds } from '../../../services/unityAds';
+import { VersionCheckResult } from '../versionService';
+import { Announcement, AnnouncementService } from '../announcementService';
+import { initializeUnityAds } from '../unityAds';
 
 interface AppStartupContextType {
   isInitialized: boolean;

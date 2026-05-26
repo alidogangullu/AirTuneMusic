@@ -23,8 +23,8 @@ import { useContentNavigation } from '../home/navigation';
 import { MoreMenu } from './components/MoreMenu';
 import { useAirPlay } from '../airplay/useAirPlay';
 import type { MoreMenuRelationships } from './components/MoreMenu';
-import i18n from '../../i18n';
-import { QuotaService } from '../../services/quotaService';
+import i18n from '../../locales';
+import { QuotaService } from '../settings/quotaService';
 import { formatDuration, formatRelativeDate } from './utils/dateUtils';
 import { isVideoTrack, buildVideoQueue, buildSongTracks } from './utils/trackUtils';
 import { useTheme } from '../../theme';
@@ -57,7 +57,7 @@ function getCatalogSongId(track: PlaylistTrack): string {
 }
 
 /** Convert API PlaylistTrack to the TrackInfo shape used by the player state. */
-function toTrackInfo(track: PlaylistTrack): import('../../services/musicPlayer').TrackInfo {
+function toTrackInfo(track: PlaylistTrack): import('../player/musicPlayer').TrackInfo {
   const THUMB = 200;
   return {
     id: getCatalogSongId(track),

@@ -8,7 +8,7 @@
 import axios, { AxiosError, AxiosInstance } from 'axios';
 import { getDeveloperToken } from './getDeveloperToken';
 import { getMusicUserToken } from './musicUserToken';
-import i18n from '../../i18n';
+import i18n from '../../locales';
 
 const APPLE_MUSIC_BASE = 'https://api.music.apple.com/v1';
 

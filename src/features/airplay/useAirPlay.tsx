@@ -2,11 +2,11 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { createMMKV } from 'react-native-mmkv';
-import { airPlayReceiver, AirPlayTrackInfo, AirPlayState } from '../../services/airPlayReceiver';
+import { airPlayReceiver, AirPlayTrackInfo, AirPlayState } from './airPlayReceiver';
 import { usePlayer } from '../player/hooks/usePlayer';
-import { AirPlayQuotaService } from '../../services/airPlayQuotaService';
-import * as musicPlayer from '../../services/musicPlayer';
-import type { TrackInfo } from '../../services/musicPlayer';
+import { AirPlayQuotaService } from './airPlayQuotaService';
+import * as musicPlayer from '../player/musicPlayer';
+import type { TrackInfo } from '../player/musicPlayer';
 
 const storage = createMMKV({ id: 'airplay-settings' });
 const AIRPLAY_ENABLED_KEY = 'airplay_enabled';

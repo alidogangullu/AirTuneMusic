@@ -13,7 +13,7 @@ import {
 } from 'react-native-iap';
 import { Platform, Alert } from 'react-native';
 import i18next from 'i18next';
-import { QuotaService } from '../../services/quotaService';
+import { QuotaService } from './quotaService';
 
 const itemSkus = Platform.select({
   android: ['pro_monthly'],

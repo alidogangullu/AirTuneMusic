@@ -1,7 +1,7 @@
 import { NativeModules } from 'react-native';
 
-import { UNITY_ADS_REWARDED_AD_UNIT_ID } from '../config/unityAds';
-import { initializeUnityAds } from './unityAds';
+import { UNITY_ADS_REWARDED_AD_UNIT_ID } from '../../config/unityAds';
+import { initializeUnityAds } from '../bootstrap/unityAds';
 
 const { UnityAdsModule } = NativeModules;
 

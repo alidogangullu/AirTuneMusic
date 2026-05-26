@@ -1,5 +1,5 @@
 import type { PlaylistTrack } from '../../../types/catalog';
-import type { TrackInfo } from '../../../services/musicPlayer';
+import type { TrackInfo } from '../../player/musicPlayer';
 import type { VideoQueue } from '../../player/hooks/usePlayer';
 import { getArtworkUrl } from '../../recommendations/api/recommendations';
 

@@ -9,13 +9,13 @@ import React, {
 } from 'react';
 import {Alert, BackHandler, ToastAndroid} from 'react-native';
 import {useTranslation} from 'react-i18next';
-import * as musicPlayer from '../../../services/musicPlayer';
-import {QuotaService} from '../../../services/quotaService';
-import {AdSettingsService} from '../../../services/adSettingsService';
-import {RewardAdService} from '../../../services/rewardAdService';
+import * as musicPlayer from '../musicPlayer';
+import {QuotaService} from '../../settings/quotaService';
+import {AdSettingsService} from '../../settings/adSettingsService';
+import {RewardAdService} from '../rewardAdService';
 import {getDeveloperToken} from '../../../api/apple-music/getDeveloperToken';
 import {waitForToken, getMusicUserToken} from '../../../api/apple-music/musicUserToken';
-import {airPlayReceiver} from '../../../services/airPlayReceiver';
+import {airPlayReceiver} from '../../airplay/airPlayReceiver';
 import {MusicKitWebView, MusicKitWebPlayerRef} from '../components/MusicKitWebView';
 import {VideoPlayerModal} from '../components/VideoPlayerModal';
 import type {QuotaRecoveryRequest} from '../../content/QuotaLimitScreen';
@@ -23,7 +23,7 @@ import type {
   PlaybackStateName,
   TrackInfo,
   ProgressInfo,
-} from '../../../services/musicPlayer';
+} from '../musicPlayer';
 
 // ── State shape ─────────────────────────────────────────────────
 

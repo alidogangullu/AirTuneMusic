@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { CURRENT_VERSION, VERSION_CHECK_URL } from '../constants/versionInfo';
+import { CURRENT_VERSION, VERSION_CHECK_URL } from '../../constants/versionInfo';
 
 export interface VersionInfo {
   min_version: string;

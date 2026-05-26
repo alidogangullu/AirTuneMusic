@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { spacing, radius } from '../../../theme/layout';
 import { lightColors as C } from '../../../theme/colors';
 import { usePlayer } from '../hooks/usePlayer';
-import { ShuffleMode, RepeatMode } from '../../../services/musicPlayer';
+import { ShuffleMode, RepeatMode } from '../musicPlayer';
 import { TVActionSheet } from '../../content/components/TVActionSheet';
 import type { TVActionSheetItem } from '../../content/components/TVActionSheet';
 import { fetchEditableLibraryPlaylists, addTrackToPlaylist, type EditablePlaylist } from '../../library/api/library';

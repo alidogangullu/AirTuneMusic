@@ -23,7 +23,7 @@ import { searchCatalog } from './api/search';
 import { getArtworkUrl } from '../recommendations/api/recommendations';
 import { useContentNavigation } from '../home/navigation';
 import { useRecentSearches } from './hooks/useRecentSearches';
-import { useStorefront } from '../../hooks/useStorefront';
+import { useStorefront } from '../content/hooks/useStorefront';
 import type { SearchResultItem } from '../../types/search';
 
 // ── Keyboard layout ──────────────────────────────────────────────

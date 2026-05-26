@@ -1,6 +1,6 @@
 import {useQuery} from '@tanstack/react-query';
 import {fetchArtistDetail} from '../../recommendations/api/recommendations';
-import {useStorefront} from '../../../hooks/useStorefront';
+import {useStorefront} from './useStorefront';
 
 export function useArtistDetail(id: string | null) {
   const {storefrontId} = useStorefront();

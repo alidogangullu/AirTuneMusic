@@ -1,7 +1,7 @@
 import React, { useRef, useImperativeHandle, forwardRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
-import * as musicPlayer from '../../../services/musicPlayer';
+import * as musicPlayer from '../musicPlayer';
 
 export interface MusicKitWebPlayerRef {
   playStation: (stationId: string) => void;

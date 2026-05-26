@@ -2,11 +2,11 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { createMMKV } from 'react-native-mmkv';
 import { Platform, NativeModules } from 'react-native';
-import en from '../locales/en.json';
-import tr from '../locales/tr.json';
-import de from '../locales/de.json';
-import es from '../locales/es.json';
-import fr from '../locales/fr.json';
+import en from './en.json';
+import tr from './tr.json';
+import de from './de.json';
+import es from './es.json';
+import fr from './fr.json';
 import { queryClient } from '../api/queryClient';
 
 const storage = createMMKV({ id: 'i18n-storage' });

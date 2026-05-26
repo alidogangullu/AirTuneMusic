@@ -32,13 +32,13 @@ import { ContentNavigationContext } from '../home/navigation';
 import { radius, spacing } from '../../theme/layout';
 import { lightColors as C } from '../../theme/colors';
 import { useTheme } from '../../theme';
-import { useStorefront } from '../../hooks/useStorefront';
+import { useStorefront } from '../content/hooks/useStorefront';
 import { fetchSongDetail } from '../recommendations/api/recommendations';
 import { LyricsView } from '../player/components/LyricsView';
 import { NowPlayingTrackInfo, ARTWORK_SIZE } from '../player/components/NowPlayingTrackInfo';
 import { AirPlayLogo } from '../player/components/AirPlayLogo';
 import { useAirPlay } from '../airplay/useAirPlay';
-import { QuotaService } from '../../services/quotaService';
+import { QuotaService } from '../settings/quotaService';
 
 // ── Component ────────────────────────────────────────────────────
 

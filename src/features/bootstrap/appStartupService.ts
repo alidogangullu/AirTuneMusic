@@ -1,10 +1,10 @@
 import { loadMusicUserToken } from '../../api/apple-music/musicUserToken';
 import { checkAppleMusicSubscription } from './api/subscription';
-import { checkAppVersion, VersionCheckResult } from '../../services/versionService';
-import { AnnouncementService, Announcement } from '../../services/announcementService';
-import { QuotaConfigService } from '../../services/quotaConfigService';
+import { checkAppVersion, VersionCheckResult } from './versionService';
+import { AnnouncementService, Announcement } from './announcementService';
+import { QuotaConfigService } from './quotaConfigService';
 import { IapService } from '../settings/iapService';
-import { ensureConfigured } from '../../services/musicPlayer';
+import { ensureConfigured } from '../player/musicPlayer';
 
 export interface StartupData {
   hasToken: boolean;

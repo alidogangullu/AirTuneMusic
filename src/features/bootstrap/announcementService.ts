@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { createMMKV } from 'react-native-mmkv';
-import { ANNOUNCEMENTS_URL } from '../constants/announcementInfo';
+import { ANNOUNCEMENTS_URL } from '../../constants/announcementInfo';
 
 export interface Announcement {
   id: string;

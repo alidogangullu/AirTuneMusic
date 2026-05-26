@@ -4,22 +4,24 @@
  * Opened as a Modal from HomeScreen.
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useImperativeHandle, forwardRef, useCallback } from 'react';
 import { Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+
+export type SettingsScreenHandle = { handleBack: () => boolean };
 import { useTranslation } from 'react-i18next';
-import { changeLanguage } from '../../i18n';
+import { changeLanguage } from '../../locales';
 import { SettingsMenuItem } from './components/SettingsMenuItem';
 import { GradientBackground } from '../../components/GradientBackground';
 import { useTheme } from '../../theme';
 import type { AppColors } from '../../theme/colors';
-import { QuotaService } from '../../services/quotaService';
-import { AdSettingsService } from '../../services/adSettingsService';
-import { AirPlayQuotaService } from '../../services/airPlayQuotaService';
-import { QuotaPeriodService } from '../../services/quotaPeriodService';
+import { QuotaService } from './quotaService';
+import { AdSettingsService } from './adSettingsService';
+import { AirPlayQuotaService } from '../airplay/airPlayQuotaService';
+import { QuotaPeriodService } from './quotaPeriodService';
 import { IapService } from './iapService';
 import { spacing, radius } from '../../theme/layout';
-import { VersionCheckResult } from '../../services/versionService';
-import { Announcement } from '../../services/announcementService';
+import { VersionCheckResult } from '../bootstrap/versionService';
+import { Announcement } from '../bootstrap/announcementService';
 import { useAirPlay } from '../airplay/useAirPlay';
 
 export type SettingsScreenProps = {
@@ -29,10 +31,10 @@ export type SettingsScreenProps = {
   announcements?: Announcement[];
   readAnnouncementIds?: string[];
   onAnnouncementRead?: (id: string) => void;
-  initialSubMenu?: 'none' | 'language' | 'announcements' | 'adSettings' | 'subscription';
+  initialSubMenu?: 'none' | 'language' | 'announcements' | 'adSettings' | 'subscription' | 'about' | 'support';
 };
 
-export function SettingsScreen({
+export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenProps>(function SettingsScreen({
   onBack,
   onSignOut,
   updateInfo,
@@ -40,11 +42,11 @@ export function SettingsScreen({
   readAnnouncementIds = [],
   onAnnouncementRead,
   initialSubMenu = 'none',
-}: Readonly<SettingsScreenProps>): React.JSX.Element {
+}, ref) {
   const { colors, themeMode, setThemeMode } = useTheme();
   const styles = useMemo(() => makeStyles(colors, themeMode), [colors, themeMode]);
   const { t, i18n } = useTranslation();
-  const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language' | 'announcements' | 'adSettings' | 'subscription'>(initialSubMenu);
+  const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language' | 'announcements' | 'adSettings' | 'subscription' | 'about' | 'support'>(initialSubMenu);
   const [autoStartAd, setAutoStartAd] = React.useState(() => AdSettingsService.getAutoStartAd());
   const [proPrice, setProPrice] = React.useState<string | null>(null);
   const { enabled: airPlayEnabled, setEnabled: setAirPlayEnabled } = useAirPlay();
@@ -99,24 +101,25 @@ export function SettingsScreen({
     } else if (item === 'AirPlay') {
       setAirPlayEnabled(!airPlayEnabled);
     } else if (item === 'Support') {
-      Alert.alert(t('settings.support'), 'gullualidogan@gmail.com');
+      setCurrentSubMenu('support');
     } else if (item === 'DarkMode') {
       setThemeMode(themeMode === 'dark' ? 'light' : 'dark');
     } else if (item === 'About') {
-      Alert.alert(
-        t('settings.aboutInfo.title'),
-        t('settings.aboutInfo.message'),
-      );
+      setCurrentSubMenu('about');
     }
   };
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (currentSubMenu === 'none') {
       onBack?.();
+      return false;
     } else {
       setCurrentSubMenu('none');
+      return true;
     }
-  };
+  }, [currentSubMenu, onBack]);
+
+  useImperativeHandle(ref, () => ({ handleBack }), [handleBack]);
 
   const renderSubMenu = () => {
     if (currentSubMenu === 'none') {
@@ -148,7 +151,8 @@ export function SettingsScreen({
       return (
         <>
           <SettingsMenuItem
-            label={"← " + t('common.cancel')}
+            prefix="‹"
+            label={t('common.cancel')}
             hasTVPreferredFocus
             onPress={() => setCurrentSubMenu('none')}
           />
@@ -180,7 +184,8 @@ export function SettingsScreen({
       return (
         <>
           <SettingsMenuItem
-            label={"← " + t('common.back')}
+            prefix="‹"
+            label={t('common.back')}
             hasTVPreferredFocus={isPro}
             onPress={() => setCurrentSubMenu('none')}
           />
@@ -254,7 +259,8 @@ export function SettingsScreen({
       return (
         <>
           <SettingsMenuItem
-            label={"← " + t('common.back')}
+            prefix="‹"
+            label={t('common.back')}
             hasTVPreferredFocus
             onPress={() => setCurrentSubMenu('none')}
           />
@@ -275,10 +281,48 @@ export function SettingsScreen({
       );
     }
 
+    if (currentSubMenu === 'about') {
+      return (
+        <>
+          <SettingsMenuItem
+            prefix="‹"
+            label={t('common.back')}
+            hasTVPreferredFocus
+            onPress={() => setCurrentSubMenu('none')}
+          />
+          <View style={styles.divider} />
+          <View style={styles.adHintContainer}>
+            <Text style={styles.adHintTitle}>{t('settings.aboutInfo.title')}</Text>
+            <Text style={styles.adHintText}>{t('settings.aboutInfo.message')}</Text>
+          </View>
+        </>
+      );
+    }
+
+    if (currentSubMenu === 'support') {
+      return (
+        <>
+          <SettingsMenuItem
+            prefix="‹"
+            label={t('common.back')}
+            hasTVPreferredFocus
+            onPress={() => setCurrentSubMenu('none')}
+          />
+          <View style={styles.divider} />
+          <View style={styles.adHintContainer}>
+            <Text style={styles.adHintTitle}>{t('settings.supportInfo.contactTitle')}</Text>
+            <Text style={styles.adHintText}>{t('settings.supportInfo.contactDescription')}</Text>
+            <Text style={[styles.adHintText, { marginTop: spacing.lg }]}>{t('settings.supportInfo.email')}</Text>
+          </View>
+        </>
+      );
+    }
+
     return (
       <>
         <SettingsMenuItem
-          label={"← " + t('common.back')}
+          prefix="‹"
+            label={t('common.back')}
           hasTVPreferredFocus
           onPress={() => setCurrentSubMenu('none')}
         />
@@ -342,16 +386,18 @@ export function SettingsScreen({
       </View>
     </GradientBackground>
   );
-}
+});
 
 function getSubMenuTitle(
-  subMenu: 'none' | 'language' | 'announcements' | 'adSettings' | 'subscription',
+  subMenu: 'none' | 'language' | 'announcements' | 'adSettings' | 'subscription' | 'about' | 'support',
   t: (key: string) => string,
 ): string {
   if (subMenu === 'language') return t('settings.language.title');
   if (subMenu === 'announcements') return t('settings.announcements');
   if (subMenu === 'adSettings') return t('settings.adSettings.title');
   if (subMenu === 'subscription') return t('settings.subscription');
+  if (subMenu === 'about') return t('settings.about');
+  if (subMenu === 'support') return t('settings.support');
   return t('settings.title');
 }
 

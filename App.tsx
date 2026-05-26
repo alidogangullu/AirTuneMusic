@@ -25,7 +25,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { ForceUpdateScreen } from './src/features/bootstrap/ForceUpdateScreen';
 import { SubscriptionRequiredScreen } from './src/features/bootstrap/SubscriptionRequiredScreen';
 import { AppStartupProvider, useAppStartup } from './src/features/bootstrap/components/AppStartupProvider';
-import { handleLogout } from './src/services/musicPlayer';
+import { handleLogout } from './src/features/player/musicPlayer';
 
 function AppContent(): React.JSX.Element {
   const { t } = useTranslation();

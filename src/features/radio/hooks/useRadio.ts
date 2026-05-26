@@ -4,7 +4,7 @@ import {
   fetchPersonalRadioStation,
   fetchRecentlyPlayedStations,
 } from '../api/radio';
-import { useStorefront } from '../../../hooks/useStorefront';
+import { useStorefront } from '../../content/hooks/useStorefront';
 
 export function useRadioStations() {
   const { storefrontId: storefront } = useStorefront();

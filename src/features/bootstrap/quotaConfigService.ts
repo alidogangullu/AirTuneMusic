@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { createMMKV } from 'react-native-mmkv';
-import { VERSION_CHECK_URL } from '../constants/versionInfo';
+import { VERSION_CHECK_URL } from '../../constants/versionInfo';
 
 export interface QuotaConfig {
   period_hours: number;

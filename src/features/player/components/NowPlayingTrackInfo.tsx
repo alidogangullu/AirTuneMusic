@@ -3,7 +3,7 @@ import {Animated, Image, StyleSheet, Text, View} from 'react-native';
 import {NowPlayingBars} from './NowPlayingBars';
 import {spacing} from '../../../theme/layout';
 import { lightColors as colors } from '../../../theme/colors';
-import {TrackInfo} from '../../../services/musicPlayer';
+import {TrackInfo} from '../musicPlayer';
 
 interface NowPlayingTrackInfoProps {
   track: TrackInfo | null;

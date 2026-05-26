@@ -6,6 +6,7 @@ import type { AppColors } from '../../../theme/colors';
 export type SettingsMenuItemProps = {
   label: string;
   sublabel?: string;
+  prefix?: string;
   onPress?: () => void;
   hasTVPreferredFocus?: boolean;
   labelColor?: string;
@@ -14,6 +15,7 @@ export type SettingsMenuItemProps = {
 export function SettingsMenuItem({
   label,
   sublabel,
+  prefix,
   onPress,
   hasTVPreferredFocus = false,
   labelColor,
@@ -36,6 +38,11 @@ export function SettingsMenuItem({
         {({ focused }) => (
           <>
             <View style={styles.labelRow}>
+              {prefix ? (
+                <Text style={[styles.prefix, focused ? styles.labelFocused : styles.labelUnfocused]}>
+                  {prefix}{'  '}
+                </Text>
+              ) : null}
               <Text
                 style={[
                   styles.label,
@@ -45,22 +52,20 @@ export function SettingsMenuItem({
                 {label}
               </Text>
               {sublabel ? (
-                <Text
-                  style={[
-                    styles.sublabel,
-                    focused ? styles.labelFocused : styles.sublabelUnfocused,
-                  ]}>
+                <Text style={[styles.sublabel, focused ? styles.labelFocused : styles.sublabelUnfocused]}>
                   {' · '}{sublabel}
                 </Text>
               ) : null}
             </View>
-            <Text
-              style={[
-                styles.chevron,
-                focused ? styles.chevronFocused : styles.chevronUnfocused,
-              ]}>
-              ›
-            </Text>
+            {prefix ? null : (
+              <Text
+                style={[
+                  styles.chevron,
+                  focused ? styles.chevronFocused : styles.chevronUnfocused,
+                ]}>
+                ›
+              </Text>
+            )}
           </>
         )}
       </Pressable>
@@ -89,8 +94,13 @@ function makeStyles(c: AppColors) {
       backgroundColor: 'transparent',
     },
     labelRow: {
-      flexDirection: 'row',
-      alignItems: 'baseline',
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+    },
+    prefix: {
+      fontSize: 26,
+      fontWeight: '500' as const,
+      top: -2,
     },
     label: {
       fontSize: 17,

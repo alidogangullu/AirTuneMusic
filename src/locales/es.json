@@ -174,6 +174,12 @@
       "autoStartAd": "Iniciar anuncio automáticamente",
       "adHintTitle": "¿Cómo saltar el anuncio?",
       "adHint": "Vea el anuncio hasta el final. Cuando termine el temporizador, aparecerá un botón en la esquina superior derecha:\n\n• Botón de cerrar (✕): pulse el botón Atrás del mando.\n\n• Botón siguiente (⏭): navegue hasta él con los botones direccionales y pulse Seleccionar. Aparecerá una nueva pantalla con un botón de cerrar (✕) — pulse Atrás para salir."
+    },
+    "supportInfo": {
+      "contactTitle": "Contacto",
+      "contactDescription": "Para preguntas, comentarios o informes de errores, no dude en contactarnos por correo electrónico.",
+      "email": "gullualidogan@gmail.com",
+      "sendEmail": "Enviar correo"
     }
   },
   "radio": {

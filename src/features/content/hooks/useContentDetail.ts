@@ -12,7 +12,7 @@ import {
 } from '../../library/api/library';
 import type {ContentDetailResponse} from '../../../types/catalog';
 import type {RecommendationContentType} from '../../../types/recommendations';
-import {useStorefront} from '../../../hooks/useStorefront';
+import {useStorefront} from './useStorefront';
 
 /** Library IDs start with p. (playlists) or l. (albums/songs). */
 function isLibraryId(id: string): boolean {

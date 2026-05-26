@@ -1,7 +1,7 @@
 import { createMMKV } from 'react-native-mmkv';
 import i18next from 'i18next';
 import { QuotaPeriodService } from './quotaPeriodService';
-import { QuotaConfigService } from './quotaConfigService';
+import { QuotaConfigService } from '../bootstrap/quotaConfigService';
 
 const storage = createMMKV({ id: 'quota-storage' });
 

@@ -1,7 +1,7 @@
 import { createMMKV } from 'react-native-mmkv';
-import { QuotaService } from './quotaService';
-import { QuotaPeriodService } from './quotaPeriodService';
-import { QuotaConfigService } from './quotaConfigService';
+import { QuotaService } from '../settings/quotaService';
+import { QuotaPeriodService } from '../settings/quotaPeriodService';
+import { QuotaConfigService } from '../bootstrap/quotaConfigService';
 
 const storage = createMMKV({ id: 'airplay-quota-storage' });
 

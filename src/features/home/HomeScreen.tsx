@@ -4,7 +4,7 @@
  * Provides ContentNavigationContext so child screens can push detail views.
  */
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Alert, Modal, StyleSheet, View, BackHandler, ToastAndroid } from 'react-native';
 import { GradientBackground } from '../../components/GradientBackground';
 import { MainLayout } from './MainLayout';
@@ -13,7 +13,7 @@ import { ArtistDetailScreen } from '../content/ArtistDetailScreen';
 import { ContentDetailScreen } from '../content/ContentDetailScreen';
 import { QuotaLimitScreen } from '../content/QuotaLimitScreen';
 import { NowPlayingScreen } from '../now-playing/NowPlayingScreen';
-import { SettingsScreen } from '../settings/SettingsScreen';
+import { SettingsScreen, SettingsScreenHandle } from '../settings/SettingsScreen';
 import type { NavTabId } from './TopBar';
 import type { RecommendationContent } from '../../types/recommendations';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +37,7 @@ export function HomeScreen({
     useState<RecommendationContent[]>([]);
   const selectedContent = contentStack.at(-1) ?? null;
   const [nowPlayingFullscreen, setNowPlayingFullscreen] = useState(false);
+  const settingsRef = useRef<SettingsScreenHandle>(null);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [settingsInitialSubMenu, setSettingsInitialSubMenu] = useState<'none' | 'subscription'>('none');
   const [lastOpened, setLastOpened] = useState<'detail' | 'now-playing' | null>(null);
@@ -195,9 +196,10 @@ export function HomeScreen({
         <Modal
           visible={settingsVisible}
           animationType="none"
-          onRequestClose={() => setSettingsVisible(false)}>
+          onRequestClose={() => { settingsRef.current?.handleBack(); }}>
           {settingsVisible && (
             <SettingsScreen
+              ref={settingsRef}
               initialSubMenu={settingsInitialSubMenu}
               onBack={() => { setSettingsVisible(false); setSettingsInitialSubMenu('none'); }}
               onSignOut={() => {

@@ -1,4 +1,4 @@
-import i18n from '../../../i18n';
+import i18n from '../../../locales';
 
 /**
  * Formats a duration in milliseconds to a mm:ss string.

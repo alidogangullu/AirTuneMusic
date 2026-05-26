@@ -1,6 +1,6 @@
 import { NativeModules } from 'react-native';
 
-import { UNITY_ADS_GAME_ID, UNITY_ADS_TEST_MODE } from '../config/unityAds';
+import { UNITY_ADS_GAME_ID, UNITY_ADS_TEST_MODE } from '../../config/unityAds';
 
 const { UnityAdsModule } = NativeModules;
 
