@@ -181,6 +181,7 @@ export function SettingsScreen({
         <>
           <SettingsMenuItem
             label={"← " + t('common.back')}
+            hasTVPreferredFocus={isPro}
             onPress={() => setCurrentSubMenu('none')}
           />
           <View style={styles.divider} />
