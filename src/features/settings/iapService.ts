@@ -2,12 +2,13 @@ import {
   initConnection,
   fetchProducts,
   requestPurchase,
-  acknowledgePurchaseAndroid,
   purchaseErrorListener,
   purchaseUpdatedListener,
   finishTransaction,
   type Purchase,
   type PurchaseError,
+  type ProductSubscription,
+  type ProductSubscriptionAndroid,
   ErrorCode,
 } from 'react-native-iap';
 import { Platform, Alert } from 'react-native';
@@ -19,39 +20,32 @@ const itemSkus = Platform.select({
   default: [],
 }) as string[];
 
-let purchaseUpdateSubscription: any;
-let purchaseErrorSubscription: any;
+let purchaseUpdateSubscription: ReturnType<typeof purchaseUpdatedListener> | null = null;
+let purchaseErrorSubscription: ReturnType<typeof purchaseErrorListener> | null = null;
+let cachedSubscriptions: ProductSubscription[] = [];
 
 export const IapService = {
-  /**
-   * Initialize IAP connection and setup listeners
-   */
   async init(): Promise<void> {
     try {
       await initConnection();
       console.log('[IAP] Connection initialized');
 
-      // Standard purchase update listener
       purchaseUpdateSubscription = purchaseUpdatedListener(
         async (purchase: Purchase) => {
           const token = purchase.purchaseToken;
           if (token) {
             try {
-              // Acknowledge the purchase (required for Android)
-              if (Platform.OS === 'android') {
-                await acknowledgePurchaseAndroid(token);
-              }
+              // finishTransaction handles acknowledgment automatically for non-consumables
               await finishTransaction({ purchase, isConsumable: false });
 
-              // Unlock Pro features
               QuotaService.setProStatus(true);
               Alert.alert(
                 i18next.t('iap.approved'),
                 i18next.t('iap.activeMessage'),
               );
-              console.log('[IAP] Purchase acknowledged and Pro status set');
+              console.log('[IAP] Purchase finished and Pro status set');
             } catch (ackErr) {
-              console.warn('[IAP] Acknowledge error', ackErr);
+              console.warn('[IAP] finishTransaction error', ackErr);
             }
           }
         },
@@ -78,16 +72,14 @@ export const IapService = {
     }
   },
 
-  /**
-   * Fetch subscription plans from Store
-   */
-  async getProducts() {
+  async getProducts(): Promise<ProductSubscription[]> {
     try {
       if (itemSkus.length === 0) return [];
       const subscriptions = await fetchProducts({
         skus: itemSkus,
         type: 'subs',
-      });
+      }) as ProductSubscription[];
+      cachedSubscriptions = subscriptions;
       return subscriptions;
     } catch (err) {
       console.warn('[IAP] getProducts error', err);
@@ -95,16 +87,19 @@ export const IapService = {
     }
   },
 
-  /**
-   * Start purchase flow
-   */
   async subscribe(sku: string): Promise<void> {
     try {
+      const subscription = cachedSubscriptions.find(s => s.id === sku) as ProductSubscriptionAndroid | undefined;
+      const subscriptionOffers = subscription?.subscriptionOffers
+        ?.filter(offer => offer.offerTokenAndroid)
+        .map(offer => ({ sku, offerToken: offer.offerTokenAndroid! })) ?? [];
+
       await requestPurchase({
         type: 'subs',
         request: {
           google: {
             skus: [sku],
+            ...(subscriptionOffers.length > 0 && { subscriptionOffers }),
           },
         },
       });
@@ -114,10 +109,6 @@ export const IapService = {
     }
   },
 
-  /**
-   * Verify if user currently has an active subscription from the Store.
-   * This handles "Store-only" restoration without a backend.
-   */
   async checkSubscriptionStatus(): Promise<boolean> {
     try {
       const { getAvailablePurchases } = await import('react-native-iap');
@@ -132,9 +123,6 @@ export const IapService = {
     }
   },
 
-  /**
-   * Explicitly request restoration of purchases (e.g., from a "Restore" button).
-   */
   async restorePurchases(): Promise<boolean> {
     try {
       const isActive = await this.checkSubscriptionStatus();
@@ -160,9 +148,6 @@ export const IapService = {
     }
   },
 
-  /**
-   * Cleanup listeners
-   */
   end(): void {
     if (purchaseUpdateSubscription) {
       purchaseUpdateSubscription.remove();

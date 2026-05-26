@@ -204,7 +204,8 @@
     "notFound": "No encontrada",
     "notFoundMessage": "No se ha encontrado ninguna suscripción activa para esta cuenta.",
     "error": "Error",
-    "errorMessage": "Error al comunicarse con la tienda. Por favor, inténtalo de nuevo más tarde."
+    "errorMessage": "Error al comunicarse con la tienda. Por favor, inténtalo de nuevo más tarde.",
+    "perMonth": "/mes"
   },
   "more": {
     "love": "Me gusta",

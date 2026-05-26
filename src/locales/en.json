@@ -204,7 +204,8 @@
     "notFound": "Not Found",
     "notFoundMessage": "No active subscription was found for this account.",
     "error": "Error",
-    "errorMessage": "Failed to communicate with the Store. Please try again later."
+    "errorMessage": "Failed to communicate with the Store. Please try again later.",
+    "perMonth": "/month"
   },
   "more": {
     "love": "Love",

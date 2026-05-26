@@ -195,7 +195,7 @@ export function SettingsScreen({
             <>
               <SettingsMenuItem
                 label={t('settings.pro.getProMonthly')}
-                sublabel={proPrice ?? 'undefined'}
+                sublabel={proPrice ? `${proPrice}${t('iap.perMonth')}` : undefined}
                 hasTVPreferredFocus
                 onPress={async () => {
                   try {

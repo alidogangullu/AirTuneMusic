@@ -204,7 +204,8 @@
     "notFound": "Bulunamadı",
     "notFoundMessage": "Bu hesap için aktif bir abonelik bulunamadı.",
     "error": "Hata",
-    "errorMessage": "Mağaza ile iletişim kurulamadı. Lütfen daha sonra tekrar deneyin."
+    "errorMessage": "Mağaza ile iletişim kurulamadı. Lütfen daha sonra tekrar deneyin.",
+    "perMonth": "/ay"
   },
   "more": {
     "love": "Beğen",

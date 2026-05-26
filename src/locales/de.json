@@ -204,7 +204,8 @@
     "notFound": "Nicht gefunden",
     "notFoundMessage": "Kein aktives Abonnement für dieses Konto gefunden.",
     "error": "Fehler",
-    "errorMessage": "Fehler bei der Kommunikation mit dem Store. Bitte versuchen Sie es später erneut."
+    "errorMessage": "Fehler bei der Kommunikation mit dem Store. Bitte versuchen Sie es später erneut.",
+    "perMonth": "/Monat"
   },
   "more": {
     "love": "Gefällt mir",

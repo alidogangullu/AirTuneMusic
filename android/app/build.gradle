@@ -108,7 +108,7 @@ android {
         applicationId "com.adg.airtune"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 18
+        versionCode 19
         versionName "1.10.4"
     }
     signingConfigs {

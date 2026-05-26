@@ -204,7 +204,8 @@
     "notFound": "Non trouvé",
     "notFoundMessage": "Aucun abonnement actif n'a été trouvé pour ce compte.",
     "error": "Erreur",
-    "errorMessage": "Échec de la communication avec le Store. Veuillez réessayer plus tard."
+    "errorMessage": "Échec de la communication avec le Store. Veuillez réessayer plus tard.",
+    "perMonth": "/mois"
   },
   "more": {
     "love": "J'aime",
