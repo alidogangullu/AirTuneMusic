@@ -124,7 +124,9 @@
     "scanQR": "Scanner le code QR",
     "orVisitURL": "pour vous connecter, ou visitez l'URL et entrez le code ci-dessous",
     "visitURL": "VISITER L'URL",
-    "linkedMessage": "Connecté ! Token reçu."
+    "linkedMessage": "Connecté ! Token reçu.",
+    "paidSubscriptionRequired": "Un abonnement Apple Music payant est requis.",
+    "popupPermissionNote": "Votre navigateur peut nécessiter une autorisation pour popup window."
   },
   "settings": {
     "title": "Réglages",

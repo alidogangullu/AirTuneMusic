@@ -125,7 +125,8 @@
     "orVisitURL": "to connect, or visit the URL and enter the code below",
     "visitURL": "VISIT URL",
     "linkedMessage": "Linked! Token received.",
-    "paidSubscriptionRequired": "Paid Apple Music subscription is required."
+    "paidSubscriptionRequired": "Paid Apple Music subscription is required.",
+    "popupPermissionNote": "Your browser may require popup window permission."
   },
   "settings": {
     "title": "Settings",

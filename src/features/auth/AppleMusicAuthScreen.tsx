@@ -570,7 +570,21 @@ export function AppleMusicAuthScreen({
               <Text style={styles.glassCardSubtitle}>
                 <Text style={{ color: colors.alertRed, fontWeight: 'bold' }}>{t('auth.scanQR')}</Text> {t('auth.orVisitURL')}
               </Text>
-              <Text style={styles.subscriptionNote}>{t('auth.paidSubscriptionRequired')}</Text>
+              <Text style={[styles.subscriptionNote, { color: colors.textSecondary, fontWeight: 'normal' }]}>
+                {(() => {
+                  const text = t('auth.paidSubscriptionRequired');
+                  const idx = text.indexOf('Apple Music');
+                  if (idx === -1) return <Text style={{ color: colors.alertRed, fontWeight: '600' }}>{text}</Text>;
+                  return <>
+                    <Text style={{ color: colors.alertRed, fontWeight: '600' }}>{text.slice(0, idx + 'Apple Music'.length)}</Text>
+                    <Text>{text.slice(idx + 'Apple Music'.length)}</Text>
+                  </>;
+                })()}
+                {' '}
+                {t('auth.popupPermissionNote').split('popup window').map((part, i, arr) => (
+                  <Text key={i}>{part}{i < arr.length - 1 ? <Text style={{ color: colors.alertRed, fontWeight: '600' }}>popup window</Text> : null}</Text>
+                ))}
+              </Text>
 
               <View style={styles.authContainer} focusable={false}>
                 <View style={styles.qrContainer} focusable={false}>

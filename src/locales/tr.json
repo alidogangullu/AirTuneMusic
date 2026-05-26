@@ -125,7 +125,8 @@
     "orVisitURL": "veya URL'yi ziyaret edin ve aşağıdaki kodu girin",
     "visitURL": "ZİYARET EDİLECEK URL",
     "linkedMessage": "Bağlandı! Token alındı.",
-    "paidSubscriptionRequired": "Ücretli Apple Music aboneliği gereklidir."
+    "paidSubscriptionRequired": "Ücretli Apple Music aboneliği gereklidir.",
+    "popupPermissionNote": "Tarayıcınızda popup window izni gerekebilir."
   },
   "settings": {
     "title": "Ayarlar",
