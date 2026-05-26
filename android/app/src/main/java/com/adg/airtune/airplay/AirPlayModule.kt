@@ -118,8 +118,16 @@ class AirPlayModule(private val reactContext: ReactApplicationContext) :
             ctx.startService(intent)
             // Give service time to bind then call startServer
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                service?.startServer(deviceName)
-                promise.resolve(true)
+                try {
+                    service?.startServer(deviceName)
+                    promise.resolve(true)
+                } catch (e: UnsatisfiedLinkError) {
+                    Log.e(TAG, "AirPlay native library not supported on this device", e)
+                    promise.reject("AIRPLAY_NOT_SUPPORTED", "AirPlay is not supported on this device", e)
+                } catch (e: Exception) {
+                    Log.e(TAG, "AirPlay startServer failed", e)
+                    promise.reject("AIRPLAY_START_ERROR", e.message, e)
+                }
             }, 300)
         } catch (e: Exception) {
             promise.reject("AIRPLAY_START_ERROR", e.message, e)
