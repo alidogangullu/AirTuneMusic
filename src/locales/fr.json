@@ -230,6 +230,11 @@
     "cancel": "Annuler",
     "error": "Une erreur s'est produite"
   },
+  "subscriptionRequired": {
+    "title": "Accès requis",
+    "message": "Un abonnement Apple Music actif est requis, ou l'autorisation de confidentialité \"Médias et Apple Music\" n'a pas été accordée. Veuillez vérifier votre abonnement et vos paramètres de confidentialité, puis reconnectez-vous.",
+    "signOut": "Se déconnecter"
+  },
   "quotaLimit": {
     "title": "Limite atteinte",
     "message": "Vous avez atteint la limite gratuite de {{limit}} chansons. Regardez une publicité pour gagner {{bonus}} écoutes supplémentaires, ou passez à Pro.",

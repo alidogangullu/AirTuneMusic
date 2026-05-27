@@ -35,10 +35,16 @@ export function RecommendationScreen({
   const { colors } = useTheme();
   const styles = useStyles(colors);
 
-  const errorMessage = React.useMemo(
-    () => (error instanceof Error ? error.message : t('common.failedToLoad')),
-    [error, t],
-  );
+  const errorMessage = React.useMemo(() => {
+    if (!error) { return t('common.failedToLoad'); }
+    const status = error?.response?.status;
+    const code = error?.code;
+    const msg = error instanceof Error ? error.message : t('common.failedToLoad');
+    const parts = [msg];
+    if (status) { parts.push(`HTTP ${status}`); }
+    if (code && code !== 'ERR_BAD_RESPONSE') { parts.push(code); }
+    return parts.join(' · ');
+  }, [error, t]);
 
   let contentNode: React.ReactNode;
   if (isLoading) {
@@ -47,7 +53,11 @@ export function RecommendationScreen({
     contentNode = (
       <View style={styles.error}>
         <Text style={styles.errorText}>{errorMessage}</Text>
-        <Pressable style={styles.retryButton} onPress={refetch}>
+        <Pressable
+          style={({ focused }) => [styles.retryButton, focused && styles.retryButtonFocused]}
+          onPress={refetch}
+          hasTVPreferredFocus
+          focusable>
           <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
         </Pressable>
       </View>
@@ -91,6 +101,11 @@ function useStyles(c: { textMuted: string; accent: string; onDarkTextPrimary: st
       backgroundColor: c.accent,
       borderRadius: 8,
       alignSelf: 'flex-start',
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    retryButtonFocused: {
+      borderColor: 'white',
     },
     retryButtonText: {
       color: c.onDarkTextPrimary,

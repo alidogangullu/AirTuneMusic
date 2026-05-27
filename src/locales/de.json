@@ -230,6 +230,11 @@
     "cancel": "Abbrechen",
     "error": "Etwas ist schiefgelaufen"
   },
+  "subscriptionRequired": {
+    "title": "Zugang erforderlich",
+    "message": "Ein aktives Apple Music-Abonnement ist erforderlich, oder die Datenschutzberechtigung \"Medien & Apple Music\" wurde nicht erteilt. Bitte überprüfen Sie Ihr Abonnement und Ihre Datenschutzeinstellungen und melden Sie sich erneut an.",
+    "signOut": "Abmelden"
+  },
   "quotaLimit": {
     "title": "Limit erreicht",
     "message": "Sie haben das kostenlose Wiedergabelimit von {{limit}} Songs erreicht. Sehen Sie sich eine Anzeige an, um {{bonus}} weitere Wiedergaben zu erhalten, oder wechseln Sie zu Pro.",

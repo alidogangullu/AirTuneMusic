@@ -231,8 +231,8 @@
     "error": "Something went wrong"
   },
   "subscriptionRequired": {
-    "title": "Subscription Required",
-    "message": "A paid Apple Music subscription is required to use AirTune Music. Please ensure your account has an active subscription and try again.",
+    "title": "Access Required",
+    "message": "An active Apple Music subscription is required, or the \"Media and Apple Music\" privacy permission has not been granted. Please check your subscription and privacy settings, then sign in again.",
     "signOut": "Sign Out"
   },
   "quotaLimit": {

@@ -231,8 +231,8 @@
     "error": "Bir şeyler yanlış gitti"
   },
   "subscriptionRequired": {
-    "title": "Abonelik Gerekli",
-    "message": "AirTune Music'i kullanmak için ücretli bir Apple Music aboneliği gereklidir. Lütfen hesabınızın aktif bir aboneliği olduğundan emin olun ve tekrar deneyin.",
+    "title": "Erişim Gerekli",
+    "message": "Aktif bir Apple Music aboneliği gereklidir veya \"Medya ve Apple Music\" gizlilik izni verilmemiş. Lütfen aboneliğinizi ve gizlilik ayarlarınızı kontrol edip tekrar giriş yapın.",
     "signOut": "Oturumu Kapat"
   },
   "quotaLimit": {

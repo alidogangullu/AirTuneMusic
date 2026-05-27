@@ -434,7 +434,7 @@ export function ContentDetailScreen({
         styles={styles}
       />
     ),
-    [styles, contentType, handleTrackPress, isPlaying, isTrackNowPlaying, setSelectedTrackMenu],
+    [styles, contentType, handleTrackPress, isPlaying, isTrackNowPlaying, setSelectedTrackMenu, playerState.isLoading],
   );
 
   let rightContent: React.ReactNode;
@@ -444,7 +444,9 @@ export function ContentDetailScreen({
   } else if (error) {
     rightContent = (
       <View style={styles.center}>
-        <Text style={styles.errorText}>Failed to load content</Text>
+        <Text style={styles.errorText}>
+          {error instanceof Error ? error.message : 'Failed to load content'}
+        </Text>
       </View>
     );
   } else if (normalized.kind === 'tracklist') {
