@@ -7,9 +7,10 @@
  * animation (not `pressed` state) because `pressed` does not fire for D-pad select.
  */
 
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   Animated,
+  findNodeHandle,
   Platform,
   Pressable,
   StyleSheet,
@@ -51,6 +52,8 @@ function NavPressable({
   ...rest
 }: React.ComponentProps<typeof Pressable>) {
   const { scale, trigger } = usePressFeedback();
+  const pressableRef = useRef<View>(null);
+  const [selfHandle, setSelfHandle] = useState<number | undefined>(undefined);
   const handlePress = useCallback(
     (e: unknown) => {
       trigger();
@@ -58,9 +61,21 @@ function NavPressable({
     },
     [trigger, onPress],
   );
+  const handleLayout = useCallback(() => {
+    if (pressableRef.current && selfHandle === undefined) {
+      const handle = findNodeHandle(pressableRef.current);
+      if (handle != null) { setSelfHandle(handle); }
+    }
+  }, [selfHandle]);
   return (
     <Animated.View style={{ transform: [{ scale }] }}>
-      <Pressable {...rest} style={style} onPress={handlePress}>
+      <Pressable
+        {...rest}
+        ref={pressableRef}
+        style={style}
+        onPress={handlePress}
+        onLayout={handleLayout}
+        nextFocusUp={selfHandle}>
         {children}
       </Pressable>
     </Animated.View>

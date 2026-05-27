@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 export function BrowseScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { data: recsData, isLoading: recsLoading, error: recsError, refetch: refetchRecs } = useRecommendations();
-  const { isLoading: storefrontLoading, data: storefront } = useStorefront();
+  const { isLoading: storefrontLoading, error: storefrontError } = useStorefront();
   const { data: chartsData, isLoading: chartsLoading, error: chartsError, refetch: refetchCharts } = useCharts();
 
   const browseSections = React.useMemo(() => {
@@ -49,8 +49,8 @@ export function BrowseScreen(): React.JSX.Element {
     return sections;
   }, [recsData?.data, chartsData?.results, t]);
 
-  const isLoading = recsLoading || chartsLoading || storefrontLoading || !storefront;
-  const error = recsError || chartsError;
+  const isLoading = recsLoading || chartsLoading || storefrontLoading;
+  const error = recsError || chartsError || storefrontError;
   const refetch = () => {
     refetchRecs();
     refetchCharts();
