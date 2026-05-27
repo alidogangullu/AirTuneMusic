@@ -126,7 +126,9 @@
     "visitURL": "VISIT URL",
     "linkedMessage": "Linked! Token received.",
     "paidSubscriptionRequired": "Paid Apple Music subscription is required.",
-    "popupPermissionNote": "Your browser may require popup window permission."
+    "popupPermissionNote": "Your browser may require popup window permission.",
+    "sameWifiNote": "The device used to scan or visit the link must be on the same Wi-Fi network as this TV.",
+    "sameWifiHighlight": "same Wi-Fi network"
   },
   "settings": {
     "title": "Settings",

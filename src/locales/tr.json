@@ -126,7 +126,9 @@
     "visitURL": "ZİYARET EDİLECEK URL",
     "linkedMessage": "Bağlandı! Token alındı.",
     "paidSubscriptionRequired": "Ücretli Apple Music aboneliği gereklidir.",
-    "popupPermissionNote": "Tarayıcınızda popup window izni gerekebilir."
+    "popupPermissionNote": "Tarayıcınızda popup window izni gerekebilir.",
+    "sameWifiNote": "QR kodu tarayan veya linke giren cihaz bu TV ile aynı Wi-Fi ağında olmalıdır.",
+    "sameWifiHighlight": "aynı Wi-Fi ağında"
   },
   "settings": {
     "title": "Ayarlar",

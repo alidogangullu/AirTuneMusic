@@ -126,7 +126,9 @@
     "visitURL": "URL BESUCHEN",
     "linkedMessage": "Verbunden! Token erhalten.",
     "paidSubscriptionRequired": "Ein kostenpflichtiges Apple Music-Abonnement ist erforderlich.",
-    "popupPermissionNote": "Ihr Browser benötigt möglicherweise eine Berechtigung für popup window."
+    "popupPermissionNote": "Ihr Browser benötigt möglicherweise eine Berechtigung für popup window.",
+    "sameWifiNote": "Das Gerät, das den Code scannt oder den Link öffnet, muss sich im selben Wi-Fi-Netzwerk wie dieser TV befinden.",
+    "sameWifiHighlight": "selben Wi-Fi-Netzwerk"
   },
   "settings": {
     "title": "Einstellungen",

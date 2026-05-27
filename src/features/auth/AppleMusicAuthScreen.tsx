@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  findNodeHandle,
   Image,
   Modal,
   Platform,
@@ -214,6 +215,14 @@ function makeStyles(c: AppColors) {
       paddingHorizontal: spacing.lg,
       lineHeight: 22,
     },
+    sameWifiNote: {
+      fontSize: 11,
+    },
+    sameWifiNoteHighlight: {
+      fontSize: 11,
+      color: c.alertRed,
+      fontWeight: '600',
+    },
     glassCardHint: {
       fontSize: 14,
       color: c.textSecondary,
@@ -387,6 +396,8 @@ export function AppleMusicAuthScreen({
   const [manualEntryBtnFocused, setManualEntryBtnFocused] = useState(false);
   const [localServerIp, setLocalServerIp] = useState<string>('');
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const getNewCodeBtnRef = useRef<View>(null);
+  const manualEntryBtnRef = useRef<View>(null);
   const [showManualInput, setShowManualInput] = useState(false);
   const [manualToken, setManualToken] = useState('');
 
@@ -568,7 +579,15 @@ export function AppleMusicAuthScreen({
                 {t('auth.connectTitle')}
               </Text>
               <Text style={styles.glassCardSubtitle}>
-                <Text style={{ color: colors.alertRed, fontWeight: 'bold' }}>{t('auth.scanQR')}</Text> {t('auth.orVisitURL')}
+                <Text style={{ color: colors.alertRed, fontWeight: 'bold' }}>{t('auth.scanQR')}</Text> {t('auth.orVisitURL')}.{'\n'}{(() => {
+                    const text = t('auth.sameWifiNote');
+                    const keyword = t('auth.sameWifiHighlight');
+                    const idx = text.indexOf(keyword);
+                    if (idx === -1) return <Text style={styles.sameWifiNote}>{text}</Text>;
+                    return <Text style={styles.sameWifiNote}>
+                      {text.slice(0, idx)}<Text style={styles.sameWifiNoteHighlight}>{keyword}</Text>{text.slice(idx + keyword.length)}
+                    </Text>;
+                  })()}
               </Text>
               <Text style={[styles.subscriptionNote, { color: colors.textSecondary, fontWeight: 'normal' }]}>
                 {(() => {
@@ -585,7 +604,6 @@ export function AppleMusicAuthScreen({
                   <Text key={i}>{part}{i < arr.length - 1 ? <Text style={{ color: colors.alertRed, fontWeight: '600' }}>popup window</Text> : null}</Text>
                 ))}
               </Text>
-
               <View style={styles.authContainer} focusable={false}>
                 <View style={styles.qrContainer} focusable={false}>
                   <QRCode
@@ -615,6 +633,7 @@ export function AppleMusicAuthScreen({
               </View>
 
               <Pressable
+                ref={getNewCodeBtnRef}
                 style={({ focused }) => [
                   styles.getNewCodeBtn,
                   focused && styles.getNewCodeBtnFocused,
@@ -623,7 +642,9 @@ export function AppleMusicAuthScreen({
                 onFocus={() => setNewCodeBtnFocused(true)}
                 onBlur={() => setNewCodeBtnFocused(false)}
                 focusable={true}
-                hasTVPreferredFocus={true}>
+                hasTVPreferredFocus={true}
+                nextFocusUp={findNodeHandle(manualEntryBtnRef.current) ?? undefined}
+                nextFocusDown={findNodeHandle(manualEntryBtnRef.current) ?? undefined}>
                 <Text
                   style={[
                     styles.getNewCodeBtnText,
@@ -634,6 +655,7 @@ export function AppleMusicAuthScreen({
               </Pressable>
 
               <Pressable
+                ref={manualEntryBtnRef}
                 style={({ focused }) => [
                   styles.getNewCodeBtn,
                   styles.manualEntryBtn,
@@ -644,7 +666,9 @@ export function AppleMusicAuthScreen({
                 onFocus={() => setManualEntryBtnFocused(true)}
                 onBlur={() => setManualEntryBtnFocused(false)}
                 focusable={true}
-                hasTVPreferredFocus={false}>
+                hasTVPreferredFocus={false}
+                nextFocusUp={findNodeHandle(getNewCodeBtnRef.current) ?? undefined}
+                nextFocusDown={findNodeHandle(getNewCodeBtnRef.current) ?? undefined}>
                 <Text
                   style={[
                     styles.manualEntryBtnText,
