@@ -223,6 +223,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   const quotaRetryTrackIdRef = useRef<string | null>(null);
   const quotaRecoveryQueueIdRef = useRef<number | null>(null);
   const suppressAutoStartRef = useRef(false);
+  const cancelledQuotaQueueIdRef = useRef<number | null>(null);
 
   const startNativeStallTimer = useCallback((trackId: string, delayMs = 10000) => {
     if (nativePlaybackTimeoutRef.current) clearTimeout(nativePlaybackTimeoutRef.current);
@@ -243,6 +244,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
 
   const dismissQuotaRecovery = useCallback(() => {
     pendingQuotaRetryRef.current = null;
+    cancelledQuotaQueueIdRef.current = quotaRecoveryQueueIdRef.current;
     setQuotaRecoveryRequest(null);
   }, []);
 
@@ -492,6 +494,10 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
             QuotaService.recordSongPlay();
             lastTrackIdRef.current = data.playbackQueueId;
           } else if (!adInFlightRef.current && !pendingQuotaRetryRef.current) {
+            if (data.playbackQueueId === cancelledQuotaQueueIdRef.current) {
+              return;
+            }
+            cancelledQuotaQueueIdRef.current = null;
             musicPlayer.pause();
             const queueId = data.playbackQueueId;
             const trackId = data.id;
