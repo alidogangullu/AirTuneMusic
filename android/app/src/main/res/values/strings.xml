@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">AirTune</string>
+    <string name="app_name">AirTune Music</string>
     <string name="airplay_notification_channel">AirPlay</string>
-    <string name="airplay_notification_title">AirPlay alıcısı çalışıyor</string>
-    <string name="airplay_notification_text">iPhone\'dan müzik aktar</string>
+    <string name="airplay_notification_title">AirPlay receiver is running</string>
+    <string name="airplay_notification_text">Stream music from iPhone</string>
 </resources>
