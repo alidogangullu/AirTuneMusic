@@ -151,7 +151,13 @@
       "limitReachedMessage": "Sie haben Ihr Limit von {{limit}} Titeln erreicht. Nächstes Abspielen verfügbar in: {{remaining}}.",
       "restorePurchases": "Käufe wiederherstellen",
       "hideQuotaIndicator": "Kontingentanzeige ausblenden: {{state}}",
-      "getProMonthly": "Auf Pro upgraden",
+      "planMonthly": "Monatlich",
+      "planYearly": "Jährlich",
+      "planLifetime": "Einmalig",
+      "getProMonthly": "Auf Pro upgraden — Monatlich",
+      "getProYearly": "Auf Pro upgraden — Jährlich",
+      "getProLifetime": "Auf Pro upgraden — Lebenslang",
+      "oneTime": "Einmaliger Kauf",
       "airPlayUsage": "AirPlay-Nutzung: {{airPlayUsed}}/{{airPlayTotal}} Min.",
       "usageTitle": "Nutzung",
       "usageMusic": "Musik",
@@ -214,7 +220,8 @@
     "notFoundMessage": "Kein aktives Abonnement für dieses Konto gefunden.",
     "error": "Fehler",
     "errorMessage": "Fehler bei der Kommunikation mit dem Store. Bitte versuchen Sie es später erneut.",
-    "perMonth": "/Monat"
+    "perMonth": "/Monat",
+    "perYear": "/Jahr"
   },
   "more": {
     "love": "Gefällt mir",

@@ -18,7 +18,7 @@ import { QuotaService } from './quotaService';
 import { AdSettingsService } from './adSettingsService';
 import { AirPlayQuotaService } from '../airplay/airPlayQuotaService';
 import { QuotaPeriodService } from './quotaPeriodService';
-import { IapService } from './iapService';
+import { IapService, SKUS } from './iapService';
 import { spacing, radius } from '../../theme/layout';
 import { VersionCheckResult } from '../bootstrap/versionService';
 import { Announcement } from '../bootstrap/announcementService';
@@ -48,16 +48,18 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
   const { t, i18n } = useTranslation();
   const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language' | 'announcements' | 'adSettings' | 'subscription' | 'about' | 'support'>(initialSubMenu);
   const [autoStartAd, setAutoStartAd] = React.useState(() => AdSettingsService.getAutoStartAd());
-  const [proPrice, setProPrice] = React.useState<string | null>(null);
+  const [prices, setPrices] = React.useState<Record<string, string>>({});
   const [quotaIndicatorHidden, setQuotaIndicatorHidden] = React.useState(() => QuotaService.isQuotaIndicatorHidden());
   const { enabled: airPlayEnabled, setEnabled: setAirPlayEnabled } = useAirPlay();
 
   React.useEffect(() => {
     if (currentSubMenu !== 'subscription' || QuotaService.isProUser()) return;
     IapService.getProducts().then(products => {
-      if (!products) return;
-      const product = products.find((p: any) => p.id === 'pro_monthly') as any;
-      if (product?.displayPrice) setProPrice(product.displayPrice);
+      const map: Record<string, string> = {};
+      products.forEach((p: any) => {
+        if (p.id && p.displayPrice) map[p.id] = p.displayPrice;
+      });
+      setPrices(map);
     });
   }, [currentSubMenu]);
 
@@ -109,6 +111,14 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
       setCurrentSubMenu('about');
     }
   };
+
+  const handlePlanPress = useCallback((sku: string) => {
+    IapService.subscribe(sku).catch((err: any) => {
+      if (err.code !== 'E_USER_CANCELLED' && err.code !== 'user-cancelled') {
+        Alert.alert(t('common.error'), t('iap.errorMessage'));
+      }
+    });
+  }, [t]);
 
   const handleBack = useCallback(() => {
     if (currentSubMenu === 'none') {
@@ -200,29 +210,33 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
             </View>
           ) : (
             <>
-              <SettingsMenuItem
-                label={t('settings.pro.getProMonthly')}
-                sublabel={proPrice ? `${proPrice}${t('iap.perMonth')}` : undefined}
-                hasTVPreferredFocus
-                onPress={async () => {
-                  try {
-                    await IapService.subscribe('pro_monthly');
-                  } catch (err: any) {
-                    if (err.code !== 'E_USER_CANCELLED' && err.code !== 'user-cancelled') {
-                      Alert.alert(t('common.error'), t('iap.errorMessage'));
-                    }
-                  }
-                }}
-              />
-
               <View style={[styles.adHintContainer, styles.adHintContainerFirst]}>
-                <Text style={styles.adHintTitle}>{t('settings.pro.featuresTitle')}</Text>
+                <Text style={[styles.adHintTitle, styles.textCenter]}>{t('settings.pro.featuresTitle')}</Text>
                 {([
                   t('settings.pro.featureMusic'),
                   t('settings.pro.featureAirPlay'),
                   t('settings.pro.featureAdFree'),
                 ] as string[]).map((feat) => (
-                  <Text key={feat} style={styles.adHintText}>{feat}</Text>
+                  <Text key={feat} style={[styles.adHintText, styles.textCenter]}>{feat}</Text>
+                ))}
+              </View>
+
+              <View style={styles.pricingRow}>
+                {([
+                  { sku: SKUS.MONTHLY,  name: t('settings.pro.planMonthly'),  sub: prices[SKUS.MONTHLY]  ? `${prices[SKUS.MONTHLY]}${t('iap.perMonth')}`  : '—', first: false },
+                  { sku: SKUS.YEARLY,   name: t('settings.pro.planYearly'),   sub: prices[SKUS.YEARLY]   ? `${prices[SKUS.YEARLY]}${t('iap.perYear')}`    : '—', first: true  },
+                  { sku: SKUS.LIFETIME, name: t('settings.pro.planLifetime'), sub: prices[SKUS.LIFETIME] ?? '—',                                                   first: false },
+                ] as const).map((plan) => (
+                  <Pressable
+                    key={plan.sku}
+                    style={({ focused }) => [styles.pricingCard, focused && styles.pricingCardFocused]}
+                    hasTVPreferredFocus={plan.first}
+                    onPress={() => handlePlanPress(plan.sku)}>
+                    {({ focused }) => (<>
+                      <Text style={[styles.pricingName, focused && styles.pricingFocusedText]} numberOfLines={1} adjustsFontSizeToFit>{plan.name}</Text>
+                      <Text style={[styles.pricingPrice, focused && styles.pricingFocusedText]} numberOfLines={1} adjustsFontSizeToFit>{plan.sub}</Text>
+                    </>)}
+                  </Pressable>
                 ))}
               </View>
 
@@ -493,6 +507,48 @@ function makeStyles(c: AppColors, themeMode: 'light' | 'dark') {
       marginLeft: 24,
       marginTop: spacing.sm,
     },
+    pricingRow: {
+      flexDirection: 'row' as const,
+      marginHorizontal: spacing.xs,
+      gap: spacing.sm,
+      marginTop: spacing.xs,
+      marginBottom: spacing.md,
+    },
+    pricingItem: {
+      flex: 1,
+    },
+    pricingCard: {
+      flex: 1,
+      minWidth: 0,
+      alignItems: 'center' as const,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.xs,
+      borderRadius: radius.md,
+      backgroundColor: 'transparent',
+    },
+    pricingCardFocused: {
+      backgroundColor: c.settingsCardBg,
+      transform: [{ scale: 1.05 }],
+    },
+    pricingName: {
+      fontSize: 15,
+      fontWeight: '600' as const,
+      color: c.settingsTextSubdued,
+    },
+    pricingPrice: {
+      fontSize: 14,
+      fontWeight: '700' as const,
+      color: c.settingsTextSubdued,
+      marginTop: 2,
+    },
+    pricingUnit: {
+      fontSize: 11,
+      color: c.settingsTextSubdued,
+      marginTop: 1,
+    },
+    pricingFocusedText: {
+      color: c.textOnDark,
+    },
     adHintContainer: {
       marginTop: spacing.sm,
       marginHorizontal: spacing.md,
@@ -503,7 +559,10 @@ function makeStyles(c: AppColors, themeMode: 'light' | 'dark') {
       marginTop: 0,
     },
     adHintContainerFirst: {
-      marginTop: -4,
+      marginTop: -spacing.lg,
+    },
+    textCenter: {
+      textAlign: 'center' as const,
     },
     adHintTitle: {
       fontSize: 15,

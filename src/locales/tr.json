@@ -151,7 +151,13 @@
       "limitReachedMessage": "{{limit}} şarkılık sınırınıza ulaştınız. Bir sonraki şarkı şurada mevcut: {{remaining}}.",
       "restorePurchases": "Satın Almaları Geri Yükle",
       "hideQuotaIndicator": "Kota Göstergesini Gizle: {{state}}",
-      "getProMonthly": "Pro'ya Yükselt",
+      "planMonthly": "Aylık",
+      "planYearly": "Yıllık",
+      "planLifetime": "Tek Seferlik",
+      "getProMonthly": "Pro'ya Yükselt — Aylık",
+      "getProYearly": "Pro'ya Yükselt — Yıllık",
+      "getProLifetime": "Pro'ya Yükselt — Ömür Boyu",
+      "oneTime": "Tek seferlik satın alma",
       "airPlayUsage": "AirPlay Kullanımı: {{airPlayUsed}}/{{airPlayTotal}} dk.",
       "usageTitle": "Kullanım",
       "usageMusic": "Müzik",
@@ -214,7 +220,8 @@
     "notFoundMessage": "Bu hesap için aktif bir abonelik bulunamadı.",
     "error": "Hata",
     "errorMessage": "Mağaza ile iletişim kurulamadı. Lütfen daha sonra tekrar deneyin.",
-    "perMonth": "/ay"
+    "perMonth": "/ay",
+    "perYear": "/yıl"
   },
   "more": {
     "love": "Beğen",

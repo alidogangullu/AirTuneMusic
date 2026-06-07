@@ -151,7 +151,13 @@
       "limitReachedMessage": "You have reached your limit of {{limit}} songs. Next play available in: {{remaining}}.",
       "restorePurchases": "Restore Purchases",
       "hideQuotaIndicator": "Hide Quota Indicator: {{state}}",
-      "getProMonthly": "Upgrade to Pro",
+      "planMonthly": "Monthly",
+      "planYearly": "Yearly",
+      "planLifetime": "One-Time",
+      "getProMonthly": "Upgrade to Pro — Monthly",
+      "getProYearly": "Upgrade to Pro — Yearly",
+      "getProLifetime": "Upgrade to Pro — Lifetime",
+      "oneTime": "One-time purchase",
       "airPlayUsage": "AirPlay Usage: {{airPlayUsed}}/{{airPlayTotal}} min.",
       "usageTitle": "Usage",
       "usageMusic": "Music",
@@ -214,7 +220,8 @@
     "notFoundMessage": "No active subscription was found for this account.",
     "error": "Error",
     "errorMessage": "Failed to communicate with the Store. Please try again later.",
-    "perMonth": "/month"
+    "perMonth": "/month",
+    "perYear": "/year"
   },
   "more": {
     "love": "Love",

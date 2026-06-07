@@ -151,7 +151,13 @@
       "limitReachedMessage": "Vous avez atteint votre limite de {{limit}} morceaux. Prochaine lecture disponible dans : {{remaining}}.",
       "restorePurchases": "Restaurer les achats",
       "hideQuotaIndicator": "Masquer l'indicateur de quota : {{state}}",
-      "getProMonthly": "Passer à Pro",
+      "planMonthly": "Mensuel",
+      "planYearly": "Annuel",
+      "planLifetime": "Unique",
+      "getProMonthly": "Passer à Pro — Mensuel",
+      "getProYearly": "Passer à Pro — Annuel",
+      "getProLifetime": "Passer à Pro — À vie",
+      "oneTime": "Achat unique",
       "airPlayUsage": "Utilisation AirPlay : {{airPlayUsed}}/{{airPlayTotal}} min.",
       "usageTitle": "Utilisation",
       "usageMusic": "Musique",
@@ -214,7 +220,8 @@
     "notFoundMessage": "Aucun abonnement actif n'a été trouvé pour ce compte.",
     "error": "Erreur",
     "errorMessage": "Échec de la communication avec le Store. Veuillez réessayer plus tard.",
-    "perMonth": "/mois"
+    "perMonth": "/mois",
+    "perYear": "/an"
   },
   "more": {
     "love": "J'aime",

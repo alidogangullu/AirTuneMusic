@@ -10,6 +10,7 @@ export type SettingsMenuItemProps = {
   onPress?: () => void;
   hasTVPreferredFocus?: boolean;
   labelColor?: string;
+  style?: object;
 };
 
 export function SettingsMenuItem({
@@ -19,12 +20,13 @@ export function SettingsMenuItem({
   onPress,
   hasTVPreferredFocus = false,
   labelColor,
+  style,
 }: Readonly<SettingsMenuItemProps>): React.JSX.Element {
   const { colors } = useTheme();
   const styles = makeStyles(colors);
 
   return (
-    <View>
+    <View style={style}>
       <Pressable
         style={({ focused }) => [
           styles.row,

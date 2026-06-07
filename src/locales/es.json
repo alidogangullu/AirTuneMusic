@@ -151,7 +151,13 @@
       "limitReachedMessage": "Has alcanzado tu límite de {{limit}} canciones. Próxima reproducción disponible en: {{remaining}}.",
       "restorePurchases": "Restaurar compras",
       "hideQuotaIndicator": "Ocultar indicador de cuota: {{state}}",
-      "getProMonthly": "Mejorar a Pro",
+      "planMonthly": "Mensual",
+      "planYearly": "Anual",
+      "planLifetime": "Único",
+      "getProMonthly": "Mejorar a Pro — Mensual",
+      "getProYearly": "Mejorar a Pro — Anual",
+      "getProLifetime": "Mejorar a Pro — De por vida",
+      "oneTime": "Compra única",
       "airPlayUsage": "Uso de AirPlay: {{airPlayUsed}}/{{airPlayTotal}} min.",
       "usageTitle": "Uso",
       "usageMusic": "Música",
@@ -214,7 +220,8 @@
     "notFoundMessage": "No se ha encontrado ninguna suscripción activa para esta cuenta.",
     "error": "Error",
     "errorMessage": "Error al comunicarse con la tienda. Por favor, inténtalo de nuevo más tarde.",
-    "perMonth": "/mes"
+    "perMonth": "/mes",
+    "perYear": "/año"
   },
   "more": {
     "love": "Me gusta",

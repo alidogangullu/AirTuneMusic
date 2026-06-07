@@ -9,20 +9,34 @@ import {
   type PurchaseError,
   type ProductSubscription,
   type ProductSubscriptionAndroid,
+  type Product,
   ErrorCode,
 } from 'react-native-iap';
 import { Platform, Alert } from 'react-native';
 import i18next from 'i18next';
 import { QuotaService } from './quotaService';
 
-const itemSkus = Platform.select({
-  android: ['pro_monthly'],
+export const SKUS = {
+  MONTHLY: 'pro_monthly',
+  YEARLY: 'pro_yearly',
+  LIFETIME: 'pro_lifetime',
+} as const;
+
+const subscriptionSkus = Platform.select({
+  android: [SKUS.MONTHLY, SKUS.YEARLY],
   default: [],
 }) as string[];
 
+const oneTimeSkus = Platform.select({
+  android: [SKUS.LIFETIME],
+  default: [],
+}) as string[];
+
+const allSkus = new Set([...subscriptionSkus, ...oneTimeSkus]);
+
 let purchaseUpdateSubscription: ReturnType<typeof purchaseUpdatedListener> | null = null;
 let purchaseErrorSubscription: ReturnType<typeof purchaseErrorListener> | null = null;
-let cachedSubscriptions: ProductSubscription[] = [];
+let cachedProducts: (ProductSubscription | Product)[] = [];
 
 export const IapService = {
   async init(): Promise<void> {
@@ -35,7 +49,6 @@ export const IapService = {
           const token = purchase.purchaseToken;
           if (token) {
             try {
-              // finishTransaction handles acknowledgment automatically for non-consumables
               await finishTransaction({ purchase, isConsumable: false });
 
               QuotaService.setProStatus(true);
@@ -72,15 +85,22 @@ export const IapService = {
     }
   },
 
-  async getProducts(): Promise<ProductSubscription[]> {
+  async getProducts(): Promise<(ProductSubscription | Product)[]> {
     try {
-      if (itemSkus.length === 0) return [];
-      const subscriptions = await fetchProducts({
-        skus: itemSkus,
-        type: 'subs',
-      }) as ProductSubscription[];
-      cachedSubscriptions = subscriptions;
-      return subscriptions;
+      const results: (ProductSubscription | Product)[] = [];
+
+      if (subscriptionSkus.length > 0) {
+        const subs = await fetchProducts({ skus: subscriptionSkus, type: 'subs' }) as ProductSubscription[];
+        results.push(...subs);
+      }
+
+      if (oneTimeSkus.length > 0) {
+        const inapp = await fetchProducts({ skus: oneTimeSkus, type: 'in-app' }) as Product[];
+        results.push(...inapp);
+      }
+
+      cachedProducts = results;
+      return results;
     } catch (err) {
       console.warn('[IAP] getProducts error', err);
       return [];
@@ -89,7 +109,15 @@ export const IapService = {
 
   async subscribe(sku: string): Promise<void> {
     try {
-      const subscription = cachedSubscriptions.find(s => s.id === sku) as ProductSubscriptionAndroid | undefined;
+      if (sku === SKUS.LIFETIME) {
+        await requestPurchase({
+          type: 'in-app',
+          request: { google: { skus: [sku] } },
+        });
+        return;
+      }
+
+      const subscription = cachedProducts.find(s => s.id === sku) as ProductSubscriptionAndroid | undefined;
       const subscriptionOffers = subscription?.subscriptionOffers
         ?.filter(offer => offer.offerTokenAndroid)
         .map(offer => ({ sku, offerToken: offer.offerTokenAndroid! })) ?? [];
@@ -120,7 +148,7 @@ export const IapService = {
       const { getAvailablePurchases } = await import('react-native-iap');
       const purchases = await getAvailablePurchases();
 
-      const isActive = purchases.some(p => itemSkus.includes(p.productId));
+      const isActive = purchases.some(p => allSkus.has(p.productId));
       QuotaService.setProStatus(isActive);
       return isActive;
     } catch (err) {
