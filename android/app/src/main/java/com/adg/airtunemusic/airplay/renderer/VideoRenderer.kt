@@ -1,4 +1,4 @@
-package com.adg.airtune.airplay.renderer
+package com.adg.airtunemusic.airplay.renderer
 
 import android.media.MediaCodec
 import android.media.MediaCodecList

@@ -1,4 +1,4 @@
-package com.adg.airtune.airplay.bridge
+package com.adg.airtunemusic.airplay.bridge
 
 interface RaopCallbackHandler {
     fun onVideoData(data: ByteArray, ntpTimeNs: Long, isH265: Boolean)

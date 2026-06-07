@@ -1,4 +1,4 @@
-package com.adg.airtune.airplay.renderer
+package com.adg.airtunemusic.airplay.renderer
 
 import android.media.AudioAttributes
 import android.media.AudioFormat
@@ -6,7 +6,7 @@ import android.media.AudioTrack
 import android.media.MediaCodec
 import android.media.MediaFormat
 import android.util.Log
-import com.adg.airtune.airplay.bridge.NativeBridge
+import com.adg.airtunemusic.airplay.bridge.NativeBridge
 import java.nio.ByteBuffer
 
 class AudioRenderer {

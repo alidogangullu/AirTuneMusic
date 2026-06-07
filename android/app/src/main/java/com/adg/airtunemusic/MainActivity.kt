@@ -1,4 +1,4 @@
-package com.adg.airtune
+package com.adg.airtunemusic
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

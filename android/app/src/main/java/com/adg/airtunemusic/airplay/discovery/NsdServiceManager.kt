@@ -1,4 +1,4 @@
-package com.adg.airtune.airplay.discovery
+package com.adg.airtunemusic.airplay.discovery
 
 import android.content.Context
 import android.net.nsd.NsdManager

@@ -103,9 +103,9 @@ android {
         jvmTarget = '17'
     }
 
-    namespace "com.adg.airtune"
+    namespace "com.adg.airtunemusic"
     defaultConfig {
-        applicationId "com.adg.airtune"
+        applicationId "com.adg.airtunemusic"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 25

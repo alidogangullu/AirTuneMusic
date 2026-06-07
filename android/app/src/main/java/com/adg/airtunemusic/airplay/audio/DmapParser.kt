@@ -1,4 +1,4 @@
-package com.adg.airtune.airplay.audio
+package com.adg.airtunemusic.airplay.audio
 
 import java.nio.ByteBuffer
 import java.nio.ByteOrder

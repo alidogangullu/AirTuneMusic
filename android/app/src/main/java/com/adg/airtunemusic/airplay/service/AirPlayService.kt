@@ -1,4 +1,4 @@
-package com.adg.airtune.airplay.service
+package com.adg.airtunemusic.airplay.service
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -22,18 +22,18 @@ import android.util.Log
 import android.view.Surface
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
-import com.adg.airtune.MainActivity
+import com.adg.airtunemusic.MainActivity
 //removed
-import com.adg.airtune.R
-import com.adg.airtune.airplay.audio.DacpController
-import com.adg.airtune.airplay.audio.DmapParser
-import com.adg.airtune.airplay.audio.TrackInfo
+import com.adg.airtunemusic.R
+import com.adg.airtunemusic.airplay.audio.DacpController
+import com.adg.airtunemusic.airplay.audio.DmapParser
+import com.adg.airtunemusic.airplay.audio.TrackInfo
 //removed
-import com.adg.airtune.airplay.bridge.NativeBridge
-import com.adg.airtune.airplay.bridge.RaopCallbackHandler
-import com.adg.airtune.airplay.discovery.NsdServiceManager
-import com.adg.airtune.airplay.renderer.AudioRenderer
-import com.adg.airtune.airplay.renderer.VideoRenderer
+import com.adg.airtunemusic.airplay.bridge.NativeBridge
+import com.adg.airtunemusic.airplay.bridge.RaopCallbackHandler
+import com.adg.airtunemusic.airplay.discovery.NsdServiceManager
+import com.adg.airtunemusic.airplay.renderer.AudioRenderer
+import com.adg.airtunemusic.airplay.renderer.VideoRenderer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.net.NetworkInterface
@@ -501,8 +501,8 @@ class AirPlayService : Service(), RaopCallbackHandler {
         private const val TAG = "AirPlayService"
         private const val CHANNEL_ID = "airplay_service"
         private const val NOTIFICATION_ID = 1
-        const val ACTION_PLAY_PAUSE = "com.adg.airtune.AIRPLAY_PLAY_PAUSE"
-        const val ACTION_NEXT = "com.adg.airtune.AIRPLAY_NEXT"
-        const val ACTION_PREV = "com.adg.airtune.AIRPLAY_PREV"
+        const val ACTION_PLAY_PAUSE = "com.adg.airtunemusic.AIRPLAY_PLAY_PAUSE"
+        const val ACTION_NEXT = "com.adg.airtunemusic.AIRPLAY_NEXT"
+        const val ACTION_PREV = "com.adg.airtunemusic.AIRPLAY_PREV"
     }
 }

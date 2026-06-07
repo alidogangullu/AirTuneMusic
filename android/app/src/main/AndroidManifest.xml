@@ -67,7 +67,7 @@
       </activity>
 
       <service
-        android:name="com.adg.airtune.airplay.service.AirPlayService"
+        android:name="com.adg.airtunemusic.airplay.service.AirPlayService"
         android:foregroundServiceType="mediaPlayback"
         android:exported="false" />
     </application>

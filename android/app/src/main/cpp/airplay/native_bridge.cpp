@@ -41,7 +41,7 @@ static void _log_callback(void *cls, int level, const char *msg) {
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeInit(
+Java_com_adg_airtunemusic_airplay_bridge_NativeBridge_nativeInit(
         JNIEnv *env, jobject thiz,
         jobject callback, jbyteArray hwAddr, jstring name, jstring keyFile,
         jboolean nohold, jboolean requirePin) {
@@ -109,7 +109,7 @@ Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeInit(
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeStart(
+Java_com_adg_airtunemusic_airplay_bridge_NativeBridge_nativeStart(
         JNIEnv *env, jobject thiz, jlong handle, jint requestedPort) {
 
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
@@ -135,7 +135,7 @@ Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeStart(
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeStop(
+Java_com_adg_airtunemusic_airplay_bridge_NativeBridge_nativeStop(
         JNIEnv *env, jobject thiz, jlong handle) {
 
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
@@ -152,7 +152,7 @@ Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeStop(
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeDestroy(
+Java_com_adg_airtunemusic_airplay_bridge_NativeBridge_nativeDestroy(
         JNIEnv *env, jobject thiz, jlong handle) {
 
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
@@ -172,7 +172,7 @@ Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeDestroy(
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeSetDisplaySize(
+Java_com_adg_airtunemusic_airplay_bridge_NativeBridge_nativeSetDisplaySize(
         JNIEnv *env, jobject thiz, jlong handle, jint w, jint h, jint fps) {
 
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
@@ -214,7 +214,7 @@ static jobject _build_txt_map(JNIEnv *env, dnssd_t *dnssd, int is_raop) {
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeGetRaopTxtRecords(
+Java_com_adg_airtunemusic_airplay_bridge_NativeBridge_nativeGetRaopTxtRecords(
         JNIEnv *env, jobject thiz, jlong handle) {
 
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
@@ -224,7 +224,7 @@ Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeGetRaopTxtRecords(
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeGetAirplayTxtRecords(
+Java_com_adg_airtunemusic_airplay_bridge_NativeBridge_nativeGetAirplayTxtRecords(
         JNIEnv *env, jobject thiz, jlong handle) {
 
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
@@ -234,7 +234,7 @@ Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeGetAirplayTxtRecords(
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeGetRaopServiceName(
+Java_com_adg_airtunemusic_airplay_bridge_NativeBridge_nativeGetRaopServiceName(
         JNIEnv *env, jobject thiz, jlong handle) {
 
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
@@ -244,7 +244,7 @@ Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeGetRaopServiceName(
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeGetServerName(
+Java_com_adg_airtunemusic_airplay_bridge_NativeBridge_nativeGetServerName(
         JNIEnv *env, jobject thiz, jlong handle) {
 
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
@@ -256,7 +256,7 @@ Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeGetServerName(
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeSetPlist(
+Java_com_adg_airtunemusic_airplay_bridge_NativeBridge_nativeSetPlist(
         JNIEnv *env, jobject thiz, jlong handle, jstring key, jint value) {
 
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
@@ -268,7 +268,7 @@ Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeSetPlist(
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeSetH265Enabled(
+Java_com_adg_airtunemusic_airplay_bridge_NativeBridge_nativeSetH265Enabled(
         JNIEnv *env, jobject thiz, jlong handle, jboolean enabled) {
 
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
@@ -282,7 +282,7 @@ Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeSetH265Enabled(
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeSetCodecs(
+Java_com_adg_airtunemusic_airplay_bridge_NativeBridge_nativeSetCodecs(
         JNIEnv *env, jobject thiz, jlong handle, jboolean alac, jboolean aac) {
 
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
@@ -294,7 +294,7 @@ Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeSetCodecs(
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeAlacInit(
+Java_com_adg_airtunemusic_airplay_bridge_NativeBridge_nativeAlacInit(
         JNIEnv *env, jobject thiz,
         jint frameLength, jint numChannels, jint bitDepth,
         jint pb, jint mb, jint kb) {
@@ -332,7 +332,7 @@ Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeAlacInit(
 
 extern "C"
 JNIEXPORT jbyteArray JNICALL
-Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeAlacDecode(
+Java_com_adg_airtunemusic_airplay_bridge_NativeBridge_nativeAlacDecode(
         JNIEnv *env, jobject thiz, jlong handle, jbyteArray input) {
 
     ALACDecoder *dec = (ALACDecoder *)(intptr_t)handle;
@@ -372,7 +372,7 @@ Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeAlacDecode(
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_adg_airtune_airplay_bridge_NativeBridge_nativeAlacDestroy(
+Java_com_adg_airtunemusic_airplay_bridge_NativeBridge_nativeAlacDestroy(
         JNIEnv *env, jobject thiz, jlong handle) {
 
     ALACDecoder *dec = (ALACDecoder *)(intptr_t)handle;

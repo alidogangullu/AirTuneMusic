@@ -1,4 +1,4 @@
-package com.adg.airtune.airplay.audio
+package com.adg.airtunemusic.airplay.audio
 
 import android.content.Context
 import android.net.nsd.NsdManager

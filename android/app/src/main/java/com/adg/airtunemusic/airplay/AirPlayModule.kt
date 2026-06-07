@@ -1,4 +1,4 @@
-package com.adg.airtune.airplay
+package com.adg.airtunemusic.airplay
 
 import android.content.ComponentName
 import android.content.Context
@@ -7,7 +7,7 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import android.util.Base64
 import android.util.Log
-import com.adg.airtune.airplay.service.AirPlayService
+import com.adg.airtunemusic.airplay.service.AirPlayService
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext

@@ -1,4 +1,4 @@
-package com.adg.airtune.airplay.bridge
+package com.adg.airtunemusic.airplay.bridge
 
 object NativeBridge {
     init {
