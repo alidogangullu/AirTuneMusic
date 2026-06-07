@@ -150,6 +150,7 @@
       "limitReached": "Sınıra Ulaşıldı",
       "limitReachedMessage": "{{limit}} şarkılık sınırınıza ulaştınız. Bir sonraki şarkı şurada mevcut: {{remaining}}.",
       "restorePurchases": "Satın Almaları Geri Yükle",
+      "hideQuotaIndicator": "Kota Göstergesini Gizle: {{state}}",
       "getProMonthly": "Pro'ya Yükselt",
       "airPlayUsage": "AirPlay Kullanımı: {{airPlayUsed}}/{{airPlayTotal}} dk.",
       "usageTitle": "Kullanım",

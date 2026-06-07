@@ -49,6 +49,7 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
   const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language' | 'announcements' | 'adSettings' | 'subscription' | 'about' | 'support'>(initialSubMenu);
   const [autoStartAd, setAutoStartAd] = React.useState(() => AdSettingsService.getAutoStartAd());
   const [proPrice, setProPrice] = React.useState<string | null>(null);
+  const [quotaIndicatorHidden, setQuotaIndicatorHidden] = React.useState(() => QuotaService.isQuotaIndicatorHidden());
   const { enabled: airPlayEnabled, setEnabled: setAirPlayEnabled } = useAirPlay();
 
   React.useEffect(() => {
@@ -244,6 +245,15 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
                 <Text style={[styles.adHintText, { marginTop: spacing.md }]}>{t('settings.pro.resetsIn', { remaining })}</Text>
               </View>
 
+              <View style={styles.divider} />
+              <SettingsMenuItem
+                label={t('settings.pro.hideQuotaIndicator', { state: quotaIndicatorHidden ? t('common.on', 'On') : t('common.off', 'Off') })}
+                onPress={() => {
+                  const next = !quotaIndicatorHidden;
+                  QuotaService.setQuotaIndicatorHidden(next);
+                  setQuotaIndicatorHidden(next);
+                }}
+              />
               <View style={styles.divider} />
               <SettingsMenuItem
                 label={t('settings.pro.restorePurchases')}

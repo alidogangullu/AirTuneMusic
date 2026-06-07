@@ -9,6 +9,7 @@ const KEYS = {
   PLAY_COUNT: 'play_count',
   IS_PRO: 'is_pro',
   BONUS_PLAYS: 'bonus_plays',
+  HIDE_QUOTA_INDICATOR: 'hide_quota_indicator',
 };
 
 const DEFAULT_BONUS_PLAYS = 2;
@@ -113,5 +114,13 @@ export class QuotaService {
   static getUsageInfo(): { used: number; total: number } {
     if (this.isProUser()) return { used: 0, total: this.HOURLY_LIMIT };
     return { used: this._getCount(), total: this.HOURLY_LIMIT };
+  }
+
+  static isQuotaIndicatorHidden(): boolean {
+    return storage.getBoolean(KEYS.HIDE_QUOTA_INDICATOR) ?? false;
+  }
+
+  static setQuotaIndicatorHidden(hidden: boolean): void {
+    storage.set(KEYS.HIDE_QUOTA_INDICATOR, hidden);
   }
 }

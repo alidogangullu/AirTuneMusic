@@ -296,9 +296,10 @@ export function NowPlayingScreen({
   // The only reason to show a full screen spinner is if we have NO track info yet while loading.
 
   const isPro = QuotaService.isProUser();
-  const quotaInfo = isPro ? null : QuotaService.getUsageInfo();
+  const quotaIndicatorHidden = !isPro && QuotaService.isQuotaIndicatorHidden();
+  const quotaInfo = isPro || quotaIndicatorHidden ? null : QuotaService.getUsageInfo();
   const bonusPlays = isPro ? 0 : QuotaService.getBonusPlaysRemaining();
-  const quotaRemaining = isPro ? null : QuotaService.getPeriodRemainingFormatted();
+  const quotaRemaining = isPro || quotaIndicatorHidden ? null : QuotaService.getPeriodRemainingFormatted();
   const showAirPlayIndicator = airPlay.connectionCount > 0 || airPlay.active;
 
   return (

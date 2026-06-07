@@ -110,6 +110,12 @@ export const IapService = {
   },
 
   async checkSubscriptionStatus(): Promise<boolean> {
+    // Force non-pro in dev to test subscription/quota screens
+    const DEV_FORCE_NON_PRO = true;
+    if (__DEV__ && DEV_FORCE_NON_PRO) {
+      QuotaService.setProStatus(false);
+      return false;
+    }
     try {
       const { getAvailablePurchases } = await import('react-native-iap');
       const purchases = await getAvailablePurchases();

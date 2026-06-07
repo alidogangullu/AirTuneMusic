@@ -150,6 +150,7 @@
       "limitReached": "Límite alcanzado",
       "limitReachedMessage": "Has alcanzado tu límite de {{limit}} canciones. Próxima reproducción disponible en: {{remaining}}.",
       "restorePurchases": "Restaurar compras",
+      "hideQuotaIndicator": "Ocultar indicador de cuota: {{state}}",
       "getProMonthly": "Mejorar a Pro",
       "airPlayUsage": "Uso de AirPlay: {{airPlayUsed}}/{{airPlayTotal}} min.",
       "usageTitle": "Uso",
