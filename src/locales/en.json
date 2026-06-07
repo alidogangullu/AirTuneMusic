@@ -167,6 +167,8 @@
       "featureAdFree": "✦ Ad-free experience",
       "featuresTitle": "AirTune Music Pro"
     },
+    "appPreferences": "App Preferences",
+    "quotaIndicator": "Quota Indicator: {{state}}",
     "theme": "Theme",
     "themeDark": "Dark",
     "themeLight": "Light",

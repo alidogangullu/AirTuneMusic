@@ -31,7 +31,7 @@ export type SettingsScreenProps = {
   announcements?: Announcement[];
   readAnnouncementIds?: string[];
   onAnnouncementRead?: (id: string) => void;
-  initialSubMenu?: 'none' | 'language' | 'announcements' | 'adSettings' | 'subscription' | 'about' | 'support';
+  initialSubMenu?: 'none' | 'language' | 'announcements' | 'adSettings' | 'subscription' | 'appPreferences' | 'about' | 'support';
 };
 
 export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenProps>(function SettingsScreen({
@@ -46,7 +46,7 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
   const { colors, themeMode, setThemeMode } = useTheme();
   const styles = useMemo(() => makeStyles(colors, themeMode), [colors, themeMode]);
   const { t, i18n } = useTranslation();
-  const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language' | 'announcements' | 'adSettings' | 'subscription' | 'about' | 'support'>(initialSubMenu);
+  const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language' | 'announcements' | 'adSettings' | 'subscription' | 'appPreferences' | 'about' | 'support'>(initialSubMenu);
   const [autoStartAd, setAutoStartAd] = React.useState(() => AdSettingsService.getAutoStartAd());
   const [prices, setPrices] = React.useState<Record<string, string>>({});
   const [quotaIndicatorHidden, setQuotaIndicatorHidden] = React.useState(() => QuotaService.isQuotaIndicatorHidden());
@@ -69,9 +69,8 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
   const MENU_ITEMS = [
     ...(hasOptionalUpdate ? [{ id: 'Update', label: t('settings.update') }] : []),
     { id: 'Subscription', label: t('settings.subscription') },
-    { id: 'Language', label: t('settings.language.title') },
-    { id: 'DarkMode', label: t('settings.theme') + ': ' + (themeMode === 'dark' ? t('settings.themeDark') : t('settings.themeLight')) },
     { id: 'AirPlay', label: 'AirPlay: ' + (airPlayEnabled ? t('common.on', 'On') : t('common.off', 'Off')) },
+    { id: 'AppPreferences', label: t('settings.appPreferences') },
     { id: 'AdSettings', label: t('settings.adSettings.title') },
     { id: 'Announcements', label: t('settings.announcements') },
     { id: 'Support', label: t('settings.support') },
@@ -109,6 +108,8 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
       setThemeMode(themeMode === 'dark' ? 'light' : 'dark');
     } else if (item === 'About') {
       setCurrentSubMenu('about');
+    } else if (item === 'AppPreferences') {
+      setCurrentSubMenu('appPreferences');
     }
   };
 
@@ -132,67 +133,62 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
 
   useImperativeHandle(ref, () => ({ handleBack }), [handleBack]);
 
-  const renderSubMenu = () => {
-    if (currentSubMenu === 'none') {
-      return (
-        <>
-          {MENU_ITEMS.map((item, index) => (
-            <SettingsMenuItem
-              key={item.id}
-              label={item.label}
-              hasTVPreferredFocus={index === 0}
-              onPress={() => handleItemPress(item.id)}
-              labelColor={
-                item.id === 'Update' || (item.id === 'Announcements' && hasUnreadAnnouncements)
-                  ? colors.alertRed
-                  : undefined
-              }
-            />
-          ))}
-          <View style={styles.divider} />
-          <SettingsMenuItem
-            label={t('settings.signOut')}
-            onPress={() => handleItemPress('Sign Out')}
-          />
-        </>
-      );
-    }
+  const renderMainMenu = () => (
+    <>
+      {MENU_ITEMS.map((item, index) => (
+        <SettingsMenuItem
+          key={item.id}
+          label={item.label}
+          hasTVPreferredFocus={index === 0}
+          onPress={() => handleItemPress(item.id)}
+          labelColor={
+            item.id === 'Update' || (item.id === 'Announcements' && hasUnreadAnnouncements)
+              ? colors.alertRed
+              : undefined
+          }
+        />
+      ))}
+      <View style={styles.divider} />
+      <SettingsMenuItem
+        label={t('settings.signOut')}
+        onPress={() => handleItemPress('Sign Out')}
+      />
+    </>
+  );
 
-    if (currentSubMenu === 'language') {
-      return (
-        <>
-          <SettingsMenuItem
-            prefix="‹"
-            label={t('common.cancel')}
-            hasTVPreferredFocus
-            onPress={() => setCurrentSubMenu('none')}
-          />
-          <View style={styles.divider} />
-          {LANGUAGES.map((lang) => (
-            <SettingsMenuItem
-              key={lang.id}
-              label={lang.label + (i18n.language === lang.id ? ' ✓' : '')}
-              onPress={() => {
-                changeLanguage(lang.id as any);
-                setCurrentSubMenu('none');
-              }}
-            />
-          ))}
-        </>
-      );
-    }
+  const renderLanguageMenu = () => (
+    <>
+      <SettingsMenuItem
+        prefix="‹"
+        label={t('common.cancel')}
+        hasTVPreferredFocus
+        onPress={() => setCurrentSubMenu('appPreferences')}
+      />
+      <View style={styles.divider} />
+      {LANGUAGES.map((lang) => (
+        <SettingsMenuItem
+          key={lang.id}
+          label={lang.label + (i18n.language === lang.id ? ' ✓' : '')}
+          onPress={() => {
+            changeLanguage(lang.id as any);
+            setCurrentSubMenu('appPreferences');
+          }}
+        />
+      ))}
+    </>
+  );
 
-    if (currentSubMenu === 'subscription') {
-      const isPro = QuotaService.isProUser();
-      const usage = QuotaService.getUsageInfo();
-      const airPlayUsage = AirPlayQuotaService.getUsageInfo();
-      const remaining = QuotaPeriodService.getRemainingFormatted() || t('common.availableNow');
-      const musicPct = Math.min(usage.used / usage.total, 1);
-      const airPlayUsedMin = Math.ceil(airPlayUsage.used / 60);
-      const airPlayTotalMin = Math.round(airPlayUsage.total / 60);
-      const airPlayPct = Math.min(airPlayUsage.used / airPlayUsage.total, 1);
+  const renderSubscriptionMenu = () => {
+    const isPro = QuotaService.isProUser();
+    const usage = QuotaService.getUsageInfo();
+    const airPlayUsage = AirPlayQuotaService.getUsageInfo();
+    const remaining = QuotaPeriodService.getRemainingFormatted() || t('common.availableNow');
+    const musicPct = Math.min(usage.used / usage.total, 1);
+    const airPlayUsedMin = Math.ceil(airPlayUsage.used / 60);
+    const airPlayTotalMin = Math.round(airPlayUsage.total / 60);
+    const airPlayPct = Math.min(airPlayUsage.used / airPlayUsage.total, 1);
 
-      return (
+    return (
         <>
           <SettingsMenuItem
             prefix="‹"
@@ -261,15 +257,6 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
 
               <View style={styles.divider} />
               <SettingsMenuItem
-                label={t('settings.pro.hideQuotaIndicator', { state: quotaIndicatorHidden ? t('common.on', 'On') : t('common.off', 'Off') })}
-                onPress={() => {
-                  const next = !quotaIndicatorHidden;
-                  QuotaService.setQuotaIndicatorHidden(next);
-                  setQuotaIndicatorHidden(next);
-                }}
-              />
-              <View style={styles.divider} />
-              <SettingsMenuItem
                 label={t('settings.pro.restorePurchases')}
                 onPress={() => IapService.restorePurchases()}
               />
@@ -277,7 +264,43 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
           )}
         </>
       );
-    }
+  };
+
+  const renderAppPreferencesMenu = () => (
+    <>
+      <SettingsMenuItem
+        prefix="‹"
+        label={t('common.back')}
+        hasTVPreferredFocus
+        onPress={() => setCurrentSubMenu('none')}
+      />
+      <View style={styles.divider} />
+      <SettingsMenuItem
+        label={t('settings.language.title')}
+        onPress={() => setCurrentSubMenu('language')}
+      />
+      <SettingsMenuItem
+        label={t('settings.theme') + ': ' + (themeMode === 'dark' ? t('settings.themeDark') : t('settings.themeLight'))}
+        onPress={() => handleItemPress('DarkMode')}
+      />
+      {!QuotaService.isProUser() && (
+        <SettingsMenuItem
+          label={t('settings.quotaIndicator', { state: quotaIndicatorHidden ? t('common.off', 'Off') : t('common.on', 'On') })}
+          onPress={() => {
+            const next = !quotaIndicatorHidden;
+            QuotaService.setQuotaIndicatorHidden(next);
+            setQuotaIndicatorHidden(next);
+          }}
+        />
+      )}
+    </>
+  );
+
+  const renderSubMenu = () => {
+    if (currentSubMenu === 'none') return renderMainMenu();
+    if (currentSubMenu === 'language') return renderLanguageMenu();
+    if (currentSubMenu === 'subscription') return renderSubscriptionMenu();
+    if (currentSubMenu === 'appPreferences') return renderAppPreferencesMenu();
 
     if (currentSubMenu === 'adSettings') {
       return (
@@ -413,7 +436,7 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
 });
 
 function getSubMenuTitle(
-  subMenu: 'none' | 'language' | 'announcements' | 'adSettings' | 'subscription' | 'about' | 'support',
+  subMenu: 'none' | 'language' | 'announcements' | 'adSettings' | 'subscription' | 'appPreferences' | 'about' | 'support',
   t: (key: string) => string,
 ): string {
   if (subMenu === 'language') return t('settings.language.title');
@@ -422,6 +445,7 @@ function getSubMenuTitle(
   if (subMenu === 'subscription') return t('settings.subscription');
   if (subMenu === 'about') return t('settings.about');
   if (subMenu === 'support') return t('settings.support');
+  if (subMenu === 'appPreferences') return t('settings.appPreferences');
   return t('settings.title');
 }
 

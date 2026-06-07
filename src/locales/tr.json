@@ -167,6 +167,8 @@
       "featureAdFree": "✦ Reklamsız deneyim",
       "featuresTitle": "AirTune Music Pro"
     },
+    "appPreferences": "Uygulama Tercihleri",
+    "quotaIndicator": "Kota Göstergesi: {{state}}",
     "theme": "Tema",
     "themeDark": "Koyu",
     "themeLight": "Açık",
