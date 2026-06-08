@@ -145,7 +145,8 @@
     "signOut": "Sign Out",
     "pro": {
       "title": "AirTune Pro",
-      "activeMessage": "You have an active AirTune Pro subscription. Enjoy unlimited music!",
+      "activeMessage": "You have an active AirTune Pro {{plan}} subscription. Enjoy unlimited music!",
+      "lifetimeMessage": "You have lifetime access to AirTune Pro. Enjoy unlimited music forever!",
       "upgradeMessage": "Upgrade to Pro for unlimited music and AirPlay streaming.\n\n🎵 Music: {{used}}/{{total}} songs used\n🛜 AirPlay: {{airPlayUsed}}/{{airPlayTotal}} min used\n\n⏱ Resets in: {{remaining}}",
       "limitReached": "Limit Reached",
       "limitReachedMessage": "You have reached your limit of {{limit}} songs. Next play available in: {{remaining}}.",
@@ -165,10 +166,11 @@
       "featureMusic": "∞ Unlimited music playback",
       "featureAirPlay": "∞ Unlimited AirPlay streaming",
       "featureAdFree": "✦ Ad-free experience",
-      "featuresTitle": "AirTune Music Pro",
+      "featuresTitle": "Get AirTune Music Pro",
       "currentPlan": "Current Plan",
       "cancelTitle": "Cancel Your Subscription",
-      "cancelBody": "You have a Lifetime plan. Scan the QR code to cancel your active {{plan}} subscription on Google Play."
+      "cancelBodyAccess": "You have lifetime access to AirTune Pro.",
+      "cancelBody": "To avoid being charged again, scan the QR code to cancel your active {{plan}} subscription on Google Play."
     },
     "appPreferences": "App Preferences",
     "quotaIndicator": "Quota Indicator: {{state}}",
@@ -215,8 +217,6 @@
     "button": "Update Now"
   },
   "iap": {
-    "approved": "Approved",
-    "activeMessage": "Your AirTune Pro subscription is now active! 🚀",
     "declined": "Declined",
     "declinedMessage": "Your purchase was not successful. Please try again or check your account.",
     "restored": "Restored",
@@ -226,7 +226,9 @@
     "error": "Error",
     "errorMessage": "Failed to communicate with the Store. Please try again later.",
     "perMonth": "/month",
-    "perYear": "/year"
+    "perYear": "/year",
+    "cancelFirst": "Cancel Current Subscription First",
+    "cancelFirstMessage": "To switch plans, cancel your current subscription first. You can subscribe to the new plan right after."
   },
   "more": {
     "love": "Love",

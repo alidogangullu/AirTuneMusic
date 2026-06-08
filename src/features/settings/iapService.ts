@@ -6,9 +6,9 @@ import {
   purchaseUpdatedListener,
   finishTransaction,
   type Purchase,
+  type PurchaseAndroid,
   type PurchaseError,
   type ProductSubscription,
-  type ProductSubscriptionAndroid,
   type Product,
   ErrorCode,
 } from 'react-native-iap';
@@ -25,46 +25,52 @@ export const SKUS = {
 const subscriptionSkus = [SKUS.MONTHLY, SKUS.YEARLY];
 const oneTimeSkus = [SKUS.LIFETIME];
 
-
 let purchaseUpdateSubscription: ReturnType<typeof purchaseUpdatedListener> | null = null;
 let purchaseErrorSubscription: ReturnType<typeof purchaseErrorListener> | null = null;
-let cachedProducts: (ProductSubscription | Product)[] = [];
+const purchaseSuccessListeners: Set<() => void> = new Set();
+const subscriptionStatusListeners: Set<() => void> = new Set();
+let lastErrorAlertAt = 0;
+let isRestoring = false;
 
 export const IapService = {
   async init(): Promise<void> {
     try {
       await initConnection();
-      console.log('[IAP] Connection initialized');
 
       purchaseUpdateSubscription = purchaseUpdatedListener(
         async (purchase: Purchase) => {
-          const token = purchase.purchaseToken;
-          if (token) {
-            try {
-              await finishTransaction({ purchase, isConsumable: false });
-
-              QuotaService.setProStatus(true);
-              Alert.alert(
-                i18next.t('iap.approved'),
-                i18next.t('iap.activeMessage'),
-              );
-              console.log('[IAP] Purchase finished and Pro status set');
-            } catch (ackErr) {
-              console.warn('[IAP] finishTransaction error', ackErr);
+          try {
+            await finishTransaction({ purchase, isConsumable: false });
+            if (purchase.productId === SKUS.LIFETIME) {
+              QuotaService.setHasLifetime(true);
+              const activeSku = QuotaService.getActiveSubSku();
+              const isRenewing = QuotaService.getActiveSubAutoRenewing();
+              QuotaService.setNeedsCancelSubscription(!!(activeSku && isRenewing));
+            } else {
+              QuotaService.setActiveSubSku(purchase.productId);
+              QuotaService.setActiveSubToken(purchase.purchaseToken ?? undefined);
+              QuotaService.setActiveSubAutoRenewing(true);
             }
+            QuotaService.setProStatus(true);
+            purchaseSuccessListeners.forEach(cb => cb());
+          } catch (ackErr) {
+            console.warn('[IAP] finishTransaction error', ackErr);
           }
         },
       );
 
       purchaseErrorSubscription = purchaseErrorListener(
         (error: PurchaseError) => {
-          console.warn('[IAP] Purchase error', error);
+          console.warn('[IAP] Purchase error — code:', error.code, '| message:', error.message, '| debugMessage:', (error as any).debugMessage ?? '');
           const errorCode = error.code as string;
           if (
             errorCode !== ErrorCode.UserCancelled &&
             errorCode !== 'E_USER_CANCELLED' &&
             errorCode !== 'user-cancelled'
           ) {
+            const now = Date.now();
+            if (now - lastErrorAlertAt < 2000) return;
+            lastErrorAlertAt = now;
             Alert.alert(
               i18next.t('iap.declined'),
               i18next.t('iap.declinedMessage'),
@@ -91,7 +97,6 @@ export const IapService = {
         results.push(...inapp);
       }
 
-      cachedProducts = results;
       return results;
     } catch (err) {
       console.warn('[IAP] getProducts error', err);
@@ -99,42 +104,36 @@ export const IapService = {
     }
   },
 
-  async subscribe(sku: string): Promise<void> {
+  async subscribe(sku: string): Promise<'purchase_initiated' | 'cancel_required'> {
     try {
+      const existingSku = QuotaService.getActiveSubSku();
+      const isStillRenewing = QuotaService.getActiveSubAutoRenewing();
+      const hasDifferentActiveSub =
+        existingSku &&
+        existingSku !== sku &&
+        existingSku !== SKUS.LIFETIME &&
+        isStillRenewing;
+
+      if (hasDifferentActiveSub) {
+        Alert.alert(
+          i18next.t('iap.cancelFirst'),
+          i18next.t('iap.cancelFirstMessage'),
+        );
+        return 'cancel_required';
+      }
+
       if (sku === SKUS.LIFETIME) {
         await requestPurchase({
           type: 'in-app',
           request: { google: { skus: [sku] } },
         });
-        return;
+      } else {
+        await requestPurchase({
+          type: 'subs',
+          request: { google: { skus: [sku] } },
+        });
       }
-
-      const subscription = cachedProducts.find(s => s.id === sku) as ProductSubscriptionAndroid | undefined;
-      const subscriptionOffers = subscription?.subscriptionOffers
-        ?.filter(offer => offer.offerTokenAndroid)
-        .map(offer => ({ sku, offerToken: offer.offerTokenAndroid! })) ?? [];
-
-      const existingToken = QuotaService.getActiveSubToken();
-      const existingSku = QuotaService.getActiveSubSku();
-      const isSwitching = !!existingToken && !!existingSku && existingSku !== sku;
-      const isUpgrade = sku === SKUS.YEARLY;
-
-      await requestPurchase({
-        type: 'subs',
-        request: {
-          google: {
-            skus: [sku],
-            ...(subscriptionOffers.length > 0 && { subscriptionOffers }),
-            ...(isSwitching && {
-              purchaseToken: existingToken,
-              subscriptionProductReplacementParams: {
-                oldProductId: existingSku,
-                replacementMode: isUpgrade ? 'with-time-proration' : 'deferred',
-              },
-            }),
-          },
-        },
-      });
+      return 'purchase_initiated';
     } catch (err) {
       console.warn('[IAP] subscribe error', err);
       throw err;
@@ -143,26 +142,30 @@ export const IapService = {
 
   async checkSubscriptionStatus(): Promise<boolean> {
     try {
-      const { getAvailablePurchases, getActiveSubscriptions } = await import('react-native-iap');
-
-      // getActiveSubscriptions: reliable isActive check (filters expired/invalid)
-      const activeSubs = await getActiveSubscriptions(subscriptionSkus);
-      const activeSub = activeSubs.find(
-        s => s.productId === SKUS.MONTHLY || s.productId === SKUS.YEARLY,
-      );
-
-      // getAvailablePurchases needed to find one-time lifetime purchase
+      const { getAvailablePurchases } = await import('react-native-iap');
       const purchases = await getAvailablePurchases();
       const lifetimePurchase = purchases.find(p => p.productId === SKUS.LIFETIME);
+      const subPurchases = purchases.filter(
+        p => p.productId === SKUS.MONTHLY || p.productId === SKUS.YEARLY,
+      );
+      const activeSub =
+        subPurchases.find(p => (p as PurchaseAndroid).autoRenewingAndroid !== false && p.productId === SKUS.YEARLY) ??
+        subPurchases.find(p => (p as PurchaseAndroid).autoRenewingAndroid !== false && p.productId === SKUS.MONTHLY) ??
+        subPurchases.find(p => p.productId === SKUS.YEARLY) ??
+        subPurchases.find(p => p.productId === SKUS.MONTHLY);
 
-      // needsCancel: has lifetime AND an active sub that is still auto-renewing
-      const subStillRenewing = activeSub && activeSub.autoRenewingAndroid !== false;
+      const subStillRenewing = activeSub && (activeSub as PurchaseAndroid).autoRenewingAndroid !== false;
+
+      const normalizedSku = activeSub?.productId;
 
       const isActive = !!lifetimePurchase || !!activeSub;
       QuotaService.setProStatus(isActive);
-      QuotaService.setActiveSubSku(activeSub?.productId);
+      QuotaService.setHasLifetime(!!lifetimePurchase);
+      QuotaService.setActiveSubSku(normalizedSku);
       QuotaService.setActiveSubToken(activeSub?.purchaseToken ?? undefined);
+      QuotaService.setActiveSubAutoRenewing(!!subStillRenewing);
       QuotaService.setNeedsCancelSubscription(!!lifetimePurchase && !!subStillRenewing);
+      subscriptionStatusListeners.forEach(cb => cb());
       return isActive;
     } catch (err) {
       console.warn('[IAP] checkSubscriptionStatus error', err);
@@ -171,6 +174,8 @@ export const IapService = {
   },
 
   async restorePurchases(): Promise<boolean> {
+    if (isRestoring) return false;
+    isRestoring = true;
     try {
       const isActive = await this.checkSubscriptionStatus();
       if (isActive) {
@@ -192,7 +197,19 @@ export const IapService = {
         i18next.t('iap.errorMessage'),
       );
       return false;
+    } finally {
+      isRestoring = false;
     }
+  },
+
+  addPurchaseSuccessListener(cb: () => void): () => void {
+    purchaseSuccessListeners.add(cb);
+    return () => purchaseSuccessListeners.delete(cb);
+  },
+
+  addSubscriptionStatusListener(cb: () => void): () => void {
+    subscriptionStatusListeners.add(cb);
+    return () => subscriptionStatusListeners.delete(cb);
   },
 
   end(): void {

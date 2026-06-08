@@ -4,6 +4,7 @@ import { VersionCheckResult } from '../versionService';
 import { Announcement, AnnouncementService } from '../announcementService';
 import { initializeUnityAds } from '../unityAds';
 import { QuotaService } from '../../settings/quotaService';
+import { IapService } from '../../settings/iapService';
 
 interface AppStartupContextType {
   isInitialized: boolean;
@@ -60,6 +61,13 @@ export function AppStartupProvider({ children }: Readonly<{ children: React.Reac
       mounted = false;
       AppStartupService.destroy();
     };
+  }, []);
+
+  useEffect(() => {
+    const refresh = () => setNeedsCancelSubscription(QuotaService.needsCancelSubscription());
+    const unsubPurchase = IapService.addPurchaseSuccessListener(refresh);
+    const unsubStatus = IapService.addSubscriptionStatusListener(refresh);
+    return () => { unsubPurchase(); unsubStatus(); };
   }, []);
 
   const markAnnouncementRead = React.useCallback((id: string) => {

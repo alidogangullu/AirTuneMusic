@@ -145,7 +145,8 @@
     "signOut": "Cerrar sesión",
     "pro": {
       "title": "AirTune Pro",
-      "activeMessage": "Tienes una suscripción activa a AirTune Pro. ¡Disfruta de música ilimitada!",
+      "activeMessage": "Tienes una suscripción {{plan}} activa a AirTune Pro. ¡Disfruta de música ilimitada!",
+      "lifetimeMessage": "Tienes acceso de por vida a AirTune Pro. ¡Disfruta de música ilimitada para siempre!",
       "upgradeMessage": "Mejora a Pro para música y streaming AirPlay sin límites.\n\n🎵 Música: {{used}}/{{total}} canciones usadas\n🛜 AirPlay: {{airPlayUsed}}/{{airPlayTotal}} min usados\n\n⏱ Se reinicia en: {{remaining}}",
       "limitReached": "Límite alcanzado",
       "limitReachedMessage": "Has alcanzado tu límite de {{limit}} canciones. Próxima reproducción disponible en: {{remaining}}.",
@@ -165,10 +166,11 @@
       "featureMusic": "∞ Reproducción de música ilimitada",
       "featureAirPlay": "∞ Streaming AirPlay ilimitado",
       "featureAdFree": "✦ Experiencia sin anuncios",
-      "featuresTitle": "AirTune Music Pro",
+      "featuresTitle": "Obtén AirTune Music Pro",
       "currentPlan": "Plan actual",
       "cancelTitle": "Cancela tu suscripción",
-      "cancelBody": "Tienes un plan Lifetime. Por favor, cancela tu suscripción {{plan}} activa en Google Play escaneando el código QR."
+      "cancelBodyAccess": "Tienes acceso de por vida a AirTune Pro.",
+      "cancelBody": "Para evitar cargos adicionales, cancela tu suscripción {{plan}} activa en Google Play escaneando el código QR."
     },
     "appPreferences": "Preferencias",
     "quotaIndicator": "Indicador de cuota: {{state}}",
@@ -215,8 +217,6 @@
     "button": "Actualizar ahora"
   },
   "iap": {
-    "approved": "Aprobado",
-    "activeMessage": "¡Tu suscripción a AirTune Pro ya está activa! 🚀",
     "declined": "Rechazado",
     "declinedMessage": "Tu compra no se ha realizado correctamente. Por favor, inténtalo de nuevo o comprueba tu cuenta.",
     "restored": "Restaurada",
@@ -226,7 +226,9 @@
     "error": "Error",
     "errorMessage": "Error al comunicarse con la tienda. Por favor, inténtalo de nuevo más tarde.",
     "perMonth": "/mes",
-    "perYear": "/año"
+    "perYear": "/año",
+    "cancelFirst": "Cancela primero tu suscripción actual",
+    "cancelFirstMessage": "Para cambiar de plan, cancela primero tu suscripción actual. Puedes suscribirte al nuevo plan justo después."
   },
   "more": {
     "love": "Me gusta",

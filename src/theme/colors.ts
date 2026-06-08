@@ -128,6 +128,10 @@ export type AppColors = {
   settingsTextSubdued: string;
   settingsTextHint: string;
   settingsTextDisabled: string;
+
+  // ── Discount / savings ────────────────────────────────────────────────────
+  /** Vivid green for discount badges — same saturation/energy as appleMusicPink. */
+  discountGreen: string;
 };
 
 export const lightColors: AppColors = {
@@ -237,6 +241,8 @@ export const lightColors: AppColors = {
   settingsTextSubdued: 'rgba(0, 0, 0, 0.7)',
   settingsTextHint: 'rgba(0, 0, 0, 0.35)',
   settingsTextDisabled: 'rgba(0, 0, 0, 0.25)',
+
+  discountGreen: '#30D158',
 };
 
 export const darkColors: AppColors = {

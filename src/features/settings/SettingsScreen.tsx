@@ -9,6 +9,14 @@ import { Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } 
 import QRCode from 'react-native-qrcode-svg';
 
 export type SettingsScreenHandle = { handleBack: () => boolean };
+
+function buildPriceMap(products: any[]): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const p of products) {
+    if (p.id && p.displayPrice) map[p.id] = p.displayPrice;
+  }
+  return map;
+}
 import { useTranslation } from 'react-i18next';
 import { changeLanguage } from '../../locales';
 import { SettingsMenuItem } from './components/SettingsMenuItem';
@@ -33,7 +41,6 @@ export type SettingsScreenProps = {
   readAnnouncementIds?: string[];
   onAnnouncementRead?: (id: string) => void;
   initialSubMenu?: 'none' | 'language' | 'announcements' | 'adSettings' | 'subscription' | 'appPreferences' | 'about' | 'support';
-  needsCancelSubscription?: boolean;
 };
 
 export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenProps>(function SettingsScreen({
@@ -44,7 +51,6 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
   readAnnouncementIds = [],
   onAnnouncementRead,
   initialSubMenu = 'none',
-  needsCancelSubscription = false,
 }, ref) {
   const { colors, themeMode, setThemeMode } = useTheme();
   const styles = useMemo(() => makeStyles(colors, themeMode), [colors, themeMode]);
@@ -54,21 +60,31 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
   const [prices, setPrices] = React.useState<Record<string, string>>({});
   const [quotaIndicatorHidden, setQuotaIndicatorHidden] = React.useState(() => QuotaService.isQuotaIndicatorHidden());
   const [activeSubSku, setActiveSubSku] = React.useState(() => QuotaService.getActiveSubSku());
+  const [isPro, setIsPro] = React.useState(() => QuotaService.isProUser());
+  const [needsCancel, setNeedsCancel] = React.useState(() => QuotaService.needsCancelSubscription());
+  const [showCancelHint, setShowCancelHint] = React.useState(false);
+  const [hasLifetime, setHasLifetime] = React.useState(() => QuotaService.hasLifetimePurchase());
   const { enabled: airPlayEnabled, setEnabled: setAirPlayEnabled } = useAirPlay();
+
+  const refreshSubscriptionState = React.useCallback(() => {
+    setActiveSubSku(QuotaService.getActiveSubSku());
+    setIsPro(QuotaService.isProUser());
+    setNeedsCancel(QuotaService.needsCancelSubscription());
+    setHasLifetime(QuotaService.hasLifetimePurchase());
+  }, []);
+
+  React.useEffect(() => {
+    return IapService.addPurchaseSuccessListener(refreshSubscriptionState);
+  }, [refreshSubscriptionState]);
 
   React.useEffect(() => {
     if (currentSubMenu !== 'subscription') return;
-    IapService.checkSubscriptionStatus().then(() => {
-      setActiveSubSku(QuotaService.getActiveSubSku());
-    });
+    setShowCancelHint(false);
+    IapService.checkSubscriptionStatus().then(refreshSubscriptionState);
     IapService.getProducts().then(products => {
-      const map: Record<string, string> = {};
-      products.forEach((p: any) => {
-        if (p.id && p.displayPrice) map[p.id] = p.displayPrice;
-      });
-      setPrices(map);
+      setPrices(buildPriceMap(products));
     });
-  }, [currentSubMenu]);
+  }, [currentSubMenu, refreshSubscriptionState]);
 
   const hasOptionalUpdate = updateInfo?.status === 'optional_update';
   const hasUnreadAnnouncements = announcements.some(a => !readAnnouncementIds.includes(a.id));
@@ -121,12 +137,23 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
   };
 
   const handlePlanPress = useCallback((sku: string) => {
-    IapService.subscribe(sku).catch((err: any) => {
-      if (err.code !== 'E_USER_CANCELLED' && err.code !== 'user-cancelled') {
-        Alert.alert(t('common.error'), t('iap.errorMessage'));
+    (async () => {
+      try {
+        // Ensure we have the latest subscription state before attempting purchase
+        await IapService.checkSubscriptionStatus();
+        refreshSubscriptionState();
+
+        const result = await IapService.subscribe(sku);
+        if (result === 'cancel_required') {
+          setShowCancelHint(true);
+        }
+      } catch (err: any) {
+        if (err.code !== 'E_USER_CANCELLED' && err.code !== 'user-cancelled') {
+          Alert.alert(t('common.error'), t('iap.errorMessage'));
+        }
       }
-    });
-  }, [t]);
+    })();
+  }, [t, refreshSubscriptionState]);
 
   const handleBack = useCallback(() => {
     if (currentSubMenu === 'none') {
@@ -151,7 +178,7 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
           labelColor={
             item.id === 'Update' ||
             (item.id === 'Announcements' && hasUnreadAnnouncements) ||
-            (item.id === 'Subscription' && needsCancelSubscription)
+            (item.id === 'Subscription' && needsCancel)
               ? colors.alertRed
               : undefined
           }
@@ -188,7 +215,6 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
   );
 
   const renderSubscriptionMenu = () => {
-    const isPro = QuotaService.isProUser();
     const usage = QuotaService.getUsageInfo();
     const airPlayUsage = AirPlayQuotaService.getUsageInfo();
     const remaining = QuotaPeriodService.getRemainingFormatted() || t('common.availableNow');
@@ -208,17 +234,24 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
           <View style={styles.divider} />
 
           <>
-              {isPro && (
-                <View style={styles.proActiveCard}>
-                  <Text style={styles.proActiveBadge}>✦ PRO</Text>
-                  <Text style={styles.proActiveTitle}>{t('settings.pro.title')}</Text>
-                  <Text style={styles.proActiveSubtitle}>{t('settings.pro.activeMessage')}</Text>
-                </View>
-              )}
+              {isPro && (() => {
+                const isLifetimeOnly = hasLifetime && !needsCancel;
+                const planKey = activeSubSku === SKUS.MONTHLY ? 'settings.pro.planMonthly' : 'settings.pro.planYearly';
+                const subtitle = isLifetimeOnly
+                  ? t('settings.pro.lifetimeMessage')
+                  : t('settings.pro.activeMessage', { plan: t(planKey).toLowerCase() });
+                return (
+                  <View style={styles.proActiveCard}>
+                    <Text style={styles.proActiveBadge}>✦ PRO</Text>
+                    <Text style={styles.proActiveTitle}>{t('settings.pro.title')}</Text>
+                    <Text style={styles.proActiveSubtitle}>{subtitle}</Text>
+                  </View>
+                );
+              })()}
 
               {!isPro && (
                 <View style={[styles.adHintContainer, styles.adHintContainerFirst]}>
-                  <Text style={[styles.adHintTitle, styles.textCenter]}>{t('settings.pro.featuresTitle')}</Text>
+                  <Text style={[styles.adHintTitle, styles.featuresTitleAccent, styles.textCenter]}>{t('settings.pro.featuresTitle')}</Text>
                   {([
                     t('settings.pro.featureMusic'),
                     t('settings.pro.featureAirPlay'),
@@ -229,14 +262,14 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
                 </View>
               )}
 
-              <View style={styles.pricingRow}>
+              {!hasLifetime && (<View style={styles.pricingRow}>
                 {([
                   { sku: SKUS.MONTHLY,  name: t('settings.pro.planMonthly'),  sub: prices[SKUS.MONTHLY]  ? `${prices[SKUS.MONTHLY]}${t('iap.perMonth')}`  : '—', first: activeSubSku === SKUS.YEARLY },
                   { sku: SKUS.YEARLY,   name: t('settings.pro.planYearly'),   sub: prices[SKUS.YEARLY]   ? `${prices[SKUS.YEARLY]}${t('iap.perYear')}`    : '—', first: !activeSubSku || activeSubSku === SKUS.MONTHLY },
                   { sku: SKUS.LIFETIME, name: t('settings.pro.planLifetime'), sub: prices[SKUS.LIFETIME] ?? '—',                                                   first: false },
                 ] as const).map((plan) => {
-                  const isLifetimeUser = activeSubSku === SKUS.LIFETIME || (!activeSubSku && isPro);
-                  const isCurrent = plan.sku === activeSubSku || (plan.sku === SKUS.LIFETIME && isLifetimeUser);
+                  const isLifetimeUser = false;
+                  const isCurrent = plan.sku === activeSubSku;
                   return (
                     <Pressable
                       key={plan.sku}
@@ -249,27 +282,31 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
                       onPress={() => { if (!isCurrent && !isLifetimeUser) handlePlanPress(plan.sku); }}>
                       {({ focused }) => (<>
                         {isCurrent && <Text style={styles.currentPlanLabel}>{t('settings.pro.currentPlan')}</Text>}
-                        <Text style={[styles.pricingName, !isCurrent && focused && styles.pricingFocusedText]} numberOfLines={1} adjustsFontSizeToFit>{plan.name}</Text>
+                        <View style={plan.sku === SKUS.YEARLY ? styles.pricingNameRow : undefined}>
+                          <Text style={[styles.pricingName, !isCurrent && focused && styles.pricingFocusedText]} numberOfLines={1} adjustsFontSizeToFit>{plan.name}</Text>
+                          {plan.sku === SKUS.YEARLY && <View style={styles.discountBadge}><Text style={styles.discountBadgeText}>-20%</Text></View>}
+                        </View>
                         <Text style={[styles.pricingPrice, !isCurrent && focused && styles.pricingFocusedText]} numberOfLines={1} adjustsFontSizeToFit>{plan.sub}</Text>
                       </>)}
                     </Pressable>
                   );
                 })}
-              </View>
+              </View>)}
 
-              {needsCancelSubscription && (
+              {(needsCancel || showCancelHint) && (
                 <View style={styles.cancelCard}>
-                  <Text style={styles.cancelTitle}>{t('settings.pro.cancelTitle')}</Text>
-                  <Text style={styles.cancelBody}>{t('settings.pro.cancelBody', {
-                    plan: activeSubSku === SKUS.MONTHLY ? t('settings.pro.planMonthly') : t('settings.pro.planYearly'),
-                  })}</Text>
-                  <View style={styles.cancelQr}>
-                    <QRCode
-                      value="https://play.google.com/store/account/subscriptions"
-                      size={110}
-                      backgroundColor="transparent"
-                      color={colors.textOnDark}
-                    />
+                  <QRCode
+                    value="https://play.google.com/store/account/subscriptions"
+                    size={90}
+                    backgroundColor="transparent"
+                    color={colors.textOnDark}
+                  />
+                  <View style={styles.cancelTextBlock}>
+                    <Text style={styles.cancelTitle}>{t('settings.pro.cancelTitle')}</Text>
+                    {needsCancel && <Text style={styles.cancelBodyBold}>{t('settings.pro.cancelBodyAccess')}</Text>}
+                    <Text style={styles.cancelBody}>{t('settings.pro.cancelBody', {
+                      plan: activeSubSku === SKUS.MONTHLY ? t('settings.pro.planMonthly') : t('settings.pro.planYearly'),
+                    })}</Text>
                   </View>
                 </View>
               )}
@@ -627,8 +664,25 @@ function makeStyles(c: AppColors, themeMode: 'light' | 'dark') {
     pricingFocusedText: {
       color: c.textOnDark,
     },
+    pricingNameRow: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: 5,
+    },
+    discountBadge: {
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 20,
+      backgroundColor: c.discountGreen,
+    },
+    discountBadgeText: {
+      fontSize: 11,
+      fontWeight: '700' as const,
+      color: '#ffffff',
+      letterSpacing: 0.3,
+    },
     adHintContainer: {
-      marginTop: spacing.sm,
+      marginTop: spacing.xs,
       marginHorizontal: spacing.md,
       padding: spacing.md,
       borderRadius: radius.lg,
@@ -646,7 +700,12 @@ function makeStyles(c: AppColors, themeMode: 'light' | 'dark') {
       fontSize: 15,
       fontWeight: '600',
       color: c.settingsTextSubdued,
-      marginBottom: spacing.sm,
+      marginBottom: spacing.xs,
+    },
+    featuresTitleAccent: {
+      fontSize: 18,
+      fontWeight: '700' as const,
+      color: c.accent,
     },
     adHintText: {
       fontSize: 14,
@@ -706,23 +765,28 @@ function makeStyles(c: AppColors, themeMode: 'light' | 'dark') {
       borderRadius: radius.lg,
       borderWidth: 1,
       borderColor: c.alertRed,
+      flexDirection: 'row' as const,
       alignItems: 'center' as const,
-      gap: spacing.sm,
+      gap: spacing.md,
+    },
+    cancelTextBlock: {
+      flex: 1,
+      gap: spacing.xs,
     },
     cancelTitle: {
       fontSize: 14,
       fontWeight: '700' as const,
       color: c.alertRed,
-      textAlign: 'center' as const,
+    },
+    cancelBodyBold: {
+      fontSize: 13,
+      fontWeight: '700' as const,
+      color: c.settingsTextSubdued,
     },
     cancelBody: {
       fontSize: 13,
       color: c.settingsTextSubdued,
-      textAlign: 'center' as const,
       lineHeight: 20,
-    },
-    cancelQr: {
-      marginTop: spacing.xs,
     },
   });
 }

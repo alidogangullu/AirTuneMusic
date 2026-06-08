@@ -11,8 +11,10 @@ const KEYS = {
   BONUS_PLAYS: 'bonus_plays',
   HIDE_QUOTA_INDICATOR: 'hide_quota_indicator',
   NEEDS_CANCEL_SUBSCRIPTION: 'needs_cancel_subscription',
+  HAS_LIFETIME: 'has_lifetime',
   ACTIVE_SUB_TOKEN: 'active_sub_token',
   ACTIVE_SUB_SKU: 'active_sub_sku',
+  ACTIVE_SUB_AUTO_RENEWING: 'active_sub_auto_renewing',
 };
 
 const DEFAULT_BONUS_PLAYS = 2;
@@ -135,6 +137,14 @@ export class QuotaService {
     storage.set(KEYS.NEEDS_CANCEL_SUBSCRIPTION, val);
   }
 
+  static hasLifetimePurchase(): boolean {
+    return storage.getBoolean(KEYS.HAS_LIFETIME) ?? false;
+  }
+
+  static setHasLifetime(val: boolean): void {
+    storage.set(KEYS.HAS_LIFETIME, val);
+  }
+
   static getActiveSubToken(): string | undefined {
     const val = storage.getString(KEYS.ACTIVE_SUB_TOKEN);
     return val || undefined;
@@ -152,4 +162,13 @@ export class QuotaService {
   static setActiveSubSku(sku: string | undefined): void {
     storage.set(KEYS.ACTIVE_SUB_SKU, sku ?? '');
   }
+
+  static getActiveSubAutoRenewing(): boolean {
+    return storage.getBoolean(KEYS.ACTIVE_SUB_AUTO_RENEWING) ?? true;
+  }
+
+  static setActiveSubAutoRenewing(val: boolean): void {
+    storage.set(KEYS.ACTIVE_SUB_AUTO_RENEWING, val);
+  }
+
 }

@@ -145,7 +145,8 @@
     "signOut": "Déconnexion",
     "pro": {
       "title": "AirTune Pro",
-      "activeMessage": "Vous avez un abonnement AirTune Pro actif. Profitez d'une musique illimitée !",
+      "activeMessage": "Vous avez un abonnement AirTune Pro {{plan}} actif. Profitez d'une musique illimitée !",
+      "lifetimeMessage": "Vous avez un accès à vie à AirTune Pro. Profitez d'une musique illimitée pour toujours !",
       "upgradeMessage": "Passez à Pro pour une musique et un streaming AirPlay illimités.\n\n🎵 Musique : {{used}}/{{total}} morceaux utilisés\n🛜 AirPlay : {{airPlayUsed}}/{{airPlayTotal}} min utilisées\n\n⏱ Réinitialisation dans : {{remaining}}",
       "limitReached": "Limite atteinte",
       "limitReachedMessage": "Vous avez atteint votre limite de {{limit}} morceaux. Prochaine lecture disponible dans : {{remaining}}.",
@@ -165,10 +166,11 @@
       "featureMusic": "∞ Lecture musicale illimitée",
       "featureAirPlay": "∞ Streaming AirPlay illimité",
       "featureAdFree": "✦ Expérience sans publicité",
-      "featuresTitle": "AirTune Music Pro",
+      "featuresTitle": "Obtenir AirTune Music Pro",
       "currentPlan": "Plan actuel",
       "cancelTitle": "Annulez votre abonnement",
-      "cancelBody": "Vous avez un abonnement Lifetime. Veuillez annuler votre abonnement {{plan}} actif sur Google Play en scannant le QR code."
+      "cancelBodyAccess": "Vous avez un accès à vie à AirTune Pro.",
+      "cancelBody": "Pour éviter d'être facturé à nouveau, annulez votre abonnement {{plan}} actif sur Google Play en scannant le QR code."
     },
     "appPreferences": "Préférences",
     "quotaIndicator": "Indicateur de quota : {{state}}",
@@ -215,8 +217,6 @@
     "button": "Mettre à jour maintenant"
   },
   "iap": {
-    "approved": "Approuvé",
-    "activeMessage": "Votre abonnement AirTune Pro est maintenant actif ! 🚀",
     "declined": "Refusé",
     "declinedMessage": "Votre achat n'a pas pu être effectué. Veuillez réessayer ou vérifier votre compte.",
     "restored": "Restauré",
@@ -226,7 +226,9 @@
     "error": "Erreur",
     "errorMessage": "Échec de la communication avec le Store. Veuillez réessayer plus tard.",
     "perMonth": "/mois",
-    "perYear": "/an"
+    "perYear": "/an",
+    "cancelFirst": "Annulez d'abord votre abonnement actuel",
+    "cancelFirstMessage": "Pour changer de plan, annulez d'abord votre abonnement actuel. Vous pouvez ensuite souscrire au nouveau plan immédiatement."
   },
   "more": {
     "love": "J'aime",

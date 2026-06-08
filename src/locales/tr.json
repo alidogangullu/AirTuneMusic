@@ -145,7 +145,8 @@
     "signOut": "Çıkış Yap",
     "pro": {
       "title": "AirTune Pro",
-      "activeMessage": "Aktif bir AirTune Pro aboneliğiniz var. Sınırsız müziğin tadını çıkarın!",
+      "activeMessage": "Aktif bir AirTune Pro {{plan}} aboneliğiniz var. Sınırsız müziğin tadını çıkarın!",
+      "lifetimeMessage": "AirTune Pro'ya ömür boyu erişiminiz var. Sınırsız müziğin keyfini sonsuza kadar çıkarın!",
       "upgradeMessage": "Sınırsız müzik ve AirPlay yayını için Pro'ya yükseltin.\n\n🎵 Müzik: {{used}}/{{total}} şarkı kullanıldı\n🛜 AirPlay: {{airPlayUsed}}/{{airPlayTotal}} dk kullanıldı\n\n⏱ Sıfırlanma: {{remaining}}",
       "limitReached": "Sınıra Ulaşıldı",
       "limitReachedMessage": "{{limit}} şarkılık sınırınıza ulaştınız. Bir sonraki şarkı şurada mevcut: {{remaining}}.",
@@ -165,10 +166,11 @@
       "featureMusic": "∞ Sınırsız müzik dinleme",
       "featureAirPlay": "∞ Sınırsız AirPlay yayını",
       "featureAdFree": "✦ Reklamsız deneyim",
-      "featuresTitle": "AirTune Music Pro",
+      "featuresTitle": "AirTune Music Pro'yu Edinin",
       "currentPlan": "Mevcut Plan",
       "cancelTitle": "Aboneliğinizi İptal Edin",
-      "cancelBody": "Lifetime planınız var. Aktif {{plan}} aboneliğinizi Google Play'den iptal etmeniz gerekmektedir. Bunun için QR kodu tarayın."
+      "cancelBodyAccess": "AirTune Pro'ya ömür boyu erişiminiz var.",
+      "cancelBody": "Tekrar ücretlendirilmemek için aktif {{plan}} aboneliğinizi Google Play'den iptal edin. Bunun için QR kodu tarayın."
     },
     "appPreferences": "Uygulama Tercihleri",
     "quotaIndicator": "Kota Göstergesi: {{state}}",
@@ -215,8 +217,6 @@
     "button": "Şimdi Güncelle"
   },
   "iap": {
-    "approved": "Onaylandı",
-    "activeMessage": "AirTune Pro aboneliğiniz artık aktif! 🚀",
     "declined": "Reddedildi",
     "declinedMessage": "Satın alma işleminiz başarılı olmadı. Lütfen tekrar deneyin veya hesabınızı kontrol edin.",
     "restored": "Geri Yüklendi",
@@ -226,7 +226,9 @@
     "error": "Hata",
     "errorMessage": "Mağaza ile iletişim kurulamadı. Lütfen daha sonra tekrar deneyin.",
     "perMonth": "/ay",
-    "perYear": "/yıl"
+    "perYear": "/yıl",
+    "cancelFirst": "Önce Mevcut Aboneliği İptal Edin",
+    "cancelFirstMessage": "Farklı bir plana geçmek için önce mevcut aboneliğinizi iptal edin. İptal ettikten sonra hemen yeni planı alabilirsiniz."
   },
   "more": {
     "love": "Beğen",
