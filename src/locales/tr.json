@@ -165,7 +165,10 @@
       "featureMusic": "∞ Sınırsız müzik dinleme",
       "featureAirPlay": "∞ Sınırsız AirPlay yayını",
       "featureAdFree": "✦ Reklamsız deneyim",
-      "featuresTitle": "AirTune Music Pro"
+      "featuresTitle": "AirTune Music Pro",
+      "currentPlan": "Mevcut Plan",
+      "cancelTitle": "Aboneliğinizi İptal Edin",
+      "cancelBody": "Lifetime planınız var. Aktif {{plan}} aboneliğinizi Google Play'den iptal etmeniz gerekmektedir. Bunun için QR kodu tarayın."
     },
     "appPreferences": "Uygulama Tercihleri",
     "quotaIndicator": "Kota Göstergesi: {{state}}",

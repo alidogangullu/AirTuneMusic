@@ -6,6 +6,7 @@
 
 import React, { useMemo, useImperativeHandle, forwardRef, useCallback } from 'react';
 import { Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 
 export type SettingsScreenHandle = { handleBack: () => boolean };
 import { useTranslation } from 'react-i18next';
@@ -32,6 +33,7 @@ export type SettingsScreenProps = {
   readAnnouncementIds?: string[];
   onAnnouncementRead?: (id: string) => void;
   initialSubMenu?: 'none' | 'language' | 'announcements' | 'adSettings' | 'subscription' | 'appPreferences' | 'about' | 'support';
+  needsCancelSubscription?: boolean;
 };
 
 export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenProps>(function SettingsScreen({
@@ -42,6 +44,7 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
   readAnnouncementIds = [],
   onAnnouncementRead,
   initialSubMenu = 'none',
+  needsCancelSubscription = false,
 }, ref) {
   const { colors, themeMode, setThemeMode } = useTheme();
   const styles = useMemo(() => makeStyles(colors, themeMode), [colors, themeMode]);
@@ -50,10 +53,14 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
   const [autoStartAd, setAutoStartAd] = React.useState(() => AdSettingsService.getAutoStartAd());
   const [prices, setPrices] = React.useState<Record<string, string>>({});
   const [quotaIndicatorHidden, setQuotaIndicatorHidden] = React.useState(() => QuotaService.isQuotaIndicatorHidden());
+  const [activeSubSku, setActiveSubSku] = React.useState(() => QuotaService.getActiveSubSku());
   const { enabled: airPlayEnabled, setEnabled: setAirPlayEnabled } = useAirPlay();
 
   React.useEffect(() => {
-    if (currentSubMenu !== 'subscription' || QuotaService.isProUser()) return;
+    if (currentSubMenu !== 'subscription') return;
+    IapService.checkSubscriptionStatus().then(() => {
+      setActiveSubSku(QuotaService.getActiveSubSku());
+    });
     IapService.getProducts().then(products => {
       const map: Record<string, string> = {};
       products.forEach((p: any) => {
@@ -142,7 +149,9 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
           hasTVPreferredFocus={index === 0}
           onPress={() => handleItemPress(item.id)}
           labelColor={
-            item.id === 'Update' || (item.id === 'Announcements' && hasUnreadAnnouncements)
+            item.id === 'Update' ||
+            (item.id === 'Announcements' && hasUnreadAnnouncements) ||
+            (item.id === 'Subscription' && needsCancelSubscription)
               ? colors.alertRed
               : undefined
           }
@@ -193,75 +202,109 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
           <SettingsMenuItem
             prefix="‹"
             label={t('common.back')}
-            hasTVPreferredFocus={isPro}
+            hasTVPreferredFocus={activeSubSku === SKUS.LIFETIME || (!activeSubSku && isPro)}
             onPress={() => setCurrentSubMenu('none')}
           />
           <View style={styles.divider} />
 
-          {isPro ? (
-            <View style={styles.proActiveCard}>
-              <Text style={styles.proActiveBadge}>✦ PRO</Text>
-              <Text style={styles.proActiveTitle}>{t('settings.pro.title')}</Text>
-              <Text style={styles.proActiveSubtitle}>{t('settings.pro.activeMessage')}</Text>
-            </View>
-          ) : (
-            <>
-              <View style={[styles.adHintContainer, styles.adHintContainerFirst]}>
-                <Text style={[styles.adHintTitle, styles.textCenter]}>{t('settings.pro.featuresTitle')}</Text>
-                {([
-                  t('settings.pro.featureMusic'),
-                  t('settings.pro.featureAirPlay'),
-                  t('settings.pro.featureAdFree'),
-                ] as string[]).map((feat) => (
-                  <Text key={feat} style={[styles.adHintText, styles.textCenter]}>{feat}</Text>
-                ))}
-              </View>
+          <>
+              {isPro && (
+                <View style={styles.proActiveCard}>
+                  <Text style={styles.proActiveBadge}>✦ PRO</Text>
+                  <Text style={styles.proActiveTitle}>{t('settings.pro.title')}</Text>
+                  <Text style={styles.proActiveSubtitle}>{t('settings.pro.activeMessage')}</Text>
+                </View>
+              )}
+
+              {!isPro && (
+                <View style={[styles.adHintContainer, styles.adHintContainerFirst]}>
+                  <Text style={[styles.adHintTitle, styles.textCenter]}>{t('settings.pro.featuresTitle')}</Text>
+                  {([
+                    t('settings.pro.featureMusic'),
+                    t('settings.pro.featureAirPlay'),
+                    t('settings.pro.featureAdFree'),
+                  ] as string[]).map((feat) => (
+                    <Text key={feat} style={[styles.adHintText, styles.textCenter]}>{feat}</Text>
+                  ))}
+                </View>
+              )}
 
               <View style={styles.pricingRow}>
                 {([
-                  { sku: SKUS.MONTHLY,  name: t('settings.pro.planMonthly'),  sub: prices[SKUS.MONTHLY]  ? `${prices[SKUS.MONTHLY]}${t('iap.perMonth')}`  : '—', first: false },
-                  { sku: SKUS.YEARLY,   name: t('settings.pro.planYearly'),   sub: prices[SKUS.YEARLY]   ? `${prices[SKUS.YEARLY]}${t('iap.perYear')}`    : '—', first: true  },
+                  { sku: SKUS.MONTHLY,  name: t('settings.pro.planMonthly'),  sub: prices[SKUS.MONTHLY]  ? `${prices[SKUS.MONTHLY]}${t('iap.perMonth')}`  : '—', first: activeSubSku === SKUS.YEARLY },
+                  { sku: SKUS.YEARLY,   name: t('settings.pro.planYearly'),   sub: prices[SKUS.YEARLY]   ? `${prices[SKUS.YEARLY]}${t('iap.perYear')}`    : '—', first: !activeSubSku || activeSubSku === SKUS.MONTHLY },
                   { sku: SKUS.LIFETIME, name: t('settings.pro.planLifetime'), sub: prices[SKUS.LIFETIME] ?? '—',                                                   first: false },
-                ] as const).map((plan) => (
-                  <Pressable
-                    key={plan.sku}
-                    style={({ focused }) => [styles.pricingCard, focused && styles.pricingCardFocused]}
-                    hasTVPreferredFocus={plan.first}
-                    onPress={() => handlePlanPress(plan.sku)}>
-                    {({ focused }) => (<>
-                      <Text style={[styles.pricingName, focused && styles.pricingFocusedText]} numberOfLines={1} adjustsFontSizeToFit>{plan.name}</Text>
-                      <Text style={[styles.pricingPrice, focused && styles.pricingFocusedText]} numberOfLines={1} adjustsFontSizeToFit>{plan.sub}</Text>
-                    </>)}
-                  </Pressable>
-                ))}
+                ] as const).map((plan) => {
+                  const isLifetimeUser = activeSubSku === SKUS.LIFETIME || (!activeSubSku && isPro);
+                  const isCurrent = plan.sku === activeSubSku || (plan.sku === SKUS.LIFETIME && isLifetimeUser);
+                  return (
+                    <Pressable
+                      key={plan.sku}
+                      style={({ focused }) => [
+                        styles.pricingCard,
+                        isCurrent ? styles.pricingCardCurrent : (focused && styles.pricingCardFocused),
+                      ]}
+                      hasTVPreferredFocus={plan.first}
+                      focusable={!isCurrent && !isLifetimeUser}
+                      onPress={() => { if (!isCurrent && !isLifetimeUser) handlePlanPress(plan.sku); }}>
+                      {({ focused }) => (<>
+                        {isCurrent && <Text style={styles.currentPlanLabel}>{t('settings.pro.currentPlan')}</Text>}
+                        <Text style={[styles.pricingName, !isCurrent && focused && styles.pricingFocusedText]} numberOfLines={1} adjustsFontSizeToFit>{plan.name}</Text>
+                        <Text style={[styles.pricingPrice, !isCurrent && focused && styles.pricingFocusedText]} numberOfLines={1} adjustsFontSizeToFit>{plan.sub}</Text>
+                      </>)}
+                    </Pressable>
+                  );
+                })}
               </View>
 
-              <View style={[styles.adHintContainer, styles.adHintContainerNoTop]}>
-                <Text style={styles.adHintTitle}>{t('settings.pro.usageTitle')}</Text>
-                <View style={styles.usageRow}>
-                  <Text style={styles.adHintText}>{t('settings.pro.usageMusic')}</Text>
-                  <Text style={styles.adHintText}>{usage.used} / {usage.total}</Text>
+              {needsCancelSubscription && (
+                <View style={styles.cancelCard}>
+                  <Text style={styles.cancelTitle}>{t('settings.pro.cancelTitle')}</Text>
+                  <Text style={styles.cancelBody}>{t('settings.pro.cancelBody', {
+                    plan: activeSubSku === SKUS.MONTHLY ? t('settings.pro.planMonthly') : t('settings.pro.planYearly'),
+                  })}</Text>
+                  <View style={styles.cancelQr}>
+                    <QRCode
+                      value="https://play.google.com/store/account/subscriptions"
+                      size={110}
+                      backgroundColor="transparent"
+                      color={colors.textOnDark}
+                    />
+                  </View>
                 </View>
-                <View style={styles.progressTrack}>
-                  <View style={[styles.progressFill, { width: `${musicPct * 100}%` }]} />
-                </View>
-                <View style={[styles.usageRow, { marginTop: spacing.md }]}>
-                  <Text style={styles.adHintText}>AirPlay</Text>
-                  <Text style={styles.adHintText}>{airPlayUsedMin} / {airPlayTotalMin} min</Text>
-                </View>
-                <View style={styles.progressTrack}>
-                  <View style={[styles.progressFill, { width: `${airPlayPct * 100}%` }]} />
-                </View>
-                <Text style={[styles.adHintText, { marginTop: spacing.md }]}>{t('settings.pro.resetsIn', { remaining })}</Text>
-              </View>
+              )}
 
-              <View style={styles.divider} />
-              <SettingsMenuItem
-                label={t('settings.pro.restorePurchases')}
-                onPress={() => IapService.restorePurchases()}
-              />
-            </>
-          )}
+              {!isPro && (
+                <View style={[styles.adHintContainer, styles.adHintContainerNoTop]}>
+                  <Text style={styles.adHintTitle}>{t('settings.pro.usageTitle')}</Text>
+                  <View style={styles.usageRow}>
+                    <Text style={styles.adHintText}>{t('settings.pro.usageMusic')}</Text>
+                    <Text style={styles.adHintText}>{usage.used} / {usage.total}</Text>
+                  </View>
+                  <View style={styles.progressTrack}>
+                    <View style={[styles.progressFill, { width: `${musicPct * 100}%` }]} />
+                  </View>
+                  <View style={[styles.usageRow, { marginTop: spacing.md }]}>
+                    <Text style={styles.adHintText}>AirPlay</Text>
+                    <Text style={styles.adHintText}>{airPlayUsedMin} / {airPlayTotalMin} min</Text>
+                  </View>
+                  <View style={styles.progressTrack}>
+                    <View style={[styles.progressFill, { width: `${airPlayPct * 100}%` }]} />
+                  </View>
+                  <Text style={[styles.adHintText, { marginTop: spacing.md }]}>{t('settings.pro.resetsIn', { remaining })}</Text>
+                </View>
+              )}
+
+              {!isPro && (
+                <>
+                  <View style={styles.divider} />
+                  <SettingsMenuItem
+                    label={t('settings.pro.restorePurchases')}
+                    onPress={() => IapService.restorePurchases()}
+                  />
+                </>
+              )}
+          </>
         </>
       );
   };
@@ -550,9 +593,20 @@ function makeStyles(c: AppColors, themeMode: 'light' | 'dark') {
       borderRadius: radius.md,
       backgroundColor: 'transparent',
     },
+    pricingCardCurrent: {},
     pricingCardFocused: {
       backgroundColor: c.settingsCardBg,
       transform: [{ scale: 1.05 }],
+    },
+    currentPlanLabel: {
+      position: 'absolute' as const,
+      top: 0,
+      alignSelf: 'center' as const,
+      fontSize: 10,
+      fontWeight: '700' as const,
+      color: c.alertRed,
+      textTransform: 'uppercase' as const,
+      letterSpacing: 0.8,
     },
     pricingName: {
       fontSize: 15,
@@ -602,10 +656,11 @@ function makeStyles(c: AppColors, themeMode: 'light' | 'dark') {
     // ── Subscription sub-menu ─────────────────────────────────────────────────
     proActiveCard: {
       marginHorizontal: spacing.md,
-      marginBottom: spacing.md,
-      padding: spacing.xl,
+      marginTop: -spacing.xs,
+      marginBottom: spacing.lg,
+      paddingVertical: spacing.sm,
       alignItems: 'center',
-      gap: spacing.sm,
+      gap: spacing.xs,
     },
     proActiveBadge: {
       fontSize: 13,
@@ -642,6 +697,32 @@ function makeStyles(c: AppColors, themeMode: 'light' | 'dark') {
       height: 6,
       borderRadius: 3,
       backgroundColor: c.alertRed,
+    },
+    cancelCard: {
+      marginHorizontal: spacing.md,
+      marginTop: spacing.sm,
+      marginBottom: spacing.md,
+      padding: spacing.md,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: c.alertRed,
+      alignItems: 'center' as const,
+      gap: spacing.sm,
+    },
+    cancelTitle: {
+      fontSize: 14,
+      fontWeight: '700' as const,
+      color: c.alertRed,
+      textAlign: 'center' as const,
+    },
+    cancelBody: {
+      fontSize: 13,
+      color: c.settingsTextSubdued,
+      textAlign: 'center' as const,
+      lineHeight: 20,
+    },
+    cancelQr: {
+      marginTop: spacing.xs,
     },
   });
 }

@@ -110,6 +110,7 @@ export type TopBarProps = {
   dark?: boolean;
   hasUpdate?: boolean;
   hasUnreadAnnouncements?: boolean;
+  needsCancelSubscription?: boolean;
 };
 
 export function TopBar({
@@ -122,6 +123,7 @@ export function TopBar({
   dark = false,
   hasUpdate = false,
   hasUnreadAnnouncements = false,
+  needsCancelSubscription = false,
 }: Readonly<TopBarProps>): React.JSX.Element {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -209,7 +211,7 @@ export function TopBar({
             </Text>
           )}
         </NavPressable>
-        {(hasUpdate || hasUnreadAnnouncements) && <View style={styles.updateBadge} focusable={false} />}
+        {(hasUpdate || hasUnreadAnnouncements || needsCancelSubscription) && <View style={styles.updateBadge} focusable={false} />}
       </View>
     </View>
   );

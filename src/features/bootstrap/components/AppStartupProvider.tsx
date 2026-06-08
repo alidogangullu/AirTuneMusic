@@ -3,6 +3,7 @@ import { AppStartupService } from '../appStartupService';
 import { VersionCheckResult } from '../versionService';
 import { Announcement, AnnouncementService } from '../announcementService';
 import { initializeUnityAds } from '../unityAds';
+import { QuotaService } from '../../settings/quotaService';
 
 interface AppStartupContextType {
   isInitialized: boolean;
@@ -14,6 +15,7 @@ interface AppStartupContextType {
   readAnnouncementIds: string[];
   hasUnreadAnnouncements: boolean;
   markAnnouncementRead: (id: string) => void;
+  needsCancelSubscription: boolean;
 }
 
 const AppStartupContext = createContext<AppStartupContextType | undefined>(undefined);
@@ -25,6 +27,7 @@ export function AppStartupProvider({ children }: Readonly<{ children: React.Reac
   const [updateInfo, setUpdateInfo] = useState<VersionCheckResult | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [readAnnouncementIds, setReadAnnouncementIds] = useState<string[]>([]);
+  const [needsCancelSubscription, setNeedsCancelSubscription] = useState(() => QuotaService.needsCancelSubscription());
 
   useEffect(() => {
     let mounted = true;
@@ -42,6 +45,7 @@ export function AppStartupProvider({ children }: Readonly<{ children: React.Reac
           setUpdateInfo(data.updateInfo);
           setAnnouncements(data.announcements);
           setReadAnnouncementIds(AnnouncementService.getReadIds());
+          setNeedsCancelSubscription(QuotaService.needsCancelSubscription());
           setIsInitialized(true);
         }
       } catch (error) {
@@ -75,7 +79,8 @@ export function AppStartupProvider({ children }: Readonly<{ children: React.Reac
     readAnnouncementIds,
     hasUnreadAnnouncements,
     markAnnouncementRead,
-  }), [isInitialized, hasToken, isAppleMusicSubscriber, updateInfo, announcements, readAnnouncementIds, hasUnreadAnnouncements, markAnnouncementRead]);
+    needsCancelSubscription,
+  }), [isInitialized, hasToken, isAppleMusicSubscriber, updateInfo, announcements, readAnnouncementIds, hasUnreadAnnouncements, markAnnouncementRead, needsCancelSubscription]);
 
   return (
     <AppStartupContext.Provider value={value}>

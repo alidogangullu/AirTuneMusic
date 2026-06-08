@@ -165,7 +165,10 @@
       "featureMusic": "∞ Unbegrenzte Musikwiedergabe",
       "featureAirPlay": "∞ Unbegrenztes AirPlay-Streaming",
       "featureAdFree": "✦ Werbefreies Erlebnis",
-      "featuresTitle": "AirTune Music Pro"
+      "featuresTitle": "AirTune Music Pro",
+      "currentPlan": "Aktueller Plan",
+      "cancelTitle": "Abo kündigen",
+      "cancelBody": "Sie haben einen Lifetime-Plan. Bitte kündigen Sie Ihr aktives {{plan}}-Abo bei Google Play. Scannen Sie dazu den QR-Code."
     },
     "appPreferences": "App-Einstellungen",
     "quotaIndicator": "Kontingentanzeige: {{state}}",

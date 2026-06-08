@@ -10,6 +10,9 @@ const KEYS = {
   IS_PRO: 'is_pro',
   BONUS_PLAYS: 'bonus_plays',
   HIDE_QUOTA_INDICATOR: 'hide_quota_indicator',
+  NEEDS_CANCEL_SUBSCRIPTION: 'needs_cancel_subscription',
+  ACTIVE_SUB_TOKEN: 'active_sub_token',
+  ACTIVE_SUB_SKU: 'active_sub_sku',
 };
 
 const DEFAULT_BONUS_PLAYS = 2;
@@ -122,5 +125,31 @@ export class QuotaService {
 
   static setQuotaIndicatorHidden(hidden: boolean): void {
     storage.set(KEYS.HIDE_QUOTA_INDICATOR, hidden);
+  }
+
+  static needsCancelSubscription(): boolean {
+    return storage.getBoolean(KEYS.NEEDS_CANCEL_SUBSCRIPTION) ?? false;
+  }
+
+  static setNeedsCancelSubscription(val: boolean): void {
+    storage.set(KEYS.NEEDS_CANCEL_SUBSCRIPTION, val);
+  }
+
+  static getActiveSubToken(): string | undefined {
+    const val = storage.getString(KEYS.ACTIVE_SUB_TOKEN);
+    return val || undefined;
+  }
+
+  static setActiveSubToken(token: string | undefined): void {
+    storage.set(KEYS.ACTIVE_SUB_TOKEN, token ?? '');
+  }
+
+  static getActiveSubSku(): string | undefined {
+    const val = storage.getString(KEYS.ACTIVE_SUB_SKU);
+    return val || undefined;
+  }
+
+  static setActiveSubSku(sku: string | undefined): void {
+    storage.set(KEYS.ACTIVE_SUB_SKU, sku ?? '');
   }
 }

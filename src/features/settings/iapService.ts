@@ -12,7 +12,7 @@ import {
   type Product,
   ErrorCode,
 } from 'react-native-iap';
-import { Platform, Alert } from 'react-native';
+import { Alert } from 'react-native';
 import i18next from 'i18next';
 import { QuotaService } from './quotaService';
 
@@ -22,17 +22,9 @@ export const SKUS = {
   LIFETIME: 'pro_lifetime',
 } as const;
 
-const subscriptionSkus = Platform.select({
-  android: [SKUS.MONTHLY, SKUS.YEARLY],
-  default: [],
-}) as string[];
+const subscriptionSkus = [SKUS.MONTHLY, SKUS.YEARLY];
+const oneTimeSkus = [SKUS.LIFETIME];
 
-const oneTimeSkus = Platform.select({
-  android: [SKUS.LIFETIME],
-  default: [],
-}) as string[];
-
-const allSkus = new Set([...subscriptionSkus, ...oneTimeSkus]);
 
 let purchaseUpdateSubscription: ReturnType<typeof purchaseUpdatedListener> | null = null;
 let purchaseErrorSubscription: ReturnType<typeof purchaseErrorListener> | null = null;
@@ -122,12 +114,24 @@ export const IapService = {
         ?.filter(offer => offer.offerTokenAndroid)
         .map(offer => ({ sku, offerToken: offer.offerTokenAndroid! })) ?? [];
 
+      const existingToken = QuotaService.getActiveSubToken();
+      const existingSku = QuotaService.getActiveSubSku();
+      const isSwitching = !!existingToken && !!existingSku && existingSku !== sku;
+      const isUpgrade = sku === SKUS.YEARLY;
+
       await requestPurchase({
         type: 'subs',
         request: {
           google: {
             skus: [sku],
             ...(subscriptionOffers.length > 0 && { subscriptionOffers }),
+            ...(isSwitching && {
+              purchaseToken: existingToken,
+              subscriptionProductReplacementParams: {
+                oldProductId: existingSku,
+                replacementMode: isUpgrade ? 'with-time-proration' : 'deferred',
+              },
+            }),
           },
         },
       });
@@ -138,18 +142,27 @@ export const IapService = {
   },
 
   async checkSubscriptionStatus(): Promise<boolean> {
-    // Force non-pro in dev to test subscription/quota screens
-    const DEV_FORCE_NON_PRO = true;
-    if (__DEV__ && DEV_FORCE_NON_PRO) {
-      QuotaService.setProStatus(false);
-      return false;
-    }
     try {
-      const { getAvailablePurchases } = await import('react-native-iap');
-      const purchases = await getAvailablePurchases();
+      const { getAvailablePurchases, getActiveSubscriptions } = await import('react-native-iap');
 
-      const isActive = purchases.some(p => allSkus.has(p.productId));
+      // getActiveSubscriptions: reliable isActive check (filters expired/invalid)
+      const activeSubs = await getActiveSubscriptions(subscriptionSkus);
+      const activeSub = activeSubs.find(
+        s => s.productId === SKUS.MONTHLY || s.productId === SKUS.YEARLY,
+      );
+
+      // getAvailablePurchases needed to find one-time lifetime purchase
+      const purchases = await getAvailablePurchases();
+      const lifetimePurchase = purchases.find(p => p.productId === SKUS.LIFETIME);
+
+      // needsCancel: has lifetime AND an active sub that is still auto-renewing
+      const subStillRenewing = activeSub && activeSub.autoRenewingAndroid !== false;
+
+      const isActive = !!lifetimePurchase || !!activeSub;
       QuotaService.setProStatus(isActive);
+      QuotaService.setActiveSubSku(activeSub?.productId);
+      QuotaService.setActiveSubToken(activeSub?.purchaseToken ?? undefined);
+      QuotaService.setNeedsCancelSubscription(!!lifetimePurchase && !!subStillRenewing);
       return isActive;
     } catch (err) {
       console.warn('[IAP] checkSubscriptionStatus error', err);
