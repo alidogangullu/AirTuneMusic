@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { StyleSheet, View, Pressable, findNodeHandle } from 'react-native';
+import { AirPlayLogo } from './AirPlayLogo';
 import Svg, { Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import { spacing, radius } from '../../../theme/layout';
@@ -43,14 +44,23 @@ function ControlButton({ onPress, active, activeTransparent, children, disabled,
   );
 }
 
+/** When provided, renders AirPlay transport controls (prev / next) wired to DACP.
+ * Play/pause is handled by the progress bar (consistent with native player). */
+export interface AirPlayControls {
+  onPrev: () => void;
+  onNext: () => void;
+}
+
 export const PlaybackControls = React.memo(({
   nextFocusDown,
   onLayoutButton,
   isLive,
+  airPlay,
 }: {
   nextFocusDown?: number | null,
   onLayoutButton?: (node: number | null) => void,
   isLive?: boolean,
+  airPlay?: AirPlayControls,
 }) => {
   const { t } = useTranslation();
   const { state, setShuffleMode, setRepeatMode, toggleRating, skipToPrevious, skipToNext } = usePlayer();
@@ -116,6 +126,35 @@ export const PlaybackControls = React.memo(({
     if (active) return C.onDarkTextPrimary;
     return C.onDarkTextDim;
   };
+
+  // AirPlay mode: sender owns the queue. Show prev/next on the left (matching
+  // normal mode alignment) and AirPlay logo on the right. Play/pause is handled
+  // by the progress bar press, same as the native player.
+  if (airPlay) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.primaryGroup}>
+          <ControlButton onPress={airPlay.onPrev} nextFocusDown={nextFocusDown}>
+            {(focused) => (
+              <Svg width="24" height="24" viewBox="0 0 24 24" fill={iconColor(focused, true)}>
+                <Path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+              </Svg>
+            )}
+          </ControlButton>
+          <ControlButton onPress={airPlay.onNext} nextFocusDown={nextFocusDown}>
+            {(focused) => (
+              <Svg width="24" height="24" viewBox="0 0 24 24" fill={iconColor(focused, true)}>
+                <Path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+              </Svg>
+            )}
+          </ControlButton>
+        </View>
+        <View style={styles.secondaryGroup}>
+          <AirPlayLogo size={24} color={C.onDarkTextDim} />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

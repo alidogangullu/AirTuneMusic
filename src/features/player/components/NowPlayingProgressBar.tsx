@@ -136,7 +136,7 @@ export const NowPlayingProgressBar = React.memo(({
 
   const handlePress = useCallback(() => {
     if (isBuffering || isLoading) return;
-    if (isScrubbingRef.current) {
+    if (isScrubbingRef.current && !isAirPlay) {
       seekTo(pendingSeekMsRef.current);
       setIsScrubbing(false);
       setPendingSeekMs(0);
@@ -144,19 +144,19 @@ export const NowPlayingProgressBar = React.memo(({
     } else {
       isPlaying ? pause() : play();
     }
-  }, [isPlaying, isBuffering, isLoading, seekTo, play, pause]);
+  }, [isPlaying, isBuffering, isLoading, isAirPlay, seekTo, play, pause]);
 
   // Import useTVEventHandler inline — only for D-pad scrubbing
   const { useTVEventHandler } = require('react-native');
   useTVEventHandler(useCallback((evt: { eventType: string }) => {
-    if (!isFocusedRef.current || isBuffering || isLoading || isLiveRadio) return;
+    if (!isFocusedRef.current || isBuffering || isLoading || isLiveRadio || isAirPlay) return;
     if (evt.eventType !== 'left' && evt.eventType !== 'right') return;
     const base = isScrubbingRef.current ? pendingSeekMsRef.current : positionRef.current;
     const delta = evt.eventType === 'right' ? SEEK_STEP_MS : -SEEK_STEP_MS;
     const next = Math.max(0, Math.min(durationRef.current, base + delta));
     setPendingSeekMs(next);
     setIsScrubbing(true);
-  }, [isBuffering, isLoading, isLiveRadio]));
+  }, [isBuffering, isLoading, isLiveRadio, isAirPlay]));
 
   const progress = (duration > 0 && !isLiveRadio) ? position / duration : 0;
   const remainingMs = (duration > 0 && !isLiveRadio) ? Math.max(0, duration - position) : 0;
@@ -257,7 +257,7 @@ export const NowPlayingProgressBar = React.memo(({
                     styles.infoButton,
                     showLyrics && !focused && styles.infoButtonActive,
                     focused && styles.infoButtonFocused,
-                    { marginRight: spacing.md },
+                    { marginRight: !isAirPlay && onToggleQueue ? spacing.md : 0 },
                   ]}
                   nextFocusUp={findNodeHandle(progressBarRef.current)}
                   onPress={onToggleLyrics}

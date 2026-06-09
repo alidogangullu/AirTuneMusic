@@ -462,37 +462,40 @@ export function NowPlayingScreen({
       {/* Progress and Info footer — at screen bottom */}
       {!isLiveRadio && (
         <View style={styles.footerContainer}>
-          {isAirPlayMode && !showInfo && (
-            <View style={styles.airPlayLogoFooter}>
-              <AirPlayLogo size={26} color="white" />
-            </View>
-          )}
           {isAirPlayMode ? (
             !showInfo && (
-              <NowPlayingProgressBar
-                isLiveRadio={false}
-                isLoading={airPlay.positionMs > 0 ? false : false}
-                isBuffering={airPlay.positionMs > 0 ? false : false}
-                isPlaying={airPlay.isPlaying}
-                external={{
-                  position: airPlay.positionMs,
-                  duration: airPlayDurationMs,
-                  isPlaying: airPlay.isPlaying,
-                  onSeekTo: () => { },
-                  onPlay: () => { },
-                  onPause: () => { },
-                }}
-                isAirPlay={true}
-                showExtras={true}
-                onOpenInfo={() => setShowInfo(true)}
-                showLyrics={showLyrics}
-                onToggleLyrics={() => setShowLyrics(!showLyrics)}
-                showQueue={showQueue}
-                onToggleQueue={() => setShowQueue(!showQueue)}
-                focusable={false}
-                progressBarRef={progressBarRef}
-                onLayoutProgress={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
-              />
+              <>
+                <PlaybackControls
+                  airPlay={{
+                    onPrev: airPlay.prev,
+                    onNext: airPlay.next,
+                  }}
+                  nextFocusDown={progressBarNode}
+                />
+                <NowPlayingProgressBar
+                  isLiveRadio={false}
+                  isLoading={false}
+                  isBuffering={false}
+                  isPlaying={airPlay.isPlaying}
+                  external={{
+                    position: airPlay.positionMs,
+                    duration: airPlayDurationMs,
+                    isPlaying: airPlay.isPlaying,
+                    onSeekTo: () => { },
+                    onPlay: airPlay.playPause,
+                    onPause: airPlay.playPause,
+                  }}
+                  isAirPlay={true}
+                  showExtras={true}
+                  onOpenInfo={() => setShowInfo(true)}
+                  showLyrics={showLyrics}
+                  onToggleLyrics={() => setShowLyrics(!showLyrics)}
+                  showQueue={showQueue}
+                  onToggleQueue={() => setShowQueue(!showQueue)}
+                  progressBarRef={progressBarRef}
+                  onLayoutProgress={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
+                />
+              </>
             )
           ) : (
             !showInfo && (
@@ -613,12 +616,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: C.onDarkTextFaint,
     marginTop: spacing.xl,
-  },
-  airPlayLogoFooter: {
-    alignItems: 'flex-start',
-    marginLeft: spacing.xxl,
-    marginBottom: -spacing.sm,
-    opacity: 0.7,
   },
   artist: {
     fontSize: 12,

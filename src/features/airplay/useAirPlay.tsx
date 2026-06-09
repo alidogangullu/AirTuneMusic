@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { createMMKV } from 'react-native-mmkv';
@@ -25,6 +25,12 @@ export interface AirPlayContext {
   quotaUsedMs: number;
   quotaRemainingMs: number;
   quotaExceeded: boolean;
+  /** DACP play/pause toggle on the connected sender. */
+  playPause: () => void;
+  /** DACP skip to next track on the connected sender. */
+  next: () => void;
+  /** DACP skip to previous track on the connected sender. */
+  prev: () => void;
 }
 
 const Ctx = createContext<AirPlayContext>({
@@ -40,6 +46,9 @@ const Ctx = createContext<AirPlayContext>({
   quotaUsedMs: 0,
   quotaRemainingMs: AirPlayQuotaService.HOURLY_LIMIT_SECONDS * 1000,
   quotaExceeded: false,
+  playPause: () => {},
+  next: () => {},
+  prev: () => {},
 });
 
 function airPlayTrackToPlayerTrack(info: AirPlayTrackInfo): TrackInfo {
@@ -67,6 +76,8 @@ export function AirPlayProvider({ children }: Readonly<{ children: React.ReactNo
   const [durationMs, setDurationMs] = useState(0);
   const [connectionCount, setConnectionCount] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  // Last displayed position (ms), used to smooth out stale/backward progress updates.
+  const displayPositionRef = useRef(0);
 
   const [quotaUsedMs, setQuotaUsedMs] = useState(() => AirPlayQuotaService.getUsedSeconds() * 1000);
   const quotaRemainingMs = AirPlayQuotaService.getRemainingMs();
@@ -180,6 +191,7 @@ export function AirPlayProvider({ children }: Readonly<{ children: React.ReactNo
           setActive(false);
           setTrack(null);
           setPositionMs(0);
+          displayPositionRef.current = 0;
           setDurationMs(0);
           setIsPlaying(false);
         } else if (!AirPlayQuotaService.canPlay()) {
@@ -196,6 +208,7 @@ export function AirPlayProvider({ children }: Readonly<{ children: React.ReactNo
           setActive(false);
           setTrack(null);
           setPositionMs(0);
+          displayPositionRef.current = 0;
           setDurationMs(0);
           setIsPlaying(false);
           return;
@@ -222,10 +235,15 @@ export function AirPlayProvider({ children }: Readonly<{ children: React.ReactNo
       }),
 
       airPlayReceiver.onProgress(({ positionMs: pos, durationMs: dur }) => {
-        console.log('[AirPlay] progress:', { positionMs: pos, durationMs: dur });
-        // Only update if position is moving; ignore stale 0,0 updates
+        // Ignore stale 0 updates. Accept forward motion and large jumps (track
+        // changes / seeks), but reject small backward jitter (<4s) so the bar
+        // doesn't stutter. Mirrors AirPipe's JS smoothing.
         if (pos > 0) {
-          setPositionMs(pos);
+          const diff = pos - displayPositionRef.current;
+          if (diff >= -500 || Math.abs(diff) > 4000) {
+            displayPositionRef.current = pos;
+            setPositionMs(pos);
+          }
           setIsPlaying(true);
           if (dur > 0) setDurationMs(dur);
         }
@@ -241,17 +259,21 @@ export function AirPlayProvider({ children }: Readonly<{ children: React.ReactNo
       setIsPlaying(false);
       return;
     }
-    // If progress doesn't advance for 3 seconds, we assume it's actually paused.
-    // This is coordinated with the native audio watchdog (2s).
+    // Native emits interpolated progress ~1×/sec while audio flows; if none
+    // arrives for 1.5s we treat playback as paused (matches AirPipe).
     const timer = setTimeout(() => {
       setIsPlaying(false);
-    }, 3000);
+    }, 1500);
     return () => clearTimeout(timer);
   }, [positionMs, active]);
 
+  const playPause = useCallback(() => airPlayReceiver.playPause(), []);
+  const next = useCallback(() => airPlayReceiver.next(), []);
+  const prev = useCallback(() => airPlayReceiver.prev(), []);
+
   const value = useMemo(
-    () => ({ enabled, setEnabled: setEnabledPersisted, active, receiverState, track, positionMs, durationMs, connectionCount, isPlaying, quotaUsedMs, quotaRemainingMs, quotaExceeded }),
-    [enabled, setEnabledPersisted, active, receiverState, track, positionMs, durationMs, connectionCount, isPlaying, quotaUsedMs, quotaRemainingMs, quotaExceeded],
+    () => ({ enabled, setEnabled: setEnabledPersisted, active, receiverState, track, positionMs, durationMs, connectionCount, isPlaying, quotaUsedMs, quotaRemainingMs, quotaExceeded, playPause, next, prev }),
+    [enabled, setEnabledPersisted, active, receiverState, track, positionMs, durationMs, connectionCount, isPlaying, quotaUsedMs, quotaRemainingMs, quotaExceeded, playPause, next, prev],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
