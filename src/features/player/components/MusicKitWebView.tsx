@@ -161,14 +161,18 @@ export const MusicKitWebView = forwardRef<MusicKitWebPlayerRef, Props>(
             var userToken = ${JSON.stringify(validUserToken)};
             if (userToken) {
               window.music.musicUserToken = userToken;
-            }
 
-            // Ensure authorization is settled before proceeding
-            window.music.authorize().then(() => {
-              window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Console Warn: MusicKit Authorized Successfully' }));
-            }).catch(e => {
-              window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Authorize Error: ' + e.message }));
-            });
+              // Only authorize when we already have a user token. Calling
+              // authorize() without a token triggers MusicKit's interactive
+              // sign-in, which opens the Apple sign-in page in a browser popup.
+              // When there is no token yet (e.g. the auth screen), stay idle;
+              // updateUserToken() will authorize once a token is set.
+              window.music.authorize().then(() => {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Console Warn: MusicKit Authorized Successfully' }));
+              }).catch(e => {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', error: 'Authorize Error: ' + e.message }));
+              });
+            }
 
             function postQueue() {
               if (!window.music || !window.music.queue || !window.music.queue.items) return;
