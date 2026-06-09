@@ -9,6 +9,14 @@
 
 # Add any project specific keep options here:
 
+# AirPlay (UxPlay JNI bridge) — native methods and the callback methods invoked
+# by name from android_raop_callbacks.c must not be stripped or renamed.
+-keep class com.adg.airtunemusic.airplay.AirPlayModule { *; }
+-keep class com.adg.airtunemusic.airplay.AudioRenderer { *; }
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
 # Unity Ads
 -keep class com.unity3d.ads.** { *; }
 -keep interface com.unity3d.ads.** { *; }

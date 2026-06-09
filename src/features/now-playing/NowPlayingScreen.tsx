@@ -469,30 +469,41 @@ export function NowPlayingScreen({
           )}
           {isAirPlayMode ? (
             !showInfo && (
-              <NowPlayingProgressBar
-                isLiveRadio={false}
-                isLoading={airPlay.positionMs > 0 ? false : false}
-                isBuffering={airPlay.positionMs > 0 ? false : false}
-                isPlaying={airPlay.isPlaying}
-                external={{
-                  position: airPlay.positionMs,
-                  duration: airPlayDurationMs,
-                  isPlaying: airPlay.isPlaying,
-                  onSeekTo: () => { },
-                  onPlay: () => { },
-                  onPause: () => { },
-                }}
-                isAirPlay={true}
-                showExtras={true}
-                onOpenInfo={() => setShowInfo(true)}
-                showLyrics={showLyrics}
-                onToggleLyrics={() => setShowLyrics(!showLyrics)}
-                showQueue={showQueue}
-                onToggleQueue={() => setShowQueue(!showQueue)}
-                focusable={false}
-                progressBarRef={progressBarRef}
-                onLayoutProgress={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
-              />
+              <>
+                <PlaybackControls
+                  airPlay={{
+                    isPlaying: airPlay.isPlaying,
+                    onPrev: airPlay.prev,
+                    onPlayPause: airPlay.playPause,
+                    onNext: airPlay.next,
+                  }}
+                  nextFocusDown={progressBarNode}
+                />
+                <NowPlayingProgressBar
+                  isLiveRadio={false}
+                  isLoading={false}
+                  isBuffering={false}
+                  isPlaying={airPlay.isPlaying}
+                  external={{
+                    position: airPlay.positionMs,
+                    duration: airPlayDurationMs,
+                    isPlaying: airPlay.isPlaying,
+                    onSeekTo: () => { },
+                    onPlay: airPlay.playPause,
+                    onPause: airPlay.playPause,
+                  }}
+                  isAirPlay={true}
+                  showExtras={true}
+                  onOpenInfo={() => setShowInfo(true)}
+                  showLyrics={showLyrics}
+                  onToggleLyrics={() => setShowLyrics(!showLyrics)}
+                  showQueue={showQueue}
+                  onToggleQueue={() => setShowQueue(!showQueue)}
+                  focusable={false}
+                  progressBarRef={progressBarRef}
+                  onLayoutProgress={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
+                />
+              </>
             )
           ) : (
             !showInfo && (

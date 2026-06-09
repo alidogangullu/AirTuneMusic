@@ -39,6 +39,18 @@ export const airPlayReceiver = {
   pause: (): void =>
     getModule().pause(),
 
+  /** DACP play/pause toggle on the connected sender (iPhone/Mac). */
+  playPause: (): void =>
+    getModule().dacpPlayPause(),
+
+  /** DACP skip to next track on the connected sender. */
+  next: (): void =>
+    getModule().dacpNext(),
+
+  /** DACP skip to previous track on the connected sender. */
+  prev: (): void =>
+    getModule().dacpPrev(),
+
   onStateChanged: (cb: (state: AirPlayState) => void): EmitterSubscription =>
     getEmitter().addListener('onAirPlayStateChanged', ({ state }) => cb(state)),
 

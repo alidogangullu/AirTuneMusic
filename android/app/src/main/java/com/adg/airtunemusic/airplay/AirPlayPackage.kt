@@ -6,9 +6,9 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
 
 class AirPlayPackage : ReactPackage {
-    override fun createNativeModules(ctx: ReactApplicationContext): List<NativeModule> =
-        listOf(AirPlayModule(ctx))
+    override fun createNativeModules(context: ReactApplicationContext): List<NativeModule> =
+        listOf(AirPlayModule(context))
 
-    override fun createViewManagers(ctx: ReactApplicationContext): List<ViewManager<*, *>> =
+    override fun createViewManagers(context: ReactApplicationContext): List<ViewManager<*, *>> =
         emptyList()
 }

@@ -58,12 +58,12 @@ Located in `android/app/src/main/java/com/adg/airtune/`:
 
 | Module | Purpose |
 |--------|---------|
-| `airplay/` | AirPlay receiver via pre-built `libairplay_native.so` (UxPlay/RAOP). `AirPlayModule.kt` bridges to JS. |
+| `airplay/` | Audio-only AirPlay (RAOP) receiver. `AirPlayModule.kt` (RN name `AirPlayReceiver`) bridges to JS; backed by the UxPlay engine built from source. Includes DACP play/pause/next/prev controls. No video/mirroring. |
 | `musicplayer/` | Native music playback. |
 | `imagecolors/` | Dynamic background color extraction from artwork. |
 | `unityads/` | Unity Ads SDK integration. |
 
-The AirPlay `.so` libraries are pre-compiled (not built at compile time) and live in `android/app/src/main/jniLibs/`.
+The AirPlay engine is **compiled from source** (UxPlay direct, ported from the sibling AirPipe project) via CMake — `android/app/src/main/cpp/` (UxPlay + ALAC + libplist + prebuilt OpenSSL `.a`) plus the `src/main/jni/` entry point, producing `libairtune_jni.so` for `arm64-v8a` + `armeabi-v7a`. The module is serviceless (engine runs in the RN module; no foreground service). Stable playback timing uses RTP-timestamp anchoring + system-clock interpolation with silence gap detection.
 
 ### State & Data
 

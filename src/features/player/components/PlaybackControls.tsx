@@ -43,14 +43,25 @@ function ControlButton({ onPress, active, activeTransparent, children, disabled,
   );
 }
 
+/** When provided, renders a minimal AirPlay transport (prev / play-pause / next)
+ * wired to DACP commands instead of the native player. */
+export interface AirPlayControls {
+  isPlaying: boolean;
+  onPrev: () => void;
+  onPlayPause: () => void;
+  onNext: () => void;
+}
+
 export const PlaybackControls = React.memo(({
   nextFocusDown,
   onLayoutButton,
   isLive,
+  airPlay,
 }: {
   nextFocusDown?: number | null,
   onLayoutButton?: (node: number | null) => void,
   isLive?: boolean,
+  airPlay?: AirPlayControls,
 }) => {
   const { t } = useTranslation();
   const { state, setShuffleMode, setRepeatMode, toggleRating, skipToPrevious, skipToNext } = usePlayer();
@@ -116,6 +127,44 @@ export const PlaybackControls = React.memo(({
     if (active) return C.onDarkTextPrimary;
     return C.onDarkTextDim;
   };
+
+  // AirPlay mode: sender owns the queue, so only expose transport controls
+  // (prev / play-pause / next) wired to DACP. Library actions don't apply.
+  if (airPlay) {
+    return (
+      <View style={[styles.container, styles.airPlayContainer]}>
+        <View style={styles.primaryGroup}>
+          <ControlButton onPress={airPlay.onPrev} nextFocusDown={nextFocusDown}>
+            {(focused) => (
+              <Svg width="24" height="24" viewBox="0 0 24 24" fill={iconColor(focused, true)}>
+                <Path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+              </Svg>
+            )}
+          </ControlButton>
+          <ControlButton
+            onPress={airPlay.onPlayPause}
+            hasTVPreferredFocus
+            nextFocusDown={nextFocusDown}
+            onLayout={(node: number | null) => onLayoutButton?.(node)}>
+            {(focused) => (
+              <Svg width="26" height="26" viewBox="0 0 24 24" fill={iconColor(focused, true)}>
+                {airPlay.isPlaying
+                  ? <Path d="M6 5h4v14H6zM14 5h4v14h-4z" />
+                  : <Path d="M8 5v14l11-7z" />}
+              </Svg>
+            )}
+          </ControlButton>
+          <ControlButton onPress={airPlay.onNext} nextFocusDown={nextFocusDown}>
+            {(focused) => (
+              <Svg width="24" height="24" viewBox="0 0 24 24" fill={iconColor(focused, true)}>
+                <Path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+              </Svg>
+            )}
+          </ControlButton>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -230,6 +279,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.xxl,
     marginBottom: -spacing.md,
+  },
+  airPlayContainer: {
+    justifyContent: 'center',
   },
   primaryGroup: {
     flexDirection: 'row',
