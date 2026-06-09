@@ -27,29 +27,44 @@ function getEmitter(): NativeEventEmitter {
 }
 
 export const airPlayReceiver = {
-  start: (deviceName: string = 'AirTune'): Promise<boolean> =>
-    getModule().startReceiver(deviceName),
+  // async so a missing/failed native module surfaces as a rejected promise
+  // (catchable) rather than a synchronous throw that could crash the app.
+  start: async (deviceName: string = 'AirTune'): Promise<boolean> => {
+    const mod = getModule();
+    if (!mod?.startReceiver) {
+      throw new Error('AirPlayReceiver native module unavailable');
+    }
+    return mod.startReceiver(deviceName);
+  },
 
-  stop: (): Promise<boolean> =>
-    getModule().stopReceiver(),
+  stop: async (): Promise<boolean> => {
+    const mod = getModule();
+    if (!mod?.stopReceiver) return false;
+    return mod.stopReceiver();
+  },
 
-  disconnect: (): void =>
-    getModule().disconnect(),
+  disconnect: (): void => {
+    try { getModule()?.disconnect(); } catch { /* native unavailable — ignore */ }
+  },
 
-  pause: (): void =>
-    getModule().pause(),
+  pause: (): void => {
+    try { getModule()?.pause(); } catch { /* native unavailable — ignore */ }
+  },
 
   /** DACP play/pause toggle on the connected sender (iPhone/Mac). */
-  playPause: (): void =>
-    getModule().dacpPlayPause(),
+  playPause: (): void => {
+    try { getModule()?.dacpPlayPause(); } catch { /* native unavailable — ignore */ }
+  },
 
   /** DACP skip to next track on the connected sender. */
-  next: (): void =>
-    getModule().dacpNext(),
+  next: (): void => {
+    try { getModule()?.dacpNext(); } catch { /* native unavailable — ignore */ }
+  },
 
   /** DACP skip to previous track on the connected sender. */
-  prev: (): void =>
-    getModule().dacpPrev(),
+  prev: (): void => {
+    try { getModule()?.dacpPrev(); } catch { /* native unavailable — ignore */ }
+  },
 
   onStateChanged: (cb: (state: AirPlayState) => void): EmitterSubscription =>
     getEmitter().addListener('onAirPlayStateChanged', ({ state }) => cb(state)),

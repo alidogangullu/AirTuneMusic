@@ -92,7 +92,13 @@ class AirPlayModule(private val reactContext: ReactApplicationContext) :
         } catch (e: UnsatisfiedLinkError) {
             Log.w(TAG, "JNI not available: ${e.message}")
             promise.resolve(false)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
+            // Catch Throwable (not just Exception) so JVM Errors during start —
+            // NoClassDefFoundError, ExceptionInInitializerError, OOM — fail
+            // gracefully instead of crashing the app. Native signals (SIGSEGV)
+            // still cannot be caught here; those are outside the JVM.
+            Log.w(TAG, "AirPlay start failed: ${e.message}")
+            try { stopEngine() } catch (_: Throwable) { /* best-effort cleanup */ }
             emitState("error")
             promise.reject("ERROR", e.message)
         }

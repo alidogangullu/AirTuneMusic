@@ -1,6 +1,6 @@
 {
   "name": "AirTuneMusic",
-  "version": "1.13.1",
+  "version": "1.13.5",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
