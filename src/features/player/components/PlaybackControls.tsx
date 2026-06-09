@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { StyleSheet, View, Pressable, findNodeHandle } from 'react-native';
+import { AirPlayLogo } from './AirPlayLogo';
 import Svg, { Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import { spacing, radius } from '../../../theme/layout';
@@ -43,12 +44,10 @@ function ControlButton({ onPress, active, activeTransparent, children, disabled,
   );
 }
 
-/** When provided, renders a minimal AirPlay transport (prev / play-pause / next)
- * wired to DACP commands instead of the native player. */
+/** When provided, renders AirPlay transport controls (prev / next) wired to DACP.
+ * Play/pause is handled by the progress bar (consistent with native player). */
 export interface AirPlayControls {
-  isPlaying: boolean;
   onPrev: () => void;
-  onPlayPause: () => void;
   onNext: () => void;
 }
 
@@ -128,29 +127,17 @@ export const PlaybackControls = React.memo(({
     return C.onDarkTextDim;
   };
 
-  // AirPlay mode: sender owns the queue, so only expose transport controls
-  // (prev / play-pause / next) wired to DACP. Library actions don't apply.
+  // AirPlay mode: sender owns the queue. Show prev/next on the left (matching
+  // normal mode alignment) and AirPlay logo on the right. Play/pause is handled
+  // by the progress bar press, same as the native player.
   if (airPlay) {
     return (
-      <View style={[styles.container, styles.airPlayContainer]}>
+      <View style={styles.container}>
         <View style={styles.primaryGroup}>
           <ControlButton onPress={airPlay.onPrev} nextFocusDown={nextFocusDown}>
             {(focused) => (
               <Svg width="24" height="24" viewBox="0 0 24 24" fill={iconColor(focused, true)}>
                 <Path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
-              </Svg>
-            )}
-          </ControlButton>
-          <ControlButton
-            onPress={airPlay.onPlayPause}
-            hasTVPreferredFocus
-            nextFocusDown={nextFocusDown}
-            onLayout={(node: number | null) => onLayoutButton?.(node)}>
-            {(focused) => (
-              <Svg width="26" height="26" viewBox="0 0 24 24" fill={iconColor(focused, true)}>
-                {airPlay.isPlaying
-                  ? <Path d="M6 5h4v14H6zM14 5h4v14h-4z" />
-                  : <Path d="M8 5v14l11-7z" />}
               </Svg>
             )}
           </ControlButton>
@@ -161,6 +148,9 @@ export const PlaybackControls = React.memo(({
               </Svg>
             )}
           </ControlButton>
+        </View>
+        <View style={styles.secondaryGroup}>
+          <AirPlayLogo size={24} color={C.onDarkTextDim} />
         </View>
       </View>
     );
@@ -279,9 +269,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.xxl,
     marginBottom: -spacing.md,
-  },
-  airPlayContainer: {
-    justifyContent: 'center',
   },
   primaryGroup: {
     flexDirection: 'row',

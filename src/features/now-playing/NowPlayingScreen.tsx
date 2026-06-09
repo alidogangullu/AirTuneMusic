@@ -462,19 +462,12 @@ export function NowPlayingScreen({
       {/* Progress and Info footer — at screen bottom */}
       {!isLiveRadio && (
         <View style={styles.footerContainer}>
-          {isAirPlayMode && !showInfo && (
-            <View style={styles.airPlayLogoFooter}>
-              <AirPlayLogo size={26} color="white" />
-            </View>
-          )}
           {isAirPlayMode ? (
             !showInfo && (
               <>
                 <PlaybackControls
                   airPlay={{
-                    isPlaying: airPlay.isPlaying,
                     onPrev: airPlay.prev,
-                    onPlayPause: airPlay.playPause,
                     onNext: airPlay.next,
                   }}
                   nextFocusDown={progressBarNode}
@@ -499,7 +492,6 @@ export function NowPlayingScreen({
                   onToggleLyrics={() => setShowLyrics(!showLyrics)}
                   showQueue={showQueue}
                   onToggleQueue={() => setShowQueue(!showQueue)}
-                  focusable={false}
                   progressBarRef={progressBarRef}
                   onLayoutProgress={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
                 />
@@ -624,12 +616,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: C.onDarkTextFaint,
     marginTop: spacing.xl,
-  },
-  airPlayLogoFooter: {
-    alignItems: 'flex-start',
-    marginLeft: spacing.xxl,
-    marginBottom: -spacing.sm,
-    opacity: 0.7,
   },
   artist: {
     fontSize: 12,

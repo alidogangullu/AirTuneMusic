@@ -212,6 +212,13 @@ class AirPlayModule(private val reactContext: ReactApplicationContext) :
             airplayTxt.forEach { (k, v) -> setAttribute(k, v) }
         }
 
+        // Emulator bridge: log TXT records so airplay-emulator-bridge.sh can read them.
+        Log.d(TAG, "BRIDGE_RAOP_NAME=$raopName")
+        Log.d(TAG, "BRIDGE_AIRPLAY_NAME=$serverName")
+        Log.d(TAG, "BRIDGE_PORT=$port")
+        Log.d(TAG, "BRIDGE_RAOP_TXT=${raopTxt.entries.joinToString("|") { "${it.key}=${it.value}" }}")
+        Log.d(TAG, "BRIDGE_AIRPLAY_TXT=${airplayTxt.entries.joinToString("|") { "${it.key}=${it.value}" }}")
+
         raopListener = makeListener("RAOP")
         airplayListener = makeListener("AirPlay")
 
