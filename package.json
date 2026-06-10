@@ -28,6 +28,7 @@
     "react-native-qrcode-svg": "^6.3.21",
     "react-native-safe-area-context": "^5.8.0",
     "react-native-svg": "^15.15.5",
+    "react-native-video": "6.19.2",
     "react-native-webview": "^13.16.1"
   },
   "devDependencies": {

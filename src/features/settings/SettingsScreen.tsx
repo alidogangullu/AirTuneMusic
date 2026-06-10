@@ -25,6 +25,7 @@ import { useTheme } from '../../theme';
 import type { AppColors } from '../../theme/colors';
 import { QuotaService } from './quotaService';
 import { AdSettingsService } from './adSettingsService';
+import { MotionArtworkService } from './motionArtworkService';
 import { AirPlayQuotaService } from '../airplay/airPlayQuotaService';
 import { QuotaPeriodService } from './quotaPeriodService';
 import { IapService, SKUS } from './iapService';
@@ -59,6 +60,7 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
   const [autoStartAd, setAutoStartAd] = React.useState(() => AdSettingsService.getAutoStartAd());
   const [prices, setPrices] = React.useState<Record<string, string>>({});
   const [quotaIndicatorHidden, setQuotaIndicatorHidden] = React.useState(() => QuotaService.isQuotaIndicatorHidden());
+  const [motionArtworkEnabled, setMotionArtworkEnabled] = React.useState(() => MotionArtworkService.getEnabled());
   const [activeSubSku, setActiveSubSku] = React.useState(() => QuotaService.getActiveSubSku());
   const [isPro, setIsPro] = React.useState(() => QuotaService.isProUser());
   const [needsCancel, setNeedsCancel] = React.useState(() => QuotaService.needsCancelSubscription());
@@ -373,6 +375,14 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
           }}
         />
       )}
+      <SettingsMenuItem
+        label={t('settings.motionArtwork', { state: motionArtworkEnabled ? t('common.on', 'On') : t('common.off', 'Off') })}
+        onPress={() => {
+          const next = !motionArtworkEnabled;
+          MotionArtworkService.setEnabled(next);
+          setMotionArtworkEnabled(next);
+        }}
+      />
     </>
   );
 

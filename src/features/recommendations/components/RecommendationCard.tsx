@@ -10,6 +10,7 @@ import { radius, spacing } from '../../../theme/layout';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme';
 import { RecommendationContent } from '../../../types/recommendations';
+import { MotionArtworkCover } from '../../../components/MotionArtworkCover';
 
 const CARD_WIDTH = 180;
 const ARTWORK_SIZE = 160;
@@ -36,40 +37,61 @@ export function RecommendationCard({
   );
   const title = content.attributes?.name ?? t('common.unknown');
   const subtitle = content.attributes?.artistName ?? '';
+  const supportsMotion =
+    content.type === 'playlists' ||
+    content.type === 'albums' ||
+    content.type === 'stations';
 
   return (
     <Pressable
       style={({ focused }) => [styles.card, focused && styles.cardFocused]}
       onPress={onPress}
       focusable>
-      <View style={styles.cardInner}>
-        {category ? (
-          <Text style={styles.category} numberOfLines={1}>
-            {category}
-          </Text>
-        ) : null}
-        <View style={styles.artworkContainer}>
-          {artworkUrl ? (
-            <Image
-              source={{ uri: artworkUrl }}
-              style={styles.artwork}
-              resizeMode="cover"
-            />
-          ) : (
-            <View style={[styles.artwork, styles.artworkPlaceholder]} />
-          )}
-        </View>
-        <View style={styles.textContainer}>
-          <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
-            {title}
-          </Text>
-          {subtitle ? (
-            <Text style={styles.subtitle} numberOfLines={1} ellipsizeMode="tail">
-              {subtitle}
+      {({ focused }) => (
+        <View style={styles.cardInner}>
+          {category ? (
+            <Text style={styles.category} numberOfLines={1}>
+              {category}
             </Text>
           ) : null}
+          {supportsMotion ? (
+            <MotionArtworkCover
+              contentType={content.type as 'playlists' | 'albums' | 'stations'}
+              contentId={content.id}
+              artworkUrl={artworkUrl}
+              focused={focused}
+              width={ARTWORK_SIZE}
+              height={ARTWORK_SIZE}
+              borderRadius={radius.md}
+            />
+          ) : (
+            <View style={styles.artworkContainer}>
+              {artworkUrl ? (
+                <Image
+                  source={{ uri: artworkUrl }}
+                  style={styles.artwork}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={[styles.artwork, styles.artworkPlaceholder]} />
+              )}
+            </View>
+          )}
+          <View style={styles.textContainer}>
+            <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
+              {title}
+            </Text>
+            {subtitle ? (
+              <Text
+                style={styles.subtitle}
+                numberOfLines={1}
+                ellipsizeMode="tail">
+                {subtitle}
+              </Text>
+            ) : null}
+          </View>
         </View>
-      </View>
+      )}
     </Pressable>
   );
 }

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { getArtworkUrl } from '../recommendations/api/recommendations';
+import { MotionArtworkCover } from '../../components/MotionArtworkCover';
 import { formatFullDate } from './utils/dateUtils';
 import { useArtistDetail } from './hooks/useArtistDetail';
 import { usePlayer } from '../player/hooks/usePlayer';
@@ -238,12 +239,17 @@ function LatestReleaseCard({
       style={({ focused }) => [styles.latestReleaseCard, focused && styles.cardFocused]}
       onPress={onPress}
       focusable>
+      {({ focused }) => (
+      <>
       <View style={styles.latestReleaseArtworkContainer}>
-        {artworkUrl ? (
-          <Image source={{ uri: artworkUrl }} style={styles.latestReleaseArtwork} resizeMode="cover" />
-        ) : (
-          <View style={[styles.latestReleaseArtwork, styles.placeholderBg]} />
-        )}
+        <MotionArtworkCover
+          contentType="albums"
+          contentId={album.id}
+          artworkUrl={artworkUrl ?? undefined}
+          focused={focused}
+          width={152}
+          height={152}
+        />
       </View>
       <View style={styles.latestReleaseInfo}>
         <Text style={styles.latestReleaseDate}>{releaseDate}</Text>
@@ -252,6 +258,8 @@ function LatestReleaseCard({
           {album.attributes?.isSingle ? t('artist.single') : t('artist.album')} · {t('detail.songsCount', { count: album.attributes?.trackCount })}
         </Text>
       </View>
+      </>
+      )}
     </Pressable>
   );
 }
@@ -316,12 +324,17 @@ function EssentialAlbumCard({
       style={({ focused }) => [styles.essentialAlbumCard, focused && styles.cardFocused]}
       onPress={onPress}
       focusable>
+      {({ focused }) => (
+      <>
       <View style={styles.essentialAlbumArtworkContainer}>
-        {artworkUrl ? (
-          <Image source={{ uri: artworkUrl }} style={styles.essentialAlbumArtwork} resizeMode="cover" />
-        ) : (
-          <View style={[styles.essentialAlbumArtwork, styles.placeholderBg]} />
-        )}
+        <MotionArtworkCover
+          contentType="albums"
+          contentId={album.id}
+          artworkUrl={artworkUrl ?? undefined}
+          focused={focused}
+          width={200}
+          height={200}
+        />
       </View>
       <View style={styles.essentialAlbumInfo}>
         <Text style={styles.essentialAlbumName} numberOfLines={1}>{album.attributes?.name}</Text>
@@ -332,6 +345,8 @@ function EssentialAlbumCard({
           </Text>
         ) : null}
       </View>
+      </>
+      )}
     </Pressable>
   );
 }

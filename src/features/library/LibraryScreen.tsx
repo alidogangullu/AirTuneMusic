@@ -23,6 +23,7 @@ import { getArtworkUrl } from '../recommendations/api/recommendations';
 import { getMusicUserToken } from '../../api/apple-music/musicUserToken';
 import { useContentNavigation } from '../home/navigation';
 import type { LibraryCategoryId, LibraryItem } from '../../types/library';
+import { MotionArtworkCover } from '../../components/MotionArtworkCover';
 import { useLibraryInfiniteItems } from './hooks/useLibraryItems';
 
 // ── Sidebar categories ───────────────────────────────────────────
@@ -68,6 +69,47 @@ function LibraryGridItem({
     item.attributes?.artistName ?? catalogItem?.attributes?.artistName ?? item.attributes?.albumName ?? '';
   const isArtist = item.type === 'library-artists';
 
+  // Motion artwork needs the catalog id (amp-api); library ids won't resolve.
+  // Library albums/playlists carry their catalog counterpart via include=catalog.
+  const catalogId: string | undefined =
+    catalogItem?.id ?? item.attributes?.playParams?.catalogId;
+  const MOTION_TYPE: Record<string, 'playlists' | 'albums'> = {
+    'library-playlists': 'playlists',
+    'library-albums': 'albums',
+  };
+  const motionType = MOTION_TYPE[item.type];
+  const supportsMotion = !!motionType && !!catalogId;
+
+  const renderArtwork = (focused: boolean) => {
+    if (supportsMotion && motionType && catalogId) {
+      return (
+        <MotionArtworkCover
+          contentType={motionType}
+          contentId={catalogId}
+          artworkUrl={artworkUrl ?? undefined}
+          focused={focused}
+          width={ARTWORK_SIZE}
+          height={ARTWORK_SIZE}
+          borderRadius={4}
+        />
+      );
+    }
+    if (artworkUrl) {
+      return (
+        <Image
+          source={{ uri: artworkUrl }}
+          style={[styles.artwork, isArtist && styles.artworkRound]}
+          resizeMode="cover"
+        />
+      );
+    }
+    return (
+      <View style={[styles.artworkPlaceholder, isArtist && styles.artworkRound]}>
+        <Text style={styles.artworkPlaceholderIcon}>♫</Text>
+      </View>
+    );
+  };
+
   return (
     <Pressable
       style={({ focused }) => [
@@ -76,28 +118,19 @@ function LibraryGridItem({
       ]}
       onPress={() => onPress(item)}
       focusable>
-      {artworkUrl ? (
-        <Image
-          source={{ uri: artworkUrl }}
-          style={[
-            styles.artwork,
-            isArtist && styles.artworkRound,
-          ]}
-          resizeMode="cover"
-        />
-      ) : (
-        <View style={[styles.artworkPlaceholder, isArtist && styles.artworkRound]}>
-          <Text style={styles.artworkPlaceholderIcon}>♫</Text>
-        </View>
+      {({ focused }) => (
+        <>
+          {renderArtwork(focused)}
+          <Text style={styles.itemTitle} numberOfLines={1}>
+            {name}
+          </Text>
+          {subtitle ? (
+            <Text style={styles.itemSubtitle} numberOfLines={1}>
+              {subtitle}
+            </Text>
+          ) : null}
+        </>
       )}
-      <Text style={styles.itemTitle} numberOfLines={1}>
-        {name}
-      </Text>
-      {subtitle ? (
-        <Text style={styles.itemSubtitle} numberOfLines={1}>
-          {subtitle}
-        </Text>
-      ) : null}
     </Pressable>
   );
 }

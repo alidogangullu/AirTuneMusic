@@ -1,5 +1,30 @@
 // Apple Music catalog resource types (detail responses)
 
+// ── Editorial (Motion) Artwork ──────────────────────────────────
+// Served only via amp-api.music.apple.com with the web-player token
+// (extend=editorialVideo). Each variant carries a looping HLS video.
+
+export type EditorialVideoVariant = {
+  video?: string; // HLS .m3u8 (unprotected, plays without auth)
+  url?: string;
+  previewFrame?: {
+    url: string;
+    width?: number;
+    height?: number;
+    bgColor?: string;
+  };
+};
+
+export type EditorialVideo = {
+  motionSquareVideo1x1?: EditorialVideoVariant;
+  motionDetailSquare?: EditorialVideoVariant;
+  motionTallVideo3x4?: EditorialVideoVariant;
+  motionDetailTall?: EditorialVideoVariant;
+  motionDetailWide?: EditorialVideoVariant;
+  motionWideVideo21x9?: EditorialVideoVariant;
+  motionMediumVideo16x9?: EditorialVideoVariant;
+};
+
 // ── Playlist Detail ─────────────────────────────────────────────
 
 export type PlaylistTrack = {
@@ -44,6 +69,7 @@ export type PlaylistDetail = {
     url?: string;
     playParams?: {id: string; kind: string; versionHash?: string};
     isChart?: boolean;
+    editorialVideo?: EditorialVideo;
   };
   relationships?: {
     tracks?: {href?: string; data: PlaylistTrack[]};
@@ -81,6 +107,7 @@ export type AlbumDetail = {
     url?: string;
     playParams?: {id: string; kind: string};
     editorialNotes?: {standard?: string; short?: string};
+    editorialVideo?: EditorialVideo;
   };
   relationships?: {
     tracks?: {href?: string; data: PlaylistTrack[]};
