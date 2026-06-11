@@ -6135,6 +6135,11 @@ react-native-svg@^15.15.5:
     css-select "^5.1.0"
     css-tree "^1.1.3"
 
+react-native-video@6.19.2:
+  version "6.19.2"
+  resolved "https://registry.yarnpkg.com/react-native-video/-/react-native-video-6.19.2.tgz#91065e087f90bc653b312ff2347903345c4f2411"
+  integrity sha512-gh5dBMGSHywKr8+p4azRXrFQgT+QTmS1tI4sz6kVRjSENORfsrGGLQzmyo/7S9m+ZOTLWQJ3h8ONaXxR4F2Fcw==
+
 react-native-webview@^13.16.1:
   version "13.16.1"
   resolved "https://registry.npmjs.org/react-native-webview/-/react-native-webview-13.16.1.tgz"

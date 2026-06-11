@@ -224,6 +224,8 @@ export function MoreMenu({
       },
     );
     queryClient.invalidateQueries({ queryKey: LIBRARY_MEMBERSHIP_QUERY_KEY }).catch(() => undefined);
+    // Refresh the Library tab lists (Recently Added + the item's category).
+    queryClient.invalidateQueries({ queryKey: ['library-items'] }).catch(() => undefined);
   }, [contentId, contentType, queryClient, run]);
 
   const items: TVActionSheetItem[] = [

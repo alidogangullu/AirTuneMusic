@@ -86,11 +86,16 @@ export async function fetchLibraryItems(
   if (offset) {
     params.offset = offset;
   }
-  if (category === 'artists' || category === 'music-videos') {
+  // Include the catalog counterpart so we can resolve catalog ids (needed for
+  // motion artwork on albums/playlists) and catalog names for music videos.
+  if (
+    category === 'artists' ||
+    category === 'music-videos' ||
+    category === 'albums' ||
+    category === 'playlists' ||
+    category === 'recently-added'
+  ) {
     params.include = 'catalog';
-  }
-  if (category === 'recently-added') {
-    params['include[library-music-videos]'] = 'catalog';
   }
   const {data} = await appleMusicApi.get<LibraryResponse>(endpoint, {params});
   return data;

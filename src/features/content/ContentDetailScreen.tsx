@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { getArtworkUrl } from '../recommendations/api/recommendations';
+import { MotionArtworkCover } from '../../components/MotionArtworkCover';
 import { useContentDetail } from './hooks/useContentDetail';
 import { NowPlayingBars } from '../player/components/NowPlayingBars';
 import { usePlayer } from '../player/hooks/usePlayer';
@@ -189,6 +190,51 @@ function normalizeDetail(
   }
   const fn = normalizers[contentType];
   return fn ? fn(item) : { tracks: [], kind: 'tracklist' };
+}
+
+// ── Artwork (static, or motion for playlists/albums) ─────────────
+
+function DetailArtwork({
+  contentType,
+  contentId,
+  artworkUrl,
+  styles,
+}: Readonly<{
+  contentType: RecommendationContentType;
+  contentId: string;
+  artworkUrl?: string;
+  styles: ReturnType<typeof useStyles>;
+}>): React.JSX.Element {
+  if (
+    contentType === 'playlists' ||
+    contentType === 'albums' ||
+    contentType === 'stations'
+  ) {
+    return (
+      <MotionArtworkCover
+        contentType={contentType}
+        contentId={contentId}
+        artworkUrl={artworkUrl}
+        focused
+        width={ARTWORK_SIZE}
+        height={ARTWORK_SIZE}
+        borderRadius={radius.lg}
+      />
+    );
+  }
+  return (
+    <View style={styles.artworkContainer}>
+      {artworkUrl ? (
+        <Image
+          source={{ uri: artworkUrl }}
+          style={styles.artwork}
+          resizeMode="cover"
+        />
+      ) : (
+        <View style={[styles.artwork, styles.artworkPlaceholder]} />
+      )}
+    </View>
+  );
 }
 
 // ── Main component ───────────────────────────────────────────────
@@ -511,17 +557,12 @@ export function ContentDetailScreen({
       />
       {/* ── Artwork (left) ───────────────────────────────── */}
       <View style={styles.artworkPanel}>
-        <View style={styles.artworkContainer}>
-          {normalized.artworkUrl ? (
-            <Image
-              source={{ uri: normalized.artworkUrl }}
-              style={styles.artwork}
-              resizeMode="cover"
-            />
-          ) : (
-            <View style={[styles.artwork, styles.artworkPlaceholder]} />
-          )}
-        </View>
+        <DetailArtwork
+          contentType={contentType}
+          contentId={contentId}
+          artworkUrl={normalized.artworkUrl ?? undefined}
+          styles={styles}
+        />
       </View>
 
       {/* ── Content (right) ──────────────────────────────── */}
