@@ -15,13 +15,18 @@
 
 ## ✨ Features
 
-- **📺 Native TV Experience**: Fully optimized for D-pad navigation and remote control interaction.
-- **💎 Native UI**: Modern native-like interface with dynamic background color extraction from artwork.
-- **📱 TV Link Pairing**: Easy sign-in using your phone or PC via a local pairing server—no clunky TV keyboard required.
-- **🎼 Full Library Access**: Browse your playlists, albums, and "Listen Now" recommendations.
-- **📻 Apple Music Radio**: Stream your favorite stations and algorithmic radio.
+- **🌟 Personalized Discovery**: Quickly find recommendations and global hits via the "Listen Now" and "Browse" sections.
+- **🔎 Search**: Find any song, album, artist, or playlist in the Apple Music catalog instantly — right from your TV.
+- **📂 Library Access**: Your songs, albums, and playlists are synced and ready at your fingertips.
+- **🎵 Real-Time Lyrics**: Sing along with perfectly synced, beautiful lyrics on the big screen.
 - **🛜 AirPlay**: Stream audio from iPhone's Apple Music directly to the TV via AirPlay.
-- **🚀 Performance**: Built on `react-native-tvos` for smooth performance on hardware.
+- **📻 Radio**: Listen to Apple Music Radio stations and your personal Apple Music radio directly on your TV.
+- **📺 Music Videos**: Enjoy high-quality music videos from your library and the Apple Music catalog directly on your TV.
+- **🎨 Dynamic Backgrounds**: Stunning visuals that adapt and change color based on the current album art.
+- **📲 Quick Sign-in (TV-Link)**: Sign in securely in seconds using a QR code — no typing passwords with a remote!
+- **🖥️ TV-Optimized Interface**: Navigate effortlessly with a UI designed specifically for Android TV remotes (D-pad).
+- **🌙 Dark Mode Support**: A beautiful, eye-friendly dark interface designed for comfortable night-time viewing.
+- **🌐 Multi-Language Support**: Use the app in your preferred language with comprehensive localization.
 
 ---
 
