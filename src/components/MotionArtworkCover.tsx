@@ -13,7 +13,21 @@ import Video from 'react-native-video';
 import { useEditorialVideo } from '../features/content/hooks/useEditorialVideo';
 import { MotionArtworkService } from '../features/settings/motionArtworkService';
 
-const FOCUS_DEBOUNCE_MS = 120;
+const FOCUS_DEBOUNCE_MS = 50;
+
+// Motion artwork is a small looping thumbnail, so cap the HLS rendition at
+// 2 million bits/sec for a faster first buffer and lower data use vs. the
+// full ladder.
+const MAX_BIT_RATE = 2_000_000;
+
+// Start playback as soon as a little is buffered rather than ExoPlayer's larger
+// defaults — the image overlay hides the load, so a quick start is all we need.
+const BUFFER_CONFIG = {
+  minBufferMs: 1000,
+  maxBufferMs: 5000,
+  bufferForPlaybackMs: 250,
+  bufferForPlaybackAfterRebufferMs: 500,
+};
 
 export type MotionArtworkCoverProps = {
   contentType: 'playlists' | 'albums' | 'stations';
@@ -36,7 +50,9 @@ export function MotionArtworkCover({
 }: Readonly<MotionArtworkCoverProps>): React.JSX.Element {
   const enabled = MotionArtworkService.getEnabled();
 
-  // Debounce focus so fast D-pad scrolling doesn't trigger fetch/playback.
+  // Fetch the URL immediately on focus so the network request overlaps with
+  // the debounce window. Video is only mounted after focus settles to avoid
+  // spinning up ExoPlayer for items the user just scrolls past.
   const [focusSettled, setFocusSettled] = useState(false);
   useEffect(() => {
     if (!focused) {
@@ -50,52 +66,104 @@ export function MotionArtworkCover({
   const { motionUrl } = useEditorialVideo(
     contentType,
     contentId,
-    enabled && focusSettled,
+    enabled && focused, // fetch starts immediately, not after debounce
   );
 
   const showVideo = enabled && focused && focusSettled && !!motionUrl;
 
-  // Fade the video in once the first frame is ready for a seamless swap.
-  const opacity = useRef(new Animated.Value(0)).current;
-  const onReady = () => {
-    Animated.timing(opacity, {
-      toValue: 1,
-      duration: 250,
+  // The static image sits on TOP of the video and only fades out once the
+  // video has actually played a little (see onVideoProgress) — Apple Music's
+  // HLS motion streams start with a few black frames, and the image hides them.
+  // It also stays opaque while the video mounts/unmounts, so the GPU never
+  // exposes a black ExoPlayer surface on real hardware.
+  const [videoMounted, setVideoMounted] = useState(false);
+  const imageOverlayOpacity = useRef(new Animated.Value(1)).current;
+
+  const unmountTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showVideoRef = useRef(showVideo);
+  showVideoRef.current = showVideo;
+
+  useEffect(() => {
+    if (showVideo) {
+      if (unmountTimerRef.current !== null) {
+        clearTimeout(unmountTimerRef.current);
+        unmountTimerRef.current = null;
+      }
+      imageOverlayOpacity.stopAnimation();
+      imageOverlayOpacity.setValue(1);
+      setVideoMounted(true);
+    } else {
+      // Cover instantly so ExoPlayer's black-on-pause frame is never visible,
+      // then unmount ~2 frames later so GPU teardown happens behind the image.
+      imageOverlayOpacity.stopAnimation();
+      imageOverlayOpacity.setValue(1);
+      unmountTimerRef.current = setTimeout(() => {
+        unmountTimerRef.current = null;
+        setVideoMounted(false);
+      }, 32);
+    }
+    return () => {
+      if (unmountTimerRef.current !== null) {
+        clearTimeout(unmountTimerRef.current);
+      }
+    };
+  }, [showVideo, imageOverlayOpacity]);
+
+  const videoRevealedRef = useRef(false);
+
+  useEffect(() => {
+    if (!showVideo) videoRevealedRef.current = false;
+  }, [showVideo]);
+
+  const revealVideo = () => {
+    if (videoRevealedRef.current || !showVideoRef.current) return;
+    videoRevealedRef.current = true;
+    Animated.timing(imageOverlayOpacity, {
+      toValue: 0,
+      duration: 160,
       useNativeDriver: true,
     }).start();
   };
-  useEffect(() => {
-    if (!showVideo) opacity.setValue(0);
-  }, [showVideo, opacity]);
+
+  // Wait until the video has actually played 300 ms worth of content before
+  // revealing it — this skips any initial black frames in the HLS stream.
+  const onVideoProgress = ({ currentTime }: { currentTime: number }) => {
+    if (currentTime >= 0.3) revealVideo();
+  };
 
   return (
     <View style={[styles.container, { width, height, borderRadius }]}>
-      {artworkUrl ? (
-        <Image
-          source={{ uri: artworkUrl }}
+      {videoMounted && motionUrl ? (
+        <Video
+          source={{ uri: motionUrl, bufferConfig: BUFFER_CONFIG }}
           style={styles.fill}
           resizeMode="cover"
+          muted
+          repeat
+          paused={!focused}
+          disableFocus
+          focusable={false}
+          playInBackground={false}
+          maxBitRate={MAX_BIT_RATE}
+          progressUpdateInterval={100}
+          onProgress={onVideoProgress}
+          onError={() => imageOverlayOpacity.setValue(1)}
         />
-      ) : (
-        <View style={styles.fill} />
-      )}
-      {showVideo && motionUrl ? (
-        <Animated.View style={[styles.fill, styles.absolute, { opacity }]}>
-          <Video
-            source={{ uri: motionUrl }}
+      ) : null}
+      <Animated.View
+        style={[styles.fill, styles.absolute, { opacity: imageOverlayOpacity }]}
+        pointerEvents="none"
+      >
+        {artworkUrl ? (
+          <Image
+            source={{ uri: artworkUrl }}
             style={styles.fill}
             resizeMode="cover"
-            muted
-            repeat
-            paused={!focused}
-            disableFocus
-            focusable={false}
-            playInBackground={false}
-            onReadyForDisplay={onReady}
-            onError={() => opacity.setValue(0)}
           />
-        </Animated.View>
-      ) : null}
+        ) : (
+          <View style={styles.fill} />
+        )}
+      </Animated.View>
     </View>
   );
 }
