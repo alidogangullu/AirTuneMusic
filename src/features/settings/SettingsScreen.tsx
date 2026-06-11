@@ -284,7 +284,7 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
                         {isCurrent && <Text style={styles.currentPlanLabel}>{t('settings.pro.currentPlan')}</Text>}
                         <View style={plan.sku === SKUS.YEARLY ? styles.pricingNameRow : undefined}>
                           <Text style={[styles.pricingName, !isCurrent && focused && styles.pricingFocusedText]} numberOfLines={1} adjustsFontSizeToFit>{plan.name}</Text>
-                          {plan.sku === SKUS.YEARLY && <View style={styles.discountBadge}><Text style={styles.discountBadgeText}>-20%</Text></View>}
+                          {plan.sku === SKUS.YEARLY && <View style={styles.discountBadge}><Text style={styles.discountBadgeText}>-17%</Text></View>}
                         </View>
                         <Text style={[styles.pricingPrice, !isCurrent && focused && styles.pricingFocusedText]} numberOfLines={1} adjustsFontSizeToFit>{plan.sub}</Text>
                       </>)}
