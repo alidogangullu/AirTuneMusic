@@ -443,18 +443,22 @@ export function NowPlayingScreen({
         </Pressable>
       </Modal>
 
-      {/* Quota status pill for live radio (no progress bar footer) */}
+      {/* Quota status pill for live radio (no progress bar footer).
+          Absolutely positioned so it overlays the bottom instead of
+          pushing the centered artwork upward. */}
       {isLiveRadio && quotaInfo && (
-        <View style={[styles.statusRow, { marginBottom: 26 }]} pointerEvents="none">
-          <View style={styles.statusPill}>
-            <Text style={styles.statusPillText}>
-              {t('nowPlaying.quotaStatus', {
-                used: quotaInfo.used,
-                total: quotaInfo.total,
-                bonus: bonusPlays > 0 ? ` +${bonusPlays}` : '',
-                remaining: quotaRemaining,
-              })}
-            </Text>
+        <View style={styles.liveRadioFooter} pointerEvents="none">
+          <View style={styles.statusRow}>
+            <View style={styles.statusPill}>
+              <Text style={styles.statusPillText}>
+                {t('nowPlaying.quotaStatus', {
+                  used: quotaInfo.used,
+                  total: quotaInfo.total,
+                  bonus: bonusPlays > 0 ? ` +${bonusPlays}` : '',
+                  remaining: quotaRemaining,
+                })}
+              </Text>
+            </View>
           </View>
         </View>
       )}
@@ -628,6 +632,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     paddingBottom: spacing.md,
+  },
+  liveRadioFooter: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingBottom: 26,
   },
   // Info Menu
   modalOverlay: {
