@@ -1,0 +1,54 @@
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
+index e16ac96..aa28fb6 100644
+--- a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
+@@ -716,7 +716,15 @@ public class ReactExoplayerView extends FrameLayout implements
+         ExoTrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory();
+         self.trackSelector = new DefaultTrackSelector(getContext(), videoTrackSelectionFactory);
+         self.trackSelector.setParameters(trackSelector.buildUponParameters()
+-                .setMaxVideoBitrate(maxBitRate == 0 ? Integer.MAX_VALUE : maxBitRate));
++                .setMaxVideoBitrate(maxBitRate == 0 ? Integer.MAX_VALUE : maxBitRate)
++                // AirTune patch: cap HLS rendition resolution at 1080p. Without
++                // this the adaptive selector picks the 2160x2160 ladder top for
++                // motion artwork, and spinning up a 4K HEVC hardware decoder
++                // reconfigures the TV's AV pipeline (tpc/HAL_CODEC), which
++                // audibly drops the concurrently playing music for an instant.
++                // 1080p is far beyond what the small card needs, keeps colors
++                // rich (unlike a bitrate cap), and starts faster.
++                .setMaxVideoSize(1920, 1080));
+ 
+         DefaultAllocator allocator = new DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE);
+         RNVLoadControl loadControl = new RNVLoadControl(
+@@ -756,6 +764,12 @@ public class ReactExoplayerView extends FrameLayout implements
+                 .setLoadControl(loadControl)
+                 .setMediaSourceFactory(mediaSourceFactory)
+                 .build();
++        // AirTune patch: never call Surface.setFrameRate(). On TVs a 30 fps
++        // motion-artwork video otherwise triggers a 60Hz -> 30Hz display mode
++        // switch on mount (and back on unmount), which resyncs the HDMI/ARC
++        // audio link (audible dropout on soundbars like Sonos Beam) and the
++        // display config change can also kick D-pad focus off the card.
++        player.setVideoChangeFrameRateStrategy(C.VIDEO_CHANGE_FRAME_RATE_STRATEGY_OFF);
+         ReactNativeVideoManager.Companion.getInstance().onInstanceCreated(instanceId, player);
+         refreshDebugState();
+         player.addListener(self);
+@@ -2560,12 +2574,13 @@ public class ReactExoplayerView extends FrameLayout implements
+                     .setContentType(contentType)
+                     .build();
+             player.setAudioAttributes(audioAttributes, false);
+-            AudioManager audioManager = (AudioManager) themedReactContext.getSystemService(Context.AUDIO_SERVICE);
+-            boolean isSpeakerOutput = output == AudioOutput.SPEAKER;
+-            audioManager.setMode(
+-                    isSpeakerOutput ? AudioManager.MODE_NORMAL
+-                            : AudioManager.MODE_IN_COMMUNICATION);
+-            audioManager.setSpeakerphoneOn(isSpeakerOutput);
++            // AirTune patch: skip the global AudioManager.setMode()/
++            // setSpeakerphoneOn() route change. It is meaningless on Android TV
++            // (no earpiece/telephony) and, because it runs on every player
++            // build, it reconfigures the device audio route and causes a brief
++            // audible glitch in any concurrently playing music (e.g. when a
++            // muted motion-artwork video mounts). setAudioAttributes above is
++            // per-player and enough to route this player's (muted) output.
+         }
+     }
+ 

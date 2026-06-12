@@ -9,25 +9,37 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Image, StyleSheet, View } from 'react-native';
-import Video from 'react-native-video';
+import Video, { SelectedTrackType } from 'react-native-video';
 import { useEditorialVideo } from '../features/content/hooks/useEditorialVideo';
 import { MotionArtworkService } from '../features/settings/motionArtworkService';
 
 const FOCUS_DEBOUNCE_MS = 50;
 
-// Motion artwork is a small looping thumbnail, so cap the HLS rendition at
-// 2 million bits/sec for a faster first buffer and lower data use vs. the
-// full ladder.
-const MAX_BIT_RATE = 2_000_000;
+// Reveal the video over the static image once it has played this far. Apple
+// Music's HLS motion streams open with a couple of black frames; this skips
+// them while staying as low as possible so the swap feels immediate.
+const VIDEO_REVEAL_THRESHOLD_S = 0.3;
 
-// Start playback as soon as a little is buffered rather than ExoPlayer's larger
-// defaults — the image overlay hides the load, so a quick start is all we need.
+// Start playback the instant a tiny amount is buffered — the image overlay
+// hides the load, so we optimize purely for the fastest possible first frame.
+// cacheSizeMB enables react-native-video's shared on-disk HLS cache so that
+// returning to an already-seen motion artwork replays from disk instead of
+// re-downloading — faster restart and far less bandwidth contention with the
+// (network-streamed) music. The cache is a process-wide singleton shared by
+// every motion player.
 const BUFFER_CONFIG = {
-  minBufferMs: 1000,
+  minBufferMs: 500,
   maxBufferMs: 5000,
-  bufferForPlaybackMs: 250,
-  bufferForPlaybackAfterRebufferMs: 500,
+  bufferForPlaybackMs: 80,
+  bufferForPlaybackAfterRebufferMs: 250,
+  cacheSizeMB: 200,
 };
+
+// Motion artwork is always muted, so disable its audio track entirely. This
+// stops ExoPlayer from spinning up a second audio decoder + AudioTrack that
+// would otherwise contend with the Apple Music SDK's audio rendering and cause
+// momentary stutters in the playing song.
+const DISABLED_AUDIO_TRACK = { type: SelectedTrackType.DISABLED } as const;
 
 export type MotionArtworkCoverProps = {
   contentType: 'playlists' | 'albums' | 'stations';
@@ -118,17 +130,20 @@ export function MotionArtworkCover({
   const revealVideo = () => {
     if (videoRevealedRef.current || !showVideoRef.current) return;
     videoRevealedRef.current = true;
+    // useNativeDriver must stay false: this value is also driven by synchronous
+    // setValue(1) on mount/unmount/error, and mixing setValue with a
+    // native-driven animation desyncs the JS/native value — which left the
+    // overlay transparent on unmount and exposed a black ExoPlayer surface.
     Animated.timing(imageOverlayOpacity, {
       toValue: 0,
       duration: 160,
-      useNativeDriver: true,
+      useNativeDriver: false,
     }).start();
   };
 
-  // Wait until the video has actually played 300 ms worth of content before
-  // revealing it — this skips any initial black frames in the HLS stream.
+  // Reveal only after the video has played past its initial black frames.
   const onVideoProgress = ({ currentTime }: { currentTime: number }) => {
-    if (currentTime >= 0.3) revealVideo();
+    if (currentTime >= VIDEO_REVEAL_THRESHOLD_S) revealVideo();
   };
 
   return (
@@ -139,13 +154,13 @@ export function MotionArtworkCover({
           style={styles.fill}
           resizeMode="cover"
           muted
+          selectedAudioTrack={DISABLED_AUDIO_TRACK}
           repeat
           paused={!focused}
           disableFocus
           focusable={false}
           playInBackground={false}
-          maxBitRate={MAX_BIT_RATE}
-          progressUpdateInterval={100}
+          progressUpdateInterval={50}
           onProgress={onVideoProgress}
           onError={() => imageOverlayOpacity.setValue(1)}
         />
