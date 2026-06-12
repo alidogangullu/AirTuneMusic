@@ -3,7 +3,7 @@
  * Apple Music style: artwork, title, subtitle.
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { getArtworkUrl } from '../api/recommendations';
 import { radius, spacing } from '../../../theme/layout';
@@ -102,7 +102,7 @@ function useStyles(c: {
   navBarCardBg: string;
   cardTitleText: string;
 }) {
-  return StyleSheet.create({
+  return useMemo(() => StyleSheet.create({
     card: {
       width: CARD_WIDTH,
     },
@@ -145,5 +145,5 @@ function useStyles(c: {
       fontSize: 13,
       color: c.textMuted,
     },
-  });
+  }), [c]);
 }

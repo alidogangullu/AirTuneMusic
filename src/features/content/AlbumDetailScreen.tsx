@@ -266,7 +266,7 @@ function useStyles(c: {
   buttonSecondaryBg: string;
   glassCardBg: string;
 }) {
-  return StyleSheet.create({
+  return useMemo(() => StyleSheet.create({
     root: {
       flex: 1,
       padding: spacing.xl,
@@ -416,5 +416,5 @@ function useStyles(c: {
       fontSize: 12,
       color: c.textOnDark,
     },
-  });
+  }), [c]);
 }

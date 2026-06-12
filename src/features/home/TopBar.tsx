@@ -7,7 +7,7 @@
  * animation (not `pressed` state) because `pressed` does not fire for D-pad select.
  */
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useMemo, useCallback, useRef, useState } from 'react';
 import {
   Animated,
   findNodeHandle,
@@ -277,7 +277,7 @@ function useStyles(c: {
       }
       : { elevation: 2 };
 
-  return StyleSheet.create({
+  return useMemo(() => StyleSheet.create({
     wrap: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -410,5 +410,5 @@ function useStyles(c: {
     settingsIconFocused: {
       color: '#000000',
     },
-  });
+  }), [c, transparent, dark]);
 }

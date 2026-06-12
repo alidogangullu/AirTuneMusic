@@ -275,7 +275,10 @@ export function ContentDetailScreen({
   }, [onBack]);
 
   const item = data?.data?.[0];
-  const normalized = normalizeDetail(item, contentType);
+  const normalized = useMemo(
+    () => normalizeDetail(item, contentType),
+    [item, contentType],
+  );
 
   const [moreMenuVisible, setMoreMenuVisible] = useState(false);
   const [selectedTrackMenu, setSelectedTrackMenu] = useState<PlaylistTrack | null>(null);
@@ -473,8 +476,8 @@ export function ContentDetailScreen({
         index={renderInfo.index}
         showArtist={contentType === 'playlists'}
         showThumb={contentType === 'playlists'}
-        onPress={() => handleTrackPress(renderInfo.index)}
-        onLongPress={() => setSelectedTrackMenu(renderInfo.item)}
+        onPressIndex={handleTrackPress}
+        onLongPressItem={setSelectedTrackMenu}
         isNowPlaying={isTrackNowPlaying(renderInfo.item)}
         isPlaying={isPlaying && !playerState.isLoading}
         styles={styles}
@@ -635,13 +638,15 @@ function ContentHeader({
   );
 }
 
-function TrackRow({
+// Memoized so per-second player state ticks and unrelated parent renders don't
+// re-render the whole track list — only rows whose props actually changed.
+const TrackRow = React.memo(function TrackRow({
   item,
   index,
   showArtist,
   showThumb,
-  onPress,
-  onLongPress,
+  onPressIndex,
+  onLongPressItem,
   isNowPlaying,
   isPlaying,
   styles,
@@ -650,8 +655,8 @@ function TrackRow({
   index: number;
   showArtist: boolean;
   showThumb: boolean;
-  onPress: () => void;
-  onLongPress?: () => void;
+  onPressIndex: (index: number) => void;
+  onLongPressItem: (item: PlaylistTrack) => void;
   isNowPlaying: boolean;
   isPlaying: boolean;
   styles: ReturnType<typeof useStyles>;
@@ -684,8 +689,8 @@ function TrackRow({
     <Pressable
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
-      onPress={onPress}
-      onLongPress={onLongPress}
+      onPress={() => onPressIndex(index)}
+      onLongPress={() => onLongPressItem(item)}
       style={[styles.trackRow, focused && styles.trackRowFocused]}
       focusable>
       {showThumb ? (
@@ -720,7 +725,7 @@ function TrackRow({
       </Text>
     </Pressable>
   );
-}
+});
 
 function ActionButton({
   icon,
@@ -776,7 +781,7 @@ function useStyles(c: {
   glassBg: string;
   glassCardBgStrong: string;
 }) {
-  return StyleSheet.create({
+  return useMemo(() => StyleSheet.create({
     // ── Root ──────────────────────────────────────────
     root: {
       flex: 1,
@@ -984,5 +989,5 @@ function useStyles(c: {
     trackDurationFocused: {
       color: c.textOnDark,
     },
-  });
+  }), [c]);
 }

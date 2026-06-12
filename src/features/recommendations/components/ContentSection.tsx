@@ -3,7 +3,7 @@
  * Apple Music style: "Top Picks", "Recently Played", etc.
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../../../theme';
 import { spacing } from '../../../theme/layout';
@@ -36,7 +36,7 @@ export function ContentSection({
 }
 
 function useStyles(c: { textOnDark: string; textMuted: string }) {
-  return StyleSheet.create({
+  return useMemo(() => StyleSheet.create({
     section: {
       marginBottom: spacing.xl,
     },
@@ -58,5 +58,5 @@ function useStyles(c: { textOnDark: string; textMuted: string }) {
       fontSize: 16,
       color: c.textMuted,
     },
-  });
+  }), [c]);
 }

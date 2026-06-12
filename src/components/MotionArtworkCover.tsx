@@ -12,6 +12,7 @@ import { Animated, Image, StyleSheet, View } from 'react-native';
 import Video, { SelectedTrackType } from 'react-native-video';
 import { useEditorialVideo } from '../features/content/hooks/useEditorialVideo';
 import { MotionArtworkService } from '../features/settings/motionArtworkService';
+import { useMotionSuspended } from './MotionSuspenseContext';
 
 const FOCUS_DEBOUNCE_MS = 50;
 
@@ -62,26 +63,32 @@ export function MotionArtworkCover({
 }: Readonly<MotionArtworkCoverProps>): React.JSX.Element {
   const enabled = MotionArtworkService.getEnabled();
 
+  // A focused card under an open Modal never receives a blur (the Modal is a
+  // separate Android Window), so focus alone would keep the video decoding
+  // invisibly behind the overlay — the suspend signal covers that case.
+  const suspended = useMotionSuspended();
+  const active = focused && !suspended;
+
   // Fetch the URL immediately on focus so the network request overlaps with
   // the debounce window. Video is only mounted after focus settles to avoid
   // spinning up ExoPlayer for items the user just scrolls past.
   const [focusSettled, setFocusSettled] = useState(false);
   useEffect(() => {
-    if (!focused) {
+    if (!active) {
       setFocusSettled(false);
       return;
     }
     const t = setTimeout(() => setFocusSettled(true), FOCUS_DEBOUNCE_MS);
     return () => clearTimeout(t);
-  }, [focused]);
+  }, [active]);
 
   const { motionUrl } = useEditorialVideo(
     contentType,
     contentId,
-    enabled && focused, // fetch starts immediately, not after debounce
+    enabled && active, // fetch starts immediately, not after debounce
   );
 
-  const showVideo = enabled && focused && focusSettled && !!motionUrl;
+  const showVideo = enabled && active && focusSettled && !!motionUrl;
 
   // The static image sits on TOP of the video and only fades out once the
   // video has actually played a little (see onVideoProgress) — Apple Music's
@@ -156,7 +163,7 @@ export function MotionArtworkCover({
           muted
           selectedAudioTrack={DISABLED_AUDIO_TRACK}
           repeat
-          paused={!focused}
+          paused={!active}
           disableFocus
           focusable={false}
           playInBackground={false}

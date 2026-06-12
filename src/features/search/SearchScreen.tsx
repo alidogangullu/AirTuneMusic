@@ -6,7 +6,7 @@
  * When user types, shows search results instead of categories.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useMemo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -436,7 +436,7 @@ function useStyles(c: {
   glassButtonBg: string;
   overlayLight: string;
 }) {
-  return StyleSheet.create({
+  return useMemo(() => StyleSheet.create({
     root: {
       flex: 1,
       paddingTop: 85,
@@ -629,5 +629,5 @@ function useStyles(c: {
       fontSize: 13,
       color: c.textMuted,
     },
-  });
+  }), [c]);
 }

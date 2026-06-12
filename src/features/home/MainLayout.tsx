@@ -35,7 +35,9 @@ const SCREENS: Record<NavTabId, React.ComponentType<{ isTabView?: boolean }>> = 
   search: SearchScreen,
 };
 
-export function MainLayout({
+// Memoized so HomeScreen renders (player state ticks, modal toggles) don't
+// re-render the whole tab content tree when no layout prop actually changed.
+export const MainLayout = React.memo(function MainLayout({
   activeTab,
   onTabPress,
   onAvatarPress,
@@ -69,7 +71,7 @@ export function MainLayout({
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   root: {

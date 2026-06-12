@@ -577,14 +577,21 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
         if (data.position > 0 && quotaRetryTrackIdRef.current) {
           quotaRetryTrackIdRef.current = null;
         }
-        setState(s => ({
-          ...s,
-          isLoading: data.position > 0 ? false : s.isLoading,
-          buffering: data.position > 0 ? false : s.buffering,
-        }));
+        // Bail out with the same reference when nothing changed — progress fires
+        // every second during playback, and a fresh state object here would
+        // re-render every usePlayer() consumer (HomeScreen, detail lists, …).
+        setState(s => {
+          const isLoading = data.position > 0 ? false : s.isLoading;
+          const buffering = data.position > 0 ? false : s.buffering;
+          return isLoading === s.isLoading && buffering === s.buffering
+            ? s
+            : {...s, isLoading, buffering};
+        });
       }),
       musicPlayer.addEventListener('onBufferingStateChanged', data => {
-        setState(s => ({...s, buffering: data.buffering}));
+        setState(s =>
+          s.buffering === data.buffering ? s : {...s, buffering: data.buffering},
+        );
       }),
       musicPlayer.addEventListener('onPlaybackQueueChanged', data => {
         handleNativePlaybackQueueChanged(data.count);

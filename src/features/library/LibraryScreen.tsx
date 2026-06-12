@@ -5,7 +5,7 @@
  * D-pad navigable: sidebar ↔ grid focus management.
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -298,7 +298,7 @@ export function LibraryScreen(): React.JSX.Element {
 // ── Styles ───────────────────────────────────────────────────────
 
 function useStyles(c: AppColors) {
-  return StyleSheet.create({
+  return useMemo(() => StyleSheet.create({
     root: {
       flex: 1,
       flexDirection: 'row',
@@ -406,5 +406,5 @@ function useStyles(c: AppColors) {
       fontSize: 16,
       color: c.textMuted,
     },
-  });
+  }), [c]);
 }

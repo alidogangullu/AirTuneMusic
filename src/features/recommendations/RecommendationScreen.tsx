@@ -3,7 +3,7 @@
  * Handles loading, error, empty, and scrollable rails.
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -93,7 +93,7 @@ export function RecommendationScreen({
 }
 
 function useStyles(c: { textMuted: string; accent: string; onDarkTextPrimary: string }) {
-  return StyleSheet.create({
+  return useMemo(() => StyleSheet.create({
     retryButton: {
       marginTop: 12,
       paddingHorizontal: 16,
@@ -137,5 +137,5 @@ function useStyles(c: { textMuted: string; accent: string; onDarkTextPrimary: st
       color: c.textMuted,
       fontSize: 15,
     },
-  });
+  }), [c]);
 }

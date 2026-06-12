@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useMemo, useCallback, useEffect } from 'react';
 import {
   BackHandler,
   FlatList,
@@ -398,7 +398,7 @@ function useStyles(c: {
   glassBg: string;
   buttonFocusedBg: string;
 }) {
-  return StyleSheet.create({
+  return useMemo(() => StyleSheet.create({
     root: {
       flex: 1,
     },
@@ -632,5 +632,5 @@ function useStyles(c: {
     musicVideoInfo: {
       padding: spacing.sm,
     },
-  });
+  }), [c]);
 }

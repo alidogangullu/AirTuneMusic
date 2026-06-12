@@ -1,12 +1,24 @@
 diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
-index e16ac96..aa28fb6 100644
+index e16ac96..603671a 100644
 --- a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
 +++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
-@@ -716,7 +716,15 @@ public class ReactExoplayerView extends FrameLayout implements
+@@ -79,7 +79,9 @@ import androidx.media3.exoplayer.hls.HlsMediaSource;
+ import androidx.media3.exoplayer.ima.ImaAdsLoader;
+ import androidx.media3.exoplayer.ima.ImaServerSideAdInsertionMediaSource;
+ import androidx.media3.exoplayer.ima.ImaServerSideAdInsertionUriBuilder;
++import androidx.media3.common.MimeTypes;
+ import androidx.media3.exoplayer.mediacodec.MediaCodecInfo;
++import androidx.media3.exoplayer.mediacodec.MediaCodecSelector;
+ import androidx.media3.exoplayer.mediacodec.MediaCodecUtil;
+ import androidx.media3.exoplayer.rtsp.RtspMediaSource;
+ import androidx.media3.exoplayer.smoothstreaming.DefaultSsChunkSource;
+@@ -715,8 +717,37 @@ public class ReactExoplayerView extends FrameLayout implements
+     private void initializePlayerCore(ReactExoplayerView self) {
          ExoTrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory();
          self.trackSelector = new DefaultTrackSelector(getContext(), videoTrackSelectionFactory);
-         self.trackSelector.setParameters(trackSelector.buildUponParameters()
+-        self.trackSelector.setParameters(trackSelector.buildUponParameters()
 -                .setMaxVideoBitrate(maxBitRate == 0 ? Integer.MAX_VALUE : maxBitRate));
++        DefaultTrackSelector.Parameters.Builder trackSelectorParameters = trackSelector.buildUponParameters()
 +                .setMaxVideoBitrate(maxBitRate == 0 ? Integer.MAX_VALUE : maxBitRate)
 +                // AirTune patch: cap HLS rendition resolution at 1080p. Without
 +                // this the adaptive selector picks the 2160x2160 ladder top for
@@ -15,11 +27,56 @@ index e16ac96..aa28fb6 100644
 +                // audibly drops the concurrently playing music for an instant.
 +                // 1080p is far beyond what the small card needs, keeps colors
 +                // rich (unlike a bitrate cap), and starts faster.
-+                .setMaxVideoSize(1920, 1080));
++                .setMaxVideoSize(1920, 1080);
++        // AirTune patch: when JS mounts the player with
++        // selectedAudioTrack={type: 'disabled'} (motion artwork), disable the
++        // audio track type BEFORE prepare. The stock code only applies the
++        // disable in videoLoaded() at STATE_READY, so the default selection
++        // briefly enables the audio rendition first — opening a second
++        // AudioTrack on the TV's HDMI output, which forces an audio HAL
++        // reconfiguration and audibly drops the concurrently playing music
++        // for an instant on video start. Players without the prop (music
++        // videos) are unaffected.
++        if ("disabled".equals(self.audioTrackType)) {
++            trackSelectorParameters.setTrackTypeDisabled(C.TRACK_TYPE_AUDIO, true);
++            // AirTune patch: this player renders silent motion artwork while
++            // music plays elsewhere, and it will use a software video decoder
++            // (see the MediaCodecSelector below). Prefer the cheaper-to-decode
++            // AVC rendition when the HLS ladder has one and cap at 720p — the
++            // artwork is rendered far smaller than that anyway.
++            trackSelectorParameters
++                    .setPreferredVideoMimeTypes(MimeTypes.VIDEO_H264, MimeTypes.VIDEO_H265)
++                    .setMaxVideoSize(1280, 720);
++        }
++        self.trackSelector.setParameters(trackSelectorParameters);
  
          DefaultAllocator allocator = new DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE);
          RNVLoadControl loadControl = new RNVLoadControl(
-@@ -756,6 +764,12 @@ public class ReactExoplayerView extends FrameLayout implements
+@@ -735,6 +766,23 @@ public class ReactExoplayerView extends FrameLayout implements
+                         .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF)
+                         .setEnableDecoderFallback(true)
+                         .forceEnableMediaCodecAsynchronousQueueing();
++        // AirTune patch: for silent motion-artwork players, prefer SOFTWARE
++        // video decoders. On MediaTek/TCL TVs, starting a HARDWARE video codec
++        // connects a TPC AV-sync pipeline (HAL_CODEC -> HAL_AUDIO) that injects
++        // ~150ms of lip-sync delay into the GLOBAL speaker output and removes
++        // it again on release — audibly cutting any concurrently playing music
++        // on every motion artwork mount/unmount. Software decoders never touch
++        // the TPC pipeline. setEnableDecoderFallback(true) above keeps streams
++        // a software decoder cannot handle working via the hardware decoder.
++        if ("disabled".equals(self.audioTrackType)) {
++            renderersFactory.setMediaCodecSelector((mimeType, requiresSecureDecoder, requiresTunnelingDecoder) -> {
++                List<MediaCodecInfo> decoderInfos = MediaCodecSelector.DEFAULT
++                        .getDecoderInfos(mimeType, requiresSecureDecoder, requiresTunnelingDecoder);
++                ArrayList<MediaCodecInfo> softwareFirst = new ArrayList<>(decoderInfos);
++                softwareFirst.sort((a, b) -> Boolean.compare(b.softwareOnly, a.softwareOnly));
++                return softwareFirst;
++            });
++        }
+ 
+         DefaultMediaSourceFactory mediaSourceFactory;
+         
+@@ -756,6 +804,12 @@ public class ReactExoplayerView extends FrameLayout implements
                  .setLoadControl(loadControl)
                  .setMediaSourceFactory(mediaSourceFactory)
                  .build();
@@ -32,7 +89,7 @@ index e16ac96..aa28fb6 100644
          ReactNativeVideoManager.Companion.getInstance().onInstanceCreated(instanceId, player);
          refreshDebugState();
          player.addListener(self);
-@@ -2560,12 +2574,13 @@ public class ReactExoplayerView extends FrameLayout implements
+@@ -2560,12 +2614,13 @@ public class ReactExoplayerView extends FrameLayout implements
                      .setContentType(contentType)
                      .build();
              player.setAudioAttributes(audioAttributes, false);

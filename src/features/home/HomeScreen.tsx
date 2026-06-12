@@ -7,6 +7,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Alert, Modal, StyleSheet, View, BackHandler, ToastAndroid } from 'react-native';
 import { GradientBackground } from '../../components/GradientBackground';
+import { MotionSuspenseProvider } from '../../components/MotionSuspenseContext';
 import { MainLayout } from './MainLayout';
 import { ContentNavigationContext } from './navigation';
 import { ArtistDetailScreen } from '../content/ArtistDetailScreen';
@@ -53,6 +54,10 @@ export function HomeScreen({
   } = usePlayer();
   useLibraryMembershipSnapshot();
   const isDetailOpen = contentStack.length > 0;
+  // Any overlay window covering the base layer — motion artwork covers under
+  // it must release their video players (see MotionSuspenseContext).
+  const overlayActive =
+    isDetailOpen || nowPlayingFullscreen || settingsVisible || Boolean(quotaRecoveryRequest);
   const [lastBackPressed, setLastBackPressed] = useState(0);
 
   // Handle back button for tab navigation and double-back exit
@@ -120,6 +125,9 @@ export function HomeScreen({
     [pushContent, openNowPlayingFullscreen],
   );
 
+  const handleSearchPress = useCallback(() => setActiveTab('search'), []);
+  const handleSettingsPress = useCallback(() => setSettingsVisible(true), []);
+
   const handleSignOut = useCallback(() => {
     Alert.alert(
       t('home.signOutTitle'),
@@ -139,16 +147,21 @@ export function HomeScreen({
   return (
     <ContentNavigationContext.Provider value={ctxValue}>
       <View style={styles.root}>
-        <MainLayout
-          activeTab={activeTab}
-          onTabPress={setActiveTab}
-          onAvatarPress={handleSignOut}
-          onSearchPress={() => setActiveTab('search')}
-          onSettingsPress={() => setSettingsVisible(true)}
-          hasUpdate={updateInfo?.status === 'optional_update'}
-          hasUnreadAnnouncements={hasUnreadAnnouncements}
-          needsCancelSubscription={needsCancelSubscription}
-        />
+        {/* Wraps ONLY the base layer: the Modals below are JSX siblings, so
+            their contents see the context default (not suspended) and their
+            own motion covers keep playing. */}
+        <MotionSuspenseProvider suspended={overlayActive}>
+          <MainLayout
+            activeTab={activeTab}
+            onTabPress={setActiveTab}
+            onAvatarPress={handleSignOut}
+            onSearchPress={handleSearchPress}
+            onSettingsPress={handleSettingsPress}
+            hasUpdate={updateInfo?.status === 'optional_update'}
+            hasUnreadAnnouncements={hasUnreadAnnouncements}
+            needsCancelSubscription={needsCancelSubscription}
+          />
+        </MotionSuspenseProvider>
 
         {/* Modal ensures OS-level focus trapping — Android creates a new Window,
             so D-pad key events never reach the MainLayout behind it. */}
