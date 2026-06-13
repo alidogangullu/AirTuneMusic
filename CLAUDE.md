@@ -65,6 +65,11 @@ Located in `android/app/src/main/java/com/adg/airtune/`:
 
 The AirPlay engine is **compiled from source** (UxPlay direct, ported from the sibling AirPipe project) via CMake — `android/app/src/main/cpp/` (UxPlay + ALAC + libplist + prebuilt OpenSSL `.a`) plus the `src/main/jni/` entry point, producing `libairtune_jni.so` for `arm64-v8a` + `armeabi-v7a`. The module is serviceless (engine runs in the RN module; no foreground service). Stable playback timing uses RTP-timestamp anchoring + system-clock interpolation with silence gap detection.
 
+### Video rendering — two separate paths
+
+- **Motion artwork** (looping muted cover videos) uses `react-native-video` (ExoPlayer), only in `src/components/MotionArtworkCover.tsx`. It relies on a prop-gated native patch (`patches/react-native-video+6.19.2.patch`) for Android TV HDMI quirks (audio dropout, color wash, D-pad focus theft). **Before changing motion artwork or that patch, read `docs/REACT_NATIVE_VIDEO_PATCH.md`.**
+- **Video clips / music videos** use a **WebView** running MusicKit JS (`src/features/player/components/MusicKitVideoWebView.tsx`), *not* `react-native-video` — so the patch above does not affect them.
+
 ### State & Data
 
 - **React Query** (`@tanstack/react-query`) — all server state / API caching.
