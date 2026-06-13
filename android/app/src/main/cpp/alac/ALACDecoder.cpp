@@ -251,6 +251,11 @@ int32_t ALACDecoder::Decode( BitBuffer * bits, uint8_t * sampleBuffer, uint32_t 
 				{
 					numSamples  = BitBufferRead( bits, 16 ) << 16;
 					numSamples |= BitBufferRead( bits, 16 );
+
+					// guard against a malformed/corrupt packet declaring more samples than
+					// the decode buffers (mPredictor/mMixBuffer*) were allocated for; without
+					// this dyn_decomp would write past mPredictor and crash (SIGSEGV)
+					RequireAction( numSamples <= mConfig.frameLength, status = kALAC_ParamError; goto Exit; );
 				}
 
 				if ( escapeFlag == 0 )
@@ -402,6 +407,11 @@ int32_t ALACDecoder::Decode( BitBuffer * bits, uint8_t * sampleBuffer, uint32_t 
 				{
 					numSamples  = BitBufferRead( bits, 16 ) << 16;
 					numSamples |= BitBufferRead( bits, 16 );
+
+					// guard against a malformed/corrupt packet declaring more samples than
+					// the decode buffers (mPredictor/mMixBuffer*) were allocated for; without
+					// this dyn_decomp would write past mPredictor and crash (SIGSEGV)
+					RequireAction( numSamples <= mConfig.frameLength, status = kALAC_ParamError; goto Exit; );
 				}
 
 				if ( escapeFlag == 0 )
