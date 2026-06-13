@@ -1,18 +1,119 @@
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ExoPlayerView.kt b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ExoPlayerView.kt
+index bb945fe..35d3692 100644
+--- a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ExoPlayerView.kt
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ExoPlayerView.kt
+@@ -4,10 +4,12 @@ import android.content.Context
+ import android.graphics.Color
+ import android.graphics.drawable.GradientDrawable
+ import android.util.AttributeSet
++import android.view.TextureView
+ import android.view.View
+ import android.view.View.MeasureSpec
+ import android.widget.FrameLayout
+ import android.widget.TextView
++import com.brentvatne.common.api.ViewType
+ import androidx.media3.common.Player
+ import androidx.media3.common.Timeline
+ import androidx.media3.common.util.UnstableApi
+@@ -24,6 +26,16 @@ class ExoPlayerView @JvmOverloads constructor(context: Context, attrs: Attribute
+ 
+     private var localStyle = SubtitleStyle()
+     private var pendingResizeMode: Int? = null
++
++    // AirTune patch: when the JS layer requests VIEW_TYPE_TEXTURE we route the
++    // player's video output to a TextureView we own instead of PlayerView's
++    // internal SurfaceView. A SurfaceView punches a dedicated hardware video
++    // plane on the TV, and creating that plane on video start triggers an HDMI
++    // composition / color-space re-handshake which briefly drops the audio of a
++    // concurrently playing music stream. A TextureView is composited inside the
++    // app window, so it never touches the HDMI plane and avoids the dropout.
++    private var viewType: Int = ViewType.VIEW_TYPE_SURFACE
++    private var textureView: TextureView? = null
+     private val liveBadge: TextView = TextView(context).apply {
+         text = "LIVE"
+         setTextColor(Color.WHITE)
+@@ -79,6 +91,13 @@ class ExoPlayerView @JvmOverloads constructor(context: Context, attrs: Attribute
+             pendingResizeMode?.let { resizeMode ->
+                 playerView.resizeMode = resizeMode
+             }
++
++            // AirTune patch: PlayerView.player = player above binds the player to
++            // PlayerView's internal SurfaceView. Re-route to our TextureView when
++            // in texture mode (this must run after the assignment so it wins).
++            if (viewType == ViewType.VIEW_TYPE_TEXTURE) {
++                textureView?.let { player.setVideoTextureView(it) }
++            }
+         }
+     }
+ 
+@@ -140,7 +159,44 @@ class ExoPlayerView @JvmOverloads constructor(context: Context, attrs: Attribute
+     }
+ 
+     fun updateSurfaceView(viewType: Int) {
+-        // TODO: Implement proper surface type switching if needed
++        if (this.viewType == viewType && (viewType != ViewType.VIEW_TYPE_TEXTURE || textureView != null)) {
++            return
++        }
++        this.viewType = viewType
++
++        if (viewType == ViewType.VIEW_TYPE_TEXTURE) {
++            // Hide PlayerView's internal SurfaceView so it never allocates a
++            // hardware video plane, then add our own TextureView behind the
++            // controller/subtitle overlays and route the player to it.
++            // INVISIBLE (not GONE): GONE forces a layout pass that bubbles up to
++            // the enclosing rail/FlatList, and on a real device that reflow drops
++            // the currently focused card (D-pad focus jumps back to the top bar).
++            // INVISIBLE still destroys the SurfaceView's surface — so no HDMI
++            // plane, the audio fix holds — but only triggers a redraw, not a
++            // relayout, leaving focus intact.
++            playerView.videoSurfaceView?.visibility = View.INVISIBLE
++
++            val tv = TextureView(context).apply {
++                layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
++                // Never let the video surface participate in D-pad focus.
++                isFocusable = false
++                isFocusableInTouchMode = false
++                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
++            }
++            textureView = tv
++            // Index 0 keeps it behind the PlayerView (controllers/subtitles).
++            addView(tv, 0, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
++
++            playerView.player?.setVideoTextureView(tv)
++        } else {
++            textureView?.let { tv ->
++                playerView.player?.clearVideoTextureView(tv)
++                removeView(tv)
++            }
++            textureView = null
++            playerView.videoSurfaceView?.visibility = View.VISIBLE
++            playerView.player?.let { playerView.player = it }
++        }
+     }
+ 
+     val isPlaying: Boolean
+@@ -207,6 +263,16 @@ class ExoPlayerView @JvmOverloads constructor(context: Context, attrs: Attribute
+ 
+     override fun setFocusable(focusable: Boolean) {
+         playerView.isFocusable = focusable
++        // AirTune patch: focusable=false must also stop PlayerView's controller
++        // buttons (exo_play_pause, etc.) from taking D-pad focus. They are
++        // separate focusable descendants, so disabling PlayerView alone is not
++        // enough — when a motion-artwork video mounts, exo_play_pause grabs
++        // focus, and when the video later unmounts that focused button is
++        // removed from the tree, dropping focus entirely (it falls back to the
++        // first focusable, the top-bar profile icon). Blocking descendant focus
++        // keeps the non-interactive video out of the focus graph completely.
++        playerView.descendantFocusability =
++            if (focusable) FOCUS_BEFORE_DESCENDANTS else FOCUS_BLOCK_DESCENDANTS
+     }
+ 
+     private fun updateLiveUi() {
 diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
-index e16ac96..603671a 100644
+index e16ac96..5b4e65d 100644
 --- a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
 +++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
-@@ -79,7 +79,9 @@ import androidx.media3.exoplayer.hls.HlsMediaSource;
- import androidx.media3.exoplayer.ima.ImaAdsLoader;
- import androidx.media3.exoplayer.ima.ImaServerSideAdInsertionMediaSource;
- import androidx.media3.exoplayer.ima.ImaServerSideAdInsertionUriBuilder;
-+import androidx.media3.common.MimeTypes;
- import androidx.media3.exoplayer.mediacodec.MediaCodecInfo;
-+import androidx.media3.exoplayer.mediacodec.MediaCodecSelector;
- import androidx.media3.exoplayer.mediacodec.MediaCodecUtil;
- import androidx.media3.exoplayer.rtsp.RtspMediaSource;
- import androidx.media3.exoplayer.smoothstreaming.DefaultSsChunkSource;
-@@ -715,8 +717,37 @@ public class ReactExoplayerView extends FrameLayout implements
+@@ -715,8 +715,29 @@ public class ReactExoplayerView extends FrameLayout implements
      private void initializePlayerCore(ReactExoplayerView self) {
          ExoTrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory();
          self.trackSelector = new DefaultTrackSelector(getContext(), videoTrackSelectionFactory);
@@ -39,44 +140,12 @@ index e16ac96..603671a 100644
 +        // videos) are unaffected.
 +        if ("disabled".equals(self.audioTrackType)) {
 +            trackSelectorParameters.setTrackTypeDisabled(C.TRACK_TYPE_AUDIO, true);
-+            // AirTune patch: this player renders silent motion artwork while
-+            // music plays elsewhere, and it will use a software video decoder
-+            // (see the MediaCodecSelector below). Prefer the cheaper-to-decode
-+            // AVC rendition when the HLS ladder has one and cap at 720p — the
-+            // artwork is rendered far smaller than that anyway.
-+            trackSelectorParameters
-+                    .setPreferredVideoMimeTypes(MimeTypes.VIDEO_H264, MimeTypes.VIDEO_H265)
-+                    .setMaxVideoSize(1280, 720);
 +        }
 +        self.trackSelector.setParameters(trackSelectorParameters);
  
          DefaultAllocator allocator = new DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE);
          RNVLoadControl loadControl = new RNVLoadControl(
-@@ -735,6 +766,23 @@ public class ReactExoplayerView extends FrameLayout implements
-                         .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF)
-                         .setEnableDecoderFallback(true)
-                         .forceEnableMediaCodecAsynchronousQueueing();
-+        // AirTune patch: for silent motion-artwork players, prefer SOFTWARE
-+        // video decoders. On MediaTek/TCL TVs, starting a HARDWARE video codec
-+        // connects a TPC AV-sync pipeline (HAL_CODEC -> HAL_AUDIO) that injects
-+        // ~150ms of lip-sync delay into the GLOBAL speaker output and removes
-+        // it again on release — audibly cutting any concurrently playing music
-+        // on every motion artwork mount/unmount. Software decoders never touch
-+        // the TPC pipeline. setEnableDecoderFallback(true) above keeps streams
-+        // a software decoder cannot handle working via the hardware decoder.
-+        if ("disabled".equals(self.audioTrackType)) {
-+            renderersFactory.setMediaCodecSelector((mimeType, requiresSecureDecoder, requiresTunnelingDecoder) -> {
-+                List<MediaCodecInfo> decoderInfos = MediaCodecSelector.DEFAULT
-+                        .getDecoderInfos(mimeType, requiresSecureDecoder, requiresTunnelingDecoder);
-+                ArrayList<MediaCodecInfo> softwareFirst = new ArrayList<>(decoderInfos);
-+                softwareFirst.sort((a, b) -> Boolean.compare(b.softwareOnly, a.softwareOnly));
-+                return softwareFirst;
-+            });
-+        }
- 
-         DefaultMediaSourceFactory mediaSourceFactory;
-         
-@@ -756,6 +804,12 @@ public class ReactExoplayerView extends FrameLayout implements
+@@ -756,6 +777,12 @@ public class ReactExoplayerView extends FrameLayout implements
                  .setLoadControl(loadControl)
                  .setMediaSourceFactory(mediaSourceFactory)
                  .build();
@@ -89,7 +158,24 @@ index e16ac96..603671a 100644
          ReactNativeVideoManager.Companion.getInstance().onInstanceCreated(instanceId, player);
          refreshDebugState();
          player.addListener(self);
-@@ -2560,12 +2614,13 @@ public class ReactExoplayerView extends FrameLayout implements
+@@ -770,7 +797,15 @@ public class ReactExoplayerView extends FrameLayout implements
+ 
+         PlaybackParameters params = new PlaybackParameters(rate, 1f);
+         player.setPlaybackParameters(params);
+-        changeAudioOutput(this.audioOutput);
++        // AirTune patch: when audio is fully disabled (motion artwork), skip
++        // changeAudioOutput entirely. player.setAudioAttributes() interacts with
++        // Android's audio routing even with handleAudioFocus=false; on Android TV
++        // HDMI output any audio-system touch during codec init can cause a brief
++        // dropout in the concurrently playing music player. A video-only player
++        // (audioTrackType=="disabled") needs no audio routing at all.
++        if (!"disabled".equals(self.audioTrackType)) {
++            changeAudioOutput(this.audioOutput);
++        }
+ 
+         if(showNotificationControls) {
+             setupPlaybackService();
+@@ -2560,12 +2595,13 @@ public class ReactExoplayerView extends FrameLayout implements
                      .setContentType(contentType)
                      .build();
              player.setAudioAttributes(audioAttributes, false);

@@ -9,7 +9,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Image, StyleSheet, View } from 'react-native';
-import Video, { SelectedTrackType } from 'react-native-video';
+import Video, { SelectedTrackType, ViewType } from 'react-native-video';
 import { useEditorialVideo } from '../features/content/hooks/useEditorialVideo';
 import { MotionArtworkService } from '../features/settings/motionArtworkService';
 import { useMotionSuspended } from './MotionSuspenseContext';
@@ -162,6 +162,11 @@ export function MotionArtworkCover({
           resizeMode="cover"
           muted
           selectedAudioTrack={DISABLED_AUDIO_TRACK}
+          // Render into a TextureView (not a SurfaceView). A SurfaceView opens a
+          // dedicated HDMI video plane on the TV; creating it on video start
+          // forces an HDMI re-handshake that briefly drops the playing music's
+          // audio. A TextureView composites in-app and never touches HDMI.
+          viewType={ViewType.TEXTURE}
           repeat
           paused={!active}
           disableFocus
