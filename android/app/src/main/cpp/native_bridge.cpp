@@ -1,6 +1,6 @@
 /*
- * JNI bridge between Kotlin AirPipeModule and the C RAOP library.
- * Architecture mirrors jqssun/android-airplay-server.
+ * JNI bridge between Kotlin AirPlayModule and the C RAOP library.
+ * Architecture follows the app's current UxPlay-based AirPlay native layer.
  */
 
 #include <jni.h>

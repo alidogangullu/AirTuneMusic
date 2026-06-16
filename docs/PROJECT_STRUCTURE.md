@@ -51,7 +51,7 @@ This document describes the folder structure for the AirTune Music app (React Na
 
 ## AirPlay Native Layer
 
-AirPlay support is implemented using the native C library from [jqssun/android-airplay-server](https://github.com/jqssun/android-airplay-server), which is itself built on top of [UxPlay](https://github.com/FDH2/UxPlay) — an open-source AirPlay server implementing the RAOP (Remote Audio Output Protocol).
+AirPlay support is implemented using a native C library based on [UxPlay](https://github.com/FDH2/UxPlay) — an open-source AirPlay server implementing the RAOP (Remote Audio Output Protocol).
 
 ### How it works
 
@@ -70,7 +70,7 @@ AirPlay support is implemented using the native C library from [jqssun/android-a
 | `android/app/src/main/cpp/airplay/` | UxPlay C source (not compiled at build time — libraries are pre-built) |
 | `android/app/src/main/java/com/adg/airtune/airplay/` | All Kotlin AirPlay code |
 | `src/services/airPlayReceiver.ts` | JS wrapper around the native module |
-| `src/features/airplay/useAirPlay.tsx` | React context + hook |
+| `src/features/airplay/useAirPlay.tsx` | React context + hook
 
 ## Conventions
 
@@ -80,3 +80,4 @@ AirPlay support is implemented using the native C library from [jqssun/android-a
 - **Overlay screens / focus trapping**: Screens that overlay others (detail, modal dialogs) **must** use React Native `Modal`.
 - **Auto-focus on screen open**: The first interactive element in a new screen or modal should receive `hasTVPreferredFocus={true}`.
 - **Feature locality**: Each feature owns everything specific to it — screens, components, hooks, API calls, utils, and services. Only truly shared code lives outside `features/`.
+

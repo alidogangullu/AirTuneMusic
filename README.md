@@ -73,8 +73,7 @@ Available on the **Google Play Store**:
 | API         | Apple Music API (REST)                 |
 | Auth        | MusicKit JS (via Local Pairing Server) |
 | Lyrics      | [LRCLIB](https://lrclib.net/)          |
-| AirPlay     | [jqssun/android-airplay-server](https://github.com/jqssun/android-airplay-server) (UxPlay-based) |
-
+| AirPlay     | UxPlay-based native AirPlay receiver   |
 ### Local Pairing Server (TV Link)
 
 Because Android TV lacks a convenient keyboard, this app uses a dedicated **pairing flow**:
