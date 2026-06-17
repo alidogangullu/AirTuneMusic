@@ -274,11 +274,33 @@ Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeAlacDecode(
     ALACDecoder *dec = (ALACDecoder *)(intptr_t)handle;
     if (!dec || !input) return nullptr;
 
-    int input_len   = env->GetArrayLength(input);
-    jbyte *in_data  = env->GetByteArrayElements(input, nullptr);
+    int input_len = env->GetArrayLength(input);
+    if (input_len <= 0) return nullptr;
+
+    // Decode from a zero-padded scratch copy of the packet.
+    //
+    // The Apple reference ALAC decoder reads a few bytes *past* the logical end
+    // of the bitstream during its bit look-ahead: dyn_get_32bit()/dyn_get() call
+    // read32bit() (4 bytes) and getstreambits() (a 5th byte), and BitBufferRead()
+    // dereferences cur[0..2]. None of these check cur against end. Worse, in
+    // dyn_decomp() the loop bound is maxPos = byteSize*8 measured from the *cur*
+    // pointer that may already have advanced past the header, so a corrupt or
+    // truncated AirPlay RTP packet can drive the read offset up to cur+2*byteSize.
+    // When the JNI array tail sits on a page boundary this over-read SIGSEGVs in
+    // dyn_decomp — the dominant crash on Android TV devices that fall back to the
+    // software ALAC decoder. Padding to 2*input_len + slack guarantees every
+    // possible look-ahead lands inside mapped, zero-filled memory; the decoder
+    // then reads zeros and bails cleanly via its existing RequireAction checks.
+    size_t   scratch_len = (size_t)input_len * 2 + 16;
+    uint8_t *scratch     = (uint8_t *)calloc(scratch_len, 1);
+    if (!scratch) return nullptr;
+
+    env->GetByteArrayRegion(input, 0, input_len, (jbyte *)scratch);
 
     BitBuffer bits;
-    BitBufferInit(&bits, (uint8_t *)in_data, input_len);
+    // byteSize stays the *logical* packet length so the decoder's end checks are
+    // unchanged; only the underlying allocation is larger to absorb look-ahead.
+    BitBufferInit(&bits, scratch, (uint32_t)input_len);
 
     uint32_t numFrames   = dec->mConfig.frameLength;
     uint32_t numChannels = dec->mConfig.numChannels;
@@ -286,13 +308,13 @@ Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeAlacDecode(
     uint8_t *pcm         = (uint8_t *)calloc(outBytes, 1);
 
     if (!pcm) {
-        env->ReleaseByteArrayElements(input, in_data, JNI_ABORT);
+        free(scratch);
         return nullptr;
     }
 
     uint32_t outSamples = 0;
     int32_t  status     = dec->Decode(&bits, pcm, numFrames, numChannels, &outSamples);
-    env->ReleaseByteArrayElements(input, in_data, JNI_ABORT);
+    free(scratch);
 
     if (status != 0 || outSamples == 0) { free(pcm); return nullptr; }
 
