@@ -20,12 +20,16 @@ export type MainLayoutProps = {
   onAvatarPress?: () => void;
   onSearchPress?: () => void;
   onSettingsPress?: () => void;
+  onOpenSubscription?: () => void;
   hasUpdate?: boolean;
   hasUnreadAnnouncements?: boolean;
   needsCancelSubscription?: boolean;
 };
 
-const SCREENS: Record<NavTabId, React.ComponentType<{ isTabView?: boolean }>> = {
+const SCREENS: Record<
+  NavTabId,
+  React.ComponentType<{ isTabView?: boolean; onOpenSubscription?: () => void }>
+> = {
   'listen-now': ListenNowScreen,
   browse: BrowseScreen,
   videos: VideosScreen,
@@ -43,6 +47,7 @@ export const MainLayout = React.memo(function MainLayout({
   onAvatarPress,
   onSearchPress,
   onSettingsPress,
+  onOpenSubscription,
   hasUpdate = false,
   hasUnreadAnnouncements = false,
   needsCancelSubscription = false,
@@ -53,7 +58,10 @@ export const MainLayout = React.memo(function MainLayout({
   return (
     <View style={styles.root}>
       <View style={styles.contentFull}>
-        <Screen isTabView={activeTab === 'now-playing'} />
+        <Screen
+          isTabView={activeTab === 'now-playing'}
+          onOpenSubscription={onOpenSubscription}
+        />
       </View>
       <View style={styles.topBarOverlay}>
         <TopBar

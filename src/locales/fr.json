@@ -11,6 +11,9 @@
     "noItems": "Aucun élément",
     "appName": "AirTune Music",
     "availableNow": "Disponible maintenant",
+    "durationHm": "{{hours}} h {{minutes}} min",
+    "durationH": "{{hours}} h",
+    "durationM": "{{minutes}} min",
     "minute": "1 minute",
     "minutes": "{{count}} minutes",
     "viewOptions": "Afficher les options",
@@ -69,7 +72,8 @@
     "showQueue": "Afficher la file",
     "hideQueue": "Masquer la file",
     "quotaStatus": "{{used}}/{{total}}{{bonus}} · {{remaining}}",
-    "airPlayConnected": "AirPlay"
+    "airPlayConnected": "AirPlay",
+    "airPlayQuotaStatus": "{{used}}/{{total}} min · {{remaining}}"
   },
   "lyrics": {
     "notFound": "Paroles non disponibles",

@@ -36,8 +36,8 @@ import { useStorefront } from '../content/hooks/useStorefront';
 import { fetchSongDetail } from '../recommendations/api/recommendations';
 import { LyricsView } from '../player/components/LyricsView';
 import { NowPlayingTrackInfo, ARTWORK_SIZE } from '../player/components/NowPlayingTrackInfo';
-import { AirPlayLogo } from '../player/components/AirPlayLogo';
 import { useAirPlay } from '../airplay/useAirPlay';
+import { AirPlayQuotaService } from '../airplay/airPlayQuotaService';
 import { QuotaService } from '../settings/quotaService';
 
 // ── Component ────────────────────────────────────────────────────
@@ -300,7 +300,62 @@ export function NowPlayingScreen({
   const quotaInfo = isPro || quotaIndicatorHidden ? null : QuotaService.getUsageInfo();
   const bonusPlays = isPro ? 0 : QuotaService.getBonusPlaysRemaining();
   const quotaRemaining = isPro || quotaIndicatorHidden ? null : QuotaService.getPeriodRemainingFormatted();
-  const showAirPlayIndicator = airPlay.connectionCount > 0 || airPlay.active;
+  // AirPlay quota shares the same period as music quota. Show it as its own pill
+  // only once some AirPlay time has actually been used this period.
+  const airPlayQuotaUsedSeconds = isPro || quotaIndicatorHidden ? 0 : AirPlayQuotaService.getUsedSeconds();
+  const airPlayQuotaInfo = airPlayQuotaUsedSeconds > 0
+    ? {
+        used: Math.ceil(airPlayQuotaUsedSeconds / 60),
+        total: Math.round(AirPlayQuotaService.getUsageInfo().total / 60),
+      }
+    : null;
+
+  // Music quota pill — shown in native playback mode (where songs are counted).
+  const musicQuotaRowNode = quotaInfo ? (
+    <View style={styles.statusRow}>
+      <Pressable
+        onPress={onOpenSubscription}
+        focusable={!!onOpenSubscription}
+        style={({ focused }) => [
+          styles.statusPill,
+          focused && styles.statusPillFocused,
+        ]}>
+        {({ focused }) => (
+          <Text style={[styles.statusPillText, focused && styles.statusPillTextFocused]}>
+            {t('nowPlaying.quotaStatus', {
+              used: quotaInfo.used,
+              total: quotaInfo.total,
+              bonus: bonusPlays > 0 ? ` +${bonusPlays}` : '',
+              remaining: quotaRemaining,
+            })}
+          </Text>
+        )}
+      </Pressable>
+    </View>
+  ) : null;
+
+  // AirPlay quota pill — shown in AirPlay mode (where casting minutes are counted).
+  const airPlayQuotaRowNode = airPlayQuotaInfo ? (
+    <View style={styles.statusRow}>
+      <Pressable
+        onPress={onOpenSubscription}
+        focusable={!!onOpenSubscription}
+        style={({ focused }) => [
+          styles.statusPill,
+          focused && styles.statusPillFocused,
+        ]}>
+        {({ focused }) => (
+          <Text style={[styles.statusPillText, focused && styles.statusPillTextFocused]}>
+            {t('nowPlaying.airPlayQuotaStatus', {
+              used: airPlayQuotaInfo.used,
+              total: airPlayQuotaInfo.total,
+              remaining: quotaRemaining,
+            })}
+          </Text>
+        )}
+      </Pressable>
+    </View>
+  ) : null;
 
   return (
     <LinearGradient
@@ -469,6 +524,7 @@ export function NowPlayingScreen({
           {isAirPlayMode ? (
             !showInfo && (
               <>
+                {airPlayQuotaRowNode}
                 <PlaybackControls
                   airPlay={{
                     onPrev: airPlay.prev,
@@ -504,39 +560,7 @@ export function NowPlayingScreen({
           ) : (
             !showInfo && (
               <>
-                {(quotaInfo || showAirPlayIndicator) && (
-                  <View style={styles.statusRow}>
-                    {quotaInfo && (
-                      <Pressable
-                        onPress={onOpenSubscription}
-                        focusable={!!onOpenSubscription}
-                        style={({ focused }) => [
-                          styles.statusPill,
-                          focused && styles.statusPillFocused,
-                        ]}>
-                        {({ focused }) => (
-                          <Text style={[styles.statusPillText, focused && styles.statusPillTextFocused]}>
-                            {t('nowPlaying.quotaStatus', {
-                              used: quotaInfo.used,
-                              total: quotaInfo.total,
-                              bonus: bonusPlays > 0 ? ` +${bonusPlays}` : '',
-                              remaining: quotaRemaining,
-                            })}
-                          </Text>
-                        )}
-                      </Pressable>
-                    )}
-                    {showAirPlayIndicator && (
-                      <View style={styles.statusPill}>
-                        <AirPlayLogo size={13} color="rgba(255,255,255,0.85)" />
-                        <Text style={styles.statusPillText}>
-                          {t('nowPlaying.airPlayConnected')}
-                          {airPlay.connectionCount > 1 ? ` ×${airPlay.connectionCount}` : ''}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                )}
+                {musicQuotaRowNode}
                 <View
                   ref={playbackControlsRef}
                   onLayout={() => setPlaybackControlsNode(findNodeHandle(playbackControlsRef.current))}>

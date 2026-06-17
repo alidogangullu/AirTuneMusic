@@ -11,6 +11,9 @@
     "noItems": "Öğe yok",
     "appName": "AirTune Music",
     "availableNow": "Şimdi mevcut",
+    "durationHm": "{{hours}}sa {{minutes}}dk",
+    "durationH": "{{hours}}sa",
+    "durationM": "{{minutes}}dk",
     "minute": "1 dakika",
     "minutes": "{{count}} dakika",
     "viewOptions": "Seçenekleri Görüntüle",
@@ -69,7 +72,8 @@
     "showQueue": "Sıradakileri göster",
     "hideQueue": "Sıradakileri gizle",
     "quotaStatus": "{{used}}/{{total}}{{bonus}} · {{remaining}}",
-    "airPlayConnected": "AirPlay"
+    "airPlayConnected": "AirPlay",
+    "airPlayQuotaStatus": "{{used}}/{{total}} dk · {{remaining}}"
   },
   "lyrics": {
     "notFound": "Şarkı sözleri bulunamadı",

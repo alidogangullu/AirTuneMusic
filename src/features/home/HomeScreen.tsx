@@ -120,6 +120,11 @@ export function HomeScreen({
     setNowPlayingFullscreen(false);
   }, []);
 
+  const openSubscription = useCallback(() => {
+    setSettingsInitialSubMenu('subscription');
+    setSettingsVisible(true);
+  }, []);
+
   const ctxValue = useMemo(
     () => ({ pushContent, openNowPlayingFullscreen }),
     [pushContent, openNowPlayingFullscreen],
@@ -157,6 +162,7 @@ export function HomeScreen({
             onAvatarPress={handleSignOut}
             onSearchPress={handleSearchPress}
             onSettingsPress={handleSettingsPress}
+            onOpenSubscription={openSubscription}
             hasUpdate={updateInfo?.status === 'optional_update'}
             hasUnreadAnnouncements={hasUnreadAnnouncements}
             needsCancelSubscription={needsCancelSubscription}
@@ -174,8 +180,7 @@ export function HomeScreen({
             onBack={closeNowPlayingFullscreen}
             onOpenSubscription={() => {
               closeNowPlayingFullscreen();
-              setSettingsInitialSubMenu('subscription');
-              setSettingsVisible(true);
+              openSubscription();
             }}
           />
         </Modal>

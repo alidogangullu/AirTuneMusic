@@ -1,3 +1,4 @@
+import i18next from 'i18next';
 import { createMMKV } from 'react-native-mmkv';
 import { QuotaConfigService } from '../bootstrap/quotaConfigService';
 
@@ -46,9 +47,9 @@ export class QuotaPeriodService {
     const totalMinutes = Math.ceil(ms / (60 * 1000));
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
-    if (hours > 0 && minutes > 0) return `${hours}h ${minutes}m`;
-    if (hours > 0) return `${hours}h`;
-    return `${minutes}m`;
+    if (hours > 0 && minutes > 0) return i18next.t('common.durationHm', { hours, minutes });
+    if (hours > 0) return i18next.t('common.durationH', { hours });
+    return i18next.t('common.durationM', { minutes });
   }
 
   /** Force-reset the period (e.g. after purchase). */
