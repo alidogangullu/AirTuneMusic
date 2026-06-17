@@ -90,6 +90,14 @@ const initialProgress: ProgressState = {
   buffered: 0,
 };
 
+// When a single/last track finishes with repeat off, the Apple Music SDK
+// auto-rewinds the item to a paused+buffering state at position 0 (looks like
+// the track restarting + a loading flicker). While this flag is set we lock the
+// UI to a stopped-at-end state and ignore the SDK's rewind events. Shared at
+// module scope so both PlayerProvider and PlaybackProgressProvider (separate
+// components) can honor it. Released when the user starts playback again.
+const endOfQueueLock = { active: false };
+
 // ── Context ─────────────────────────────────────────────────────
 
 interface PlayerContextValue {
@@ -140,6 +148,8 @@ export function PlaybackProgressProvider({children}: Readonly<{children: React.R
       }),
       // Handle track changes to reset progress or set initial duration
       musicPlayer.addEventListener('onCurrentItemChanged', data => {
+        // End-of-queue lock: ignore the SDK's rewind so the bar stays at the end.
+        if (endOfQueueLock.active) return;
         if (data.duration !== undefined) {
           setProgress(p => ({
             ...p,
@@ -150,6 +160,8 @@ export function PlaybackProgressProvider({children}: Readonly<{children: React.R
       }),
       // Initial state sync
       musicPlayer.addEventListener('onPlaybackStateChanged', data => {
+         // End-of-queue lock: keep the position at the end instead of resetting.
+         if (endOfQueueLock.active) return;
          if (data.state === 'stopped') {
            setProgress(initialProgress);
          }
@@ -470,6 +482,13 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     const subs = [
       musicPlayer.addEventListener('onPlaybackStateChanged', (data) => {
         if (activeEngineRef.current !== 'native') return;
+        // End-of-queue lock: a real 'playing' means playback resumed → release
+        // the lock and process normally; otherwise ignore the SDK's rewind
+        // (stopped→paused) so the UI stays stopped-at-end.
+        if (endOfQueueLock.active) {
+          if (data.state === 'playing') endOfQueueLock.active = false;
+          else return;
+        }
         setState(s => ({
           ...s,
           playbackState: data.state,
@@ -488,6 +507,9 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
         }
       }),
       musicPlayer.addEventListener('onCurrentItemChanged', data => {
+        // End-of-queue lock: ignore the SDK re-cueing the finished item (would
+        // re-show loading / re-record quota). Released by user playback actions.
+        if (endOfQueueLock.active) return;
         // Enforce quota on track transitions (manual or automatic)
         if (data.playbackQueueId !== undefined && data.playbackQueueId !== lastTrackIdRef.current) {
           if (QuotaService.canPlayNextSong()) {
@@ -589,11 +611,15 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
         });
       }),
       musicPlayer.addEventListener('onBufferingStateChanged', data => {
+        // End-of-queue lock: suppress the rewind's buffering flicker.
+        if (endOfQueueLock.active) return;
         setState(s =>
           s.buffering === data.buffering ? s : {...s, buffering: data.buffering},
         );
       }),
       musicPlayer.addEventListener('onPlaybackQueueChanged', data => {
+        // End-of-queue lock: keep the finished track visible (SDK clears to 0).
+        if (endOfQueueLock.active) return;
         handleNativePlaybackQueueChanged(data.count);
       }),
       musicPlayer.addEventListener('onShuffleModeChanged', data => {
@@ -636,18 +662,51 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
           const tok = getMusicUserToken();
           if (tok) webPlayerRef.current?.updateUserToken(tok);
           webPlayerRef.current?.playSong(trackId);
+          return;
+        }
+        // Clean end of the queue (single/last track, repeat off): the Apple Music
+        // SDK auto-rewinds the finished item to a paused+buffering state at
+        // position 0. Lock the UI to a stopped-at-end state and ignore the rewind
+        // events until the user starts playback again.
+        const noContainerNext =
+          !stateRef.current.containerTracks?.[stateRef.current.containerIndex + 1];
+        if (
+          data.endPosition > 0 &&
+          noContainerNext &&
+          !stateRef.current.canSkipToNext &&
+          stateRef.current.repeatMode === 0
+        ) {
+          console.log('[MusicPlayer] Clean end of queue (repeat off), locking stop');
+          endOfQueueLock.active = true;
+          if (nativePlaybackTimeoutRef.current) {
+            clearTimeout(nativePlaybackTimeoutRef.current);
+            nativePlaybackTimeoutRef.current = null;
+          }
+          setState(s => ({...s, playbackState: 'stopped', isLoading: false, buffering: false}));
         }
       }),
       musicPlayer.addEventListener('onTrackStuckAtEnd', () => {
         if (activeEngineRef.current !== 'native') return;
-        console.log('[MusicPlayer] Track stuck at end, rebuilding queue from next track');
         const nextContainerIndex = stateRef.current.containerIndex + 1;
         const nextTrack = stateRef.current.containerTracks?.[nextContainerIndex];
         if (nextTrack && restartContainerFromIndexRef.current) {
+          console.log('[MusicPlayer] Track stuck at end, rebuilding queue from next track');
           restartContainerFromIndexRef.current(nextContainerIndex);
-        } else {
+        } else if (stateRef.current.canSkipToNext || stateRef.current.repeatMode !== 0) {
+          // Real next item in the SDK queue, or repeat is on → advance/wrap.
+          console.log('[MusicPlayer] Track stuck at end, skipping to next');
           musicPlayer.skipToNext();
           musicPlayer.play();
+        } else {
+          // End of queue / single track with repeat off, and the SDK left the
+          // item stuck PLAYING at its end. skipToNext()+play() here would restart
+          // the same track (phantom repeat). Lock to a stopped-at-end state (same
+          // as the clean-end path): halt playback, freeze the bars, keep position
+          // at the end. User presses play to restart.
+          console.log('[MusicPlayer] Track stuck at end of queue (repeat off), locking stop');
+          endOfQueueLock.active = true;
+          musicPlayer.pause();
+          setState(s => ({...s, playbackState: 'stopped', isLoading: false, buffering: false}));
         }
       }),
     ];
@@ -659,6 +718,8 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
 
   useEffect(() => {
     let mounted = true;
+    // Start clean — the lock lives at module scope and could survive a reload.
+    endOfQueueLock.active = false;
 
     // Pre-configure the Native SDK in the background so the first playback is instant
     musicPlayer.ensureConfigured().catch(err => {
@@ -701,6 +762,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     return () => {
       mounted = false;
       // Release playback and clear state on unmount / reload
+      endOfQueueLock.active = false;
       musicPlayer.release();
       setState(initialState);
     };
@@ -709,6 +771,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   // Sync current state and pre-configure native module on mount
   const checkQuotaAndPlay = useCallback(
     async (playFn: () => Promise<void>): Promise<boolean> => {
+      endOfQueueLock.active = false;
       if (!QuotaService.canPlayNextSong() && !adInFlightRef.current) {
         requestQuotaRecovery(playFn);
         return false;
@@ -784,6 +847,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
 
   const playStation = useCallback(
     async (stationId: string) => {
+      endOfQueueLock.active = false;
       if (!QuotaService.canPlayNextSong()) {
         requestQuotaRecovery();
         return false;
@@ -843,6 +907,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   );
 
   const playVideoQueue = useCallback((queue: VideoQueue) => {
+    endOfQueueLock.active = false;
     if (!QuotaService.canPlayNextSong()) {
       const remaining = QuotaService.getRemainingTimeFormatted();
       Alert.alert(
@@ -881,6 +946,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   );
 
   const seekTo = useCallback((positionMs: number) => {
+    endOfQueueLock.active = false;
     if (activeEngineRef.current === 'web') {
       webSeekingRef.current = true;
       setTimeout(() => { webSeekingRef.current = false; }, 1500);
@@ -904,6 +970,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     playVideoQueue,
     stopVideo,
     play: () => {
+      endOfQueueLock.active = false;
       if (!QuotaService.canPlayNextSong() && !adInFlightRef.current) {
         suppressAutoStartRef.current = true;
         requestQuotaRecovery(async () => {
@@ -951,6 +1018,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
       musicPlayer.stop();
     },
     skipToNext: () => {
+      endOfQueueLock.active = false;
       if (!QuotaService.canPlayNextSong()) {
         if (activeEngineRef.current === 'web') {
           webPlayerRef.current?.pause();
@@ -989,6 +1057,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
       }
     },
     skipToPrevious: () => {
+      endOfQueueLock.active = false;
       if (!QuotaService.canPlayNextSong()) {
         if (activeEngineRef.current === 'web') {
           webPlayerRef.current?.pause();
