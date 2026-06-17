@@ -14,7 +14,12 @@ class AudioRenderer {
     private var track: AudioTrack? = null
     private var currentCt = -1
     private var failedCt  = -1
-    private var swAlacHandle = 0L
+    @Volatile private var swAlacHandle = 0L
+    // Guards the software ALAC decoder lifecycle. feedSoftwareAlac() runs on the
+    // AirPlay audio thread while stop() can run on the engine/RN thread when a
+    // connection tears down (e.g. switching from AirPlay to native playback).
+    // Without this lock, stop() could free the decoder mid-Decode → SIGSEGV.
+    private val swAlacLock = Any()
     @Volatile var swAlacEnabled = true
     @Volatile var volume = 1.0f; private set
     @Volatile var codecLabel = ""; private set
@@ -59,14 +64,20 @@ class AudioRenderer {
     }
 
     private fun feedSoftwareAlac(data: ByteArray) {
-        val pcm = AirPlayModule.nativeAlacDecodeStatic(swAlacHandle, data) ?: return
+        // Decode under the lock so the handle can't be destroyed mid-Decode.
+        // Keep the AudioTrack write outside the lock to avoid blocking stop().
+        val pcm = synchronized(swAlacLock) {
+            if (swAlacHandle == 0L) return
+            AirPlayModule.nativeAlacDecodeStatic(swAlacHandle, data)
+        } ?: return
         track?.write(pcm, 0, pcm.size)
     }
 
     private fun startSoftwareAlac() {
         Log.i(TAG, "Starting software ALAC decoder")
-        swAlacHandle = AirPlayModule.nativeAlacInitStatic(352, 2, 16, 40, 10, 14)
-        if (swAlacHandle == 0L) { Log.e(TAG, "Failed to init SW ALAC decoder"); return }
+        val handle = AirPlayModule.nativeAlacInitStatic(352, 2, 16, 40, 10, 14)
+        synchronized(swAlacLock) { swAlacHandle = handle }
+        if (handle == 0L) { Log.e(TAG, "Failed to init SW ALAC decoder"); return }
         currentCt  = CT_ALAC
         codecLabel = "ALAC (SW)"
         ensureAudioTrack()
@@ -173,9 +184,14 @@ class AudioRenderer {
         track = null
         codec?.let { try { it.stop(); it.release() } catch (_: Exception) {} }
         codec = null
-        if (swAlacHandle != 0L) {
-            AirPlayModule.nativeAlacDestroyStatic(swAlacHandle)
-            swAlacHandle = 0L
+        // Zero the handle before freeing, under the lock, so any in-flight
+        // feedSoftwareAlac() either finishes first or sees 0 and bails out.
+        synchronized(swAlacLock) {
+            if (swAlacHandle != 0L) {
+                val handle = swAlacHandle
+                swAlacHandle = 0L
+                AirPlayModule.nativeAlacDestroyStatic(handle)
+            }
         }
         currentCt  = -1
         failedCt   = -1
