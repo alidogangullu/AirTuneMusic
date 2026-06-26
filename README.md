@@ -50,15 +50,15 @@
 
 Available on the **Google Play Store**:
 
-[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width="200">](https://play.google.com/store/apps/details?id=com.adg.airtunemusic)
+[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width="200">](https://play.google.com/store/apps/details?id=com.adg.airtune)
 
 ~~## 🧪 Testing (Closed Beta)~~
 
 ~~AirTune is currently in **Closed Beta**. To install the app on your Android TV, please follow these steps:~~
 
 ~~1. **Join the Testers Group**: [Join our Google Group](https://groups.google.com/g/airtune-testers/) first. You must join using the same Google account you use for the Play Store.~~
-~~2. **Opt-in to Testing**: After joining the group, [Opt-in to the Testing Program](https://play.google.com/apps/testing/com.adg.airtunemusic) here.~~
-~~3. **Download the app**: Once opted in, download it directly from the [Play Store](https://play.google.com/store/apps/details?id=com.adg.airtunemusic).~~
+~~2. **Opt-in to Testing**: After joining the group, [Opt-in to the Testing Program](https://play.google.com/apps/testing/com.adg.airtune) here.~~
+~~3. **Download the app**: Once opted in, download it directly from the [Play Store](https://play.google.com/store/apps/details?id=com.adg.airtune).~~
 
 ~~> If you were a tester of the previous version, you're already in the Google Group — you can skip step 1 and download the new listing directly once it's live.~~
 

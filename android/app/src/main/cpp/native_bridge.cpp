@@ -42,7 +42,7 @@ static void _log_callback(void * /*cls*/, int level, const char *msg) {
 // ── nativeInit ────────────────────────────────────────────────────────────────
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeInit(
+Java_com_adg_airtune_airplay_AirPlayModule_nativeInit(
         JNIEnv *env, jobject /*thiz*/,
         jobject callback, jbyteArray hwAddr, jstring name,
         jstring keyFile, jboolean nohold, jboolean requirePin) {
@@ -102,7 +102,7 @@ Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeInit(
 // ── nativeStart ───────────────────────────────────────────────────────────────
 
 extern "C" JNIEXPORT jint JNICALL
-Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeStart(
+Java_com_adg_airtune_airplay_AirPlayModule_nativeStart(
         JNIEnv * /*env*/, jobject /*thiz*/, jlong handle, jint requestedPort) {
 
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
@@ -126,7 +126,7 @@ Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeStart(
 // ── nativeStop ────────────────────────────────────────────────────────────────
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeStop(
+Java_com_adg_airtune_airplay_AirPlayModule_nativeStop(
         JNIEnv * /*env*/, jobject /*thiz*/, jlong handle) {
 
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
@@ -143,7 +143,7 @@ Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeStop(
 // ── nativeDestroy ─────────────────────────────────────────────────────────────
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeDestroy(
+Java_com_adg_airtune_airplay_AirPlayModule_nativeDestroy(
         JNIEnv *env, jobject /*thiz*/, jlong handle) {
 
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
@@ -158,7 +158,7 @@ Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeDestroy(
 // ── nativeSetDisplaySize ──────────────────────────────────────────────────────
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeSetDisplaySize(
+Java_com_adg_airtune_airplay_AirPlayModule_nativeSetDisplaySize(
         JNIEnv * /*env*/, jobject /*thiz*/, jlong handle, jint w, jint h, jint fps) {
 
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
@@ -195,7 +195,7 @@ static jobject _build_txt_map(JNIEnv *env, dnssd_t *dnssd, int is_raop) {
 }
 
 extern "C" JNIEXPORT jobject JNICALL
-Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeGetRaopTxtRecords(
+Java_com_adg_airtune_airplay_AirPlayModule_nativeGetRaopTxtRecords(
         JNIEnv *env, jobject /*thiz*/, jlong handle) {
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
     if (!ctx || !ctx->dnssd) return nullptr;
@@ -203,7 +203,7 @@ Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeGetRaopTxtRecords(
 }
 
 extern "C" JNIEXPORT jobject JNICALL
-Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeGetAirplayTxtRecords(
+Java_com_adg_airtune_airplay_AirPlayModule_nativeGetAirplayTxtRecords(
         JNIEnv *env, jobject /*thiz*/, jlong handle) {
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
     if (!ctx || !ctx->dnssd) return nullptr;
@@ -211,7 +211,7 @@ Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeGetAirplayTxtRecords(
 }
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeGetRaopServiceName(
+Java_com_adg_airtune_airplay_AirPlayModule_nativeGetRaopServiceName(
         JNIEnv *env, jobject /*thiz*/, jlong handle) {
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
     if (!ctx || !ctx->dnssd) return nullptr;
@@ -221,7 +221,7 @@ Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeGetRaopServiceName(
 // ── nativeSetH265Enabled ──────────────────────────────────────────────────────
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeSetH265Enabled(
+Java_com_adg_airtune_airplay_AirPlayModule_nativeSetH265Enabled(
         JNIEnv * /*env*/, jobject /*thiz*/, jlong handle, jboolean enabled) {
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
     if (!ctx) return;
@@ -232,7 +232,7 @@ Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeSetH265Enabled(
 // ── Software ALAC decoder (Apple reference, Apache 2.0) ──────────────────────
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeAlacInit(
+Java_com_adg_airtune_airplay_AirPlayModule_nativeAlacInit(
         JNIEnv * /*env*/, jobject /*thiz*/,
         jint frameLength, jint numChannels, jint bitDepth,
         jint pb, jint mb, jint kb) {
@@ -268,7 +268,7 @@ Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeAlacInit(
 }
 
 extern "C" JNIEXPORT jbyteArray JNICALL
-Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeAlacDecode(
+Java_com_adg_airtune_airplay_AirPlayModule_nativeAlacDecode(
         JNIEnv *env, jobject /*thiz*/, jlong handle, jbyteArray input) {
 
     ALACDecoder *dec = (ALACDecoder *)(intptr_t)handle;
@@ -326,7 +326,7 @@ Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeAlacDecode(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_adg_airtunemusic_airplay_AirPlayModule_nativeAlacDestroy(
+Java_com_adg_airtune_airplay_AirPlayModule_nativeAlacDestroy(
         JNIEnv * /*env*/, jobject /*thiz*/, jlong handle) {
     delete (ALACDecoder *)(intptr_t)handle;
 }

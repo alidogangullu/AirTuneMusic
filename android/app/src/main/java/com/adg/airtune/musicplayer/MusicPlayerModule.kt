@@ -1,4 +1,4 @@
-package com.adg.airtunemusic.musicplayer
+package com.adg.airtune.musicplayer
 
 import android.os.Handler
 import android.os.Looper

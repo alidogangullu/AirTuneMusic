@@ -1,4 +1,4 @@
-package com.adg.airtunemusic.musicplayer
+package com.adg.airtune.musicplayer
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

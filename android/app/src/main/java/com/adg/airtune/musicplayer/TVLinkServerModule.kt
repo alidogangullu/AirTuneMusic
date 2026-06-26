@@ -1,4 +1,4 @@
-package com.adg.airtunemusic.musicplayer
+package com.adg.airtune.musicplayer
 
 import android.util.Log
 import com.facebook.react.bridge.*

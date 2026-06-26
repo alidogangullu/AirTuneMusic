@@ -1,4 +1,4 @@
-package com.adg.airtunemusic.airplay
+package com.adg.airtune.airplay
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

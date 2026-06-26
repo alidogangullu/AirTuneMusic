@@ -57,7 +57,7 @@ Use the value from `npm run token:apple-music`. The app reads it via a build-tim
 2. In the sidebar, click **Identifiers**.
 3. Click the **+** button, choose **Media IDs**, then **Continue**.
 4. Enter a **description** (e.g. “AirTune Music”).
-5. Enter a **reverse-domain identifier** (e.g. `media.com.adg.airtunemusic`).
+5. Enter a **reverse-domain identifier** (e.g. `media.com.adg.airtune`).
 6. Enable **Apple Music** (and any other services you need).
 7. Click **Continue** → **Register** → **Done**.
 

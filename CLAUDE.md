@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 AirTune Music is an **Apple Music client for Android TV**, built with React Native (`react-native-tvos`). The primary input method is a **D-pad remote** — all UI must support focus-based navigation with no hover interactions.
 
-Package ID: `com.adg.airtunemusic` | Play Store: `com.adg.airtunemusic`
+Package ID: `com.adg.airtune` | Play Store: `com.adg.airtune`
 
 ## Commands
 

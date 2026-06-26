@@ -117,7 +117,7 @@ override fun getPackages(): List<ReactPackage> =
 
 ### Key File: `MusicPlayerModule.kt`
 
-**Location**: `android/app/src/main/java/com/airtunemusic/musicplayer/MusicPlayerModule.kt`
+**Location**: `android/app/src/main/java/com.adg.airtune/musicplayer/MusicPlayerModule.kt`
 
 ### Critical Implementation Details
 
@@ -593,7 +593,7 @@ cd android && ./gradlew assembleDebug && cd ..
 adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 
 # Launch
-adb shell am start -n com.airtunemusic/.MainActivity
+adb shell am start -n com.adg.airtune/.MainActivity
 ```
 
 ### Step 6: Apple Music Authentication
@@ -636,7 +636,7 @@ node tv-link-page/server.mjs    # TV-link
 
 # 5. Install & run
 adb install -r android/app/build/outputs/apk/debug/app-debug.apk
-adb shell am start -n com.airtunemusic/.MainActivity
+adb shell am start -n com.adg.airtune/.MainActivity
 
 # 6. Auth: open http://<MAC_IP>:8080/tv on phone, enter code from TV
 ```
@@ -659,9 +659,9 @@ adb shell am start -n com.airtunemusic/.MainActivity
 |------|---------|
 | `android/app/libs/mediaplayback-release-1.1.1.aar` | MusicKit playback SDK with native JNI libs |
 | `android/app/libs/musickitauth-release-1.1.2.aar` | MusicKit auth SDK + TokenProvider interface |
-| `android/app/src/main/java/com/airtunemusic/musicplayer/MusicPlayerModule.kt` | Native bridge module — wraps MediaPlayerController |
-| `android/app/src/main/java/com/airtunemusic/musicplayer/MusicPlayerPackage.kt` | ReactPackage registration |
-| `android/app/src/main/java/com/airtunemusic/MainApplication.kt` | App entry — registers MusicPlayerPackage |
+| `android/app/src/main/java/com.adg.airtune/musicplayer/MusicPlayerModule.kt` | Native bridge module — wraps MediaPlayerController |
+| `android/app/src/main/java/com.adg.airtune/musicplayer/MusicPlayerPackage.kt` | ReactPackage registration |
+| `android/app/src/main/java/com.adg.airtune/MainApplication.kt` | App entry — registers MusicPlayerPackage |
 | `android/app/src/main/AndroidManifest.xml` | Manifest with SDK activity + tools:replace |
 | `android/gradle.properties` | ARM-only architectures |
 | `android/app/build.gradle` | AAR fileTree dependency |

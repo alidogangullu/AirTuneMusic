@@ -1,4 +1,4 @@
-package com.adg.airtunemusic.imagecolors
+package com.adg.airtune.imagecolors
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

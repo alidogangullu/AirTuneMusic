@@ -1,4 +1,4 @@
-package com.adg.airtunemusic.unityads
+package com.adg.airtune.unityads
 
 import android.app.Activity
 import android.os.Handler

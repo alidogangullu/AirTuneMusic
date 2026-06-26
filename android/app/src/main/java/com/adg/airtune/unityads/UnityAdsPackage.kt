@@ -1,4 +1,4 @@
-package com.adg.airtunemusic.unityads
+package com.adg.airtune.unityads
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

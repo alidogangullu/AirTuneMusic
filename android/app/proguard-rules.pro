@@ -11,8 +11,8 @@
 
 # AirPlay (UxPlay JNI bridge) — native methods and the callback methods invoked
 # by name from android_raop_callbacks.c must not be stripped or renamed.
--keep class com.adg.airtunemusic.airplay.AirPlayModule { *; }
--keep class com.adg.airtunemusic.airplay.AudioRenderer { *; }
+-keep class com.adg.airtune.airplay.AirPlayModule { *; }
+-keep class com.adg.airtune.airplay.AudioRenderer { *; }
 -keepclasseswithmembernames class * {
     native <methods>;
 }
