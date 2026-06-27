@@ -307,7 +307,7 @@ function makeStyles(c: AppColors) {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.lg, // Reduced from xl
-      marginTop: spacing.md,
+      marginTop: spacing.xs,
     },
     textColumns: {
       flex: 1,

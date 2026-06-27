@@ -41,7 +41,7 @@ export const AnnouncementService = {
         (a): a is Announcement =>
           a !== null &&
           typeof a === 'object' &&
-          typeof a.id === 'string' && a.id.length > 0 && a.id !== 'ann_000' &&
+          typeof a.id === 'string' && a.id.length > 0 && a.id !== 'ann_999' &&
           typeof a.title === 'string' && a.title.length > 0 &&
           typeof a.body === 'string' && a.body.length > 0,
       );

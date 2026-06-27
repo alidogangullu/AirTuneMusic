@@ -3,6 +3,11 @@ import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { radius, spacing } from '../../theme/layout';
 
+// TODO: Temporary. Ads are hardcoded-disabled until the rewarded ad flow is
+// re-enabled. While true: the "watch ad" button is passive, auto-start is off,
+// and focus defaults to the subscription (get pro) button.
+const ADS_TEMPORARILY_DISABLED = true;
+
 export type QuotaRecoveryRequest = {
   title: string;
   message: string;
@@ -207,7 +212,7 @@ function makeStyles() {
 export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCancel }: Readonly<Props>): React.JSX.Element {
   const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(), []);
-  const autoStartEnabled = request.autoWatchAfterMs > 0;
+  const autoStartEnabled = !ADS_TEMPORARILY_DISABLED && request.autoWatchAfterMs > 0;
   const [secondsLeft, setSecondsLeft] = useState(autoStartEnabled ? Math.ceil(request.autoWatchAfterMs / 1000) : 0);
   const [isStartingAd, setIsStartingAd] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -261,7 +266,7 @@ export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCan
     }, 250);
 
     return () => clearInterval(interval);
-  }, [handleWatchAd, request.autoWatchAfterMs]);
+  }, [handleWatchAd, request.autoWatchAfterMs, autoStartEnabled]);
 
   return (
     <View style={styles.root}>
@@ -290,6 +295,7 @@ export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCan
 
           <View style={styles.actionRow}>
             <Pressable
+              hasTVPreferredFocus={ADS_TEMPORARILY_DISABLED}
               onPress={onOpenSubscription}
               style={({ focused }) => [
                 styles.actionButton,
@@ -304,14 +310,15 @@ export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCan
             </Pressable>
 
             <Pressable
-              hasTVPreferredFocus
+              hasTVPreferredFocus={!ADS_TEMPORARILY_DISABLED}
               onPress={handleWatchAd}
-              disabled={isStartingAd}
+              focusable={!ADS_TEMPORARILY_DISABLED}
+              disabled={ADS_TEMPORARILY_DISABLED || isStartingAd}
               style={({ focused }) => [
                 styles.actionButton,
                 styles.actionButtonSecondary,
                 focused && styles.actionButtonFocused,
-                isStartingAd && { opacity: 0.8 },
+                (ADS_TEMPORARILY_DISABLED || isStartingAd) && { opacity: 0.4 },
               ]}>
               {() => (
                 <View style={styles.buttonContent}>
