@@ -72,7 +72,7 @@ export type PlaylistDetail = {
     editorialVideo?: EditorialVideo;
   };
   relationships?: {
-    tracks?: {href?: string; data: PlaylistTrack[]};
+    tracks?: {href?: string; next?: string; data: PlaylistTrack[]};
     curator?: {href?: string; data: unknown[]};
   };
 };

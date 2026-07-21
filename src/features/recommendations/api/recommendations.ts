@@ -9,6 +9,7 @@ import type {
   GenreResponse,
   MusicVideoDetailResponse,
   PlaylistDetailResponse,
+  PlaylistTrack,
   SongDetailResponse,
   StationDetailResponse,
 } from '../../../types/catalog';
@@ -70,14 +71,45 @@ export async function fetchCatalogCharts(
  * Fetch full playlist details including tracks.
  * GET /v1/catalog/{storefront}/playlists/{id}?include=tracks
  */
+const PLAYLIST_TRACKS_MAX_FETCH_LIMIT = 300;
+const PLAYLIST_TRACKS_MAX_PAGES = 20; // safety cap: 20 * 300 = 6000 tracks
+
+function extractTracksOffset(nextPath: string | undefined): string | undefined {
+  if (!nextPath) { return undefined; }
+  const match = /[?&]offset=(\d+)/.exec(nextPath);
+  return match?.[1];
+}
+
+/**
+ * Fetches full playlist details and paginates the `tracks` relationship past
+ * Apple's per-request cap (max 300) so long playlists aren't silently truncated.
+ */
 export async function fetchPlaylistDetail(
   id: string,
   storefront: string,
 ): Promise<PlaylistDetailResponse> {
   const { data } = await appleMusicApi.get<PlaylistDetailResponse>(
     `/catalog/${storefront}/playlists/${id}`,
-    { params: { include: 'tracks' } },
+    { params: { include: 'tracks', 'limit[tracks]': PLAYLIST_TRACKS_MAX_FETCH_LIMIT } },
   );
+
+  const playlist = data.data[0];
+  const tracks = playlist?.relationships?.tracks;
+  let offset = extractTracksOffset(tracks?.next);
+  let page = 0;
+
+  while (tracks && offset && page < PLAYLIST_TRACKS_MAX_PAGES) {
+    const { data: nextPage } = await appleMusicApi.get<{ data: PlaylistTrack[]; next?: string }>(
+      `/catalog/${storefront}/playlists/${id}/tracks`,
+      { params: { offset, limit: PLAYLIST_TRACKS_MAX_FETCH_LIMIT } },
+    );
+
+    tracks.data.push(...nextPage.data);
+    offset = extractTracksOffset(nextPage.next);
+    page += 1;
+  }
+  if (tracks) { tracks.next = undefined; }
+
   return data;
 }
 
