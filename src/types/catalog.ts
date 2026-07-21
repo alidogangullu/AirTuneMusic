@@ -110,7 +110,7 @@ export type AlbumDetail = {
     editorialVideo?: EditorialVideo;
   };
   relationships?: {
-    tracks?: {href?: string; data: PlaylistTrack[]};
+    tracks?: {href?: string; next?: string; data: PlaylistTrack[]};
     artists?: {href?: string; data: unknown[]};
   };
 };

@@ -9,12 +9,12 @@ import type {
   GenreResponse,
   MusicVideoDetailResponse,
   PlaylistDetailResponse,
-  PlaylistTrack,
   SongDetailResponse,
   StationDetailResponse,
 } from '../../../types/catalog';
 import type { RecommendationsResponse } from '../../../types/recommendations';
 import { appleMusicApi } from '../../../api/apple-music/client';
+import { paginateTracksRelationship } from '../../../api/apple-music/paginateTracksRelationship';
 
 export async function fetchRecommendations(): Promise<RecommendationsResponse> {
   const { data } = await appleMusicApi.get<RecommendationsResponse>(
@@ -71,14 +71,7 @@ export async function fetchCatalogCharts(
  * Fetch full playlist details including tracks.
  * GET /v1/catalog/{storefront}/playlists/{id}?include=tracks
  */
-const PLAYLIST_TRACKS_MAX_FETCH_LIMIT = 300;
-const PLAYLIST_TRACKS_MAX_PAGES = 20; // safety cap: 20 * 300 = 6000 tracks
-
-function extractTracksOffset(nextPath: string | undefined): string | undefined {
-  if (!nextPath) { return undefined; }
-  const match = /[?&]offset=(\d+)/.exec(nextPath);
-  return match?.[1];
-}
+const CATALOG_TRACKS_MAX_FETCH_LIMIT = 300; // catalog Playlists/Albums tracks cap (per Apple docs)
 
 /**
  * Fetches full playlist details and paginates the `tracks` relationship past
@@ -90,25 +83,14 @@ export async function fetchPlaylistDetail(
 ): Promise<PlaylistDetailResponse> {
   const { data } = await appleMusicApi.get<PlaylistDetailResponse>(
     `/catalog/${storefront}/playlists/${id}`,
-    { params: { include: 'tracks', 'limit[tracks]': PLAYLIST_TRACKS_MAX_FETCH_LIMIT } },
+    { params: { include: 'tracks', 'limit[tracks]': CATALOG_TRACKS_MAX_FETCH_LIMIT } },
   );
 
-  const playlist = data.data[0];
-  const tracks = playlist?.relationships?.tracks;
-  let offset = extractTracksOffset(tracks?.next);
-  let page = 0;
-
-  while (tracks && offset && page < PLAYLIST_TRACKS_MAX_PAGES) {
-    const { data: nextPage } = await appleMusicApi.get<{ data: PlaylistTrack[]; next?: string }>(
-      `/catalog/${storefront}/playlists/${id}/tracks`,
-      { params: { offset, limit: PLAYLIST_TRACKS_MAX_FETCH_LIMIT } },
-    );
-
-    tracks.data.push(...nextPage.data);
-    offset = extractTracksOffset(nextPage.next);
-    page += 1;
-  }
-  if (tracks) { tracks.next = undefined; }
+  await paginateTracksRelationship(
+    data.data[0]?.relationships?.tracks,
+    `/catalog/${storefront}/playlists/${id}/tracks`,
+    CATALOG_TRACKS_MAX_FETCH_LIMIT,
+  );
 
   return data;
 }
@@ -123,8 +105,15 @@ export async function fetchAlbumDetail(
 ): Promise<AlbumDetailResponse> {
   const { data } = await appleMusicApi.get<AlbumDetailResponse>(
     `/catalog/${storefront}/albums/${id}`,
-    { params: { include: 'tracks' } },
+    { params: { include: 'tracks', 'limit[tracks]': CATALOG_TRACKS_MAX_FETCH_LIMIT } },
   );
+
+  await paginateTracksRelationship(
+    data.data[0]?.relationships?.tracks,
+    `/catalog/${storefront}/albums/${id}/tracks`,
+    CATALOG_TRACKS_MAX_FETCH_LIMIT,
+  );
+
   return data;
 }
 

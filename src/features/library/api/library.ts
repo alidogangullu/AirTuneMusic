@@ -12,6 +12,12 @@
 import type {LibraryCategoryId, LibraryResponse} from '../../../types/library';
 import type {PlaylistDetailResponse, AlbumDetailResponse} from '../../../types/catalog';
 import {appleMusicApi} from '../../../api/apple-music/client';
+import {paginateTracksRelationship} from '../../../api/apple-music/paginateTracksRelationship';
+
+// LibraryPlaylists/LibraryAlbums `tracks` relationship: fetch limit is 100 by
+// default AND at maximum (per Apple docs) — `limit` cannot raise it, only
+// following `relationships.tracks.next` reaches tracks beyond the first 100.
+const LIBRARY_TRACKS_MAX_FETCH_LIMIT = 100;
 
 export type LibraryMembershipContentType = 'albums' | 'songs' | 'playlists' | 'music-videos';
 
@@ -104,20 +110,38 @@ export async function fetchLibraryItems(
 export async function fetchLibraryPlaylistDetail(
   id: string,
 ): Promise<PlaylistDetailResponse> {
+  const trackIncludeParams = {'include[library-songs]': 'catalog', 'include[library-music-videos]': 'catalog'};
   const {data} = await appleMusicApi.get<PlaylistDetailResponse>(
     `/me/library/playlists/${id}`,
-    {params: {include: 'tracks', 'include[library-songs]': 'catalog', 'include[library-music-videos]': 'catalog'}},
+    {params: {include: 'tracks', ...trackIncludeParams}},
   );
+
+  await paginateTracksRelationship(
+    data.data[0]?.relationships?.tracks,
+    `/me/library/playlists/${id}/tracks`,
+    LIBRARY_TRACKS_MAX_FETCH_LIMIT,
+    trackIncludeParams,
+  );
+
   return data;
 }
 
 export async function fetchLibraryAlbumDetail(
   id: string,
 ): Promise<AlbumDetailResponse> {
+  const trackIncludeParams = {'include[library-songs]': 'catalog'};
   const {data} = await appleMusicApi.get<AlbumDetailResponse>(
     `/me/library/albums/${id}`,
-    {params: {include: 'tracks', 'include[library-songs]': 'catalog'}},
+    {params: {include: 'tracks', ...trackIncludeParams}},
   );
+
+  await paginateTracksRelationship(
+    data.data[0]?.relationships?.tracks,
+    `/me/library/albums/${id}/tracks`,
+    LIBRARY_TRACKS_MAX_FETCH_LIMIT,
+    trackIncludeParams,
+  );
+
   return data;
 }
 
