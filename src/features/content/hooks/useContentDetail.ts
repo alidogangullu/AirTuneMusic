@@ -25,6 +25,12 @@ export function useContentDetail(
 ) {
   const {storefrontId} = useStorefront();
 
+  // User-created library playlists can change from another device (e.g. adding
+  // a track on the phone) at any time, with no push notification to react to.
+  // Treat them as always-stale so re-entering the screen re-fetches instead of
+  // serving up to 5 minutes of cached data.
+  const isOwnLibraryPlaylist = type === 'playlists' && !!id && isLibraryId(id);
+
   return useQuery({
     queryKey: ['content-detail', type, id, storefrontId],
     queryFn: async (): Promise<ContentDetailResponse> => {
@@ -64,6 +70,6 @@ export function useContentDetail(
       }
     },
     enabled: id !== null && type !== null,
-    staleTime: 5 * 60 * 1000,
+    staleTime: isOwnLibraryPlaylist ? 0 : 5 * 60 * 1000,
   });
 }
