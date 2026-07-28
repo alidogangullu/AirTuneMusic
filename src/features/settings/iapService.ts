@@ -23,7 +23,7 @@ export const SKUS = {
 } as const;
 
 const subscriptionSkus = [SKUS.MONTHLY, SKUS.YEARLY];
-const oneTimeSkus = [SKUS.LIFETIME];
+const lifetimeSkus = [SKUS.LIFETIME];
 
 let purchaseUpdateSubscription: ReturnType<typeof purchaseUpdatedListener> | null = null;
 let purchaseErrorSubscription: ReturnType<typeof purchaseErrorListener> | null = null;
@@ -92,8 +92,8 @@ export const IapService = {
         results.push(...subs);
       }
 
-      if (oneTimeSkus.length > 0) {
-        const inapp = await fetchProducts({ skus: oneTimeSkus, type: 'in-app' }) as Product[];
+      if (lifetimeSkus.length > 0) {
+        const inapp = await fetchProducts({ skus: lifetimeSkus, type: 'in-app' }) as Product[];
         results.push(...inapp);
       }
 
