@@ -132,7 +132,11 @@
     "paidSubscriptionRequired": "Paid Apple Music subscription is required.",
     "popupPermissionNote": "Your browser may require popup window permission.",
     "sameWifiNote": "The device used to scan or visit the link must be on the same Wi-Fi network as this TV.",
-    "sameWifiHighlight": "same Wi-Fi network"
+    "sameWifiHighlight": "same Wi-Fi network",
+    "serverInitializing": "Preparing connection...",
+    "serverReady": "Ready to connect",
+    "serverNoWifi": "Please connect TV to Wi-Fi",
+    "serverError": "Could not prepare connection"
   },
   "settings": {
     "title": "Settings",

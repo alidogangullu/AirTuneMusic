@@ -132,7 +132,11 @@
     "paidSubscriptionRequired": "Se requiere una suscripción de pago de Apple Music.",
     "popupPermissionNote": "Es posible que tu navegador requiera permiso para popup window.",
     "sameWifiNote": "El dispositivo que escanea o abre el enlace debe estar en la misma red Wi-Fi que este TV.",
-    "sameWifiHighlight": "misma red Wi-Fi"
+    "sameWifiHighlight": "misma red Wi-Fi",
+    "serverInitializing": "Preparando conexión...",
+    "serverReady": "Listo para conectar",
+    "serverNoWifi": "Por favor conecta la TV a Wi-Fi",
+    "serverError": "No se pudo preparar la conexión"
   },
   "settings": {
     "title": "Ajustes",

@@ -98,24 +98,24 @@ function makeStyles(c: AppColors) {
       backgroundColor: c.codeScreenBackground,
       justifyContent: 'center',
       alignItems: 'center',
+      paddingVertical: spacing.sm,
     },
     codeScreenInner: {
       width: '100%',
-      maxWidth: 700,
-      flexShrink: 1,
+      maxWidth: 860,
       alignItems: 'center',
-      paddingHorizontal: spacing.xxl,
+      paddingHorizontal: spacing.xl,
     },
     title: {
-      fontSize: 28,
+      fontSize: 24,
       fontWeight: '700',
       color: c.textOnDark,
-      marginBottom: spacing.sm,
+      marginBottom: spacing.xs,
     },
     subtitle: {
-      fontSize: 14,
+      fontSize: 13,
       color: c.textMuted,
-      marginBottom: spacing.xxl,
+      marginBottom: spacing.md,
     },
     button: {
       backgroundColor: c.buttonPrimary,
@@ -168,24 +168,25 @@ function makeStyles(c: AppColors) {
     logoRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: spacing.md,
-      marginBottom: spacing.lg,
+      gap: spacing.sm,
+      marginBottom: spacing.xl,
+      marginTop: -32,
     },
     logoIcon: {
-      width: 65,
-      height: 65,
-      borderRadius: radius.lg,
+      width: 44,
+      height: 44,
+      borderRadius: radius.md,
       backgroundColor: 'transparent',
       alignItems: 'center',
       justifyContent: 'center',
     },
     logoImage: {
-      width: 65,
-      height: 65,
-      borderRadius: radius.lg,
+      width: 44,
+      height: 44,
+      borderRadius: radius.md,
     },
     logoTitle: {
-      fontSize: 28,
+      fontSize: 22,
       fontWeight: '700',
       color: c.cardTitleText,
       letterSpacing: -0.5,
@@ -195,7 +196,7 @@ function makeStyles(c: AppColors) {
       backgroundColor: c.glassBg,
       borderRadius: radius.lg,
       paddingVertical: spacing.xl,
-      paddingHorizontal: spacing.xxl,
+      paddingHorizontal: 32,
       alignItems: 'center',
       borderWidth: 1,
       borderColor: c.glassBorder,
@@ -204,22 +205,20 @@ function makeStyles(c: AppColors) {
       fontSize: 24,
       fontWeight: '700',
       color: c.cardTitleText,
-      marginBottom: spacing.sm,
+      marginBottom: spacing.xs,
       textAlign: 'center',
     },
     glassCardSubtitle: {
-      fontSize: 15,
+      fontSize: 14,
       color: c.textSecondary,
       textAlign: 'center',
-      marginBottom: spacing.md,
-      paddingHorizontal: spacing.lg,
-      lineHeight: 22,
+      marginBottom: spacing.xs,
     },
     sameWifiNote: {
-      fontSize: 11,
+      fontSize: 12,
     },
     sameWifiNoteHighlight: {
-      fontSize: 11,
+      fontSize: 12,
       color: c.alertRed,
       fontWeight: '600',
     },
@@ -228,12 +227,37 @@ function makeStyles(c: AppColors) {
       color: c.textSecondary,
       marginTop: spacing.md,
     },
+    authContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.xl,
+      marginTop: spacing.xs,
+      marginBottom: spacing.md,
+      width: '100%',
+    },
+    leftColumn: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: spacing.md,
+    },
+    rightColumn: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    instructionPrompt: {
+      fontSize: 16,
+      color: c.textSecondary,
+      textAlign: 'center',
+      marginBottom: spacing.xs,
+    },
     codeDisplayBox: {
       backgroundColor: c.glassCodeBg,
       borderRadius: radius.md,
-      paddingVertical: spacing.lg,
-      paddingHorizontal: spacing.xxl,
-      marginBottom: spacing.md,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.xl,
+      marginBottom: spacing.xs,
       borderWidth: 1,
       borderColor: c.glassBorder,
       alignSelf: 'stretch',
@@ -241,25 +265,47 @@ function makeStyles(c: AppColors) {
     },
     codeDisplayText: {
       fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-      fontSize: 42,
+      fontSize: 44,
       fontWeight: '700',
       color: c.cardTitleText,
       letterSpacing: 10,
     },
-    visitBlock: { marginBottom: spacing.md, alignItems: 'center' },
+    visitBlock: { marginBottom: spacing.xs, alignItems: 'center' },
     visitLabel: {
       fontSize: 12,
       fontWeight: '600',
       color: c.textSecondary,
       letterSpacing: 1,
-      marginBottom: spacing.xs,
+      marginBottom: 2,
     },
     visitUrl: {
       fontSize: 14,
       fontWeight: '500',
       color: c.textSecondary,
       letterSpacing: -0.2,
+      opacity: 0.85,
+    },
+    sameWifiNoteText: {
+      fontSize: 14,
+      color: c.textSecondary,
+      textAlign: 'center',
+      marginTop: 4,
+      marginBottom: 2,
+      lineHeight: 19,
+    },
+    subscriptionNoteText: {
+      fontSize: 12,
+      color: c.textSecondary,
+      textAlign: 'center',
       opacity: 0.8,
+      lineHeight: 16,
+    },
+    actionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.md,
+      marginTop: spacing.xs,
     },
     getNewCodeBtn: {
       flexDirection: 'row',
@@ -267,47 +313,35 @@ function makeStyles(c: AppColors) {
       justifyContent: 'center',
       backgroundColor: c.glassButtonBg,
       paddingVertical: spacing.md,
-      paddingHorizontal: spacing.xl,
+      paddingHorizontal: spacing.xxl,
       borderRadius: radius.md,
       borderWidth: 1,
       borderColor: c.glassButtonBorder,
-      gap: spacing.sm,
-      minWidth: 200,
+      minWidth: 180,
     },
     getNewCodeBtnFocused: {
       backgroundColor: c.alertRed,
       borderColor: c.alertRed,
       transform: [{ scale: 1.05 }],
     },
-
     getNewCodeBtnText: { fontSize: 16, fontWeight: '700', color: c.alertRed },
     getNewCodeBtnTextFocused: { color: c.onDarkTextPrimary },
     manualEntryBtn: {
-      paddingVertical: 6,
-      paddingHorizontal: 12,
-      marginBottom: -12,
-      minWidth: 108,
-      alignSelf: 'center',
-    },
-    manualEntryBtnSpacing: {
-      marginTop: 6,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      minWidth: 130,
+      borderRadius: radius.md,
     },
     manualEntryBtnText: {
-      fontSize: 12,
+      fontSize: 14,
       fontWeight: '700',
       color: c.alertRed,
     },
     qrContainer: {
       backgroundColor: c.screenBackground,
-      padding: spacing.sm, // Reduced from md
+      padding: spacing.xs,
       borderRadius: radius.md,
-      marginBottom: spacing.lg, // Reduced from xl
-    },
-    authContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.lg, // Reduced from xl
-      marginTop: spacing.xs,
+      marginBottom: spacing.xs,
     },
     textColumns: {
       flex: 1,
@@ -370,6 +404,40 @@ function makeStyles(c: AppColors) {
       marginBottom: spacing.md,
       opacity: 0.9,
     },
+    qrLoadingBox: {
+      width: 200,
+      height: 200,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#111111',
+      borderRadius: radius.xs,
+    },
+    qrLoadingText: {
+      fontSize: 11,
+      color: c.textMuted,
+      marginTop: spacing.xs,
+      textAlign: 'center',
+    },
+    serverStatusBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: spacing.sm,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 3,
+      borderRadius: 12,
+      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    statusDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      marginRight: 5,
+    },
+    serverStatusText: {
+      fontSize: 12,
+      fontWeight: '600',
+    },
   });
 }
 
@@ -394,6 +462,8 @@ export function AppleMusicAuthScreen({
   const [restoring, setRestoring] = useState(true);
   const [newCodeBtnFocused, setNewCodeBtnFocused] = useState(false);
   const [manualEntryBtnFocused, setManualEntryBtnFocused] = useState(false);
+  type ServerState = 'initializing' | 'ready' | 'no_wifi' | 'error';
+  const [serverState, setServerState] = useState<ServerState>('initializing');
   const [localServerIp, setLocalServerIp] = useState<string>('');
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const getNewCodeBtnRef = useRef<View>(null);
@@ -405,12 +475,36 @@ export function AppleMusicAuthScreen({
     let cancelled = false;
 
     const initServer = async () => {
+      setServerState('initializing');
       try {
         const devToken = await getDeveloperToken();
         const ip = await TVLinkServer.startLocalServer(devToken, LOCAL_SERVER_PORT);
-        if (!cancelled) setLocalServerIp(ip);
+
+        let pingOk = false;
+        try {
+          const pingRes = await fetch(
+            `http://127.0.0.1:${LOCAL_SERVER_PORT}/api/tv-link/developer-token`,
+          );
+          if (pingRes.ok) pingOk = true;
+        } catch {
+          // ignore ping error
+        }
+
+        if (!cancelled) {
+          setLocalServerIp(ip);
+          if (ip === '127.0.0.1') {
+            setServerState('no_wifi');
+          } else if (pingOk || ip) {
+            setServerState('ready');
+          } else {
+            setServerState('error');
+          }
+        }
       } catch (err) {
         console.error('Failed to start local server:', err);
+        if (!cancelled) {
+          setServerState('error');
+        }
       }
     };
 
@@ -578,43 +672,68 @@ export function AppleMusicAuthScreen({
               <Text style={styles.glassCardTitle}>
                 {t('auth.connectTitle')}
               </Text>
-              <Text style={styles.glassCardSubtitle}>
-                <Text style={{ color: colors.alertRed, fontWeight: 'bold' }}>{t('auth.scanQR')}</Text> {t('auth.orVisitURL')}.{'\n'}{(() => {
-                    const text = t('auth.sameWifiNote');
-                    const keyword = t('auth.sameWifiHighlight');
-                    const idx = text.indexOf(keyword);
-                    if (idx === -1) return <Text style={styles.sameWifiNote}>{text}</Text>;
-                    return <Text style={styles.sameWifiNote}>
-                      {text.slice(0, idx)}<Text style={styles.sameWifiNoteHighlight}>{keyword}</Text>{text.slice(idx + keyword.length)}
-                    </Text>;
-                  })()}
-              </Text>
-              <Text style={[styles.subscriptionNote, { color: colors.textSecondary, fontWeight: 'normal' }]}>
-                {(() => {
-                  const text = t('auth.paidSubscriptionRequired');
-                  const idx = text.indexOf('Apple Music');
-                  if (idx === -1) return <Text style={{ color: colors.alertRed, fontWeight: '600' }}>{text}</Text>;
-                  return <>
-                    <Text style={{ color: colors.alertRed, fontWeight: '600' }}>{text.slice(0, idx + 'Apple Music'.length)}</Text>
-                    <Text>{text.slice(idx + 'Apple Music'.length)}</Text>
-                  </>;
-                })()}
-                {' '}
-                {t('auth.popupPermissionNote').split('popup window').map((part, i, arr) => (
-                  <Text key={i}>{part}{i < arr.length - 1 ? <Text style={{ color: colors.alertRed, fontWeight: '600' }}>popup window</Text> : null}</Text>
-                ))}
-              </Text>
+
               <View style={styles.authContainer} focusable={false}>
-                <View style={styles.qrContainer} focusable={false}>
-                  <QRCode
-                    value={`http://${localServerIp || '127.0.0.1'}:${LOCAL_SERVER_PORT}/tv?code=${linkCode}`}
-                    size={160}
-                    backgroundColor="white"
-                    color="black"
-                  />
+                {/* Left Side: QR Code + Status Badge */}
+                <View style={styles.leftColumn} focusable={false}>
+                  <View style={styles.qrContainer} focusable={false}>
+                    {serverState === 'initializing' ? (
+                      <View style={styles.qrLoadingBox}>
+                        <ActivityIndicator size="large" color={colors.alertRed} />
+                        <Text style={styles.qrLoadingText}>{t('auth.serverInitializing')}</Text>
+                      </View>
+                    ) : (
+                      <QRCode
+                        value={`http://${localServerIp || '127.0.0.1'}:${LOCAL_SERVER_PORT}/tv?code=${linkCode}`}
+                        size={200}
+                        backgroundColor="white"
+                        color="black"
+                      />
+                    )}
+                  </View>
+
+                  <View style={styles.serverStatusBadge}>
+                    {serverState === 'initializing' && (
+                      <>
+                        <ActivityIndicator size="small" color={colors.alertRed} style={{ marginRight: 6 }} />
+                        <Text style={[styles.serverStatusText, { color: colors.textMuted }]}>
+                          {t('auth.serverInitializing')}
+                        </Text>
+                      </>
+                    )}
+                    {serverState === 'ready' && (
+                      <>
+                        <View style={[styles.statusDot, { backgroundColor: '#4CAF50' }]} />
+                        <Text style={[styles.serverStatusText, { color: '#4CAF50' }]}>
+                          {t('auth.serverReady')}
+                        </Text>
+                      </>
+                    )}
+                    {serverState === 'no_wifi' && (
+                      <>
+                        <View style={[styles.statusDot, { backgroundColor: '#FFC107' }]} />
+                        <Text style={[styles.serverStatusText, { color: '#FFC107' }]}>
+                          {t('auth.serverNoWifi')}
+                        </Text>
+                      </>
+                    )}
+                    {serverState === 'error' && (
+                      <>
+                        <View style={[styles.statusDot, { backgroundColor: '#F44336' }]} />
+                        <Text style={[styles.serverStatusText, { color: '#F44336' }]}>
+                          {t('auth.serverError')}
+                        </Text>
+                      </>
+                    )}
+                  </View>
                 </View>
 
-                <View style={styles.textColumns} focusable={false}>
+                {/* Right Side: Code, URL, Instructions & Notes */}
+                <View style={styles.rightColumn} focusable={false}>
+                  <Text style={styles.instructionPrompt}>
+                    <Text style={{ color: colors.alertRed, fontWeight: 'bold' }}>{t('auth.scanQR')}</Text> {t('auth.orVisitURL')}
+                  </Text>
+
                   <View style={styles.codeDisplayBox} focusable={false}>
                     <Text
                       style={styles.codeDisplayText}
@@ -623,60 +742,85 @@ export function AppleMusicAuthScreen({
                       {formatCodeForDisplay(linkCode)}
                     </Text>
                   </View>
+
                   <View style={styles.visitBlock} focusable={false}>
                     <Text style={styles.visitLabel}>{t('auth.visitURL')}</Text>
                     <Text style={styles.visitUrl} selectable={false}>
                       {localServerIp ? `http://${localServerIp}:${LOCAL_SERVER_PORT}/tv` : TV_LINK_DISPLAY}
                     </Text>
                   </View>
+
+                  <Text style={styles.sameWifiNoteText}>
+                    {(() => {
+                      const text = t('auth.sameWifiNote');
+                      const keyword = t('auth.sameWifiHighlight');
+                      const idx = text.indexOf(keyword);
+                      if (idx === -1) return text;
+                      return <>
+                        {text.slice(0, idx)}<Text style={{ color: colors.alertRed, fontWeight: '700' }}>{keyword}</Text>{text.slice(idx + keyword.length)}
+                      </>;
+                    })()}
+                    {' '}
+                    {(() => {
+                      const text = t('auth.paidSubscriptionRequired');
+                      const idx = text.indexOf('Apple Music');
+                      if (idx === -1) return text;
+                      return <>
+                        <Text style={{ color: colors.alertRed, fontWeight: '600' }}>{text.slice(0, idx + 'Apple Music'.length)}</Text>
+                        {text.slice(idx + 'Apple Music'.length)}
+                      </>;
+                    })()}
+                  </Text>
                 </View>
               </View>
 
-              <Pressable
-                ref={getNewCodeBtnRef}
-                style={({ focused }) => [
-                  styles.getNewCodeBtn,
-                  focused && styles.getNewCodeBtnFocused,
-                ]}
-                onPress={cancelTvLink}
-                onFocus={() => setNewCodeBtnFocused(true)}
-                onBlur={() => setNewCodeBtnFocused(false)}
-                focusable={true}
-                hasTVPreferredFocus={true}
-                nextFocusUp={findNodeHandle(manualEntryBtnRef.current) ?? undefined}
-                nextFocusDown={findNodeHandle(manualEntryBtnRef.current) ?? undefined}>
-                <Text
-                  style={[
-                    styles.getNewCodeBtnText,
-                    newCodeBtnFocused && styles.getNewCodeBtnTextFocused,
-                  ]}>
-                  {t('auth.getNewCode')}
-                </Text>
-              </Pressable>
+              {/* Bottom Action Row */}
+              <View style={styles.actionRow} focusable={false}>
+                <Pressable
+                  ref={getNewCodeBtnRef}
+                  style={({ focused }) => [
+                    styles.getNewCodeBtn,
+                    focused && styles.getNewCodeBtnFocused,
+                  ]}
+                  onPress={cancelTvLink}
+                  onFocus={() => setNewCodeBtnFocused(true)}
+                  onBlur={() => setNewCodeBtnFocused(false)}
+                  focusable={true}
+                  hasTVPreferredFocus={true}
+                  nextFocusLeft={findNodeHandle(manualEntryBtnRef.current) ?? undefined}
+                  nextFocusRight={findNodeHandle(manualEntryBtnRef.current) ?? undefined}>
+                  <Text
+                    style={[
+                      styles.getNewCodeBtnText,
+                      newCodeBtnFocused && styles.getNewCodeBtnTextFocused,
+                    ]}>
+                    {t('auth.getNewCode')}
+                  </Text>
+                </Pressable>
 
-              <Pressable
-                ref={manualEntryBtnRef}
-                style={({ focused }) => [
-                  styles.getNewCodeBtn,
-                  styles.manualEntryBtn,
-                  styles.manualEntryBtnSpacing,
-                  focused && styles.getNewCodeBtnFocused,
-                ]}
-                onPress={() => setShowManualInput(true)}
-                onFocus={() => setManualEntryBtnFocused(true)}
-                onBlur={() => setManualEntryBtnFocused(false)}
-                focusable={true}
-                hasTVPreferredFocus={false}
-                nextFocusUp={findNodeHandle(getNewCodeBtnRef.current) ?? undefined}
-                nextFocusDown={findNodeHandle(getNewCodeBtnRef.current) ?? undefined}>
-                <Text
-                  style={[
-                    styles.manualEntryBtnText,
-                    manualEntryBtnFocused && styles.getNewCodeBtnTextFocused,
-                  ]}>
-                  {t('auth.manualEntry')}
-                </Text>
-              </Pressable>
+                <Pressable
+                  ref={manualEntryBtnRef}
+                  style={({ focused }) => [
+                    styles.getNewCodeBtn,
+                    styles.manualEntryBtn,
+                    focused && styles.getNewCodeBtnFocused,
+                  ]}
+                  onPress={() => setShowManualInput(true)}
+                  onFocus={() => setManualEntryBtnFocused(true)}
+                  onBlur={() => setManualEntryBtnFocused(false)}
+                  focusable={true}
+                  hasTVPreferredFocus={false}
+                  nextFocusLeft={findNodeHandle(getNewCodeBtnRef.current) ?? undefined}
+                  nextFocusRight={findNodeHandle(getNewCodeBtnRef.current) ?? undefined}>
+                  <Text
+                    style={[
+                      styles.manualEntryBtnText,
+                      manualEntryBtnFocused && styles.getNewCodeBtnTextFocused,
+                    ]}>
+                    {t('auth.manualEntry')}
+                  </Text>
+                </Pressable>
+              </View>
             </>
           )}
         </View>

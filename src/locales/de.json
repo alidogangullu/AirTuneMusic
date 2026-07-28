@@ -131,8 +131,12 @@
     "linkedMessage": "Verbunden! Token erhalten.",
     "paidSubscriptionRequired": "Ein kostenpflichtiges Apple Music-Abonnement ist erforderlich.",
     "popupPermissionNote": "Ihr Browser benötigt möglicherweise eine Berechtigung für popup window.",
-    "sameWifiNote": "Das Gerät, das den Code scannt oder den Link öffnet, muss sich im selben Wi-Fi-Netzwerk wie dieser TV befinden.",
-    "sameWifiHighlight": "selben Wi-Fi-Netzwerk"
+    "sameWifiNote": "Das Gerät zum Scannen oder Aufrufen des Links muss sich im selben WLAN-Netzwerk wie dieser TV befinden.",
+    "sameWifiHighlight": "selben WLAN-Netzwerk",
+    "serverInitializing": "Verbindung wird vorbereitet...",
+    "serverReady": "Bereit zur Verbindung",
+    "serverNoWifi": "Bitte TV mit WLAN verbinden",
+    "serverError": "Verbindung konnte nicht vorbereitet werden"
   },
   "settings": {
     "title": "Einstellungen",

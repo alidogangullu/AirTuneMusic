@@ -132,7 +132,11 @@
     "paidSubscriptionRequired": "Ücretli Apple Music aboneliği gereklidir.",
     "popupPermissionNote": "Tarayıcınızda popup window izni gerekebilir.",
     "sameWifiNote": "QR kodu tarayan veya linke giren cihaz bu TV ile aynı Wi-Fi ağında olmalıdır.",
-    "sameWifiHighlight": "aynı Wi-Fi ağında"
+    "sameWifiHighlight": "aynı Wi-Fi ağında",
+    "serverInitializing": "Bağlantı hazırlanıyor...",
+    "serverReady": "Bağlanmaya hazır",
+    "serverNoWifi": "Lütfen TV'yi Wi-Fi ağına bağlayın",
+    "serverError": "Bağlantı hazırlanamadı"
   },
   "settings": {
     "title": "Ayarlar",
