@@ -24,7 +24,8 @@
     "musicVideo": "Müzik Videosu",
     "exitPressAgain": "Çıkmak için tekrar basın",
     "on": "Açık",
-    "off": "Kapalı"
+    "off": "Kapalı",
+    "close": "Kapat"
   },
   "topBar": {
     "listenNow": "Şimdi Dinle",
@@ -136,7 +137,10 @@
     "serverInitializing": "Bağlantı hazırlanıyor...",
     "serverReady": "Bağlanmaya hazır",
     "serverNoWifi": "Lütfen TV'yi Wi-Fi ağına bağlayın",
-    "serverError": "Bağlantı hazırlanamadı"
+    "serverError": "Bağlantı hazırlanamadı",
+    "qrNotWorkingSignInOnTv": "QR ile bağlanamıyor musunuz? TV'de Giriş Yap",
+    "directTvModalTitle": "Apple Music'e TV'de Giriş Yap",
+    "directTvHint": "Bu yöntem, telefon ile TV yerel ağ üzerinden eşleşemediğinde doğrudan TV ekranında oturum açmanızı sağlar."
   },
   "settings": {
     "title": "Ayarlar",

@@ -24,7 +24,8 @@
     "musicVideo": "Clip vidéo",
     "exitPressAgain": "Appuyez de nouveau pour quitter",
     "on": "Activé",
-    "off": "Désactivé"
+    "off": "Désactivé",
+    "close": "Fermer"
   },
   "topBar": {
     "listenNow": "Écouter",
@@ -136,7 +137,10 @@
     "serverInitializing": "Préparation de la connexion...",
     "serverReady": "Prêt à se connecter",
     "serverNoWifi": "Veuillez connecter le TV au Wi-Fi",
-    "serverError": "Impossible de préparer la connexion"
+    "serverError": "Impossible de préparer la connexion",
+    "qrNotWorkingSignInOnTv": "Le code QR ne fonctionne pas ? Connexion sur TV",
+    "directTvModalTitle": "Se connecter à Apple Music sur TV",
+    "directTvHint": "Utilisez cette option si le jumelage QR sur votre réseau Wi-Fi échoue."
   },
   "settings": {
     "title": "Réglages",

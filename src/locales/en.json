@@ -24,7 +24,8 @@
     "musicVideo": "Music Video",
     "exitPressAgain": "Press back again to exit",
     "on": "On",
-    "off": "Off"
+    "off": "Off",
+    "close": "Close"
   },
   "topBar": {
     "listenNow": "Listen Now",
@@ -136,7 +137,10 @@
     "serverInitializing": "Preparing connection...",
     "serverReady": "Ready to connect",
     "serverNoWifi": "Please connect TV to Wi-Fi",
-    "serverError": "Could not prepare connection"
+    "serverError": "Could not prepare connection",
+    "qrNotWorkingSignInOnTv": "QR pairing not working? Sign in on TV",
+    "directTvModalTitle": "Sign in to Apple Music on TV",
+    "directTvHint": "Use this option if QR code pairing over local Wi-Fi fails on your network."
   },
   "settings": {
     "title": "Settings",

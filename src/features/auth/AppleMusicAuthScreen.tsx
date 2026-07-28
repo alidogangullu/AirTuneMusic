@@ -20,6 +20,7 @@ import type { AppColors } from '../../theme/colors';
 import { useTheme } from '../../theme';
 import { radius, spacing, buttonMinHeight } from '../../theme/layout';
 import * as musicPlayer from '../player/musicPlayer';
+import { DirectTvAuthModal } from './components/DirectTvAuthModal';
 
 
 import { DEV_SERVER } from '../../config/devServer';
@@ -312,19 +313,19 @@ function makeStyles(c: AppColors) {
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: c.glassButtonBg,
-      paddingVertical: spacing.md,
-      paddingHorizontal: spacing.xxl,
+      height: 48,
+      paddingHorizontal: spacing.xl,
       borderRadius: radius.md,
       borderWidth: 1,
       borderColor: c.glassButtonBorder,
-      minWidth: 180,
+      minWidth: 150,
     },
     getNewCodeBtnFocused: {
       backgroundColor: c.alertRed,
       borderColor: c.alertRed,
       transform: [{ scale: 1.05 }],
     },
-    getNewCodeBtnText: { fontSize: 16, fontWeight: '700', color: c.alertRed },
+    getNewCodeBtnText: { fontSize: 15, fontWeight: '700', color: c.alertRed },
     getNewCodeBtnTextFocused: { color: c.onDarkTextPrimary },
     manualEntryBtn: {
       paddingVertical: spacing.sm,
@@ -409,13 +410,14 @@ function makeStyles(c: AppColors) {
       height: 200,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: '#111111',
+      backgroundColor: 'transparent',
       borderRadius: radius.xs,
     },
     qrLoadingText: {
-      fontSize: 11,
-      color: c.textMuted,
-      marginTop: spacing.xs,
+      fontSize: 13,
+      fontWeight: '600',
+      color: c.textSecondary,
+      marginTop: spacing.sm,
       textAlign: 'center',
     },
     serverStatusBadge: {
@@ -437,6 +439,51 @@ function makeStyles(c: AppColors) {
     serverStatusText: {
       fontSize: 12,
       fontWeight: '600',
+    },
+    directTvAuthBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'rgba(240, 83, 91, 0.08)',
+      borderWidth: 1.5,
+      borderColor: c.alertRed,
+      height: 48,
+      paddingHorizontal: spacing.xl,
+      borderRadius: radius.md,
+      minWidth: 150,
+    },
+    directTvAuthBtnFocused: {
+      backgroundColor: c.alertRed,
+      borderColor: c.alertRed,
+      transform: [{ scale: 1.05 }],
+      shadowColor: c.alertRed,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.4,
+      shadowRadius: 8,
+      elevation: 6,
+    },
+    directTvAuthBtnText: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: c.alertRed,
+    },
+    devTokenLink: {
+      marginTop: spacing.sm,
+      paddingVertical: 4,
+      paddingHorizontal: spacing.md,
+      borderRadius: radius.sm,
+      alignSelf: 'center',
+    },
+    devTokenLinkFocused: {
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      transform: [{ scale: 1.05 }],
+    },
+    devTokenLinkText: {
+      fontSize: 12,
+      fontWeight: '500',
+      color: c.textMuted,
+      textDecorationLine: 'underline',
+      opacity: 0.7,
     },
   });
 }
@@ -470,6 +517,9 @@ export function AppleMusicAuthScreen({
   const manualEntryBtnRef = useRef<View>(null);
   const [showManualInput, setShowManualInput] = useState(false);
   const [manualToken, setManualToken] = useState('');
+  const [showDirectTvAuthModal, setShowDirectTvAuthModal] = useState(false);
+  const [directTvAuthBtnFocused, setDirectTvAuthBtnFocused] = useState(false);
+  const directTvAuthBtnRef = useRef<View>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -482,9 +532,12 @@ export function AppleMusicAuthScreen({
 
         let pingOk = false;
         try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 1500);
           const pingRes = await fetch(
             `http://127.0.0.1:${LOCAL_SERVER_PORT}/api/tv-link/developer-token`,
-          );
+            { signal: controller.signal },
+          ).finally(() => clearTimeout(timer));
           if (pingRes.ok) pingOk = true;
         } catch {
           // ignore ping error
@@ -526,12 +579,12 @@ export function AppleMusicAuthScreen({
     });
 
     (async () => {
-      await initServer();
       const saved = await loadMusicUserToken();
       if (cancelled) {
         return;
       }
       setRestoring(false);
+
       if (saved) {
         setPairingMode(false);
         setStatus('success');
@@ -539,6 +592,8 @@ export function AppleMusicAuthScreen({
         setMessage('');
         return;
       }
+
+      initServer();
       // Start polling as fallback
       startPolling(
         linkCode,
@@ -692,15 +747,8 @@ export function AppleMusicAuthScreen({
                     )}
                   </View>
 
-                  <View style={styles.serverStatusBadge}>
-                    {serverState === 'initializing' && (
-                      <>
-                        <ActivityIndicator size="small" color={colors.alertRed} style={{ marginRight: 6 }} />
-                        <Text style={[styles.serverStatusText, { color: colors.textMuted }]}>
-                          {t('auth.serverInitializing')}
-                        </Text>
-                      </>
-                    )}
+                  {serverState !== 'initializing' && (
+                    <View style={styles.serverStatusBadge}>
                     {serverState === 'ready' && (
                       <>
                         <View style={[styles.statusDot, { backgroundColor: '#4CAF50' }]} />
@@ -726,6 +774,7 @@ export function AppleMusicAuthScreen({
                       </>
                     )}
                   </View>
+                )}
                 </View>
 
                 {/* Right Side: Code, URL, Instructions & Notes */}
@@ -746,7 +795,7 @@ export function AppleMusicAuthScreen({
                   <View style={styles.visitBlock} focusable={false}>
                     <Text style={styles.visitLabel}>{t('auth.visitURL')}</Text>
                     <Text style={styles.visitUrl} selectable={false}>
-                      {localServerIp ? `http://${localServerIp}:${LOCAL_SERVER_PORT}/tv` : TV_LINK_DISPLAY}
+                      {`http://${localServerIp || '...'}:${LOCAL_SERVER_PORT}/tv`}
                     </Text>
                   </View>
 
@@ -787,8 +836,8 @@ export function AppleMusicAuthScreen({
                   onBlur={() => setNewCodeBtnFocused(false)}
                   focusable={true}
                   hasTVPreferredFocus={true}
-                  nextFocusLeft={findNodeHandle(manualEntryBtnRef.current) ?? undefined}
-                  nextFocusRight={findNodeHandle(manualEntryBtnRef.current) ?? undefined}>
+                  nextFocusRight={findNodeHandle(directTvAuthBtnRef.current) ?? undefined}
+                  nextFocusDown={findNodeHandle(manualEntryBtnRef.current) ?? undefined}>
                   <Text
                     style={[
                       styles.getNewCodeBtnText,
@@ -799,28 +848,49 @@ export function AppleMusicAuthScreen({
                 </Pressable>
 
                 <Pressable
-                  ref={manualEntryBtnRef}
+                  ref={directTvAuthBtnRef}
                   style={({ focused }) => [
                     styles.getNewCodeBtn,
-                    styles.manualEntryBtn,
                     focused && styles.getNewCodeBtnFocused,
                   ]}
-                  onPress={() => setShowManualInput(true)}
-                  onFocus={() => setManualEntryBtnFocused(true)}
-                  onBlur={() => setManualEntryBtnFocused(false)}
+                  onPress={() => setShowDirectTvAuthModal(true)}
+                  onFocus={() => setDirectTvAuthBtnFocused(true)}
+                  onBlur={() => setDirectTvAuthBtnFocused(false)}
                   focusable={true}
                   hasTVPreferredFocus={false}
                   nextFocusLeft={findNodeHandle(getNewCodeBtnRef.current) ?? undefined}
-                  nextFocusRight={findNodeHandle(getNewCodeBtnRef.current) ?? undefined}>
+                  nextFocusDown={findNodeHandle(manualEntryBtnRef.current) ?? undefined}>
                   <Text
                     style={[
-                      styles.manualEntryBtnText,
-                      manualEntryBtnFocused && styles.getNewCodeBtnTextFocused,
+                      styles.getNewCodeBtnText,
+                      directTvAuthBtnFocused && styles.getNewCodeBtnTextFocused,
                     ]}>
-                    {t('auth.manualEntry')}
+                    {t('auth.qrNotWorkingSignInOnTv')}
                   </Text>
                 </Pressable>
               </View>
+
+              {/* Developer / Google Reviewer Token Link */}
+              <Pressable
+                ref={manualEntryBtnRef}
+                style={({ focused }) => [
+                  styles.devTokenLink,
+                  focused && styles.devTokenLinkFocused,
+                ]}
+                onPress={() => setShowManualInput(true)}
+                onFocus={() => setManualEntryBtnFocused(true)}
+                onBlur={() => setManualEntryBtnFocused(false)}
+                focusable={true}
+                hasTVPreferredFocus={false}
+                nextFocusUp={findNodeHandle(getNewCodeBtnRef.current) ?? undefined}>
+                <Text
+                  style={[
+                    styles.devTokenLinkText,
+                    manualEntryBtnFocused && { color: colors.alertRed, opacity: 1 },
+                  ]}>
+                  {t('auth.manualEntry')}
+                </Text>
+              </Pressable>
             </>
           )}
         </View>
@@ -889,6 +959,20 @@ export function AppleMusicAuthScreen({
           </View>
         )}
       </Modal>
+
+      <DirectTvAuthModal
+        visible={showDirectTvAuthModal}
+        onClose={() => setShowDirectTvAuthModal(false)}
+        onSuccess={(token) => {
+          musicPlayer.release();
+          musicPlayer.syncTokens();
+          setTokenPreview(token.length > 20 ? `${token.slice(0, 20)}...` : token);
+          setPairingMode(false);
+          setStatus('success');
+          setMessage(t('auth.linkedMessage'));
+          onAuthSuccess?.();
+        }}
+      />
     </View>
   );
 }
