@@ -188,7 +188,8 @@
     "support": "Destek",
     "aboutInfo": {
       "title": "AirTune Music Hakkında",
-      "message": "AirTune Music, yalnızca resmi Apple Music API'si kullanılarak oluşturulmuş üçüncü taraf bir Apple Music istemcisidir. Kişisel verilerinizin hiçbirini saklamıyoruz; tüm bilgiler doğrudan Apple sunucularından alınır. Senkronize şarkı sözleri, ücretsiz ve açık kaynaklı bir veritabanı olan LRCLib (lrclib.net) tarafından sağlanmaktadır. Reklamlar Unity Ads aracılığıyla sunulmaktadır."
+      "message": "AirTune Music, yalnızca resmi Apple Music API'si kullanılarak oluşturulmuş üçüncü taraf bir Apple Music istemcisidir. Kişisel verilerinizin hiçbirini saklamıyoruz; tüm bilgiler doğrudan Apple sunucularından alınır. Senkronize şarkı sözleri, ücretsiz ve açık kaynaklı bir veritabanı olan LRCLib (lrclib.net) tarafından sağlanmaktadır. Reklamlar Unity Ads aracılığıyla sunulmaktadır.",
+      "website": "Diğer ürünler, genel bilgiler ve yasal metinler için adgn.me adresini ziyaret edebilirsiniz."
     },
     "adSettings": {
       "title": "Reklam Tercihleri",
@@ -198,8 +199,9 @@
     },
     "supportInfo": {
       "contactTitle": "İletişim",
-      "contactDescription": "Sorularınız, geri bildiriminiz veya hata raporları için e-posta ile ulaşabilirsiniz.",
-      "email": "gullualidogan@gmail.com",
+      "contactDescription": "Sorularınız, geri bildiriminiz veya hata raporları için e-posta ile ulaşabilir veya web sitemizi ziyaret edebilirsiniz.",
+      "email": "E-posta: support@adgn.me",
+      "website": "Web sitesi: adgn.me",
       "sendEmail": "E-posta Gönder"
     }
   },

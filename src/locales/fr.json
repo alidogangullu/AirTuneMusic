@@ -188,7 +188,8 @@
     "support": "Support",
     "aboutInfo": {
       "title": "À propos d'AirTune Music",
-      "message": "AirTune Music est un client Apple Music tiers construit exclusivement à l'aide de l'API officielle Apple Music. Nous ne stockons aucune de vos données personnelles ; toutes les informations sont récupérées directement des serveurs d'Apple. Les paroles synchronisées sont fournies par LRCLib (lrclib.net), une base de données de paroles libre et ouverte. Les publicités sont diffusées via Unity Ads."
+      "message": "AirTune Music est un client Apple Music tiers construit exclusivement à l'aide de l'API officielle Apple Music. Nous ne stockons aucune de vos données personnelles ; toutes les informations sont récupérées directement des serveurs d'Apple. Les paroles synchronisées sont fournies par LRCLib (lrclib.net), une base de données de paroles libre et ouverte. Les publicités sont diffusées via Unity Ads.",
+      "website": "Pour d'autres produits, des informations générales et les mentions légales, visitez adgn.me"
     },
     "adSettings": {
       "title": "Préférences pub",
@@ -198,8 +199,9 @@
     },
     "supportInfo": {
       "contactTitle": "Contact",
-      "contactDescription": "Pour toute question, commentaire ou rapport de bug, n'hésitez pas à nous contacter par e-mail.",
-      "email": "gullualidogan@gmail.com",
+      "contactDescription": "Pour toute question, commentaire ou rapport de bug, n'hésitez pas à nous contacter par e-mail ou à visiter notre site Web.",
+      "email": "E-mail : support@adgn.me",
+      "website": "Site Web : adgn.me",
       "sendEmail": "Envoyer un e-mail"
     }
   },

@@ -418,6 +418,24 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
       );
     }
 
+    const renderHighlightedText = (text: string, baseStyle: any, containerStyle?: any) => {
+      if (!text) return null;
+      const parts = text.split(/(support@adgn\.me|adgn\.me)/g);
+      return (
+        <Text style={[baseStyle, containerStyle]}>
+          {parts.map((part, index) =>
+            part === 'adgn.me' || part === 'support@adgn.me' ? (
+              <Text key={index} style={{ color: colors.alertRed }}>
+                {part}
+              </Text>
+            ) : (
+              part
+            )
+          )}
+        </Text>
+      );
+    };
+
     if (currentSubMenu === 'about') {
       return (
         <>
@@ -431,6 +449,9 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
           <View style={styles.adHintContainer}>
             <Text style={styles.adHintTitle}>{t('settings.aboutInfo.title')}</Text>
             <Text style={styles.adHintText}>{t('settings.aboutInfo.message')}</Text>
+            {t('settings.aboutInfo.website') ? (
+              renderHighlightedText(t('settings.aboutInfo.website'), styles.adHintText, { marginTop: spacing.lg })
+            ) : null}
           </View>
         </>
       );
@@ -449,7 +470,10 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
           <View style={styles.adHintContainer}>
             <Text style={styles.adHintTitle}>{t('settings.supportInfo.contactTitle')}</Text>
             <Text style={styles.adHintText}>{t('settings.supportInfo.contactDescription')}</Text>
-            <Text style={[styles.adHintText, { marginTop: spacing.lg }]}>{t('settings.supportInfo.email')}</Text>
+            {renderHighlightedText(t('settings.supportInfo.email'), styles.adHintText, { marginTop: spacing.lg })}
+            {t('settings.supportInfo.website') ? (
+              renderHighlightedText(t('settings.supportInfo.website'), styles.adHintText, { marginTop: spacing.xs })
+            ) : null}
           </View>
         </>
       );
