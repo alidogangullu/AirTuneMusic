@@ -74,7 +74,8 @@
     "hideQueue": "Sıradakileri gizle",
     "quotaStatus": "{{used}}/{{total}}{{bonus}} · {{remaining}}",
     "airPlayConnected": "AirPlay",
-    "airPlayQuotaStatus": "{{used}}/{{total}} dk · {{remaining}}"
+    "airPlayQuotaStatus": "{{used}}/{{total}} dk · {{remaining}}",
+    "trackUnavailable": "Bu parça şu anda oynatılamıyor."
   },
   "lyrics": {
     "notFound": "Şarkı sözleri bulunamadı",

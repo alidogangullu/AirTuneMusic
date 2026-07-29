@@ -74,7 +74,8 @@
     "hideQueue": "Ocultar cola",
     "quotaStatus": "{{used}}/{{total}}{{bonus}} · {{remaining}}",
     "airPlayConnected": "AirPlay",
-    "airPlayQuotaStatus": "{{used}}/{{total}} min · {{remaining}}"
+    "airPlayQuotaStatus": "{{used}}/{{total}} min · {{remaining}}",
+    "trackUnavailable": "Esta canción no está disponible actualmente."
   },
   "lyrics": {
     "notFound": "Letras no disponibles",

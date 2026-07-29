@@ -236,23 +236,79 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   const quotaRecoveryQueueIdRef = useRef<number | null>(null);
   const suppressAutoStartRef = useRef(false);
   const cancelledQuotaQueueIdRef = useRef<number | null>(null);
+  const webFallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleWebFallbackFailure = useCallback((errorMsg: string) => {
+    if (!webFallbackActiveRef.current) return;
+    console.log('[Player] WebKit fallback failed (both native and web failed for track):', errorMsg);
+    webFallbackActiveRef.current = false;
+    webFallbackHadRealProgressRef.current = false;
+    webFallbackIsImmediateFailRef.current = false;
+    activeEngineRef.current = 'native';
+
+    if (webFallbackTimeoutRef.current) {
+      clearTimeout(webFallbackTimeoutRef.current);
+      webFallbackTimeoutRef.current = null;
+    }
+    if (nativePlaybackTimeoutRef.current) {
+      clearTimeout(nativePlaybackTimeoutRef.current);
+      nativePlaybackTimeoutRef.current = null;
+    }
+
+    ToastAndroid.show(t('nowPlaying.trackUnavailable'), ToastAndroid.SHORT);
+
+    const currentS = stateRef.current;
+    const hasNextContainerTrack =
+      !!currentS.containerTracks?.[currentS.containerIndex + 1];
+    const canSkip =
+      currentS.canSkipToNext || hasNextContainerTrack || currentS.queue.length > 1;
+
+    if (canSkip) {
+      console.log('[Player] WebKit fallback failed, skipping to next track');
+      setState(s => ({...s, isLoading: true, buffering: false}));
+      musicPlayer.skipToNext();
+      musicPlayer.play();
+    } else {
+      console.log('[Player] WebKit fallback failed on single/last track, stopping playback');
+      musicPlayer.stop();
+      setState(s => ({
+        ...s,
+        playbackState: 'stopped',
+        isLoading: false,
+        buffering: false,
+      }));
+    }
+  }, [t]);
+
+  const triggerWebFallback = useCallback((trackId: string, isImmediate = false) => {
+    activeEngineRef.current = 'web';
+    webFallbackActiveRef.current = true;
+    webFallbackHadRealProgressRef.current = false;
+    webFallbackIsImmediateFailRef.current = isImmediate;
+
+    if (webFallbackTimeoutRef.current) clearTimeout(webFallbackTimeoutRef.current);
+    webFallbackTimeoutRef.current = setTimeout(() => {
+      webFallbackTimeoutRef.current = null;
+      if (webFallbackActiveRef.current && !webFallbackHadRealProgressRef.current) {
+        handleWebFallbackFailure('WebKit playback timeout (no progress within 10s)');
+      }
+    }, 10000);
+
+    musicPlayer.pause();
+    setState(s => ({...s, isLoading: true}));
+    const tok = getMusicUserToken();
+    if (tok) webPlayerRef.current?.updateUserToken(tok);
+    webPlayerRef.current?.playSong(trackId);
+  }, [handleWebFallbackFailure]);
 
   const startNativeStallTimer = useCallback((trackId: string, delayMs = 10000) => {
     if (nativePlaybackTimeoutRef.current) clearTimeout(nativePlaybackTimeoutRef.current);
     nativePlaybackTimeoutRef.current = setTimeout(() => {
       nativePlaybackTimeoutRef.current = null;
       if (activeEngineRef.current !== 'native') return;
-      activeEngineRef.current = 'web';
-      webFallbackActiveRef.current = true;
-      webFallbackHadRealProgressRef.current = false;
-
-      musicPlayer.pause();
-      setState(s => ({...s, isLoading: true}));
-      const tok = getMusicUserToken();
-      if (tok) webPlayerRef.current?.updateUserToken(tok);
-      webPlayerRef.current?.playSong(trackId);
+      triggerWebFallback(trackId, false);
     }, delayMs);
-  }, []);
+  }, [triggerWebFallback]);
 
   const dismissQuotaRecovery = useCallback(() => {
     pendingQuotaRetryRef.current = null;
@@ -276,18 +332,11 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     const failedTrackId = quotaRetryTrackIdRef.current;
     quotaRetryTrackIdRef.current = null;
     if (failedTrackId && activeEngineRef.current === 'native') {
-      activeEngineRef.current = 'web';
-      webFallbackActiveRef.current = true;
-      webFallbackHadRealProgressRef.current = false;
-      webFallbackIsImmediateFailRef.current = true;
-      setState(s => ({...s, isLoading: true}));
-      const tok = getMusicUserToken();
-      if (tok) webPlayerRef.current?.updateUserToken(tok);
-      webPlayerRef.current?.playSong(failedTrackId);
+      triggerWebFallback(failedTrackId, true);
     } else if (activeEngineRef.current === 'web') {
       webPlayerRef.current?.play();
     }
-  }, []);
+  }, [triggerWebFallback]);
 
   const startQuotaRewardAd = useCallback(async (): Promise<boolean> => {
     if (!quotaRecoveryRequest || adInFlightRef.current) return false;
@@ -652,16 +701,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
             clearTimeout(nativePlaybackTimeoutRef.current);
             nativePlaybackTimeoutRef.current = null;
           }
-          const trackId = data.id;
-          activeEngineRef.current = 'web';
-          webFallbackActiveRef.current = true;
-          webFallbackHadRealProgressRef.current = false;
-          webFallbackIsImmediateFailRef.current = true;
-          musicPlayer.pause();
-          setState(s => ({...s, isLoading: true}));
-          const tok = getMusicUserToken();
-          if (tok) webPlayerRef.current?.updateUserToken(tok);
-          webPlayerRef.current?.playSong(trackId);
+          triggerWebFallback(data.id, true);
           return;
         }
         // Clean end of the queue (single/last track, repeat off): the Apple Music
@@ -1215,6 +1255,10 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
               setState(s => ({...s, isLoading: false, buffering: false}));
               if (webFallbackActiveRef.current && data.position > 0) {
                 webFallbackHadRealProgressRef.current = true;
+                if (webFallbackTimeoutRef.current) {
+                  clearTimeout(webFallbackTimeoutRef.current);
+                  webFallbackTimeoutRef.current = null;
+                }
               }
             }
           }}
@@ -1231,25 +1275,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
             if (!webFallbackActiveRef.current) return;
             // Only react to actual playback failures, not debug Console Warn messages
             if (!errorMsg.includes('Error:') && !errorMsg.includes('restricted')) return;
-            // WebKit couldn't play the fallback track (e.g. Content restricted) → revert to native
-            console.log('[Player] WebKit fallback error, reverting to native:', errorMsg);
-            webFallbackActiveRef.current = false;
-            webFallbackHadRealProgressRef.current = false;
-            webFallbackIsImmediateFailRef.current = false;
-            activeEngineRef.current = 'native';
-            setState(s => ({...s, isLoading: false}));
-            musicPlayer.play();
-            // Restart stall timer: if native also can't play within 15s, skip to next
-            if (nativePlaybackTimeoutRef.current) {
-              clearTimeout(nativePlaybackTimeoutRef.current);
-            }
-            nativePlaybackTimeoutRef.current = setTimeout(() => {
-              nativePlaybackTimeoutRef.current = null;
-              if (activeEngineRef.current !== 'native') return;
-              console.log('[Player] Native also failed after WebKit error, skipping');
-              musicPlayer.skipToNext();
-              musicPlayer.play();
-            }, 15000);
+            handleWebFallbackFailure(errorMsg);
           }}
         />
       )}

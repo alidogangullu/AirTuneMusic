@@ -74,7 +74,8 @@
     "hideQueue": "Warteschlange ausblenden",
     "quotaStatus": "{{used}}/{{total}}{{bonus}} · {{remaining}}",
     "airPlayConnected": "AirPlay",
-    "airPlayQuotaStatus": "{{used}}/{{total}} Min · {{remaining}}"
+    "airPlayQuotaStatus": "{{used}}/{{total}} Min · {{remaining}}",
+    "trackUnavailable": "Dieser Titel ist derzeit nicht verfügbar."
   },
   "lyrics": {
     "notFound": "Songtexte nicht verfügbar",
