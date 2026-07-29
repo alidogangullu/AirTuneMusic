@@ -142,7 +142,8 @@
     "qrNotWorkingSignInOnTv": "QR pairing not working? Sign in on TV",
     "directTvModalTitle": "Sign in to Apple Music on TV",
     "directTvHint": "You can use this option if QR pairing does not work.\nNavigate this login screen using your remote's directional buttons.",
-    "directTvPrivacyInfo": "The sign-in process happens entirely on the official Apple website. Your password or data is inaccessible and cannot be stored by us."
+    "directTvPrivacyInfo": "The sign-in process happens entirely on the official Apple website. Your password or data is inaccessible and cannot be stored by us.",
+    "needHelpSupport": "For Help & Support, visit our website: www.adgn.me"
   },
   "settings": {
     "title": "Settings",

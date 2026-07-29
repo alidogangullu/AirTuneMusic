@@ -142,7 +142,8 @@
     "qrNotWorkingSignInOnTv": "Le code QR ne fonctionne pas ? Connexion sur TV",
     "directTvModalTitle": "Se connecter à Apple Music sur TV",
     "directTvHint": "Vous pouvez utiliser cette option si le jumelage QR ne fonctionne pas.\nNaviguez sur cet écran de connexion avec les touches directionnelles de votre télécommande.",
-    "directTvPrivacyInfo": "La connexion s'effectue sur le site officiel d'Apple. Vos identifiants ou données sont inaccessibles et ne peuvent pas être stockés par nous."
+    "directTvPrivacyInfo": "La connexion s'effectue sur le site officiel d'Apple. Vos identifiants ou données sont inaccessibles et ne peuvent pas être stockés par nous.",
+    "needHelpSupport": "Pour l'aide et le support, visitez notre site web : www.adgn.me"
   },
   "settings": {
     "title": "Réglages",

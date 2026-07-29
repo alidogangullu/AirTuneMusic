@@ -485,7 +485,8 @@ export function DirectTvAuthModal({
 
           <View style={styles.headerRight}>
             <Text style={[styles.privacyNotice, { color: colors.textMuted }]}>
-              {t('auth.directTvPrivacyInfo')}
+              {t('auth.directTvPrivacyInfo')}{'\n'}
+              <Text style={{ color: colors.alertRed, fontWeight: '600' }}>www.adgn.me</Text>
             </Text>
             <Pressable
               style={({ focused }) => [

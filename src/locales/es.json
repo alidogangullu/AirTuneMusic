@@ -142,7 +142,8 @@
     "qrNotWorkingSignInOnTv": "¿No funciona el código QR? Iniciar sesión en TV",
     "directTvModalTitle": "Iniciar sesión en Apple Music en TV",
     "directTvHint": "Puede usar esta opción si la conexión por código QR no funciona.\nNavegue por esta pantalla de inicio de sesión con las flechas de dirección de su control remoto.",
-    "directTvPrivacyInfo": "El inicio de sesión se realiza en el sitio web oficial de Apple. Sus credenciales o datos son inaccesibles y no pueden ser guardados por nosotros."
+    "directTvPrivacyInfo": "El inicio de sesión se realiza en el sitio web oficial de Apple. Sus credenciales o datos son inaccesibles y no pueden ser guardados por nosotros.",
+    "needHelpSupport": "Para ayuda y soporte, visite nuestro sitio web: www.adgn.me"
   },
   "settings": {
     "title": "Ajustes",

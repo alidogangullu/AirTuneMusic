@@ -300,6 +300,14 @@ function makeStyles(c: AppColors) {
       opacity: 0.8,
       lineHeight: 16,
     },
+    supportNoteText: {
+      fontSize: 13,
+      color: c.textSecondary,
+      textAlign: 'center',
+      marginTop: spacing.xs,
+      opacity: 0.9,
+      lineHeight: 18,
+    },
     actionRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -815,6 +823,22 @@ export function AppleMusicAuthScreen({
                         <Text style={{ color: colors.alertRed, fontWeight: '600' }}>{text.slice(0, idx + 'Apple Music'.length)}</Text>
                         {text.slice(idx + 'Apple Music'.length)}
                       </>;
+                    })()}
+                  </Text>
+
+                  <Text style={styles.supportNoteText}>
+                    {(() => {
+                      const text = t('auth.needHelpSupport');
+                      const parts = text.split(/(www\.adgn\.me|adgn\.me)/g);
+                      return parts.map((part, index) =>
+                        part === 'www.adgn.me' || part === 'adgn.me' ? (
+                          <Text key={index} style={{ color: colors.alertRed, fontWeight: '700' }}>
+                            {part}
+                          </Text>
+                        ) : (
+                          part
+                        )
+                      );
                     })()}
                   </Text>
                 </View>
