@@ -1,4 +1,7 @@
 package com.adg.airtune
+import android.content.res.Configuration
+import expo.modules.ApplicationLifecycleDispatcher
+import expo.modules.ExpoReactHostFactory
 
 import android.app.Application
 import com.facebook.react.PackageList
@@ -14,7 +17,7 @@ import com.adg.airtune.unityads.UnityAdsPackage
 class MainApplication : Application(), ReactApplication {
 
   override val reactHost: ReactHost by lazy {
-    getDefaultReactHost(
+    ExpoReactHostFactory.getDefaultReactHost(
       context = applicationContext,
       packageList =
         PackageList(this).packages.apply {
@@ -36,5 +39,11 @@ class MainApplication : Application(), ReactApplication {
     System.setProperty("org.bytedeco.javacpp.maxbytes", "1610612736")
 
     loadReactNative(this)
+    ApplicationLifecycleDispatcher.onApplicationCreate(this)
+  }
+
+  override fun onConfigurationChanged(newConfig: Configuration) {
+    super.onConfigurationChanged(newConfig)
+    ApplicationLifecycleDispatcher.onConfigurationChanged(this, newConfig)
   }
 }

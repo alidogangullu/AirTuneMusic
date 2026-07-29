@@ -1,4 +1,20 @@
 {
   "name": "AirTuneMusic",
-  "displayName": "AirTune Music"
+  "displayName": "AirTune Music",
+  "version": "1.16.0",
+  "runtimeVersion": {
+    "policy": "appVersion"
+  },
+  "extra": {
+    "eas": {
+      "projectId": "9f89c037-7727-4049-9a5a-a75a26958820"
+    }
+  },
+  "owner": "alidg",
+  "updates": {
+    "url": "https://u.expo.dev/9f89c037-7727-4049-9a5a-a75a26958820"
+  },
+  "android": {
+    "package": "com.adg.airtune"
+  }
 }
