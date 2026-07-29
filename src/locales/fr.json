@@ -140,7 +140,8 @@
     "serverError": "Impossible de préparer la connexion",
     "qrNotWorkingSignInOnTv": "Le code QR ne fonctionne pas ? Connexion sur TV",
     "directTvModalTitle": "Se connecter à Apple Music sur TV",
-    "directTvHint": "Utilisez cette option si le jumelage QR sur votre réseau Wi-Fi échoue."
+    "directTvHint": "Vous pouvez utiliser cette option si le jumelage QR ne fonctionne pas.\nNaviguez sur cet écran de connexion avec les touches directionnelles de votre télécommande.",
+    "directTvPrivacyInfo": "La connexion s'effectue sur le site officiel d'Apple. Vos identifiants ou données sont inaccessibles et ne peuvent pas être stockés par nous."
   },
   "settings": {
     "title": "Réglages",

@@ -171,7 +171,6 @@ function makeStyles(c: AppColors) {
       alignItems: 'center',
       gap: spacing.sm,
       marginBottom: spacing.xl,
-      marginTop: -32,
     },
     logoIcon: {
       width: 44,
@@ -196,7 +195,7 @@ function makeStyles(c: AppColors) {
       width: '100%',
       backgroundColor: c.glassBg,
       borderRadius: radius.lg,
-      paddingVertical: spacing.xl,
+      paddingVertical: spacing.lg,
       paddingHorizontal: 32,
       alignItems: 'center',
       borderWidth: 1,
@@ -507,8 +506,6 @@ export function AppleMusicAuthScreen({
   const [pairingMode, setPairingMode] = useState(true);
   const [linkCode, setLinkCode] = useState<string>(() => generateLinkCode());
   const [restoring, setRestoring] = useState(true);
-  const [newCodeBtnFocused, setNewCodeBtnFocused] = useState(false);
-  const [manualEntryBtnFocused, setManualEntryBtnFocused] = useState(false);
   type ServerState = 'initializing' | 'ready' | 'no_wifi' | 'error';
   const [serverState, setServerState] = useState<ServerState>('initializing');
   const [localServerIp, setLocalServerIp] = useState<string>('');
@@ -518,7 +515,6 @@ export function AppleMusicAuthScreen({
   const [showManualInput, setShowManualInput] = useState(false);
   const [manualToken, setManualToken] = useState('');
   const [showDirectTvAuthModal, setShowDirectTvAuthModal] = useState(false);
-  const [directTvAuthBtnFocused, setDirectTvAuthBtnFocused] = useState(false);
   const directTvAuthBtnRef = useRef<View>(null);
 
   useEffect(() => {
@@ -665,7 +661,8 @@ export function AppleMusicAuthScreen({
 
   return (
     <View style={styles.codeScreenRoot} focusable={false}>
-      <View style={styles.codeScreenInner} focusable={false}>
+      {!showDirectTvAuthModal && (
+        <View style={styles.codeScreenInner} focusable={false}>
         <Pressable
           onPress={() => setShowManualInput(true)}
           focusable={false}
@@ -709,17 +706,17 @@ export function AppleMusicAuthScreen({
                   focused && styles.getNewCodeBtnFocused,
                 ]}
                 onPress={handleSignOut}
-                onFocus={() => setNewCodeBtnFocused(true)}
-                onBlur={() => setNewCodeBtnFocused(false)}
                 focusable={true}
                 hasTVPreferredFocus={true}>
-                <Text
-                  style={[
-                    styles.getNewCodeBtnText,
-                    newCodeBtnFocused && styles.getNewCodeBtnTextFocused,
-                  ]}>
-                  {t('auth.signOut')}
-                </Text>
+                {({ focused }) => (
+                  <Text
+                    style={[
+                      styles.getNewCodeBtnText,
+                      focused && styles.getNewCodeBtnTextFocused,
+                    ]}>
+                    {t('auth.signOut')}
+                  </Text>
+                )}
               </Pressable>
             </>
           ) : (
@@ -749,32 +746,32 @@ export function AppleMusicAuthScreen({
 
                   {serverState !== 'initializing' && (
                     <View style={styles.serverStatusBadge}>
-                    {serverState === 'ready' && (
-                      <>
-                        <View style={[styles.statusDot, { backgroundColor: '#4CAF50' }]} />
-                        <Text style={[styles.serverStatusText, { color: '#4CAF50' }]}>
-                          {t('auth.serverReady')}
-                        </Text>
-                      </>
-                    )}
-                    {serverState === 'no_wifi' && (
-                      <>
-                        <View style={[styles.statusDot, { backgroundColor: '#FFC107' }]} />
-                        <Text style={[styles.serverStatusText, { color: '#FFC107' }]}>
-                          {t('auth.serverNoWifi')}
-                        </Text>
-                      </>
-                    )}
-                    {serverState === 'error' && (
-                      <>
-                        <View style={[styles.statusDot, { backgroundColor: '#F44336' }]} />
-                        <Text style={[styles.serverStatusText, { color: '#F44336' }]}>
-                          {t('auth.serverError')}
-                        </Text>
-                      </>
-                    )}
-                  </View>
-                )}
+                      {serverState === 'ready' && (
+                        <>
+                          <View style={[styles.statusDot, { backgroundColor: '#4CAF50' }]} />
+                          <Text style={[styles.serverStatusText, { color: '#4CAF50' }]}>
+                            {t('auth.serverReady')}
+                          </Text>
+                        </>
+                      )}
+                      {serverState === 'no_wifi' && (
+                        <>
+                          <View style={[styles.statusDot, { backgroundColor: '#FFC107' }]} />
+                          <Text style={[styles.serverStatusText, { color: '#FFC107' }]}>
+                            {t('auth.serverNoWifi')}
+                          </Text>
+                        </>
+                      )}
+                      {serverState === 'error' && (
+                        <>
+                          <View style={[styles.statusDot, { backgroundColor: '#F44336' }]} />
+                          <Text style={[styles.serverStatusText, { color: '#F44336' }]}>
+                            {t('auth.serverError')}
+                          </Text>
+                        </>
+                      )}
+                    </View>
+                  )}
                 </View>
 
                 {/* Right Side: Code, URL, Instructions & Notes */}
@@ -832,19 +829,19 @@ export function AppleMusicAuthScreen({
                     focused && styles.getNewCodeBtnFocused,
                   ]}
                   onPress={cancelTvLink}
-                  onFocus={() => setNewCodeBtnFocused(true)}
-                  onBlur={() => setNewCodeBtnFocused(false)}
                   focusable={true}
                   hasTVPreferredFocus={true}
                   nextFocusRight={findNodeHandle(directTvAuthBtnRef.current) ?? undefined}
                   nextFocusDown={findNodeHandle(manualEntryBtnRef.current) ?? undefined}>
-                  <Text
-                    style={[
-                      styles.getNewCodeBtnText,
-                      newCodeBtnFocused && styles.getNewCodeBtnTextFocused,
-                    ]}>
-                    {t('auth.getNewCode')}
-                  </Text>
+                  {({ focused }) => (
+                    <Text
+                      style={[
+                        styles.getNewCodeBtnText,
+                        focused && styles.getNewCodeBtnTextFocused,
+                      ]}>
+                      {t('auth.getNewCode')}
+                    </Text>
+                  )}
                 </Pressable>
 
                 <Pressable
@@ -854,19 +851,19 @@ export function AppleMusicAuthScreen({
                     focused && styles.getNewCodeBtnFocused,
                   ]}
                   onPress={() => setShowDirectTvAuthModal(true)}
-                  onFocus={() => setDirectTvAuthBtnFocused(true)}
-                  onBlur={() => setDirectTvAuthBtnFocused(false)}
                   focusable={true}
                   hasTVPreferredFocus={false}
                   nextFocusLeft={findNodeHandle(getNewCodeBtnRef.current) ?? undefined}
                   nextFocusDown={findNodeHandle(manualEntryBtnRef.current) ?? undefined}>
-                  <Text
-                    style={[
-                      styles.getNewCodeBtnText,
-                      directTvAuthBtnFocused && styles.getNewCodeBtnTextFocused,
-                    ]}>
-                    {t('auth.qrNotWorkingSignInOnTv')}
-                  </Text>
+                  {({ focused }) => (
+                    <Text
+                      style={[
+                        styles.getNewCodeBtnText,
+                        focused && styles.getNewCodeBtnTextFocused,
+                      ]}>
+                      {t('auth.qrNotWorkingSignInOnTv')}
+                    </Text>
+                  )}
                 </Pressable>
               </View>
 
@@ -878,18 +875,18 @@ export function AppleMusicAuthScreen({
                   focused && styles.devTokenLinkFocused,
                 ]}
                 onPress={() => setShowManualInput(true)}
-                onFocus={() => setManualEntryBtnFocused(true)}
-                onBlur={() => setManualEntryBtnFocused(false)}
                 focusable={true}
                 hasTVPreferredFocus={false}
                 nextFocusUp={findNodeHandle(getNewCodeBtnRef.current) ?? undefined}>
-                <Text
-                  style={[
-                    styles.devTokenLinkText,
-                    manualEntryBtnFocused && { color: colors.alertRed, opacity: 1 },
-                  ]}>
-                  {t('auth.manualEntry')}
-                </Text>
+                {({ focused }) => (
+                  <Text
+                    style={[
+                      styles.devTokenLinkText,
+                      focused && { color: colors.alertRed, opacity: 1 },
+                    ]}>
+                    {t('auth.manualEntry')}
+                  </Text>
+                )}
               </Pressable>
             </>
           )}
@@ -900,7 +897,8 @@ export function AppleMusicAuthScreen({
             <Text style={styles.messageText}>{message}</Text>
           </View>
         )}
-      </View>
+        </View>
+      )}
 
       <Modal
         visible={showManualInput}

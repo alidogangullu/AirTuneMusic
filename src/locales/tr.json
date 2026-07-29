@@ -140,7 +140,8 @@
     "serverError": "Bağlantı hazırlanamadı",
     "qrNotWorkingSignInOnTv": "QR ile bağlanamıyor musunuz? TV'de Giriş Yap",
     "directTvModalTitle": "Apple Music'e TV'de Giriş Yap",
-    "directTvHint": "Bu yöntem, telefon ile TV yerel ağ üzerinden eşleşemediğinde doğrudan TV ekranında oturum açmanızı sağlar."
+    "directTvHint": "QR eşleşmesi çalışmıyorsa bu seçeneği kullanabilirsiniz.\nBu giriş ekranında kumandanızın yön tuşları ile gezinebilirsiniz.",
+    "directTvPrivacyInfo": "Giriş işlemi tamamen resmi Apple web sitesi üzerinden gerçekleşir. Şifrenize veya verilerinize tarafımızca erişilemez ve saklanamaz."
   },
   "settings": {
     "title": "Ayarlar",

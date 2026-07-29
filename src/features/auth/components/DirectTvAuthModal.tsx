@@ -6,6 +6,8 @@ import {
   StyleSheet,
   Text,
   View,
+  findNodeHandle,
+  Dimensions,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { WebView } from 'react-native-webview';
@@ -27,8 +29,34 @@ const SPATIAL_NAV_JS = `
     if (window.__spatialNavInstalled) return;
     window.__spatialNavInstalled = true;
 
+    function queryAllShadow(selector, node) {
+      node = node || document.documentElement;
+      var results = [];
+      if (!node) return results;
+
+      if (node.querySelectorAll) {
+        var matches = node.querySelectorAll(selector);
+        for (var i = 0; i < matches.length; i++) {
+          results.push(matches[i]);
+        }
+      }
+
+      if (node.shadowRoot) {
+        var shadowMatches = queryAllShadow(selector, node.shadowRoot);
+        results = results.concat(shadowMatches);
+      }
+
+      var children = node.children || [];
+      for (var j = 0; j < children.length; j++) {
+        var childMatches = queryAllShadow(selector, children[j]);
+        results = results.concat(childMatches);
+      }
+
+      return results;
+    }
+
     function getFocusableElements() {
-      return Array.from(document.querySelectorAll('a[href], button, input, textarea, select, [tabindex]:not([tabindex="-1"])'))
+      return queryAllShadow('a[href], button, input, textarea, select, [tabindex]:not([tabindex="-1"])')
         .filter(function(el) {
           return !el.disabled && el.offsetWidth > 0 && el.offsetHeight > 0 && window.getComputedStyle(el).visibility !== 'hidden';
         });
@@ -58,30 +86,21 @@ const SPATIAL_NAV_JS = `
       }
     }, true);
 
-    // Scroll focused input into view (debounced, only once per focus)
-    document.addEventListener('focusin', function(e) {
-      var el = e.target;
-      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
-        setTimeout(function() { el.scrollIntoView({ block: 'nearest' }); }, 350);
-      }
-    }, true);
-
-    // Auto-focus first interactive element when DOM changes (handles OTP screen)
-    var focusTimer = null;
+    // Auto-focus first interactive element when DOM changes due to client-side navigation
+    // (handles OTP field, "Allow" button, etc. that appear without a full page reload)
+    var autoFocusTimer = null;
     var observer = new MutationObserver(function() {
-      clearTimeout(focusTimer);
-      focusTimer = setTimeout(function() {
-        var elements = getFocusableElements();
-        if (elements.length > 0) {
-          var active = document.activeElement;
-          if (!active || active === document.body || !elements.includes(active)) {
-            var firstInput = elements.find(function(el) { return el.tagName === 'INPUT'; });
-            (firstInput || elements[0]).focus();
-          }
-        }
-      }, 250);
+      clearTimeout(autoFocusTimer);
+      autoFocusTimer = setTimeout(function() {
+        var active = document.activeElement;
+        // Only steal focus if nothing meaningful is focused
+        if (active && active !== document.body && active.tagName !== 'BODY' && active.offsetWidth > 0) return;
+        var el = getFocusableElements()[0];
+        if (el) el.focus();
+      }, 400);
     });
     observer.observe(document.body, { childList: true, subtree: true });
+
   })();
   true;
 `;
@@ -93,15 +112,16 @@ export function DirectTvAuthModal({
 }: DirectTvAuthModalProps): React.JSX.Element {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const SCREEN_HEIGHT = Dimensions.get('window').height;
   const [devToken, setDevToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [closeBtnFocused, setCloseBtnFocused] = useState(false);
   // Main WebView source (our MusicKit JS page)
   const [mainSource, setMainSource] = useState<WebViewSource | null>(null);
   // Popup WebView URL (Apple's login page)
   const [popupUrl, setPopupUrl] = useState<string | null>(null);
   const mainWebviewRef = useRef<WebView>(null);
   const popupWebviewRef = useRef<WebView>(null);
+  const webviewContainerRef = useRef<View>(null);
   // The mock window object ID so we can route postMessages back correctly
   const popupOriginRef = useRef<string>('https://authorize.music.apple.com');
 
@@ -229,6 +249,7 @@ export function DirectTvAuthModal({
     try {
       const data = JSON.parse(event.nativeEvent.data);
 
+
       if (data.type === 'DEBUG') {
         console.log('[DirectTvAuth] Popup opener debug — openerWorking:', data.openerWorking, 'openerNull:', data.openerNull);
         return;
@@ -265,7 +286,7 @@ export function DirectTvAuthModal({
           true;
         `);
 
-        // 2) Try to extract Music User Token from popup's localStorage data
+        // 3) Try to extract Music User Token from popup's localStorage data
         const storageData: Record<string, string> = data.localStorage || {};
         const tokenKeys = ['mk-music-user-token', 'music-user-token', 'MusicUserToken', 'musicUserToken', 'DSID', 'mme_digital_token'];
         for (const key of tokenKeys) {
@@ -448,9 +469,11 @@ export function DirectTvAuthModal({
       visible={visible}
       animationType="slide"
       transparent={false}
-      onRequestClose={onClose}>
+      onRequestClose={() => {
+        // Prevent hardware back button from closing the modal; close must be clicked explicitly
+      }}>
       <View style={[styles.container, { backgroundColor: colors.screenBackground }]}>
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: colors.borderMuted }]}>
           <View style={styles.headerTitleGroup}>
             <Text style={[styles.headerTitle, { color: colors.cardTitleText }]}>
               {t('auth.directTvModalTitle')}
@@ -460,99 +483,140 @@ export function DirectTvAuthModal({
             </Text>
           </View>
 
-          <Pressable
-            style={({ focused }) => [
-              styles.closeBtn,
-              { backgroundColor: colors.glassButtonBg, borderColor: colors.glassButtonBorder },
-              focused && styles.closeBtnFocused,
-            ]}
-            onPress={onClose}
-            onFocus={() => setCloseBtnFocused(true)}
-            onBlur={() => setCloseBtnFocused(false)}
-            focusable={true}
-            hasTVPreferredFocus={false}>
-            <Text
-              style={[
-                styles.closeBtnText,
-                { color: colors.alertRed },
-                closeBtnFocused && { color: colors.onDarkTextPrimary },
-              ]}>
-              {t('common.close')}
+          <View style={styles.headerRight}>
+            <Text style={[styles.privacyNotice, { color: colors.textMuted }]}>
+              {t('auth.directTvPrivacyInfo')}
             </Text>
-          </Pressable>
+            <Pressable
+              style={({ focused }) => [
+                styles.closeBtn,
+                { backgroundColor: colors.glassButtonBg, borderColor: colors.glassButtonBorder },
+                focused && styles.closeBtnFocused,
+              ]}
+              onPress={onClose}
+              focusable={true}
+              hasTVPreferredFocus={false}
+              nextFocusDown={findNodeHandle(webviewContainerRef.current) ?? undefined}>
+              {({ focused }) => (
+                <Text
+                  style={[
+                    styles.closeBtnText,
+                    { color: colors.alertRed },
+                    focused && { color: colors.onDarkTextPrimary },
+                  ]}>
+                  {t('common.close')}
+                </Text>
+              )}
+            </Pressable>
+          </View>
         </View>
 
-        {loading || !mainSource ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.alertRed} />
-          </View>
-        ) : (
-          <WebView
-            ref={mainWebviewRef}
-            source={mainSource}
-            style={styles.webview}
-            onMessage={handleMainMessage}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            thirdPartyCookiesEnabled={true}
-            sharedCookiesEnabled={true}
-            focusable={true}
-            hasTVPreferredFocus={true}
-            onLoadEnd={() => { mainWebviewRef.current?.requestFocus(); }}
-          />
-        )}
-
-        {/* Popup WebView — Apple's login page */}
-        {popupUrl && (
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: '#fff', zIndex: 10, elevation: 10 }]}>
+        <View
+          ref={webviewContainerRef}
+          style={{ flex: 1, position: 'relative' }}
+          focusable={true}
+          onFocus={() => {
+            const activeWebviewRef = popupUrl ? popupWebviewRef : mainWebviewRef;
+            activeWebviewRef.current?.requestFocus();
+          }}>
+          {loading || !mainSource ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.alertRed} />
+            </View>
+          ) : (
             <WebView
-              ref={popupWebviewRef}
-              source={{ uri: popupUrl }}
-              style={{ flex: 1 }}
-              onMessage={handlePopupMessage}
+              ref={mainWebviewRef}
+              source={mainSource}
+              style={styles.webview}
+              onMessage={handleMainMessage}
               javaScriptEnabled={true}
               domStorageEnabled={true}
               thirdPartyCookiesEnabled={true}
               sharedCookiesEnabled={true}
               focusable={true}
               hasTVPreferredFocus={true}
-              injectedJavaScriptBeforeContentLoaded={POPUP_PAGE_JS}
-              injectedJavaScriptForMainFrameOnly={false}
-              onLoadEnd={() => { popupWebviewRef.current?.requestFocus(); }}
-              onNavigationStateChange={() => {
-                // Delay to let the new page render before stealing focus
-                setTimeout(() => { popupWebviewRef.current?.requestFocus(); }, 200);
-              }}
+              onLoadEnd={() => { mainWebviewRef.current?.requestFocus(); }}
             />
-            <Pressable
-              style={({ focused }) => [
-                {
-                  position: 'absolute',
-                  top: spacing.xl,
-                  right: spacing.xl,
-                  paddingVertical: spacing.sm,
-                  paddingHorizontal: spacing.lg,
-                  backgroundColor: colors.glassButtonBg,
-                  borderWidth: 1,
-                  borderColor: colors.glassButtonBorder,
-                  borderRadius: radius.md,
-                },
-                focused && { backgroundColor: colors.alertRed, borderColor: colors.alertRed },
-              ]}
-              onPress={() => { setPopupUrl(null); onClose(); }}
-              onFocus={() => setCloseBtnFocused(true)}
-              onBlur={() => setCloseBtnFocused(false)}
-              focusable={true}
-              hasTVPreferredFocus={false}>
-              <Text style={{
-                color: closeBtnFocused ? colors.onDarkTextPrimary : colors.alertRed,
-                fontWeight: '700',
-              }}>
-                {t('common.close')}
-              </Text>
-            </Pressable>
-          </View>
-        )}
+          )}
+
+          {/* Popup WebView — Apple's login page */}
+          {popupUrl && (
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: '#fff', zIndex: 10 }]}>
+              <WebView
+                ref={popupWebviewRef}
+                source={{ uri: popupUrl }}
+                style={{ flex: 1 }}
+                onMessage={handlePopupMessage}
+                javaScriptEnabled={true}
+                domStorageEnabled={true}
+                thirdPartyCookiesEnabled={true}
+                sharedCookiesEnabled={true}
+                focusable={true}
+                hasTVPreferredFocus={true}
+                injectedJavaScriptBeforeContentLoaded={POPUP_PAGE_JS}
+                injectedJavaScriptForMainFrameOnly={false}
+                onLoadEnd={() => {
+                  popupWebviewRef.current?.requestFocus();
+                  popupWebviewRef.current?.injectJavaScript(`
+                    (function() {
+                      function focusFirstInput(doc) {
+                        try {
+                          var inputs = doc.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="button"])');
+                          for (var i = 0; i < inputs.length; i++) {
+                            var el = inputs[i];
+                            if (el.offsetWidth > 0 && el.offsetHeight > 0) {
+                              el.focus();
+                              return true;
+                            }
+                          }
+                          var frames = doc.querySelectorAll('iframe');
+                          for (var j = 0; j < frames.length; j++) {
+                            try {
+                              if (frames[j].contentDocument && focusFirstInput(frames[j].contentDocument)) return true;
+                            } catch(e) {}
+                          }
+                        } catch(e) {}
+                        return false;
+                      }
+                      setTimeout(function() { focusFirstInput(document); }, 400);
+                    })();
+                    true;
+                  `);
+                }}
+                onNavigationStateChange={() => {
+                  setTimeout(() => {
+                    popupWebviewRef.current?.requestFocus();
+                    popupWebviewRef.current?.injectJavaScript(`
+                      (function() {
+                        function focusFirstInput(doc) {
+                          try {
+                            var inputs = doc.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="button"])');
+                            for (var i = 0; i < inputs.length; i++) {
+                              var el = inputs[i];
+                              if (el.offsetWidth > 0 && el.offsetHeight > 0) {
+                                el.focus();
+                                return true;
+                              }
+                            }
+                            var frames = doc.querySelectorAll('iframe');
+                            for (var j = 0; j < frames.length; j++) {
+                              try {
+                                if (frames[j].contentDocument && focusFirstInput(frames[j].contentDocument)) return true;
+                              } catch(e) {}
+                            }
+                          } catch(e) {}
+                          return false;
+                        }
+                        setTimeout(function() { focusFirstInput(document); }, 300);
+                      })();
+                      true;
+                    `);
+                  }, 300);
+                }}
+              />
+            </View>
+          )}
+        </View>
       </View>
     </Modal>
   );
@@ -571,6 +635,17 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  privacyNotice: {
+    fontSize: 11,
+    lineHeight: 14,
+    maxWidth: 240,
+    textAlign: 'right',
   },
   headerTitleGroup: {
     flex: 1,

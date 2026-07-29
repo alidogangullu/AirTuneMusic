@@ -140,7 +140,8 @@
     "serverError": "Verbindung konnte nicht vorbereitet werden",
     "qrNotWorkingSignInOnTv": "QR-Code klappt nicht? Auf TV anmelden",
     "directTvModalTitle": "Bei Apple Music auf TV anmelden",
-    "directTvHint": "Nutzen Sie diese Option, wenn die QR-Code-Kopplung über WLAN fehlschlägt."
+    "directTvHint": "Sie können diese Option nutzen, wenn die QR-Kopplung nicht funktioniert.\nNavigieren Sie auf diesem Anmeldebildschirm mit den Pfeiltasten Ihrer Fernbedienung.",
+    "directTvPrivacyInfo": "Der Anmeldevorgang erfolgt vollständig auf der offiziellen Apple-Website. Ihre Passwörter oder Daten sind für uns unzugänglich und können nicht gespeichert werden."
   },
   "settings": {
     "title": "Einstellungen",
