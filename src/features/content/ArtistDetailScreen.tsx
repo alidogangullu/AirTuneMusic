@@ -25,6 +25,20 @@ export type ArtistDetailScreenProps = {
   onBack: () => void;
 };
 
+function toTrackInfoFromSong(song: SongDetail): import('../player/musicPlayer').TrackInfo {
+  const THUMB = 200;
+  const attrs = song.attributes;
+  return {
+    id: attrs?.playParams?.id ?? song.id,
+    title: attrs?.name ?? null,
+    artistName: attrs?.artistName ?? null,
+    albumTitle: attrs?.albumName ?? null,
+    artworkUrl: getArtworkUrl(attrs?.artwork?.url, THUMB, THUMB) ?? null,
+    duration: attrs?.durationInMillis ?? 0,
+    trackIndex: 0,
+  };
+}
+
 export function ArtistDetailScreen({
   artistId,
   onBack,
@@ -57,9 +71,9 @@ export function ArtistDetailScreen({
     if (topSongs.length > 0) {
       const firstSong = topSongs[0];
       if (firstSong) {
-        // Find catalog song id to play
         const songId = firstSong.attributes?.playParams?.id ?? firstSong.id;
-        playSong(songId).catch(console.warn);
+        const allTopSongsInfo = topSongs.map(toTrackInfoFromSong);
+        playSong(songId, allTopSongsInfo[0], allTopSongsInfo, 0).catch(console.warn);
         openNowPlayingFullscreen();
       }
     }
@@ -67,9 +81,17 @@ export function ArtistDetailScreen({
 
   const handleTrackPress = useCallback((song: SongDetail) => {
     const songId = song.attributes?.playParams?.id ?? song.id;
-    playSong(songId).catch(console.warn);
+    const trackInfo = toTrackInfoFromSong(song);
+    const songIndex = topSongs.findIndex(s => s.id === song.id);
+    const allTopSongsInfo = topSongs.map(toTrackInfoFromSong);
+    playSong(
+      songId,
+      trackInfo,
+      allTopSongsInfo.length > 0 ? allTopSongsInfo : [trackInfo],
+      songIndex >= 0 ? songIndex : 0,
+    ).catch(console.warn);
     openNowPlayingFullscreen();
-  }, [playSong, openNowPlayingFullscreen]);
+  }, [topSongs, playSong, openNowPlayingFullscreen]);
 
   const handleAlbumPress = useCallback((album: AlbumDetail) => {
     pushContent({

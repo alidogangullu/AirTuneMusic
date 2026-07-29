@@ -434,7 +434,7 @@ export function ContentDetailScreen({
           case 'songs':
           case 'music-videos':
           case 'stations':
-            await playSong(getCatalogSongId(track));
+            await playSong(getCatalogSongId(track), toTrackInfo(track));
             break;
         }
       };
@@ -451,7 +451,7 @@ export function ContentDetailScreen({
           case 'songs':
           case 'music-videos':
           case 'stations':
-            success = await playSong(getCatalogSongId(track));
+            success = await playSong(getCatalogSongId(track), toTrackInfo(track));
             break;
         }
         if (success) {

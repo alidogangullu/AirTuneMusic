@@ -105,8 +105,8 @@ interface PlayerContextValue {
   playAlbum: (albumId: string, startIndex?: number, shuffle?: boolean, tracks?: TrackInfo[]) => Promise<boolean>;
   playPlaylist: (playlistId: string, startIndex?: number, shuffle?: boolean, tracks?: TrackInfo[]) => Promise<boolean>;
   playStation: (stationId: string) => Promise<boolean>;
-  playSong: (songId: string) => Promise<boolean>;
-  playMusicVideo: (musicVideoId: string) => Promise<boolean>;
+  playSong: (songId: string, trackInfo?: TrackInfo, tracks?: TrackInfo[], startIndex?: number) => Promise<boolean>;
+  playMusicVideo: (musicVideoId: string, trackInfo?: TrackInfo) => Promise<boolean>;
   playVideoQueue: (queue: VideoQueue) => void;
   stopVideo: () => void;
   play: () => void;
@@ -939,8 +939,15 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   );
 
   const playSong = useCallback(
-    async (songId: string) => {
-      setState(s => ({...s, containerId: songId, isLoading: true}));
+    async (songId: string, trackInfo?: TrackInfo, tracks?: TrackInfo[], startIndex = 0) => {
+      setState(s => ({
+        ...s,
+        containerId: songId,
+        containerTracks: tracks ?? (trackInfo ? [trackInfo] : s.containerTracks),
+        containerIndex: startIndex,
+        track: trackInfo ?? s.track,
+        isLoading: true,
+      }));
       return checkQuotaAndPlay(() => musicPlayer.playSong(songId));
     },
     [checkQuotaAndPlay],
@@ -978,8 +985,13 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   }, []);
 
   const playMusicVideo = useCallback(
-    async (musicVideoId: string) => {
-      setState(s => ({...s, containerId: musicVideoId, isLoading: true}));
+    async (musicVideoId: string, trackInfo?: TrackInfo) => {
+      setState(s => ({
+        ...s,
+        containerId: musicVideoId,
+        track: trackInfo ?? s.track,
+        isLoading: true,
+      }));
       return checkQuotaAndPlay(() => musicPlayer.playMusicVideo(musicVideoId));
     },
     [checkQuotaAndPlay],
