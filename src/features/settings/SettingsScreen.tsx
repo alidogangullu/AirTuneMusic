@@ -260,18 +260,22 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
           })()}
 
           {!isPro && (
-            <View style={[styles.adHintContainer, styles.adHintContainerFirst]}>
-              <Text style={[styles.adHintTitle, styles.featuresTitleAccent, styles.textCenter]}>{t('settings.pro.featuresTitle')}</Text>
-              {([
-                t('settings.pro.featureMusic'),
-                t('settings.pro.featureAirPlay'),
-                t('settings.pro.featureAdFree'),
-              ] as string[]).map((feat) => (
-                <Text key={feat} style={[styles.adHintText, styles.textCenter]}>{feat}</Text>
-              ))}
-              <Text style={[styles.adHintText, { marginTop: spacing.md, fontSize: 13, color: 'rgba(255,255,255,0.5)', fontStyle: 'italic', textAlign: 'center' }]}>
-                {t('settings.pro.disclaimer') || "AirTune is an independent Apple Music client, not an official Apple app.\nUpgrading to Pro removes streaming limits and supports development. This purchase is separate from your Apple Music subscription."}
-              </Text>
+            <View style={[styles.adHintContainer, styles.adHintContainerFirst, { flexDirection: 'row', alignItems: 'center', gap: spacing.lg }]}>
+              <View style={{ flex: 1, paddingRight: spacing.md }}>
+                <Text style={[styles.adHintTitle, styles.featuresTitleAccent, styles.textCenter]}>{t('settings.pro.featuresTitle')}</Text>
+                {([
+                  t('settings.pro.featureMusic'),
+                  t('settings.pro.featureAirPlay'),
+                  t('settings.pro.featureAdFree'),
+                ] as string[]).map((feat) => (
+                  <Text key={feat} style={[styles.adHintText, styles.textCenter]}>{feat}</Text>
+                ))}
+              </View>
+              <View style={{ flex: 1, paddingLeft: spacing.md }}>
+                <Text style={[styles.adHintText, { fontSize: 11, lineHeight: 15, fontStyle: 'italic', textAlign: 'center' }]}>
+                  {(t('settings.pro.disclaimer') || "AirTune is an independent Apple Music client, not an official Apple app. Upgrading to Pro removes AirTune's playback and streaming limits and supports development. This purchase is separate from your Apple Music subscription.").replace(/\n/g, ' ')}
+                </Text>
+              </View>
             </View>
           )}
 
