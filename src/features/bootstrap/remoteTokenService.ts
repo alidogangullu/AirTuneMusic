@@ -17,7 +17,7 @@ import { VERSION_CHECK_URL } from '../../constants/versionInfo';
 const storage = createMMKV({ id: 'amp-token-storage' });
 const TOKEN_KEY = 'amp_token';
 
-export const AmpTokenService = {
+export const RemoteTokenService = {
   /** Returns the cached amp token (MMKV) synchronously, or null if unavailable. */
   getAmpToken(): string | null {
     const token = storage.getString(TOKEN_KEY);
@@ -50,5 +50,5 @@ export const AmpTokenService = {
 
 /** Convenience accessor used by the motion-artwork API layer. */
 export function getAmpToken(): string | null {
-  return AmpTokenService.getAmpToken();
+  return RemoteTokenService.getAmpToken();
 }

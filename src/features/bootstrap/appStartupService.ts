@@ -3,7 +3,7 @@ import { checkAppleMusicSubscription } from './api/subscription';
 import { checkAppVersion, VersionCheckResult } from './versionService';
 import { AnnouncementService, Announcement } from './announcementService';
 import { QuotaConfigService } from './quotaConfigService';
-import { AmpTokenService } from './ampTokenService';
+import { RemoteTokenService } from './remoteTokenService';
 import { IapService } from '../settings/iapService';
 import { ensureConfigured } from '../player/musicPlayer';
 
@@ -27,7 +27,7 @@ export const AppStartupService = {
       loadMusicUserToken(),
       AnnouncementService.fetchAnnouncements(),
       QuotaConfigService.fetchAndUpdate(),
-      AmpTokenService.fetchAndUpdate(),
+      RemoteTokenService.fetchAndUpdate(),
     ]);
 
     const hasToken = token !== null && token.length > 0;

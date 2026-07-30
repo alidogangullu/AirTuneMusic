@@ -3,7 +3,7 @@
  *
  * The public api.music.apple.com + local .p8 developer token does NOT return
  * editorialVideo. It is only served by the Apple web-player ("amp") host to the
- * privileged web-player token (see AmpTokenService) together with the user's
+ * privileged web-player token (see RemoteTokenService) together with the user's
  * Media-User-Token. The returned video is an unprotected HLS .m3u8 that plays
  * without any auth — the token is needed only to obtain the URL.
  *
@@ -12,7 +12,7 @@
  */
 
 import axios from 'axios';
-import { getAmpToken } from '../../features/bootstrap/ampTokenService';
+import { getAmpToken } from '../../features/bootstrap/remoteTokenService';
 import { getMusicUserToken } from './musicUserToken';
 import type { EditorialVideo } from '../../types/catalog';
 import i18n from '../../locales';
