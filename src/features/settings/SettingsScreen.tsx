@@ -269,6 +269,9 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
               ] as string[]).map((feat) => (
                 <Text key={feat} style={[styles.adHintText, styles.textCenter]}>{feat}</Text>
               ))}
+              <Text style={[styles.adHintText, { marginTop: spacing.md, fontSize: 13, color: 'rgba(255,255,255,0.5)', fontStyle: 'italic', textAlign: 'center' }]}>
+                {t('settings.pro.disclaimer') || "AirTune is an independent Apple Music client, not an official Apple app.\nUpgrading to Pro removes streaming limits and supports development. This purchase is separate from your Apple Music subscription."}
+              </Text>
             </View>
           )}
 
