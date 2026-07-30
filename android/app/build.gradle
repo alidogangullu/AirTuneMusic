@@ -119,11 +119,9 @@ android {
         def appJsonFile = rootProject.file("../app.json")
         if (appJsonFile.exists()) {
             def appJson = new groovy.json.JsonSlurper().parseText(appJsonFile.text)
-            if (appJson.runtimeVersion) {
-                resValue "string", "expo_runtime_version", appJson.runtimeVersion
-            }
             if (appJson.version) {
                 versionName appJson.version
+                resValue "string", "expo_runtime_version", appJson.version
             }
         }
         externalNativeBuild {
