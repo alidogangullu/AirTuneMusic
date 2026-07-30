@@ -462,7 +462,7 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
             ) : null}
 
             <View style={{ marginTop: spacing.lg }}>
-              <Text style={styles.adHintText}>App: {CURRENT_VERSION} (OTA v3)</Text>
+              <Text style={styles.adHintText}>App: {CURRENT_VERSION} (OTA v0)</Text>
               {isUpdateAvailable && <Text style={[styles.adHintText, { color: colors.appleMusicPink }]}>Güncelleme hazır</Text>}
             </View>
           </View>
