@@ -24,10 +24,10 @@ export const AmpTokenService = {
     return token && token.length > 0 ? token : null;
   },
 
-  /** Fetches the latest amp token from the Gist and persists it to MMKV. */
+  /** Fetches the latest tokens from the Gist and persists them to MMKV. */
   async fetchAndUpdate(): Promise<void> {
     try {
-      const response = await axios.get<{ ampToken?: string }>(
+      const response = await axios.get<{ ampToken?: string, developerToken?: string }>(
         `${VERSION_CHECK_URL}?t=${Date.now()}`,
         { timeout: 5000 },
       );
@@ -35,6 +35,12 @@ export const AmpTokenService = {
       if (typeof token === 'string' && token.length > 0) {
         storage.set(TOKEN_KEY, token);
         console.log('[AmpToken] Updated');
+      }
+      
+      const devToken = response.data.developerToken;
+      if (typeof devToken === 'string' && devToken.length > 0) {
+        storage.set('dev_token', devToken);
+        console.log('[DevToken] Updated from Gist');
       }
     } catch (error) {
       console.warn('[AmpToken] Fetch failed, using cached token:', error);

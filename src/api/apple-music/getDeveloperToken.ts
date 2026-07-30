@@ -7,12 +7,20 @@
  */
 
 import {APPLE_MUSIC_DEVELOPER_TOKEN} from '../../config/appleMusicToken.generated';
+import { createMMKV } from 'react-native-mmkv';
+
+const storage = createMMKV({ id: 'amp-token-storage' });
 
 /**
  * Returns the Apple Music API developer token (JWT).
- * For now uses the token from the injected config; later switch to fetching from your backend.
+ * Tries to fetch the remote token from MMKV (updated via Gist), falls back to local .env token.
  */
 export async function getDeveloperToken(): Promise<string> {
+  const remoteToken = storage.getString('dev_token');
+  if (remoteToken && remoteToken.length > 0) {
+    return remoteToken;
+  }
+
   const token = APPLE_MUSIC_DEVELOPER_TOKEN;
   if (!token) {
     throw new Error(
@@ -20,9 +28,4 @@ export async function getDeveloperToken(): Promise<string> {
     );
   }
   return token;
-
-  // Later: fetch from backend, e.g.:
-  // const res = await fetch('https://your-api.com/api/apple-music/token');
-  // const { token } = await res.json();
-  // return token;
 }
