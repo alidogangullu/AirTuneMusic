@@ -7,6 +7,7 @@ import {
   Pressable,
   Image,
 } from 'react-native';
+import { LOGO_BASE64 } from '../../assets/images/logoBase64';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme';
 import { AppColors } from '../../theme/colors';
@@ -146,7 +147,7 @@ export const ForceUpdateScreen: React.FC<ForceUpdateScreenProps> = ({
         <View style={styles.logoRow}>
           <View style={styles.logoIcon}>
             <Image
-              source={require('../../assets/images/logo.png')}
+              source={{ uri: LOGO_BASE64 }}
               style={styles.logoImage}
               resizeMode="cover"
             />

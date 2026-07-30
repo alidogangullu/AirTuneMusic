@@ -8,9 +8,9 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
+import { LOGO_BASE64 } from '../../assets/images/logoBase64';
 import { useTranslation } from 'react-i18next';
 import QRCode from 'react-native-qrcode-svg';
 import { loadMusicUserToken, setMusicUserToken } from '../../api/apple-music/musicUserToken';
@@ -677,7 +677,7 @@ export function AppleMusicAuthScreen({
           style={styles.logoRow}>
           <View style={styles.logoIcon} focusable={false}>
             <Image
-              source={require('../../assets/images/logo.png')}
+              source={{ uri: LOGO_BASE64 }}
               style={styles.logoImage}
               resizeMode="cover"
             />

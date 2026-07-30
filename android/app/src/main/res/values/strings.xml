@@ -3,5 +3,5 @@
   <string name="airplay_notification_channel">AirPlay</string>
   <string name="airplay_notification_title">AirPlay receiver is running</string>
   <string name="airplay_notification_text">Stream music from iPhone</string>
-  <string name="expo_runtime_version">1.0.0</string>
+
 </resources>

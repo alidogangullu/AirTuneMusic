@@ -92,3 +92,5 @@ src/config/appleMusicToken.generated.ts
 # MusicKit for Android AAR (download from Apple; do not redistribute)
 android/app/libs/*.aar
 
+# EAS Update bundles
+dist/

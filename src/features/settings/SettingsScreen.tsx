@@ -7,6 +7,7 @@
 import React, { useMemo, useImperativeHandle, forwardRef, useCallback } from 'react';
 import { Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import { LOGO_BASE64 } from '../../assets/images/logoBase64';
 
 export type SettingsScreenHandle = { handleBack: () => boolean };
 
@@ -33,6 +34,8 @@ import { spacing, radius } from '../../theme/layout';
 import { VersionCheckResult } from '../bootstrap/versionService';
 import { Announcement } from '../bootstrap/announcementService';
 import { useAirPlay } from '../airplay/useAirPlay';
+import * as Updates from 'expo-updates';
+import { CURRENT_VERSION } from '../../constants/versionInfo';
 
 export type SettingsScreenProps = {
   onBack?: () => void;
@@ -67,6 +70,11 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
   const [showCancelHint, setShowCancelHint] = React.useState(false);
   const [hasLifetime, setHasLifetime] = React.useState(() => QuotaService.hasLifetimePurchase());
   const { enabled: airPlayEnabled, setEnabled: setAirPlayEnabled } = useAirPlay();
+  const { currentlyRunning, isUpdateAvailable, isUpdatePending } = Updates.useUpdates();
+
+  const handleApplyUpdate = useCallback(async () => {
+    await Updates.reloadAsync();
+  }, []);
 
   const refreshSubscriptionState = React.useCallback(() => {
     setActiveSubSku(QuotaService.getActiveSubSku());
@@ -179,8 +187,8 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
           onPress={() => handleItemPress(item.id)}
           labelColor={
             item.id === 'Update' ||
-            (item.id === 'Announcements' && hasUnreadAnnouncements) ||
-            (item.id === 'Subscription' && needsCancel)
+              (item.id === 'Announcements' && hasUnreadAnnouncements) ||
+              (item.id === 'Subscription' && needsCancel)
               ? colors.alertRed
               : undefined
           }
@@ -226,126 +234,126 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
     const airPlayPct = Math.min(airPlayUsage.used / airPlayUsage.total, 1);
 
     return (
+      <>
+        <SettingsMenuItem
+          prefix="‹"
+          label={t('common.back')}
+          hasTVPreferredFocus={activeSubSku === SKUS.LIFETIME || (!activeSubSku && isPro)}
+          onPress={() => setCurrentSubMenu('none')}
+        />
+        <View style={styles.divider} />
+
         <>
-          <SettingsMenuItem
-            prefix="‹"
-            label={t('common.back')}
-            hasTVPreferredFocus={activeSubSku === SKUS.LIFETIME || (!activeSubSku && isPro)}
-            onPress={() => setCurrentSubMenu('none')}
-          />
-          <View style={styles.divider} />
+          {isPro && (() => {
+            const isLifetimeOnly = hasLifetime && !needsCancel;
+            const planKey = activeSubSku === SKUS.MONTHLY ? 'settings.pro.planMonthly' : 'settings.pro.planYearly';
+            const subtitle = isLifetimeOnly
+              ? t('settings.pro.lifetimeMessage')
+              : t('settings.pro.activeMessage', { plan: t(planKey).toLowerCase() });
+            return (
+              <View style={styles.proActiveCard}>
+                <Text style={styles.proActiveBadge}>✦ PRO</Text>
+                <Text style={styles.proActiveTitle}>{t('settings.pro.title')}</Text>
+                <Text style={styles.proActiveSubtitle}>{subtitle}</Text>
+              </View>
+            );
+          })()}
 
-          <>
-              {isPro && (() => {
-                const isLifetimeOnly = hasLifetime && !needsCancel;
-                const planKey = activeSubSku === SKUS.MONTHLY ? 'settings.pro.planMonthly' : 'settings.pro.planYearly';
-                const subtitle = isLifetimeOnly
-                  ? t('settings.pro.lifetimeMessage')
-                  : t('settings.pro.activeMessage', { plan: t(planKey).toLowerCase() });
-                return (
-                  <View style={styles.proActiveCard}>
-                    <Text style={styles.proActiveBadge}>✦ PRO</Text>
-                    <Text style={styles.proActiveTitle}>{t('settings.pro.title')}</Text>
-                    <Text style={styles.proActiveSubtitle}>{subtitle}</Text>
-                  </View>
-                );
-              })()}
+          {!isPro && (
+            <View style={[styles.adHintContainer, styles.adHintContainerFirst]}>
+              <Text style={[styles.adHintTitle, styles.featuresTitleAccent, styles.textCenter]}>{t('settings.pro.featuresTitle')}</Text>
+              {([
+                t('settings.pro.featureMusic'),
+                t('settings.pro.featureAirPlay'),
+                t('settings.pro.featureAdFree'),
+              ] as string[]).map((feat) => (
+                <Text key={feat} style={[styles.adHintText, styles.textCenter]}>{feat}</Text>
+              ))}
+            </View>
+          )}
 
-              {!isPro && (
-                <View style={[styles.adHintContainer, styles.adHintContainerFirst]}>
-                  <Text style={[styles.adHintTitle, styles.featuresTitleAccent, styles.textCenter]}>{t('settings.pro.featuresTitle')}</Text>
-                  {([
-                    t('settings.pro.featureMusic'),
-                    t('settings.pro.featureAirPlay'),
-                    t('settings.pro.featureAdFree'),
-                  ] as string[]).map((feat) => (
-                    <Text key={feat} style={[styles.adHintText, styles.textCenter]}>{feat}</Text>
-                  ))}
-                </View>
-              )}
+          {!hasLifetime && (<View style={styles.pricingRow}>
+            {([
+              { sku: SKUS.MONTHLY, name: t('settings.pro.planMonthly'), sub: prices[SKUS.MONTHLY] ? `${prices[SKUS.MONTHLY]}${t('iap.perMonth')}` : '—', first: activeSubSku === SKUS.YEARLY },
+              { sku: SKUS.YEARLY, name: t('settings.pro.planYearly'), sub: prices[SKUS.YEARLY] ? `${prices[SKUS.YEARLY]}${t('iap.perYear')}` : '—', first: !activeSubSku || activeSubSku === SKUS.MONTHLY },
+              { sku: SKUS.LIFETIME, name: t('settings.pro.planLifetime'), sub: prices[SKUS.LIFETIME] ?? '—', first: false },
+            ] as const).map((plan) => {
+              const isLifetimeUser = false;
+              const isCurrent = plan.sku === activeSubSku;
+              return (
+                <Pressable
+                  key={plan.sku}
+                  style={({ focused }) => [
+                    styles.pricingCard,
+                    isCurrent ? styles.pricingCardCurrent : (focused && styles.pricingCardFocused),
+                  ]}
+                  hasTVPreferredFocus={plan.first}
+                  focusable={!isCurrent && !isLifetimeUser}
+                  onPress={() => { if (!isCurrent && !isLifetimeUser) handlePlanPress(plan.sku); }}>
+                  {({ focused }) => (<>
+                    {isCurrent && <Text style={styles.currentPlanLabel}>{t('settings.pro.currentPlan')}</Text>}
+                    <View style={plan.sku === SKUS.YEARLY ? styles.pricingNameRow : undefined}>
+                      <Text style={[styles.pricingName, !isCurrent && focused && styles.pricingFocusedText]} numberOfLines={1} adjustsFontSizeToFit>{plan.name}</Text>
+                      {plan.sku === SKUS.YEARLY && <View style={styles.discountBadge}><Text style={styles.discountBadgeText}>-17%</Text></View>}
+                    </View>
+                    <Text style={[styles.pricingPrice, !isCurrent && focused && styles.pricingFocusedText]} numberOfLines={1} adjustsFontSizeToFit>{plan.sub}</Text>
+                  </>)}
+                </Pressable>
+              );
+            })}
+          </View>)}
 
-              {!hasLifetime && (<View style={styles.pricingRow}>
-                {([
-                  { sku: SKUS.MONTHLY,  name: t('settings.pro.planMonthly'),  sub: prices[SKUS.MONTHLY]  ? `${prices[SKUS.MONTHLY]}${t('iap.perMonth')}`  : '—', first: activeSubSku === SKUS.YEARLY },
-                  { sku: SKUS.YEARLY,   name: t('settings.pro.planYearly'),   sub: prices[SKUS.YEARLY]   ? `${prices[SKUS.YEARLY]}${t('iap.perYear')}`    : '—', first: !activeSubSku || activeSubSku === SKUS.MONTHLY },
-                  { sku: SKUS.LIFETIME, name: t('settings.pro.planLifetime'), sub: prices[SKUS.LIFETIME] ?? '—',                                                   first: false },
-                ] as const).map((plan) => {
-                  const isLifetimeUser = false;
-                  const isCurrent = plan.sku === activeSubSku;
-                  return (
-                    <Pressable
-                      key={plan.sku}
-                      style={({ focused }) => [
-                        styles.pricingCard,
-                        isCurrent ? styles.pricingCardCurrent : (focused && styles.pricingCardFocused),
-                      ]}
-                      hasTVPreferredFocus={plan.first}
-                      focusable={!isCurrent && !isLifetimeUser}
-                      onPress={() => { if (!isCurrent && !isLifetimeUser) handlePlanPress(plan.sku); }}>
-                      {({ focused }) => (<>
-                        {isCurrent && <Text style={styles.currentPlanLabel}>{t('settings.pro.currentPlan')}</Text>}
-                        <View style={plan.sku === SKUS.YEARLY ? styles.pricingNameRow : undefined}>
-                          <Text style={[styles.pricingName, !isCurrent && focused && styles.pricingFocusedText]} numberOfLines={1} adjustsFontSizeToFit>{plan.name}</Text>
-                          {plan.sku === SKUS.YEARLY && <View style={styles.discountBadge}><Text style={styles.discountBadgeText}>-17%</Text></View>}
-                        </View>
-                        <Text style={[styles.pricingPrice, !isCurrent && focused && styles.pricingFocusedText]} numberOfLines={1} adjustsFontSizeToFit>{plan.sub}</Text>
-                      </>)}
-                    </Pressable>
-                  );
-                })}
-              </View>)}
+          {(needsCancel || showCancelHint) && (
+            <View style={styles.cancelCard}>
+              <QRCode
+                value="https://play.google.com/store/account/subscriptions"
+                size={90}
+                backgroundColor="transparent"
+                color={colors.textOnDark}
+              />
+              <View style={styles.cancelTextBlock}>
+                <Text style={styles.cancelTitle}>{t('settings.pro.cancelTitle')}</Text>
+                {needsCancel && <Text style={styles.cancelBodyBold}>{t('settings.pro.cancelBodyAccess')}</Text>}
+                <Text style={styles.cancelBody}>{t('settings.pro.cancelBody', {
+                  plan: activeSubSku === SKUS.MONTHLY ? t('settings.pro.planMonthly') : t('settings.pro.planYearly'),
+                })}</Text>
+              </View>
+            </View>
+          )}
 
-              {(needsCancel || showCancelHint) && (
-                <View style={styles.cancelCard}>
-                  <QRCode
-                    value="https://play.google.com/store/account/subscriptions"
-                    size={90}
-                    backgroundColor="transparent"
-                    color={colors.textOnDark}
-                  />
-                  <View style={styles.cancelTextBlock}>
-                    <Text style={styles.cancelTitle}>{t('settings.pro.cancelTitle')}</Text>
-                    {needsCancel && <Text style={styles.cancelBodyBold}>{t('settings.pro.cancelBodyAccess')}</Text>}
-                    <Text style={styles.cancelBody}>{t('settings.pro.cancelBody', {
-                      plan: activeSubSku === SKUS.MONTHLY ? t('settings.pro.planMonthly') : t('settings.pro.planYearly'),
-                    })}</Text>
-                  </View>
-                </View>
-              )}
+          {!isPro && (
+            <View style={[styles.adHintContainer, styles.adHintContainerNoTop]}>
+              <Text style={styles.adHintTitle}>{t('settings.pro.usageTitle')}</Text>
+              <View style={styles.usageRow}>
+                <Text style={styles.adHintText}>{t('settings.pro.usageMusic')}</Text>
+                <Text style={styles.adHintText}>{usage.used} / {usage.total}</Text>
+              </View>
+              <View style={styles.progressTrack}>
+                <View style={[styles.progressFill, { width: `${musicPct * 100}%` }]} />
+              </View>
+              <View style={[styles.usageRow, { marginTop: spacing.md }]}>
+                <Text style={styles.adHintText}>AirPlay</Text>
+                <Text style={styles.adHintText}>{airPlayUsedMin} / {airPlayTotalMin} min</Text>
+              </View>
+              <View style={styles.progressTrack}>
+                <View style={[styles.progressFill, { width: `${airPlayPct * 100}%` }]} />
+              </View>
+              <Text style={[styles.adHintText, { marginTop: spacing.md }]}>{t('settings.pro.resetsIn', { remaining })}</Text>
+            </View>
+          )}
 
-              {!isPro && (
-                <View style={[styles.adHintContainer, styles.adHintContainerNoTop]}>
-                  <Text style={styles.adHintTitle}>{t('settings.pro.usageTitle')}</Text>
-                  <View style={styles.usageRow}>
-                    <Text style={styles.adHintText}>{t('settings.pro.usageMusic')}</Text>
-                    <Text style={styles.adHintText}>{usage.used} / {usage.total}</Text>
-                  </View>
-                  <View style={styles.progressTrack}>
-                    <View style={[styles.progressFill, { width: `${musicPct * 100}%` }]} />
-                  </View>
-                  <View style={[styles.usageRow, { marginTop: spacing.md }]}>
-                    <Text style={styles.adHintText}>AirPlay</Text>
-                    <Text style={styles.adHintText}>{airPlayUsedMin} / {airPlayTotalMin} min</Text>
-                  </View>
-                  <View style={styles.progressTrack}>
-                    <View style={[styles.progressFill, { width: `${airPlayPct * 100}%` }]} />
-                  </View>
-                  <Text style={[styles.adHintText, { marginTop: spacing.md }]}>{t('settings.pro.resetsIn', { remaining })}</Text>
-                </View>
-              )}
-
-              {!isPro && (
-                <>
-                  <View style={styles.divider} />
-                  <SettingsMenuItem
-                    label={t('settings.pro.restorePurchases')}
-                    onPress={() => IapService.restorePurchases()}
-                  />
-                </>
-              )}
-          </>
+          {!isPro && (
+            <>
+              <View style={styles.divider} />
+              <SettingsMenuItem
+                label={t('settings.pro.restorePurchases')}
+                onPress={() => IapService.restorePurchases()}
+              />
+            </>
+          )}
         </>
-      );
+      </>
+    );
   };
 
   const renderAppPreferencesMenu = () => (
@@ -452,7 +460,22 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
             {t('settings.aboutInfo.website') ? (
               renderHighlightedText(t('settings.aboutInfo.website'), styles.adHintText, { marginTop: spacing.lg })
             ) : null}
+
+            <View style={{ marginTop: spacing.lg }}>
+              <Text style={styles.adHintText}>App: {CURRENT_VERSION} (OTA v3)</Text>
+              {isUpdateAvailable && <Text style={[styles.adHintText, { color: colors.appleMusicPink }]}>Güncelleme hazır</Text>}
+            </View>
           </View>
+
+          <View style={styles.divider} />
+
+          {isUpdatePending && (
+            <SettingsMenuItem
+              label="Güncellemeyi Uygula (Yeniden Başlat)"
+              labelColor={colors.alertRed}
+              onPress={handleApplyUpdate}
+            />
+          )}
         </>
       );
     }
@@ -483,7 +506,7 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
       <>
         <SettingsMenuItem
           prefix="‹"
-            label={t('common.back')}
+          label={t('common.back')}
           hasTVPreferredFocus
           onPress={() => setCurrentSubMenu('none')}
         />
@@ -529,8 +552,8 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
           <View style={styles.leftColumn}>
             <View style={styles.placeholder}>
               <Image
-                source={require('../../assets/images/logo.png')}
-                style={styles.placeholderImage}
+                source={{ uri: LOGO_BASE64 }}
+                style={[styles.placeholderImage]}
                 resizeMode="cover"
               />
             </View>

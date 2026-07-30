@@ -13,6 +13,7 @@ import {
   Image,
   Text,
 } from 'react-native';
+import { LOGO_BASE64 } from './src/assets/images/logoBase64';
 import { useTranslation } from 'react-i18next';
 import { GradientBackground } from './src/components/GradientBackground';
 import { HomeScreen } from './src/features/home/HomeScreen';
@@ -51,7 +52,7 @@ function AppContent(): React.JSX.Element {
         endColor={colors.gradientEnd}>
         <View style={styles.centered}>
           <Image
-            source={require('./src/assets/images/logo.png')}
+            source={{ uri: LOGO_BASE64 }}
             style={styles.splashLogo}
             resizeMode="contain"
           />

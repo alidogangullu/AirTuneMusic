@@ -6,6 +6,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { LOGO_BASE64 } from '../../assets/images/logoBase64';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme';
 import { radius, spacing } from '../../theme/layout';
@@ -125,7 +126,7 @@ export function SubscriptionRequiredScreen({ onSignOut }: Readonly<Props>) {
         <View style={styles.logoRow} focusable={false}>
           <View style={styles.logoIcon} focusable={false}>
             <Image
-              source={require('../../assets/images/logo.png')}
+              source={{ uri: LOGO_BASE64 }}
               style={styles.logoImage}
               resizeMode="cover"
             />

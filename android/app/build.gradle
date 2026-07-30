@@ -115,6 +115,17 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 43
         versionName "1.16.0"
+
+        def appJsonFile = rootProject.file("../app.json")
+        if (appJsonFile.exists()) {
+            def appJson = new groovy.json.JsonSlurper().parseText(appJsonFile.text)
+            if (appJson.runtimeVersion) {
+                resValue "string", "expo_runtime_version", appJson.runtimeVersion
+            }
+            if (appJson.version) {
+                versionName appJson.version
+            }
+        }
         externalNativeBuild {
             cmake {
                 abiFilters "arm64-v8a", "armeabi-v7a"
