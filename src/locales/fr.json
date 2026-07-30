@@ -283,6 +283,8 @@
     "skipAlertTitle": "Publicité ignorée",
     "skipNoReward": "Passer la publicité n'accorde pas d'écoutes bonus.",
     "adErrorFallback": "Impossible de démarrer la publicité. Réessayez ou ouvrez les options d'abonnement.",
+    "notificationTitle": "Limite de quota atteinte",
+    "notificationMessage": "Passez à AirTune Pro pour continuer à écouter.",
     "adLoadFailed": "Impossible de charger la publicité",
     "adSkipped": "Vous n'avez pas terminé la publicité, aucun quota accordé"
   },

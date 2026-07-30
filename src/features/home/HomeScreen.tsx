@@ -51,6 +51,7 @@ export function HomeScreen({
     dismissQuotaRecovery,
     startQuotaRewardAd,
     adInFlight,
+    stop,
   } = usePlayer();
   useLibraryMembershipSnapshot();
   const isDetailOpen = contentStack.length > 0;
@@ -77,7 +78,8 @@ export function HomeScreen({
       // If on the main tab, check for double-back exit
       const now = Date.now();
       if (lastBackPressed && now - lastBackPressed < 2000) {
-        // Exit app
+        // Exit app & cleanup playback/notification
+        stop();
         return false;
       }
 

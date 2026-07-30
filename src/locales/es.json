@@ -283,6 +283,8 @@
     "skipAlertTitle": "Anuncio omitido",
     "skipNoReward": "Saltar el anuncio no otorgará reproducciones extra.",
     "adErrorFallback": "No se pudo iniciar el anuncio. Inténtalo de nuevo o abre las opciones de suscripción.",
+    "notificationTitle": "Límite de cuota alcanzado",
+    "notificationMessage": "Cámbiate a AirTune Pro para continuar escuchando.",
     "adLoadFailed": "No se pudo cargar el anuncio",
     "adSkipped": "No completaste el anuncio, no se ha ganado cuota"
   },

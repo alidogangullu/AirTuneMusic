@@ -4,6 +4,7 @@ import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.net.wifi.WifiManager
 import android.util.Log
+import com.adg.airtune.musicplayer.MediaNotificationManager
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
@@ -131,6 +132,11 @@ class AirPlayModule(private val reactContext: ReactApplicationContext) :
 
     @ReactMethod fun addListener(eventName: String) {}
     @ReactMethod fun removeListeners(count: Int) {}
+
+    override fun onCatalystInstanceDestroy() {
+        try { stopEngine() } catch (_: Exception) {}
+        MediaNotificationManager.stop()
+    }
 
     // ── Engine lifecycle ───────────────────────────────────────────────────────
 
@@ -291,6 +297,7 @@ class AirPlayModule(private val reactContext: ReactApplicationContext) :
         val mode = WritableNativeMap()
         mode.putBoolean("audioOnly", true)
         emit("onAirPlayModeChange", mode)
+        MediaNotificationManager.updatePlaybackState(true)
     }
 
     fun onConnectionDestroy() {
@@ -299,6 +306,7 @@ class AirPlayModule(private val reactContext: ReactApplicationContext) :
         lastTags.clear()
         lastCoverB64 = null
         emitConnectionCount(0)
+        MediaNotificationManager.updatePlaybackState(false)
     }
 
     fun onConnectionReset(reason: Int) {
@@ -355,10 +363,21 @@ class AirPlayModule(private val reactContext: ReactApplicationContext) :
 
     private fun emitTrack() {
         val title = lastTags["minm"] ?: return
+        val artist = lastTags["asar"] ?: ""
+        val album = lastTags["asal"] ?: ""
+        
+        MediaNotificationManager.updateMetadata(
+            title = title,
+            artist = artist,
+            album = album,
+            artworkUrl = null,
+            base64Art = lastCoverB64
+        )
+
         val map = WritableNativeMap()
         map.putString("title",  title)
-        map.putString("artist", lastTags["asar"] ?: "")
-        map.putString("album",  lastTags["asal"] ?: "")
+        map.putString("artist", artist)
+        map.putString("album",  album)
         map.putString("genre",  lastTags["asgn"] ?: "")
         map.putDouble("durationMs", (lastTags["astm"]?.toDoubleOrNull() ?: 0.0))
         lastCoverB64?.let { map.putString("coverArtBase64", it) }

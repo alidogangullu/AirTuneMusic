@@ -237,6 +237,7 @@ export const MusicKitWebView = forwardRef<MusicKitWebPlayerRef, Props>(
               }
               if (event.state === 3) stateName = 'paused';
               if (event.state === 4) stateName = 'stopped';
+              if (event.state === 5) stateName = 'completed';
               window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'state', state: stateName }));
             });
 

@@ -124,7 +124,7 @@ export const MusicKitVideoWebView = forwardRef<MusicKitVideoWebViewRef, Props>(
                   window._playCurrentVideo();
                   return;
                 }
-                name = 'stopped';
+                name = 'completed';
               }
               window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'state', state: name }));
             });

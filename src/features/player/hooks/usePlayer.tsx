@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {Alert, BackHandler, ToastAndroid} from 'react-native';
+import {Alert, BackHandler, ToastAndroid, AppState} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import * as musicPlayer from '../musicPlayer';
 import {QuotaService} from '../../settings/quotaService';
@@ -237,6 +237,20 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   const suppressAutoStartRef = useRef(false);
   const cancelledQuotaQueueIdRef = useRef<number | null>(null);
   const webFallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastWebProgressRef = useRef<{ position: number; duration: number }>({ position: 0, duration: 0 });
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'background' || state === 'inactive') {
+        if (nativePlaybackTimeoutRef.current) {
+          clearTimeout(nativePlaybackTimeoutRef.current);
+          nativePlaybackTimeoutRef.current = null;
+        }
+        lastNativeItemChangedRef.current = null;
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
   const handleWebFallbackFailure = useCallback((errorMsg: string) => {
     if (!webFallbackActiveRef.current) return;
@@ -303,6 +317,9 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
 
   const startNativeStallTimer = useCallback((trackId: string, delayMs = 10000) => {
     if (nativePlaybackTimeoutRef.current) clearTimeout(nativePlaybackTimeoutRef.current);
+    if (AppState.currentState === 'background' || AppState.currentState === 'inactive') {
+      return;
+    }
     nativePlaybackTimeoutRef.current = setTimeout(() => {
       nativePlaybackTimeoutRef.current = null;
       if (activeEngineRef.current !== 'native') return;
@@ -408,6 +425,12 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
         const remaining = QuotaService.getRemainingTimeFormatted();
         const suppress = suppressAutoStartRef.current;
         suppressAutoStartRef.current = false;
+
+        musicPlayer.updateNotificationMetadata(
+          t('quotaLimit.notificationTitle', 'Kota sınırına ulaşıldı'),
+          t('quotaLimit.notificationMessage', "Dinlemeye devam etmek için AirTune Pro'ya geçebilirsiniz."),
+          'AirTune'
+        );
 
         return {
           title: t('quotaLimit.title'),
@@ -1204,12 +1227,17 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
           onPlaybackStateChanged={stateName => {
             if (activeEngineRef.current === 'web') {
               const isLoading = stateName === 'loading';
-              const mappedState: PlaybackStateName = isLoading ? 'unknown' : (stateName as PlaybackStateName);
+              const mappedState: PlaybackStateName = isLoading ? 'unknown' : (stateName === 'completed' ? 'stopped' : (stateName as PlaybackStateName));
               setState(s => ({...s, playbackState: mappedState, isLoading}));
 
               // Fallback single-track ended → return to native queue
-              // Guard: only treat 'stopped' as real track end after position>0 progress arrived
-              if (stateName === 'stopped' && webFallbackActiveRef.current && webFallbackHadRealProgressRef.current && !webSeekingRef.current) {
+              // Guard: only treat 'completed' (or 'stopped' when near end of track and in foreground) as real track end
+              const pos = lastWebProgressRef.current.position;
+              const dur = lastWebProgressRef.current.duration;
+              const isNearEnd = dur > 0 && pos > 0 && (dur - pos < 5000);
+              const isRealEnd = stateName === 'completed' || (stateName === 'stopped' && isNearEnd && AppState.currentState === 'active');
+
+              if (isRealEnd && webFallbackActiveRef.current && webFallbackHadRealProgressRef.current && !webSeekingRef.current) {
                 const isImmediateFail = webFallbackIsImmediateFailRef.current;
                 webFallbackActiveRef.current = false;
                 webFallbackHadRealProgressRef.current = false;
@@ -1263,6 +1291,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
           }}
           onProgressChanged={data => {
             if (activeEngineRef.current === 'web') {
+              lastWebProgressRef.current = { position: data.position, duration: data.duration };
               musicPlayer.emitManualPlaybackProgress({...data});
               setState(s => ({...s, isLoading: false, buffering: false}));
               if (webFallbackActiveRef.current && data.position > 0) {

@@ -22,9 +22,16 @@ import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.facebook.react.bridge.LifecycleEventListener
 
 class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
-        ReactContextBaseJavaModule(reactContext), MediaPlayerController.Listener {
+        ReactContextBaseJavaModule(reactContext), MediaPlayerController.Listener, LifecycleEventListener {
+
+    private var isAppInForeground = true
+
+    init {
+        reactContext.addLifecycleEventListener(this)
+    }
 
     companion object {
         const val NAME = "MusicPlayer"
@@ -90,6 +97,7 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
                                 tokenProvider
                         )
                 player?.addListener(this)
+                MediaNotificationManager.init(reactContext.applicationContext)
 
                 Log.d(TAG, "Player created successfully: ${player != null}")
                 promise.resolve(true)
@@ -170,6 +178,7 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
                 }
                 
                 val queue = builder.build()
+                MediaNotificationManager.updatePlaybackState(true)
                 p.prepare(queue, true)
                 promise.resolve(true)
             } catch (e: Exception) {
@@ -208,6 +217,7 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
                 }
                 val queue = builder.build()
                 Log.d(TAG, "playContainer: queue built, calling prepare(queue, autoPlay=true)")
+                MediaNotificationManager.updatePlaybackState(true)
                 p.prepare(queue, true)
                 Log.d(TAG, "playContainer: prepare() returned, playbackState=${p.playbackState}")
                 promise.resolve(true)
@@ -230,6 +240,7 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
                 val queue =
                         CatalogPlaybackQueueItemProvider.Builder().items(itemType, itemId).build()
                 Log.d(TAG, "playItem: queue built, calling prepare(queue, autoPlay=true)")
+                MediaNotificationManager.updatePlaybackState(true)
                 p.prepare(queue, true)
                 Log.d(TAG, "playItem: prepare() returned, playbackState=${p.playbackState}")
                 promise.resolve(true)
@@ -320,6 +331,7 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
         mainHandler.post {
             player?.stop()
             stopProgressUpdates()
+            MediaNotificationManager.stop()
         }
     }
 
@@ -469,12 +481,14 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
                 }
         sendEvent("onPlaybackStateChanged", map)
 
-        if (currentState == PlaybackState.PLAYING) {
+        if (currentState != PlaybackState.PAUSED && currentState != PlaybackState.STOPPED) {
             setKeepAwake(true)
             startProgressUpdates()
+            mainHandler.post { MediaNotificationManager.updatePlaybackState(true) }
         } else {
             setKeepAwake(false)
             stopProgressUpdates()
+            mainHandler.post { MediaNotificationManager.updatePlaybackState(false) }
         }
     }
 
@@ -501,6 +515,16 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
             map.putInt("trackIndex", controller.playbackQueueIndex)
             map.putInt("containerIndex", controller.currentContainerIndex)
             map.putLong("playbackQueueId", currentItem.playbackQueueId)
+            
+            mainHandler.post {
+                MediaNotificationManager.updateMetadata(
+                    title = media.title ?: "",
+                    artist = media.artistName ?: "",
+                    album = media.albumTitle,
+                    artworkUrl = media.getArtworkUrl(ARTWORK_SIZE, ARTWORK_SIZE),
+                    base64Art = null
+                )
+            }
         }
         // Always send container + capability info regardless of track
         if (containerStoreId != null) {
@@ -509,6 +533,19 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
         map.putBoolean("canSkipToPrevious", controller.canSkipToPreviousItem())
         map.putBoolean("canSkipToNext", controller.canSkipToNextItem())
         sendEvent("onCurrentItemChanged", map)
+    }
+
+    @ReactMethod
+    fun updateNotificationMetadata(title: String, artist: String, album: String) {
+        mainHandler.post {
+            MediaNotificationManager.updateMetadata(
+                title = title,
+                artist = artist,
+                album = album,
+                artworkUrl = null,
+                base64Art = null
+            )
+        }
     }
 
     override fun onPlaybackStateUpdated(controller: MediaPlayerController) {
@@ -610,13 +647,15 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
                                     TAG,
                                     "progress: pos=$pos dur=$dur buf=$buf state=${p.playbackState}"
                             )
-                            val map =
-                                    Arguments.createMap().apply {
-                                        putDouble("position", pos.toDouble())
-                                        putDouble("duration", dur.toDouble())
-                                        putDouble("buffered", buf.toDouble())
-                                    }
-                            sendEvent("onPlaybackProgress", map)
+                            if (isAppInForeground) {
+                                val map =
+                                        Arguments.createMap().apply {
+                                            putDouble("position", pos.toDouble())
+                                            putDouble("duration", dur.toDouble())
+                                            putDouble("buffered", buf.toDouble())
+                                        }
+                                sendEvent("onPlaybackProgress", map)
+                            }
 
                             // Detect track stuck at end: pos near dur but SDK never advances
                             if (pos >= 0 && dur > 0 && pos >= dur - 1000) {
@@ -661,7 +700,22 @@ class MusicPlayerModule(private val reactContext: ReactApplicationContext) :
     }
 
     override fun onCatalystInstanceDestroy() {
+        super.onCatalystInstanceDestroy()
+        reactContext.removeLifecycleEventListener(this)
         release()
+        mainHandler.post { MediaNotificationManager.stop() }
+    }
+
+    override fun onHostResume() {
+        isAppInForeground = true
+    }
+
+    override fun onHostPause() {
+        isAppInForeground = false
+    }
+
+    override fun onHostDestroy() {
+        isAppInForeground = false
     }
 
     // ── Helpers ─────────────────────────────────────────────────

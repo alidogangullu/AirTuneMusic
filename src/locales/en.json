@@ -283,6 +283,8 @@
     "skipAlertTitle": "Ad skipped",
     "skipNoReward": "Skipping the ad will not grant bonus plays.",
     "adErrorFallback": "The ad could not be started. Please try again or open subscription options.",
+    "notificationTitle": "Quota limit reached",
+    "notificationMessage": "Upgrade to AirTune Pro to continue listening.",
     "adLoadFailed": "Ad could not be loaded",
     "adSkipped": "You didn't finish the ad, no quota earned"
   },
