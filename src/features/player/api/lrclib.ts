@@ -55,21 +55,18 @@ export async function fetchLyrics(
   const cleanedTrack = cleanText(trackName);
   const cleanedArtist = cleanText(artistName);
   
-  if (cleanedTrack !== trackName || cleanedArtist !== artistName) {
-    const cleanedParams = new URLSearchParams({
-      track_name: cleanedTrack,
-      artist_name: cleanedArtist,
-      duration: durationSec.toString(),
-    });
-    
-    try {
-      const res = await fetch(`https://lrclib.net/api/get?${cleanedParams.toString()}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.syncedLyrics) return data;
-      }
-    } catch { /* ignore */ }
-  }
+  const cleanedParams = new URLSearchParams({
+    track_name: cleanedTrack,
+    artist_name: cleanedArtist,
+  });
+  
+  try {
+    const res = await fetch(`https://lrclib.net/api/get?${cleanedParams.toString()}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.syncedLyrics) return data;
+    }
+  } catch { /* ignore */ }
 
   // Strategy 3: Fuzzy Search Fallback
   try {
