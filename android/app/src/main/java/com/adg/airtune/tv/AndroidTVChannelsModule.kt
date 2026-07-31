@@ -50,10 +50,15 @@ class AndroidTVChannelsModule(private val reactContext: ReactApplicationContext)
                     helper.updatePreviewChannel(existing.id, channel)
                     existing.id
                 } else {
-                    if (allChannels.isEmpty()) {
-                        helper.publishDefaultChannel(channel)
-                    } else {
-                        helper.publishChannel(channel)
+                    helper.publishChannel(channel)
+                }
+
+                // Request browsability for the first channel automatically
+                if (allChannels.none { it.isBrowsable }) {
+                    try {
+                        TvContractCompat.requestChannelBrowsable(context, channelId)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
                 }
 
@@ -81,16 +86,6 @@ class AndroidTVChannelsModule(private val reactContext: ReactApplicationContext)
 
                     try {
                         helper.publishPreviewProgram(progBuilder.build())
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-
-                // Request browsability AFTER programs are populated
-                val updatedChannel = try { helper.getPreviewChannel(channelId) } catch (e: Exception) { null }
-                if (updatedChannel != null && !updatedChannel.isBrowsable) {
-                    try {
-                        TvContractCompat.requestChannelBrowsable(context, channelId)
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }

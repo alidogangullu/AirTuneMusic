@@ -1,3 +1,5 @@
+import { CURRENT_VERSION } from '../../../constants/versionInfo';
+
 export interface LyricsResponse {
   id: number;
   trackName: string;
@@ -55,8 +57,8 @@ export async function fetchLyrics(
   });
   
   const fetchHeaders = {
-    'User-Agent': 'AirTune/1.17.0 (https://github.com/adg/AirTune)',
-    'Lrclib-Client': 'AirTune/1.17.0',
+    'User-Agent': `AirTune/${CURRENT_VERSION} (https://github.com/alidogangullu/AirTuneMusic)`,
+    'Lrclib-Client': `AirTune/${CURRENT_VERSION}`,
   };
 
   try {

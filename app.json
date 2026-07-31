@@ -1,8 +1,8 @@
 {
   "name": "AirTuneMusic",
   "displayName": "AirTune Music",
-  "version": "1.17.0",
-  "runtimeVersion": "1.17.0",
+  "version": "1.18.0",
+  "runtimeVersion": "1.18.0",
   "scheme": "airtune",
   "extra": {
     "eas": {
