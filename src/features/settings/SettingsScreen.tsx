@@ -34,7 +34,6 @@ import { spacing, radius } from '../../theme/layout';
 import { VersionCheckResult } from '../bootstrap/versionService';
 import { Announcement } from '../bootstrap/announcementService';
 import { useAirPlay } from '../airplay/useAirPlay';
-import * as Updates from 'expo-updates';
 import { CURRENT_VERSION } from '../../constants/versionInfo';
 
 export type SettingsScreenProps = {
@@ -70,11 +69,6 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
   const [showCancelHint, setShowCancelHint] = React.useState(false);
   const [hasLifetime, setHasLifetime] = React.useState(() => QuotaService.hasLifetimePurchase());
   const { enabled: airPlayEnabled, setEnabled: setAirPlayEnabled } = useAirPlay();
-  const { currentlyRunning, isUpdateAvailable, isUpdatePending } = Updates.useUpdates();
-
-  const handleApplyUpdate = useCallback(async () => {
-    await Updates.reloadAsync();
-  }, []);
 
   const refreshSubscriptionState = React.useCallback(() => {
     setActiveSubSku(QuotaService.getActiveSubSku());
@@ -469,20 +463,9 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
             ) : null}
 
             <View style={{ marginTop: spacing.lg }}>
-              <Text style={styles.adHintText}>App: {CURRENT_VERSION} (OTA v0)</Text>
-              {isUpdateAvailable && <Text style={[styles.adHintText, { color: colors.appleMusicPink }]}>Güncelleme hazır</Text>}
+              <Text style={styles.adHintText}>App: {CURRENT_VERSION} (OTA v3)</Text>
             </View>
           </View>
-
-          <View style={styles.divider} />
-
-          {isUpdatePending && (
-            <SettingsMenuItem
-              label="Güncellemeyi Uygula (Yeniden Başlat)"
-              labelColor={colors.alertRed}
-              onPress={handleApplyUpdate}
-            />
-          )}
         </>
       );
     }

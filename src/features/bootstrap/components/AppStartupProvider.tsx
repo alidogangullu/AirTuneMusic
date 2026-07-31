@@ -5,6 +5,7 @@ import { Announcement, AnnouncementService } from '../announcementService';
 import { initializeUnityAds } from '../unityAds';
 import { QuotaService } from '../../settings/quotaService';
 import { IapService } from '../../settings/iapService';
+import * as Updates from 'expo-updates';
 
 interface AppStartupContextType {
   isInitialized: boolean;
@@ -69,6 +70,17 @@ export function AppStartupProvider({ children }: Readonly<{ children: React.Reac
     const unsubStatus = IapService.addSubscriptionStatusListener(refresh);
     return () => { unsubPurchase(); unsubStatus(); };
   }, []);
+
+  // Auto-reload app as soon as an OTA update finishes downloading
+  const { isUpdatePending } = Updates.useUpdates();
+  useEffect(() => {
+    if (isUpdatePending) {
+      console.log('[AppStartupProvider] OTA update downloaded and pending. Reloading app immediately...');
+      Updates.reloadAsync().catch(err => {
+        console.error('[AppStartupProvider] Auto reload error:', err);
+      });
+    }
+  }, [isUpdatePending]);
 
   const markAnnouncementRead = React.useCallback((id: string) => {
     AnnouncementService.markAsRead(id);

@@ -54,6 +54,7 @@ export function useLyrics(enabled: boolean = true): UseLyricsResult {
     setIsLoading(true);
 
     async function loadLyrics() {
+      console.log(`[useLyrics] Fetching lyrics for trackId=${track?.id}, title="${track?.title}", artist="${track?.artistName}"`);
       setError(null);
       try {
         const data = await fetchLyrics(
@@ -68,7 +69,8 @@ export function useLyrics(enabled: boolean = true): UseLyricsResult {
             setError('Lyrics not found');
           }
         }
-      } catch {
+      } catch (err) {
+        console.error('[useLyrics] Error loading lyrics:', err);
         if (mounted) {
           setError('Failed to load lyrics');
         }
