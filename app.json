@@ -3,6 +3,7 @@
   "displayName": "AirTune Music",
   "version": "1.17.0",
   "runtimeVersion": "1.17.0",
+  "scheme": "airtune",
   "extra": {
     "eas": {
       "projectId": "9f89c037-7727-4049-9a5a-a75a26958820"

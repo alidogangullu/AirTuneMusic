@@ -17,7 +17,9 @@ import {getDeveloperToken} from '../../../api/apple-music/getDeveloperToken';
 import {waitForToken, getMusicUserToken} from '../../../api/apple-music/musicUserToken';
 import {airPlayReceiver} from '../../airplay/airPlayReceiver';
 import {MusicKitWebView, MusicKitWebPlayerRef} from '../components/MusicKitWebView';
-import {VideoPlayerModal} from '../components/VideoPlayerModal';
+const VideoPlayerModal = React.lazy(() =>
+  import('../components/VideoPlayerModal').then(m => ({ default: m.VideoPlayerModal }))
+);
 import type {QuotaRecoveryRequest} from '../../content/QuotaLimitScreen';
 import type {
   PlaybackStateName,
@@ -1322,11 +1324,13 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
       )}
       </PlaybackProgressProvider>
       {state.videoQueue && tokens && (
-        <VideoPlayerModal
-          queue={state.videoQueue}
-          tokens={tokens}
-          onClose={stopVideo}
-        />
+        <React.Suspense fallback={null}>
+          <VideoPlayerModal
+            queue={state.videoQueue}
+            tokens={tokens}
+            onClose={stopVideo}
+          />
+        </React.Suspense>
       )}
     </PlayerContext.Provider>
   );

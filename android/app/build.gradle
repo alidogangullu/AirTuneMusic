@@ -186,6 +186,9 @@ dependencies {
     // AirPlay — MediaSession ve MediaCompat için
     implementation("androidx.media:media:1.7.0")
 
+    // Android TV Home Screen Channels & Programs API
+    implementation("androidx.tvprovider:tvprovider:1.1.0")
+
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

@@ -22,6 +22,7 @@ import { useTheme } from '../../theme';
 import { usePlayer } from '../player/hooks/usePlayer';
 import { useAppStartup } from '../bootstrap/components/AppStartupProvider';
 import { useLibraryMembershipSnapshot } from '../library/hooks/useLibraryMembership';
+import { useDeepLinkHandler } from '../../services/deepLinkService';
 
 export type HomeScreenProps = {
   onSignOut?: () => void;
@@ -30,10 +31,15 @@ export type HomeScreenProps = {
 export function HomeScreen({
   onSignOut,
 }: Readonly<HomeScreenProps>): React.JSX.Element {
+  const [activeTab, setActiveTab] = useState<NavTabId>('listen-now');
+
+  useDeepLinkHandler(useCallback(() => {
+    setActiveTab('now-playing');
+  }, []));
+
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { updateInfo, announcements, readAnnouncementIds, hasUnreadAnnouncements, markAnnouncementRead, needsCancelSubscription } = useAppStartup();
-  const [activeTab, setActiveTab] = useState<NavTabId>('listen-now');
   const [contentStack, setContentStack] =
     useState<RecommendationContent[]>([]);
   const selectedContent = contentStack.at(-1) ?? null;

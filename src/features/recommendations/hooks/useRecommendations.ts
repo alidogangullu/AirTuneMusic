@@ -119,6 +119,7 @@ export function isCategoricalRecommendation(rec: PersonalRecommendation): boolea
 }
 
 export type RecommendationSection = {
+  id?: string;
   title: string;
   kind?: string;
   isCategorical: boolean;
@@ -162,6 +163,7 @@ export function groupRecommendations(
       rec.attributes?.title?.stringForDisplay ?? rec.attributes?.kind ?? '';
 
     sections.push({
+      id: rec.id,
       title,
       kind: rec.attributes?.kind,
       isCategorical: isCategoricalRecommendation(rec),
