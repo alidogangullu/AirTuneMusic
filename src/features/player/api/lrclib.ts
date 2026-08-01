@@ -55,8 +55,8 @@ export async function fetchLyrics(
   });
   
   const fetchHeaders = {
-    'User-Agent': 'AirTune/1.17.0 (https://github.com/adg/AirTune)',
-    'Lrclib-Client': 'AirTune/1.17.0',
+    'User-Agent': 'AirTune/1.18.0 (https://github.com/adg/AirTune)',
+    'Lrclib-Client': 'AirTune/1.18.0',
   };
 
   try {

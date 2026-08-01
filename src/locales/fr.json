@@ -200,14 +200,14 @@
     "support": "Support",
     "aboutInfo": {
       "title": "À propos d'AirTune Music",
-      "message": "AirTune Music est un client Apple Music tiers construit exclusivement à l'aide de l'API officielle Apple Music. Nous ne stockons aucune de vos données personnelles ; toutes les informations sont récupérées directement des serveurs d'Apple. Les paroles synchronisées sont fournies par LRCLib (lrclib.net), une base de données de paroles libre et ouverte. Les publicités sont diffusées via Unity Ads.",
+      "message": "AirTune Music est un client Apple Music tiers construit exclusivement à l'aide de l'API officielle Apple Music. Nous ne stockons aucune de vos données personnelles ; toutes les informations sont récupérées directement des serveurs d'Apple. Les paroles synchronisées sont fournies par LRCLib (lrclib.net), une base de données de paroles libre et ouverte. Les publicités sont diffusées via Yandex Ads.",
       "website": "Pour d'autres produits, des informations générales et les mentions légales, visitez adgn.me"
     },
     "adSettings": {
       "title": "Préférences pub",
       "autoStartAd": "Démarrage automatique de la pub",
       "adHintTitle": "Comment passer la publicité ?",
-      "adHint": "Regardez la publicité jusqu'à la fin. Une fois le minuteur écoulé, un bouton apparaîtra en haut à droite :\n\n• Bouton de fermeture (✕) : appuyez sur la touche Retour de votre télécommande.\n\n• Bouton Suivant (⏭) : naviguez jusqu'à ce bouton avec les touches directionnelles et appuyez sur Sélectionner. Un nouvel écran avec un bouton de fermeture (✕) apparaîtra — appuyez sur Retour pour quitter."
+      "adHint": "Regardez la publicité jusqu'à la fin. Une fois le minuteur écoulé, un bouton apparaîtra en haut à droite :\n\n• Si un bouton Fermer (✕) ou Suivant (⏭) apparaît : naviguez jusqu'à lui avec les touches directionnelles de votre télécommande et appuyez dessus.\n\n• Sur l'écran final, naviguez jusqu'au bouton Fermer (✕) en haut à droite et appuyez sur le bouton ✕ pour quitter."
     },
     "supportInfo": {
       "contactTitle": "Contact",
@@ -283,7 +283,7 @@
     "skipAlertTitle": "Publicité ignorée",
     "skipNoReward": "Passer la publicité n'accorde pas d'écoutes bonus.",
     "adErrorFallback": "Impossible de démarrer la publicité. Réessayez ou ouvrez les options d'abonnement.",
-    "adLoadFailed": "Impossible de charger la publicité",
+    "adLoadFailed": "Aucune publicité n'est disponible pour le moment. Veuillez réessayer plus tard.",
     "adSkipped": "Vous n'avez pas terminé la publicité, aucun quota accordé"
   },
   "airplay": {

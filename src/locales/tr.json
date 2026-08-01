@@ -200,14 +200,14 @@
     "support": "Destek",
     "aboutInfo": {
       "title": "AirTune Music Hakkında",
-      "message": "AirTune Music, yalnızca resmi Apple Music API'si kullanılarak oluşturulmuş üçüncü taraf bir Apple Music istemcisidir. Kişisel verilerinizin hiçbirini saklamıyoruz; tüm bilgiler doğrudan Apple sunucularından alınır. Senkronize şarkı sözleri, ücretsiz ve açık kaynaklı bir veritabanı olan LRCLib (lrclib.net) tarafından sağlanmaktadır. Reklamlar Unity Ads aracılığıyla sunulmaktadır.",
+      "message": "AirTune Music, yalnızca resmi Apple Music API'si kullanılarak oluşturulmuş üçüncü taraf bir Apple Music istemcisidir. Kişisel verilerinizin hiçbirini saklamıyoruz; tüm bilgiler doğrudan Apple sunucularından alınır. Senkronize şarkı sözleri, ücretsiz ve açık kaynaklı bir veritabanı olan LRCLib (lrclib.net) tarafından sağlanmaktadır. Reklamlar Yandex Ads aracılığıyla sunulmaktadır.",
       "website": "Diğer ürünler, genel bilgiler ve yasal metinler için adgn.me adresini ziyaret edebilirsiniz."
     },
     "adSettings": {
       "title": "Reklam Tercihleri",
       "autoStartAd": "Reklamı Otomatik Başlat",
       "adHintTitle": "Reklam nasıl geçilir?",
-      "adHint": "Reklamı izleyin. Süre dolunca sağ üstte bir buton belirecek:\n\n• Kapatma butonu (✕) çıkarsa: kumandanın geri tuşuyla reklamı kapatabilirsiniz.\n\n• İleri butonu (⏭) çıkarsa: kumanda yön tuşlarıyla butonun üzerine gelin ve tıklayın. Açılan ekranda sağ üstteki kapatma butonunu (✕) görünce kumandanın geri tuşuyla çıkış yapabilirsiniz."
+      "adHint": "Reklamı izleyin. Süre dolunca sağ üstte bir buton belirecek:\n\n• Kapatma (✕) veya İleri (⏭) butonu çıkarsa: kumandanın yön tuşlarıyla butonun üzerine gelin ve basın.\n\n• Açılan son ekranda sağ üstteki kapatma (✕) butonunun üzerine gelip ✕ butonuna basarak reklamı kapatabilirsiniz."
     },
     "supportInfo": {
       "contactTitle": "İletişim",
@@ -283,7 +283,7 @@
     "skipAlertTitle": "Reklam atlandı",
     "skipNoReward": "Reklamı atlamak bonus hak vermez.",
     "adErrorFallback": "Reklam başlatılamadı. Lütfen tekrar deneyin veya abonelik seçeneklerini açın.",
-    "adLoadFailed": "Reklam yüklenemedi",
+    "adLoadFailed": "Şu anda gösterilecek reklam bulunamadı. Lütfen daha sonra tekrar deneyin.",
     "adSkipped": "Reklamı tamamlamadınız, kota kazanılmadı"
   },
   "airplay": {

@@ -6,7 +6,7 @@ import { radius, spacing } from '../../theme/layout';
 // TODO: Temporary. Ads are hardcoded-disabled until the rewarded ad flow is
 // re-enabled. While true: the "watch ad" button is passive, auto-start is off,
 // and focus defaults to the subscription (get pro) button.
-const ADS_TEMPORARILY_DISABLED = true;
+const ADS_TEMPORARILY_DISABLED = false;
 
 export type QuotaRecoveryRequest = {
   title: string;
@@ -29,14 +29,14 @@ type Props = Readonly<{
 function getAdErrorMessage(errorCode: string, t: ReturnType<typeof useTranslation>['t']): string | null {
   switch (errorCode) {
     case 'AD_CONFIGURATION_MISSING':
-      return 'Unity Ads are not configured yet. Add the game ID and ad unit ID to app.json.';
+      return 'Yandex Ads are not configured yet.';
     case 'AD_NOT_READY':
       return 'Ad is not ready yet. Please try again in a moment.';
     case 'AD_DISPLAY_FAILED':
       return 'Ad could not be displayed. Please try again.';
     case 'AD_TIMEOUT':
     case 'AD_LOAD_FAILED':
-      return 'No ad is available right now. Please try again later.';
+      return t('quotaLimit.adLoadFailed');
     default:
       return errorCode ? null : t('quotaLimit.adErrorFallback');
   }

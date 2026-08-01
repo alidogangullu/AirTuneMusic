@@ -16,9 +16,3 @@
 -keepclasseswithmembernames class * {
     native <methods>;
 }
-
-# Unity Ads
--keep class com.unity3d.ads.** { *; }
--keep interface com.unity3d.ads.** { *; }
--keep class com.unity3d.services.** { *; }
--keep interface com.unity3d.services.** { *; }

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AppStartupService } from '../appStartupService';
 import { VersionCheckResult } from '../versionService';
 import { Announcement, AnnouncementService } from '../announcementService';
-import { initializeUnityAds } from '../unityAds';
+import { initializeYandexAds } from '../yandexAds';
 import { QuotaService } from '../../settings/quotaService';
 import { IapService } from '../../settings/iapService';
 import * as Updates from 'expo-updates';
@@ -36,8 +36,8 @@ export function AppStartupProvider({ children }: Readonly<{ children: React.Reac
 
     async function runStartup() {
       try {
-        initializeUnityAds().catch(error => {
-          console.error('[AppStartupProvider] Unity Ads init error:', error);
+        initializeYandexAds().catch(error => {
+          console.error('[AppStartupProvider] Yandex Ads init error:', error);
         });
 
         const data = await AppStartupService.init();
