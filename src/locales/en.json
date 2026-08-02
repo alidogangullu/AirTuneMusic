@@ -200,14 +200,14 @@
     "support": "Support",
     "aboutInfo": {
       "title": "About AirTune Music",
-      "message": "AirTune Music is a third-party Apple Music client built exclusively using the official Apple Music API. We do not store any of your personal data; all information is fetched directly from Apple's servers. Synchronized lyrics are provided by LRCLib (lrclib.net), a free and open lyrics database. Ads are served by Unity Ads.",
+      "message": "AirTune Music is a third-party Apple Music client built exclusively using the official Apple Music API. We do not store any of your personal data; all information is fetched directly from Apple's servers. Synchronized lyrics are provided by LRCLib (lrclib.net), a free and open lyrics database. Ads are served by Yandex Ads.",
       "website": "For other products, general info, and legal terms, visit adgn.me"
     },
     "adSettings": {
       "title": "Ad Preferences",
       "autoStartAd": "Auto-Start Ad",
       "adHintTitle": "How to skip the ad?",
-      "adHint": "Watch the ad until it finishes. Once the timer ends, a button will appear in the top-right corner:\n\n• If a close button (✕) appears: press the Back button on your remote to dismiss the ad.\n\n• If a skip button (⏭) appears: navigate to it using the directional buttons on your remote and press select. A new screen with a close button (✕) will appear in the top-right corner — press the Back button on your remote to exit."
+      "adHint": "Watch the ad until it finishes. Once the timer ends, a button will appear in the top-right corner:\n\n• If a close (✕) or skip (⏭) button appears: navigate to it using your remote directional buttons and press it.\n\n• On the final screen, navigate to the close button (✕) in the top-right corner and press the ✕ button to exit."
     },
     "supportInfo": {
       "contactTitle": "Contact",
@@ -271,6 +271,7 @@
   },
   "quotaLimit": {
     "title": "Limit Reached",
+    "adConfigMissing": "Yandex Ads are not configured yet.",
     "message": "You have reached the free playback limit of {{limit}} songs. Watch an ad to earn {{bonus}} more plays, or upgrade to Pro.",
     "watchAd": "Watch Ad +3",
     "subscription": "Get Pro",
@@ -285,7 +286,7 @@
     "adErrorFallback": "The ad could not be started. Please try again or open subscription options.",
     "notificationTitle": "Quota limit reached",
     "notificationMessage": "Upgrade to AirTune Pro to continue listening.",
-    "adLoadFailed": "Ad could not be loaded",
+    "adLoadFailed": "No ads are available right now. Please try again later.",
     "adSkipped": "You didn't finish the ad, no quota earned"
   },
   "airplay": {

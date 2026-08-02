@@ -12,7 +12,6 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.adg.airtune.imagecolors.ImageColorsPackage
 import com.adg.airtune.musicplayer.MusicPlayerPackage
 import com.adg.airtune.airplay.AirPlayPackage
-import com.adg.airtune.unityads.UnityAdsPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -24,7 +23,6 @@ class MainApplication : Application(), ReactApplication {
           add(MusicPlayerPackage())
           add(ImageColorsPackage())
           add(AirPlayPackage())
-          add(UnityAdsPackage())
         },
     )
   }

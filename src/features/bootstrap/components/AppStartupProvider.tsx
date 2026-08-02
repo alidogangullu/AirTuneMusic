@@ -2,9 +2,10 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AppStartupService } from '../appStartupService';
 import { VersionCheckResult } from '../versionService';
 import { Announcement, AnnouncementService } from '../announcementService';
-import { initializeUnityAds } from '../unityAds';
+import { initializeYandexAds } from '../yandexAds';
 import { QuotaService } from '../../settings/quotaService';
 import { IapService } from '../../settings/iapService';
+import { RewardAdService } from '../../player/rewardAdService';
 import * as Updates from 'expo-updates';
 
 interface AppStartupContextType {
@@ -36,9 +37,21 @@ export function AppStartupProvider({ children }: Readonly<{ children: React.Reac
 
     async function runStartup() {
       try {
-        initializeUnityAds().catch(error => {
-          console.error('[AppStartupProvider] Unity Ads init error:', error);
-        });
+        const initAndPreloadAds = async () => {
+          try {
+            await initializeYandexAds();
+            if (!QuotaService.isProUser()) {
+              try {
+                await RewardAdService.preloadRewardedAd();
+              } catch (err) {
+                console.error('[AppStartupProvider] Ad preload error:', err);
+              }
+            }
+          } catch (error) {
+            console.error('[AppStartupProvider] Yandex Ads init error:', error);
+          }
+        };
+        initAndPreloadAds();
 
         const data = await AppStartupService.init();
         if (mounted) {
