@@ -16,7 +16,98 @@ const REQUEST_TIMEOUT_MS = 300000;
 // 'success' | 'LOAD_FAILED' | 'AD_SKIPPED' | null (null = real ad)
 export const devAdSimulate = { value: null as 'success' | 'LOAD_FAILED' | 'AD_SKIPPED' | 'NO_ACTIVITY' | 'SHOW_FAILED' | null };
 
+const noop = () => {};
+
+interface AdStateContext {
+  settled: boolean;
+  timeout: any;
+  resolve: (value: boolean) => void;
+  reject: (reason: any) => void;
+  adUnitIdOverride?: string;
+}
+
+function handleAdShow(ad: RewardedAd, ctx: AdStateContext) {
+  let rewardEarned = false;
+
+  ad.onRewarded = () => {
+    rewardEarned = true;
+  };
+
+  ad.onAdDismissed = () => {
+    if (!ctx.settled) {
+      ctx.settled = true;
+      if (ctx.timeout) {
+        clearTimeout(ctx.timeout);
+      }
+      // Trigger next preload silently
+      RewardAdService.preloadRewardedAd(ctx.adUnitIdOverride).catch(noop);
+
+      if (rewardEarned) {
+        ctx.resolve(true);
+      } else {
+        ctx.reject(Object.assign(new Error('Ad was skipped.'), { code: 'AD_SKIPPED' }));
+      }
+    }
+  };
+
+  ad.onAdFailedToShow = (error?: AdError) => {
+    if (!ctx.settled) {
+      ctx.settled = true;
+      if (ctx.timeout) {
+        clearTimeout(ctx.timeout);
+      }
+      const msg = error?.description || 'Ad failed to show.';
+      ctx.reject(Object.assign(new Error(msg), { code: 'AD_SHOW_FAILED' }));
+    }
+  };
+
+  ad.show().catch((error: any) => {
+    if (!ctx.settled) {
+      ctx.settled = true;
+      if (ctx.timeout) {
+        clearTimeout(ctx.timeout);
+      }
+      const msg = error?.description || error?.message || 'Ad failed to show.';
+      ctx.reject(Object.assign(new Error(msg), { code: 'AD_SHOW_FAILED' }));
+    }
+  });
+}
+
 export const RewardAdService = {
+  cachedAd: null as RewardedAd | null,
+  preloadPromise: null as Promise<void> | null,
+
+  preloadRewardedAd(adUnitIdOverride?: string): Promise<void> {
+    const adUnitId = adUnitIdOverride || YANDEX_ADS_REWARDED_AD_UNIT_ID;
+
+    if (!adUnitId || (__DEV__ && devAdSimulate.value !== null)) {
+      return Promise.resolve();
+    }
+
+    if (this.cachedAd !== null) {
+      return Promise.resolve();
+    }
+
+    if (this.preloadPromise !== null) {
+      return this.preloadPromise;
+    }
+
+    this.preloadPromise = (async () => {
+      try {
+        await initializeYandexAds();
+        const loader = await RewardedAdLoader.create();
+        const ad = await loader.loadAd({ adUnitId });
+        this.cachedAd = ad;
+      } catch (error) {
+        console.error('[RewardAdService] Preload failed:', error);
+      } finally {
+        this.preloadPromise = null;
+      }
+    })();
+
+    return this.preloadPromise;
+  },
+
   async showRewardedAd(adUnitIdOverride?: string): Promise<boolean> {
     const adUnitId = adUnitIdOverride || YANDEX_ADS_REWARDED_AD_UNIT_ID;
 
@@ -35,56 +126,46 @@ export const RewardAdService = {
     }
 
     await initializeYandexAds();
+    if (this.preloadPromise) {
+      await this.preloadPromise;
+    }
 
-    return new Promise<boolean>(async (resolve, reject) => {
-      let settled = false;
+    return new Promise<boolean>((resolve, reject) => {
+      const ctx: AdStateContext = {
+        settled: false,
+        timeout: null,
+        resolve,
+        reject,
+        adUnitIdOverride,
+      };
 
-      const timeout = setTimeout(() => {
-        if (!settled) {
-          settled = true;
+      ctx.timeout = setTimeout(() => {
+        if (!ctx.settled) {
+          ctx.settled = true;
+          this.cachedAd = null;
           reject(Object.assign(new Error('Rewarded ad timed out. Please try again.'), { code: 'AD_TIMEOUT' }));
         }
       }, REQUEST_TIMEOUT_MS);
 
-      try {
-        const loader = await RewardedAdLoader.create();
-        const ad = await loader.loadAd({ adUnitId });
-
-        let rewardEarned = false;
-
-        ad.onRewarded = () => {
-          rewardEarned = true;
-        };
-
-        ad.onAdDismissed = () => {
-          if (!settled) {
-            settled = true;
-            clearTimeout(timeout);
-            if (rewardEarned) {
-              resolve(true);
-            } else {
-              reject(Object.assign(new Error('Ad was skipped.'), { code: 'AD_SKIPPED' }));
+      if (this.cachedAd) {
+        const ad = this.cachedAd;
+        this.cachedAd = null;
+        handleAdShow(ad, ctx);
+      } else {
+        // Fallback if cache is empty
+        RewardedAdLoader.create()
+          .then(loader => loader.loadAd({ adUnitId }))
+          .then(ad => handleAdShow(ad, ctx))
+          .catch((error: any) => {
+            if (!ctx.settled) {
+              ctx.settled = true;
+              if (ctx.timeout) {
+                clearTimeout(ctx.timeout);
+              }
+              const msg = error?.description || error?.message || 'Ad failed to load.';
+              reject(Object.assign(new Error(msg), { code: 'AD_LOAD_FAILED' }));
             }
-          }
-        };
-
-        ad.onAdFailedToShow = (error?: AdError) => {
-          if (!settled) {
-            settled = true;
-            clearTimeout(timeout);
-            const msg = error?.description || 'Ad failed to show.';
-            reject(Object.assign(new Error(msg), { code: 'AD_SHOW_FAILED' }));
-          }
-        };
-
-        await ad.show();
-      } catch (error: any) {
-        if (!settled) {
-          settled = true;
-          clearTimeout(timeout);
-          const msg = error?.description || error?.message || 'Ad failed to load.';
-          reject(Object.assign(new Error(msg), { code: 'AD_LOAD_FAILED' }));
-        }
+          });
       }
     });
   },
