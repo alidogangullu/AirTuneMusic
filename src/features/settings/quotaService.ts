@@ -27,7 +27,7 @@ export class QuotaService {
   static readonly BONUS_PLAYS_PER_AD = DEFAULT_BONUS_PLAYS;
 
   static isProUser(): boolean {
-    return storage.getBoolean(KEYS.IS_PRO) ?? false;
+    return false; // Forced false for testing (will only be restored when requested)
   }
 
   static setProStatus(isPro: boolean): void {
