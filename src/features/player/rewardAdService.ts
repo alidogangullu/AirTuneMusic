@@ -27,6 +27,8 @@ interface AdStateContext {
 }
 
 function handleAdShow(ad: RewardedAd, ctx: AdStateContext) {
+  if (ctx.settled) return;
+
   let rewardEarned = false;
 
   ad.onRewarded = () => {
@@ -125,11 +127,6 @@ export const RewardAdService = {
       throw Object.assign(new Error(`[DEV] Simulated ad result: ${sim}`), { code: sim });
     }
 
-    await initializeYandexAds();
-    if (this.preloadPromise) {
-      await this.preloadPromise;
-    }
-
     return new Promise<boolean>((resolve, reject) => {
       const ctx: AdStateContext = {
         settled: false,
@@ -147,26 +144,36 @@ export const RewardAdService = {
         }
       }, REQUEST_TIMEOUT_MS);
 
-      if (this.cachedAd) {
-        const ad = this.cachedAd;
-        this.cachedAd = null;
-        handleAdShow(ad, ctx);
-      } else {
-        // Fallback if cache is empty
-        RewardedAdLoader.create()
-          .then(loader => loader.loadAd({ adUnitId }))
-          .then(ad => handleAdShow(ad, ctx))
-          .catch((error: any) => {
-            if (!ctx.settled) {
-              ctx.settled = true;
-              if (ctx.timeout) {
-                clearTimeout(ctx.timeout);
-              }
-              const msg = error?.description || error?.message || 'Ad failed to load.';
-              reject(Object.assign(new Error(msg), { code: 'AD_LOAD_FAILED' }));
+      const run = async () => {
+        try {
+          await initializeYandexAds();
+          if (this.preloadPromise) {
+            await this.preloadPromise;
+          }
+          if (ctx.settled) return;
+
+          let ad = this.cachedAd;
+          if (ad) {
+            this.cachedAd = null;
+          } else {
+            // Fallback if cache is empty
+            const loader = await RewardedAdLoader.create();
+            ad = await loader.loadAd({ adUnitId });
+          }
+          handleAdShow(ad, ctx);
+        } catch (error: any) {
+          if (!ctx.settled) {
+            ctx.settled = true;
+            if (ctx.timeout) {
+              clearTimeout(ctx.timeout);
             }
-          });
-      }
+            const msg = error?.description || error?.message || 'Ad failed to load.';
+            reject(Object.assign(new Error(msg), { code: 'AD_LOAD_FAILED' }));
+          }
+        }
+      };
+
+      run();
     });
   },
 };

@@ -386,7 +386,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
       handleAdResult(!adFailed);
 
       // Delay clearing adInFlight to block the back event that leaks from
-      // Unity's Activity closing before React can update onRequestClose.
+      // Yandex's Activity closing before React can update onRequestClose.
       setTimeout(() => setAdInFlight(false), 1000);
     }
   }, [dismissQuotaRecovery, handleAdResult, quotaRecoveryRequest, t]);

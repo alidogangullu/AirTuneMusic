@@ -29,7 +29,7 @@ type Props = Readonly<{
 function getAdErrorMessage(errorCode: string, t: ReturnType<typeof useTranslation>['t']): string | null {
   switch (errorCode) {
     case 'AD_CONFIGURATION_MISSING':
-      return 'Yandex Ads are not configured yet.';
+      return t('quotaLimit.adConfigMissing');
     case 'AD_NOT_READY':
       return 'Ad is not ready yet. Please try again in a moment.';
     case 'AD_DISPLAY_FAILED':

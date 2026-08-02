@@ -271,6 +271,7 @@
   },
   "quotaLimit": {
     "title": "Limit erreicht",
+    "adConfigMissing": "Yandex-Anzeigen sind noch nicht konfiguriert.",
     "message": "Sie haben das kostenlose Wiedergabelimit von {{limit}} Songs erreicht. Sehen Sie sich eine Anzeige an, um {{bonus}} weitere Wiedergaben zu erhalten, oder wechseln Sie zu Pro.",
     "watchAd": "Werbung ansehen +3",
     "subscription": "Hol Dir Pro",

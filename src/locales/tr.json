@@ -271,6 +271,7 @@
   },
   "quotaLimit": {
     "title": "Sınıra Ulaşıldı",
+    "adConfigMissing": "Yandex Reklamları henüz yapılandırılmadı.",
     "message": "Ücretsiz dinleme sınırı olan {{limit}} şarkıya ulaştınız. Bir reklam izleyerek {{bonus}} ek hak kazanabilir veya Pro'ya geçebilirsiniz.",
     "watchAd": "Reklam İzle +3",
     "subscription": "Pro'yu Al",

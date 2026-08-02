@@ -271,6 +271,7 @@
   },
   "quotaLimit": {
     "title": "Límite alcanzado",
+    "adConfigMissing": "Los anuncios de Yandex no están configurados todavía.",
     "message": "Has alcanzado el límite gratuito de {{limit}} canciones. Mira un anuncio para ganar {{bonus}} reproducciones más o cambia a Pro.",
     "watchAd": "Ver anuncio +3",
     "subscription": "Obtener Pro",
