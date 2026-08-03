@@ -43,6 +43,15 @@ object MediaNotificationManager {
 
         mediaSession = MediaSessionCompat(context!!, "AirTuneMediaSession").apply {
             setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+            setCallback(object : MediaSessionCompat.Callback() {
+                // TV OS requires callbacks to consider this a valid Now Playing session,
+                // but we leave them empty to protect the quota logic (no external skipping)
+                override fun onPlay() {}
+                override fun onPause() {}
+                override fun onSkipToNext() {}
+                override fun onSkipToPrevious() {}
+                override fun onStop() {}
+            })
             isActive = true
         }
     }
@@ -128,13 +137,19 @@ object MediaNotificationManager {
     fun updatePlaybackState(playing: Boolean) {
         isPlaying = playing
         val state = if (playing) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED
-        
+
+        // Declare minimal actions so Google TV OS recognizes this as an active media session
+        // and displays the "Now Playing" card, but avoid ACTION_SKIP_TO_NEXT to protect quota logic.
+        val actions = if (playing) {
+            PlaybackStateCompat.ACTION_PAUSE or PlaybackStateCompat.ACTION_STOP
+        } else {
+            PlaybackStateCompat.ACTION_PLAY
+        }
+
         mediaSession?.setPlaybackState(
             PlaybackStateCompat.Builder()
                 .setState(state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f)
-                // Explicitly DO NOT add ACTION_PLAY, ACTION_PAUSE, ACTION_SKIP_TO_NEXT 
-                // so that the notification does not render transport controls (Quota system constraint)
-                .setActions(0) 
+                .setActions(actions)
                 .build()
         )
 
