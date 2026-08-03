@@ -11,7 +11,7 @@
   },
   "owner": "alidg",
   "updates": {
-    "url": "https://u.expo.dev/9f89c037-7727-4049-9a5a-a75a26958820"
+    "url": "https://airtune-updates-server.vercel.app/api/manifest"
   },
   "android": {
     "package": "com.adg.airtune"
