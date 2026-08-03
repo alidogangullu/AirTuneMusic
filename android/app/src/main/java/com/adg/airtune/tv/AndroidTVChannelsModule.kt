@@ -19,6 +19,7 @@ class AndroidTVChannelsModule(private val reactContext: ReactApplicationContext)
         channelKey: String,
         channelTitle: String,
         items: ReadableArray,
+        requestBrowsable: Boolean,
         promise: Promise
     ) {
         thread {
@@ -53,8 +54,8 @@ class AndroidTVChannelsModule(private val reactContext: ReactApplicationContext)
                     helper.publishChannel(channel)
                 }
 
-                // Request browsability for the first channel automatically
-                if (allChannels.none { it.isBrowsable }) {
+                // Request browsability for the channel if explicitly requested and no channels are browsable yet
+                if (requestBrowsable && allChannels.none { it.isBrowsable }) {
                     try {
                         TvContractCompat.requestChannelBrowsable(context, channelId)
                     } catch (e: Exception) {

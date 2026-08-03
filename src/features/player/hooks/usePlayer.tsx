@@ -297,6 +297,13 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   }, [t]);
 
   const triggerWebFallback = useCallback((trackId: string, isImmediate = false) => {
+    // If app is in background, never attempt web fallback since WebView JS is suspended.
+    // We just wait for Native player to recover on its own.
+    if (AppState.currentState === 'background' || AppState.currentState === 'inactive') {
+      console.warn('[Player] Attempted web fallback in background, ignoring to prevent loop.');
+      return;
+    }
+
     activeEngineRef.current = 'web';
     webFallbackActiveRef.current = true;
     webFallbackHadRealProgressRef.current = false;

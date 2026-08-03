@@ -45,6 +45,43 @@ function mapContentToTvPrograms(contents: RecommendationContent[]): TvProgramIte
   });
 }
 
+function getChannelKeyForSection(section: RecommendationSection): string | null {
+  const lowerTitle = section.title.toLowerCase();
+
+  if (
+    section.id?.startsWith('7-') ||
+    section.kind === 'recently-played' ||
+    lowerTitle.includes('recently') ||
+    lowerTitle.includes('son oynatılan') ||
+    lowerTitle.includes('son dinlenen') ||
+    lowerTitle.includes('son çalınan')
+  ) {
+    return 'RECENTLY_PLAYED';
+  }
+
+  if (
+    section.id?.startsWith('6-') ||
+    section.kind === 'made-for-you' ||
+    lowerTitle.includes('made for you') ||
+    lowerTitle.includes('sizin için') ||
+    lowerTitle.includes('sana özel') ||
+    lowerTitle.includes('kişisel')
+  ) {
+    return 'MADE_FOR_YOU';
+  }
+
+  if (
+    section.id?.startsWith('9-') ||
+    lowerTitle.includes('new releases') ||
+    lowerTitle.includes('yeni çıkan') ||
+    lowerTitle.includes('yeni yayın')
+  ) {
+    return 'NEW_RELEASES';
+  }
+
+  return null;
+}
+
 export const AndroidTvChannels = {
   /**
    * Check if Android TV channels are supported on the current platform.
@@ -59,11 +96,12 @@ export const AndroidTvChannels = {
   async publishChannel(
     channelKey: string,
     channelTitle: string,
-    items: TvProgramItem[]
+    items: TvProgramItem[],
+    requestBrowsable: boolean = false
   ): Promise<boolean> {
     if (!this.isSupported()) return false;
     try {
-      await AndroidTVChannelsModule.publishChannel(channelKey, channelTitle, items);
+      await AndroidTVChannelsModule.publishChannel(channelKey, channelTitle, items, requestBrowsable);
       return true;
     } catch (error) {
       console.error(`[AndroidTvChannels] Failed to publish channel ${channelKey}:`, error);
@@ -91,6 +129,11 @@ export const AndroidTvChannels = {
   async syncRecommendationSections(sections: RecommendationSection[]): Promise<void> {
     if (!this.isSupported()) return;
 
+    // Check if RECENTLY_PLAYED will be published
+    const hasRecentlyPlayed = sections.some(s => getChannelKeyForSection(s) === 'RECENTLY_PLAYED');
+
+    let hasRequestedBrowsable = false;
+
     for (const section of sections) {
       if (!section.contents || section.contents.length === 0) continue;
 
@@ -98,40 +141,21 @@ export const AndroidTvChannels = {
       const programs = mapContentToTvPrograms(section.contents);
       if (programs.length === 0) continue;
 
-      let channelKey: string | null = null;
-      const lowerTitle = section.title.toLowerCase();
-
-      if (
-        section.id?.startsWith('7-') ||
-        section.kind === 'recently-played' ||
-        lowerTitle.includes('recently') ||
-        lowerTitle.includes('son oynatılan') ||
-        lowerTitle.includes('son dinlenen') ||
-        lowerTitle.includes('son çalınan')
-      ) {
-        channelKey = 'RECENTLY_PLAYED';
-      } else if (
-        section.id?.startsWith('6-') ||
-        section.kind === 'made-for-you' ||
-        lowerTitle.includes('made for you') ||
-        lowerTitle.includes('sizin için') ||
-        lowerTitle.includes('sana özel') ||
-        lowerTitle.includes('kişisel')
-      ) {
-        channelKey = 'MADE_FOR_YOU';
-      } else if (
-        section.id?.startsWith('9-') ||
-        lowerTitle.includes('new releases') ||
-        lowerTitle.includes('yeni çıkan') ||
-        lowerTitle.includes('yeni yayın')
-      ) {
-        channelKey = 'NEW_RELEASES';
-      }
+      const channelKey = getChannelKeyForSection(section);
 
       // Strictly filter and only publish the 3 requested TV channels
       if (!channelKey) continue;
 
-      await this.publishChannel(channelKey, title, programs);
+      // Make RECENTLY_PLAYED the default browsable channel. If it doesn't exist in the payload, fallback to the first published one.
+      let requestBrowsable = false;
+      if (!hasRequestedBrowsable) {
+        if (channelKey === 'RECENTLY_PLAYED' || !hasRecentlyPlayed) {
+          requestBrowsable = true;
+          hasRequestedBrowsable = true;
+        }
+      }
+
+      await this.publishChannel(channelKey, title, programs, requestBrowsable);
     }
   },
 };
