@@ -102,45 +102,23 @@ So: **catalog-only** (search, browse, charts) → developer token is enough.
 
 ---
 
-## Android TV: Why the default flow doesn’t work
+## Android TV: How we handle Auth
 
-The MusicKit for Android auth flow is built for **phones/tablets**:
+The native MusicKit for Android auth flow is built for phones/tablets. It expects the Apple Music app to be installed, and if not, prompts to install it. On Android TV, there is no official Apple Music app; the flow would send the user to the Play Store or a browser, which is a poor experience.
 
-- It expects the **Apple Music app** to be installed.
-- If not installed, it shows a screen like **“To play the full song, connect … to Apple Music”** with an **“Install Apple Music”** button.
-- On **Android TV** there is no official Apple Music app; the flow would send the user to the Play Store or a browser, which is a poor experience and often not viable on TV.
+So on Android TV, we use two alternative methods:
 
-So **on Android TV, the native “Install Apple Music” / in-app auth flow is not a good option**.
+### 1. Direct TV Auth (WebView)
+A React Native WebView (`react-native-webview`) is presented directly on the TV (`DirectTvAuthModal.tsx`). It loads MusicKit JS, which opens Apple's login page. We inject a custom Spatial Navigation script into the WebView to make Apple's web login fully navigable with the D-pad remote. It intercepts the resulting Music User Token and passes it back to the app.
 
----
+### 2. Companion (Pairing) Login (TV Link)
+Use a second device (phone or computer) to log in with Apple Music and send the Music User Token to the TV app. Same idea as Spotify’s **spotify.com/pair**.
 
-## Android TV: Alternative — companion (pairing) login
-
-Use a **second device** (phone or computer) to log in with Apple Music and send the **Music User Token** to the TV app. Same idea as Spotify’s **spotify.com/pair** or YouTube’s “Link with TV code”.
-
-### Flow (high level)
-
-1. **On the TV app**
-   - Show a short message: “Go to **yoursite.com/tv** and enter this code: **XXXXXX**”.
-   - Show a 6-digit (or similar) code.
-   - Start **polling your backend**: “Is there a token for code XXXXXX?”.
-
-2. **On the user’s phone/PC**
-   - User opens **yoursite.com/tv** in a browser.
-   - User enters the code shown on the TV.
-   - Your page uses **MusicKit JS** to sign in:
-     - `MusicKit.configure({ developerToken: '…' });`
-     - `const musicUserToken = await music.authorize();`
-   - After success, the page sends the token to your backend together with the code (e.g. `POST /api/tv-link` with `{ code, musicUserToken }`).
-
-3. **Your backend**
-   - Stores the mapping “code → musicUserToken” (with a short TTL, e.g. 10–15 minutes).
-   - Optionally stores the token for that user/device for later use (then you need a simple “user” or “device” concept).
-
-4. **TV app**
-   - Polls the backend (e.g. `GET /api/tv-link?code=XXXXXX`).
-   - When the backend returns the token, the TV app saves it (e.g. `setMusicUserToken(token)`) and stops polling.
-   - Use the token for all `/me/` Apple Music API calls as you already do.
+#### Flow (high level)
+1. **On the TV app**: Shows a short message ("Go to airtune.app/tv") and a 6-digit code. Starts polling the backend.
+2. **On the user’s phone/PC**: User enters the code on the web page. The page uses MusicKit JS to authorize and POSTs the token to the backend.
+3. **Your backend**: Stores the code -> token mapping temporarily.
+4. **TV app**: Polls the backend, receives the token, saves it, and uses it for API calls.
 
 ### What you need
 
@@ -165,4 +143,4 @@ The **Music User Token** you get from MusicKit JS is the same as the one from th
 - **Developer token** → already done; used for catalog and as input to the auth flow.
 - **Music User Token** → needed for anything under `/me/` (library, playlists, ratings, history, recommendations).
 - **On Android (phone/tablet)** → use MusicKit for Android auth (AuthIntentBuilder + AuthenticationManager + TokenResult) to get the Music User Token, then send it in the `Music-User-Token` header.
-- **On Android TV** → the native flow shows “Install Apple Music” and is not suitable. Use the **companion (pairing) flow** above: TV shows a code; user logs in on a phone/PC via a web page using MusicKit JS; your backend links code ↔ token; TV polls and receives the token.
+- **On Android TV** → the native flow shows “Install Apple Music” and is not suitable. We use either the **Direct TV Auth** (injecting D-pad support into Apple's web login via a WebView) or the **companion (pairing) flow** (TV shows a code; user logs in on a phone/PC; backend links code ↔ token).

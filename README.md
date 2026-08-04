@@ -23,7 +23,9 @@
 - **📻 Radio**: Listen to Apple Music Radio stations and your personal Apple Music radio directly on your TV.
 - **📺 Music Videos**: Enjoy high-quality music videos from your library and the Apple Music catalog directly on your TV.
 - **🎨 Dynamic Backgrounds**: Stunning visuals that adapt and change color based on the current album art.
-- **📲 Quick Sign-in (TV-Link)**: Sign in securely in seconds using a QR code — no typing passwords with a remote!
+- **📺 Android TV Integration**: Discover content directly from your Android TV home screen with **Recently Played**, **Made for You**, and **New Releases** channels. Fully supports the Google TV "Now Playing" card.
+- **🎧 Background Playback**: Music continues playing seamlessly even when you navigate away to other apps.
+- **📲 Flexible Sign-in**: Sign in securely via a quick QR code scan (TV-Link) or directly on your TV using the built-in authentication screen.
 - **🖥️ TV-Optimized Interface**: Navigate effortlessly with a UI designed specifically for Android TV remotes (D-pad).
 - **🌙 Dark Mode Support**: A beautiful, eye-friendly dark interface designed for comfortable night-time viewing.
 - **🌐 Multi-Language Support**: Use the app in your preferred language with comprehensive localization.
@@ -71,9 +73,10 @@ Available on the **Google Play Store**:
 | Framework   | React Native (`react-native-tvos`)     |
 | Language    | TypeScript                             |
 | API         | Apple Music API (REST)                 |
-| Auth        | MusicKit JS (via Local Pairing Server) |
+| Auth        | MusicKit JS (TV Link or Direct Auth)   |
 | Lyrics      | [LRCLIB](https://lrclib.net/)          |
 | AirPlay     | UxPlay-based native AirPlay receiver   |
+| Updates     | Custom Expo Update Server (OTA)        |
 ### Local Pairing Server (TV Link)
 
 Because Android TV lacks a convenient keyboard, this app uses a dedicated **pairing flow**:
@@ -101,8 +104,12 @@ Because Android TV lacks a convenient keyboard, this app uses a dedicated **pair
 3. Configure environment: Copy `.env.example` to `.env.local` and add your `APPLE_MUSIC_DEVELOPER_TOKEN`.
 4. Build for Android TV: `yarn android`
 
-For detailed setup instructions, see:
+For detailed setup, debugging, and architecture documentation, see:
 
 - [🚀 Run & Debug Guide](docs/ANDROID_TV_RUN_DEBUG.md)
 - [🔑 Developer Token Setup](docs/DEVELOPER_TOKEN_SETUP.md)
+- [🔄 OTA Updates Guide](docs/OTA_UPDATES.md)
 - [📂 Project Structure](docs/PROJECT_STRUCTURE.md)
+- [🔐 Apple Music User Auth Flow](docs/APPLE_MUSIC_USER_AUTH.md)
+- [🎵 MusicKit Playback Implementation](docs/MUSICKIT_ANDROID_PLAYBACK.md)
+- [🛜 AirPlay Emulator Bridge](scripts/AIRPLAY_EMULATOR_BRIDGE.md)

@@ -4,8 +4,8 @@ AirTune Music uses a **Self-Hosted Expo OTA Updates Server** deployed on Vercel.
 We do **not** use `eas update` directly to Expo's servers due to the free tier limits.
 
 ## Update Server
-- **Dashboard / API:** `https://airtune-updates-server.vercel.app`
-- **Repo:** `../airtune-updates-server` (A separate Next.js app in the parent directory)
+- **Infrastructure:** A custom Next.js application hosted on Vercel. 
+- **Note on Open Source:** While AirTune Music is open source, the custom OTA update server (and its dashboard) is kept private as it manages production deployment traffic and analytics for the official Play Store release.
 
 ## How to Publish an OTA Update
 
@@ -77,4 +77,3 @@ A Rollback is a special directive that tells the Expo client to discard all down
    git push
    ```
 When devices see this new timestamp, they will clear their cache and load the original code that shipped with the app.
-- **Dashboard:** Visit `https://airtune-updates-server.vercel.app` to see live download counts and Daily Active Users (DAU).

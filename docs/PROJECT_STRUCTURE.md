@@ -33,7 +33,7 @@ This document describes the folder structure for the AirTune Music app (React Na
 
 | Feature | Contents |
 |---------|---------|
-| **auth** | Apple Music sign-in screen, TV link server, auth API (`startAppleMusicAuth`). |
+| **auth** | Apple Music sign-in screen, TV link server, Direct TV Auth (WebView), auth API (`startAppleMusicAuth`). |
 | **bootstrap** | App startup logic (`AppStartupProvider`, `appStartupService`), subscription API, `ForceUpdateScreen`, `SubscriptionRequiredScreen`. |
 | **browse** | Browse tab screen. |
 | **content** | Album, artist, playlist, and content detail screens; ratings API; track/date utilities. |

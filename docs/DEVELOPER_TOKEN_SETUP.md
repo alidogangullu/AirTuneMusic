@@ -35,7 +35,7 @@ To pass the developer token into the app, add it to **`.env.local`** (same file 
 APPLE_MUSIC_DEVELOPER_TOKEN=eyJhbGciOiJFUzI1NiIs...
 ```
 
-Use the value from `npm run token:apple-music`. The app reads it via a build-time injection script (see `scripts/inject-apple-music-token.mjs`) and makes it available in `src/config/appleMusicToken.generated.ts`. Later you can switch to fetching the token from your backend by changing `getDeveloperToken` in `src/api/apple-music/getDeveloperToken.ts`.
+Use the value from `npm run token:apple-music`. The app reads it via a build-time injection script (see `scripts/inject-apple-music-token.mjs`) and makes it available in `src/config/appleMusicToken.generated.ts`. By default, the app fetches a remote token via Gist (stored in MMKV), and uses the injected token as a fallback. See `src/api/apple-music/getDeveloperToken.ts` for details.
 
 ---
 

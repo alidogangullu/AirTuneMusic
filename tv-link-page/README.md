@@ -25,4 +25,4 @@ In the current implementation, the Android app acts as the server. The `index.ht
 
 ## Security
 
-The developer token is served by the app's local server after being injected at build time (from `APPLE_MUSIC_DEVELOPER_TOKEN` in `.env.local`). In a production web-hosted scenario, you should always serve the token from a secure backend rather than embedding it in the HTML.
+The developer token is served by the app's local server. It is fetched dynamically from a remote Gist config (and saved to MMKV) with a fallback to the token injected at build time. In a production web-hosted scenario, you should always serve the token from a secure backend rather than embedding it in the HTML.

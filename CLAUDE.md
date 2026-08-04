@@ -21,9 +21,10 @@ yarn test                 # Jest
 
 **Android builds require Java 17.** Use `scripts/with-java17.mjs` wrapper if needed.
 
-**Developer token setup:** Run `scripts/generate-developer-token.mjs` then `scripts/inject-apple-music-token.mjs` to generate `src/config/appleMusicToken.generated.ts`.
+**Developer token setup:** The app fetches the developer token dynamically from a remote Gist on startup. However, you still need a local fallback token: run `scripts/generate-developer-token.mjs` then `scripts/inject-apple-music-token.mjs` to generate `src/config/appleMusicToken.generated.ts`.
 
 For full emulator/debug setup, see `docs/ANDROID_TV_RUN_DEBUG.md`.
+For deploying Over-The-Air updates without a new APK, see `docs/OTA_UPDATES.md`.
 
 ## Architecture
 
@@ -44,7 +45,7 @@ QueryClientProvider → ThemeProvider → AppStartupProvider
 
 Each feature owns its screens, components, hooks, API calls, and services. Only truly shared code lives outside `features/`. Key features:
 
-- **auth** — TV Link pairing flow: TV starts a local web server; user signs in via MusicKit JS on phone browser; token is sent back to TV.
+- **auth** — Auth flows: TV Link pairing (local web server + phone browser) and Direct TV Auth (WebView executing MusicKit JS on the TV).
 - **bootstrap** — Startup logic, force update, subscription gating, quota, announcements.
 - **home** — `HomeScreen` + `MainLayout` + `TopBar` (tab nav). Hosts `ContentNavigationContext` — child screens push detail views onto a stack rendered as `Modal`s.
 - **player** — `usePlayer` context, playback controls, lyrics (LRC parser).
