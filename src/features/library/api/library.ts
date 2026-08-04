@@ -145,6 +145,30 @@ export async function fetchLibraryAlbumDetail(
   return data;
 }
 
+export async function fetchAllLibrarySongs(
+  maxPages = 50,
+): Promise<LibraryResponse['data']> {
+  const all: LibraryResponse['data'] = [];
+  let offset: string | undefined;
+  let page = 0;
+
+  do {
+    const params: Record<string, string | number> = { limit: 100 };
+    if (offset) {
+      params.offset = offset;
+    }
+    const { data } = await appleMusicApi.get<LibraryResponse>(
+      ENDPOINT_MAP.songs,
+      { params },
+    );
+    all.push(...(data.data ?? []));
+    offset = extractOffset(data.next);
+    page += 1;
+  } while (offset && page < maxPages);
+
+  return all;
+}
+
 export async function fetchStorefront(): Promise<any> {
   const {data} = await appleMusicApi.get('/me/storefront');
   return data;

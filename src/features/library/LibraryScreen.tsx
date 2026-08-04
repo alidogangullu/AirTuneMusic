@@ -21,10 +21,14 @@ import type { AppColors } from '../../theme/colors';
 import { radius, spacing } from '../../theme/layout';
 import { getArtworkUrl } from '../recommendations/api/recommendations';
 import { getMusicUserToken } from '../../api/apple-music/musicUserToken';
+import { usePlayer } from '../player/hooks/usePlayer';
+import { formatDuration } from '../content/utils/dateUtils';
+import type { TrackInfo } from '../player/musicPlayer';
 import { useContentNavigation } from '../home/navigation';
 import type { LibraryCategoryId, LibraryItem } from '../../types/library';
 import { MotionArtworkCover } from '../../components/MotionArtworkCover';
 import { useLibraryInfiniteItems } from './hooks/useLibraryItems';
+import { fetchAllLibrarySongs } from './api/library';
 
 // ── Sidebar categories ───────────────────────────────────────────
 
@@ -135,18 +139,135 @@ function LibraryGridItem({
   );
 }
 
+
+function libraryItemToTrackInfo(item: LibraryItem, index: number): TrackInfo {
+  const catalogItem = item.relationships?.catalog?.data?.[0];
+  const catalogId = item.attributes?.playParams?.catalogId ?? catalogItem?.id ?? item.id;
+  const attrs = item.attributes;
+  const artworkObj = attrs?.artwork ?? catalogItem?.attributes?.artwork;
+  
+  return {
+    id: catalogId,
+    title: attrs?.name ?? catalogItem?.attributes?.name ?? null,
+    artistName: attrs?.artistName ?? catalogItem?.attributes?.artistName ?? null,
+    albumTitle: attrs?.albumName ?? catalogItem?.attributes?.albumName ?? null,
+    artworkUrl: getArtworkUrl(artworkObj?.url, 200, 200) ?? null,
+    duration: attrs?.durationInMillis ?? 0,
+    trackIndex: index,
+  };
+}
+
+const LibraryTrackRow = React.memo(function LibraryTrackRow({
+  item,
+  index,
+  onPress,
+  isNowPlaying,
+  styles,
+}: {
+  item: LibraryItem;
+  index: number;
+  onPress: (index: number) => void;
+  isNowPlaying: boolean;
+  styles: ReturnType<typeof useStyles>;
+}) {
+  const [focused, setFocused] = useState(false);
+  const THUMB = 52;
+  const catalogItem = item.relationships?.catalog?.data?.[0];
+  const artworkObj = item.attributes?.artwork ?? catalogItem?.attributes?.artwork;
+  const thumbUrl = getArtworkUrl(artworkObj?.url, THUMB, THUMB);
+  const duration = item.attributes?.durationInMillis
+    ? formatDuration(item.attributes.durationInMillis)
+    : '';
+
+
+  return (
+    <Pressable
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      onPress={() => onPress(index)}
+      style={[styles.trackRow, focused && styles.trackRowFocused]}
+      focusable>
+      <View style={styles.trackThumbContainer}>
+        {thumbUrl ? (
+          <Image source={{ uri: thumbUrl }} style={styles.trackThumb} resizeMode="cover" />
+        ) : (
+          <View style={[styles.trackThumb, styles.trackThumbPlaceholder]} />
+        )}
+      </View>
+      <View style={styles.trackInfo}>
+        <Text
+          style={[
+            styles.trackName,
+            focused && styles.trackNameFocused,
+            isNowPlaying && styles.trackNamePlaying,
+          ]}
+          numberOfLines={1}>
+          {item.attributes?.name ?? ''}
+        </Text>
+        <Text style={styles.trackArtist} numberOfLines={1}>
+          {item.attributes?.artistName ?? ''}
+        </Text>
+      </View>
+      <Text style={[styles.trackDuration, focused && styles.trackDurationFocused]}>
+        {duration}
+      </Text>
+    </Pressable>
+  );
+});
+
+function LibrarySongsHeader({
+  onPlay,
+  onShuffle,
+  styles,
+}: Readonly<{
+  onPlay: () => void;
+  onShuffle: () => void;
+  styles: ReturnType<typeof useStyles>;
+}>) {
+  const { t } = useTranslation();
+  const [playFocused, setPlayFocused] = useState(false);
+  const [shuffleFocused, setShuffleFocused] = useState(false);
+
+  return (
+    <View style={styles.listHeader}>
+      <Pressable
+        style={[styles.headerButton, playFocused && styles.headerButtonFocused]}
+        onFocus={() => setPlayFocused(true)}
+        onBlur={() => setPlayFocused(false)}
+        onPress={onPlay}
+        focusable>
+        <Text style={[styles.headerButtonText, playFocused && styles.headerButtonTextFocused]}>
+          ▶  {t('detail.play')}
+        </Text>
+      </Pressable>
+      <Pressable
+        style={[styles.headerButton, shuffleFocused && styles.headerButtonFocused]}
+        onFocus={() => setShuffleFocused(true)}
+        onBlur={() => setShuffleFocused(false)}
+        onPress={onShuffle}
+        focusable>
+        <Text style={[styles.headerButtonText, shuffleFocused && styles.headerButtonTextFocused]}>
+          ⇌  {t('detail.shuffle')}
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
+
 // ── Main component ───────────────────────────────────────────────
 
 export function LibraryScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useStyles(colors);
-  const { pushContent } = useContentNavigation();
+  const { pushContent, openNowPlayingFullscreen } = useContentNavigation();
+  const { playTracks, state: playerState } = usePlayer();
 
   const [activeCategory, setActiveCategory] =
     useState<LibraryCategoryId>('recently-added');
 
   const hasUserToken = !!getMusicUserToken();
+  const limit = activeCategory === 'songs' ? 100 : 25;
   const {
     data,
     isLoading,
@@ -154,7 +275,7 @@ export function LibraryScreen(): React.JSX.Element {
     error,
     fetchNextPage,
     hasNextPage,
-  } = useLibraryInfiniteItems(activeCategory);
+  } = useLibraryInfiniteItems(activeCategory, limit);
 
   const items = React.useMemo(() => data?.pages.flatMap((page: any) => page.data) ?? [], [data]);
   const loading = isLoading && items.length === 0;
@@ -244,8 +365,64 @@ export function LibraryScreen(): React.JSX.Element {
         </View>
       );
     }
+    if (activeCategory === 'songs') {
+      const handlePlayList = async (shuffle: boolean, startIndex = 0) => {
+        let source;
+        try {
+          source = await fetchAllLibrarySongs();
+        } catch {
+          source = items;
+        }
+        const tracks = source.map((it, idx) => libraryItemToTrackInfo(it, idx));
+        const success = await playTracks(tracks, startIndex, shuffle);
+        if (success) openNowPlayingFullscreen();
+      };
+
+      const renderTrackRow = ({ item, index }: { item: LibraryItem; index: number }) => {
+        const catalogItem = item.relationships?.catalog?.data?.[0];
+        const catalogId = item.attributes?.playParams?.catalogId ?? catalogItem?.id ?? item.id;
+        const isNowPlaying = playerState.track?.id === catalogId;
+        return (
+          <LibraryTrackRow
+            item={item}
+            index={index}
+            onPress={(idx) => {
+              if (isNowPlaying) {
+                openNowPlayingFullscreen();
+              } else {
+                handlePlayList(false, idx);
+              }
+            }}
+            isNowPlaying={isNowPlaying}
+            styles={styles}
+          />
+        );
+      };
+
+      return (
+        <FlatList
+          key={activeCategory}
+          data={items}
+          renderItem={renderTrackRow}
+          keyExtractor={keyExtractor}
+          contentContainerStyle={styles.listContent}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <LibrarySongsHeader
+              onPlay={() => handlePlayList(false)}
+              onShuffle={() => handlePlayList(true)}
+              styles={styles}
+            />
+          }
+        />
+      );
+    }
+
     return (
       <FlatList
+        key={activeCategory}
         data={items}
         renderItem={renderGridItem}
         keyExtractor={keyExtractor}
@@ -257,7 +434,7 @@ export function LibraryScreen(): React.JSX.Element {
         showsVerticalScrollIndicator={false}
       />
     );
-  }, [loading, hasUserToken, error, items, styles, renderGridItem, keyExtractor, handleLoadMore, t]);
+  }, [loading, hasUserToken, error, items, styles, renderGridItem, keyExtractor, handleLoadMore, t, activeCategory, openNowPlayingFullscreen, playTracks, playerState.track?.id]);
 
   return (
     <View style={styles.root}>
@@ -334,6 +511,100 @@ function useStyles(c: AppColors) {
     sidebarTextFocused: {
       color: c.textOnDark,
       fontWeight: '700',
+    },
+    // ── List (Songs) ──────────────────────────────
+    listContent: {
+      paddingBottom: spacing.xxl,
+      paddingTop: spacing.sm,
+    },
+    listHeader: {
+      flexDirection: 'row',
+      marginBottom: spacing.lg,
+      gap: spacing.md,
+    },
+    headerButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      borderRadius: radius.md,
+      backgroundColor: c.glassBg,
+    },
+    headerButtonFocused: {
+      backgroundColor: c.buttonFocusedBg,
+      transform: [{ scale: 1.05 }],
+    },
+    headerButtonText: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: c.textOnDark,
+    },
+    headerButtonTextFocused: {},
+    trackThumbContainer: {
+      width: 52,
+      height: 52,
+      borderRadius: radius.sm,
+      overflow: 'hidden',
+      flexShrink: 0,
+    },
+    trackThumb: {
+      width: '100%',
+      height: '100%',
+    },
+    trackThumbPlaceholder: {
+      backgroundColor: c.navBarCardBg,
+    },
+    trackRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 10,
+      paddingHorizontal: spacing.sm,
+      borderRadius: radius.sm,
+      gap: spacing.md,
+    },
+    trackRowFocused: {
+      backgroundColor: c.glassCardBgStrong,
+    },
+    trackPrefix: {
+      width: 40,
+      fontSize: 15,
+      color: c.textMuted,
+      textAlign: 'center',
+    },
+    trackPrefixFocused: {
+      color: c.textOnDark,
+    },
+    trackPrefixBars: {
+      width: 40,
+      alignItems: 'center',
+    },
+    trackInfo: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    trackName: {
+      fontSize: 15,
+      fontWeight: '500',
+      color: c.textOnDark,
+    },
+    trackNameFocused: {
+      fontWeight: '700',
+    },
+    trackNamePlaying: {
+      color: c.accent,
+    },
+    trackArtist: {
+      fontSize: 13,
+      color: c.textMuted,
+    },
+    trackDuration: {
+      fontSize: 14,
+      color: c.textMuted,
+      width: 60,
+      textAlign: 'right',
+    },
+    trackDurationFocused: {
+      color: c.textOnDark,
     },
     // ── Content grid ──────────────────────────────
     content: {

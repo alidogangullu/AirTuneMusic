@@ -108,6 +108,7 @@ interface PlayerContextValue {
   playPlaylist: (playlistId: string, startIndex?: number, shuffle?: boolean, tracks?: TrackInfo[]) => Promise<boolean>;
   playStation: (stationId: string) => Promise<boolean>;
   playSong: (songId: string, trackInfo?: TrackInfo, tracks?: TrackInfo[], startIndex?: number) => Promise<boolean>;
+  playTracks: (tracks: TrackInfo[], startIndex?: number, shuffle?: boolean) => Promise<boolean>;
   playMusicVideo: (musicVideoId: string, trackInfo?: TrackInfo) => Promise<boolean>;
   playVideoQueue: (queue: VideoQueue) => void;
   stopVideo: () => void;
@@ -985,6 +986,24 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     [checkQuotaAndPlay],
   );
 
+
+  const playTracks = useCallback(
+    async (tracks: TrackInfo[], startIndex = 0, shuffle = false) => {
+      if (!tracks.length) return false;
+      const trackIds = tracks.map(t => t.id).filter(Boolean) as string[];
+      setState(s => ({
+        ...s,
+        containerId: 'library-songs',
+        containerTracks: tracks,
+        containerIndex: startIndex,
+        track: tracks[startIndex] ?? s.track,
+        isLoading: true,
+      }));
+      return checkQuotaAndPlay(() => musicPlayer.playTracks(trackIds, startIndex, shuffle));
+    },
+    [checkQuotaAndPlay],
+  );
+
   const playVideoQueue = useCallback((queue: VideoQueue) => {
     endOfQueueLock.active = false;
     if (!QuotaService.canPlayNextSong()) {
@@ -1050,6 +1069,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     playPlaylist,
     playStation,
     playSong,
+    playTracks,
     playMusicVideo,
     playVideoQueue,
     stopVideo,
