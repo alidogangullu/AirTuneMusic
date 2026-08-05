@@ -46,12 +46,10 @@ class TVLinkServerModule(private val reactContext: ReactApplicationContext) : Re
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Server error: ${e.message}")
-                if (isRunning) {
-                    try {
-                        promise.reject("SERVER_ERROR", e.message)
-                    } catch (pe: Exception) {
-                        // Promise might already be resolved
-                    }
+                try {
+                    promise.reject("SERVER_ERROR", e.message)
+                } catch (pe: Exception) {
+                    // Promise might already be resolved
                 }
                 isRunning = false
             }
@@ -203,4 +201,9 @@ class TVLinkServerModule(private val reactContext: ReactApplicationContext) : Re
 
     @ReactMethod
     fun removeListeners(count: Int) {}
+
+    override fun onCatalystInstanceDestroy() {
+        super.onCatalystInstanceDestroy()
+        stopServer()
+    }
 }

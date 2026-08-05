@@ -551,7 +551,7 @@ export function AppleMusicAuthScreen({
           setLocalServerIp(ip);
           if (ip === '127.0.0.1') {
             setServerState('no_wifi');
-          } else if (pingOk || ip) {
+          } else if (pingOk) {
             setServerState('ready');
           } else {
             setServerState('error');

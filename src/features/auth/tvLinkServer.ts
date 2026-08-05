@@ -3,8 +3,6 @@ import { NativeModules, NativeEventEmitter } from 'react-native';
 const { TVLinkServer } = NativeModules;
 const eventEmitter = new NativeEventEmitter(TVLinkServer);
 
-const SERVER_START_TIMEOUT_MS = 3000;
-
 export interface TokenReceivedEvent {
   code: string;
   musicUserToken: string;
@@ -16,15 +14,10 @@ export const startLocalServer = async (devToken: string, port: number = 8080): P
     return '127.0.0.1';
   }
 
-  const startPromise = TVLinkServer.startServer(port, devToken) as Promise<string>;
-  const timeoutPromise = new Promise<string>((_, reject) => {
-    setTimeout(() => reject(new Error('TVLinkServer start timed out')), SERVER_START_TIMEOUT_MS);
-  });
-
   try {
-    return await Promise.race([startPromise, timeoutPromise]);
+    return await TVLinkServer.startServer(port, devToken);
   } catch (err) {
-    console.warn('TVLinkServer start fell back after timeout/error:', err);
+    console.warn('TVLinkServer start failed:', err);
     try {
       return await getLocalIp();
     } catch {
