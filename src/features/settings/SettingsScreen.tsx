@@ -463,7 +463,7 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
             ) : null}
 
             <View style={{ marginTop: spacing.lg }}>
-              <Text style={styles.adHintText}>App: {CURRENT_VERSION} (OTA v2)</Text>
+              <Text style={styles.adHintText}>App: {CURRENT_VERSION} (OTA v3)</Text>
             </View>
           </View>
         </>

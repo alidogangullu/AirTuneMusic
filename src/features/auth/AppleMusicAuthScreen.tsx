@@ -26,7 +26,6 @@ import { DirectTvAuthModal } from './components/DirectTvAuthModal';
 
 import { DEV_SERVER } from '../../config/devServer';
 const TV_LINK_SERVER = DEV_SERVER;
-const TV_LINK_DISPLAY = 'airtune.music/tv';
 const POLL_INTERVAL_MS = 2500;
 
 function generateLinkCode(): string {
@@ -801,7 +800,7 @@ export function AppleMusicAuthScreen({
                   <View style={styles.visitBlock} focusable={false}>
                     <Text style={styles.visitLabel}>{t('auth.visitURL')}</Text>
                     <Text style={styles.visitUrl} selectable={false}>
-                      {`http://${localServerIp || '...'}:${LOCAL_SERVER_PORT}/tv`}
+                      {localServerIp ? `http://${localServerIp}:${LOCAL_SERVER_PORT}/tv` : '...'}
                     </Text>
                   </View>
 
