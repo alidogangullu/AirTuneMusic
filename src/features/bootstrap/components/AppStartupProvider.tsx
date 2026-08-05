@@ -5,6 +5,7 @@ import { Announcement, AnnouncementService } from '../announcementService';
 import { initializeYandexAds } from '../yandexAds';
 import { QuotaService } from '../../settings/quotaService';
 import { IapService } from '../../settings/iapService';
+import { ADS_TEMPORARILY_DISABLED } from '../../settings/adSettingsService';
 import { RewardAdService } from '../../player/rewardAdService';
 import * as Updates from 'expo-updates';
 
@@ -39,6 +40,9 @@ export function AppStartupProvider({ children }: Readonly<{ children: React.Reac
       try {
         const initAndPreloadAds = async () => {
           try {
+            if (ADS_TEMPORARILY_DISABLED) {
+              return;
+            }
             await initializeYandexAds();
             if (!QuotaService.isProUser()) {
               try {

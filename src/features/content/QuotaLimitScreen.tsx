@@ -2,11 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { radius, spacing } from '../../theme/layout';
-
-// TODO: Temporary. Ads are hardcoded-disabled until the rewarded ad flow is
-// re-enabled. While true: the "watch ad" button is passive, auto-start is off,
-// and focus defaults to the subscription (get pro) button.
-const ADS_TEMPORARILY_DISABLED = false;
+import { ADS_TEMPORARILY_DISABLED } from '../settings/adSettingsService';
 
 export type QuotaRecoveryRequest = {
   title: string;
