@@ -5,21 +5,24 @@ interface AirPlayLogoProps {
   size?: number;
   color?: string;
   style?: any;
+  opacity?: number;
 }
 
 /**
  * AirPlay Audio logo component using the SVG provided by the user.
  */
-export const AirPlayLogo = ({ 
-  size = 24, 
-  color = 'white', 
-  style 
+export const AirPlayLogo = ({
+  size = 24,
+  color = 'white',
+  style,
+  opacity,
 }: AirPlayLogoProps) => (
-  <Svg 
-    width={size} 
-    height={size} 
+  <Svg
+    width={size}
+    height={size}
     viewBox="0 0 263.32 263.32"
     style={style}
+    opacity={opacity}
   >
     <Defs>
       <ClipPath id="clip-path">

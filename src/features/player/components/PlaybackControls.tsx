@@ -121,10 +121,14 @@ export const PlaybackControls = React.memo(({
     playlistItems = playlists.map(pl => ({ key: pl.id, label: pl.name, onPress: () => handlePickPlaylist(pl) }));
   }
 
-  const iconColor = (focused: boolean, active: boolean) => {
+  const getIconColor = (focused: boolean) => {
     if (focused) return C.onDarkFocusedIcon;
-    if (active) return C.onDarkTextPrimary;
-    return C.onDarkTextDim;
+    return C.onDarkTextPrimary;
+  };
+
+  const getIconOpacity = (focused: boolean, active: boolean) => {
+    if (focused || active) return 1;
+    return 0.4;
   };
 
   // AirPlay mode: sender owns the queue. Show prev/next on the left (matching
@@ -136,21 +140,21 @@ export const PlaybackControls = React.memo(({
         <View style={styles.primaryGroup}>
           <ControlButton onPress={airPlay.onPrev} nextFocusDown={nextFocusDown}>
             {(focused) => (
-              <Svg width="24" height="24" viewBox="0 0 24 24" fill={iconColor(focused, true)}>
+              <Svg width="24" height="24" viewBox="0 0 24 24" fill={getIconColor(focused)} opacity={getIconOpacity(focused, true)}>
                 <Path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
               </Svg>
             )}
           </ControlButton>
           <ControlButton onPress={airPlay.onNext} nextFocusDown={nextFocusDown}>
             {(focused) => (
-              <Svg width="24" height="24" viewBox="0 0 24 24" fill={iconColor(focused, true)}>
+              <Svg width="24" height="24" viewBox="0 0 24 24" fill={getIconColor(focused)} opacity={getIconOpacity(focused, true)}>
                 <Path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
               </Svg>
             )}
           </ControlButton>
         </View>
         <View style={styles.secondaryGroup}>
-          <AirPlayLogo size={24} color={C.onDarkTextDim} />
+          <AirPlayLogo size={24} color={C.onDarkTextPrimary} opacity={0.4} />
         </View>
       </View>
     );
@@ -162,7 +166,7 @@ export const PlaybackControls = React.memo(({
       <View style={styles.primaryGroup}>
         <ControlButton onPress={skipToPrevious} disabled={isPreviousDisabled} nextFocusDown={nextFocusDown}>
           {(focused) => (
-            <Svg width="24" height="24" viewBox="0 0 24 24" fill={iconColor(focused, true)}>
+            <Svg width="24" height="24" viewBox="0 0 24 24" fill={getIconColor(focused)} opacity={getIconOpacity(focused, true)}>
               <Path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
             </Svg>
           )}
@@ -174,7 +178,7 @@ export const PlaybackControls = React.memo(({
           hasTVPreferredFocus
           onLayout={(node: number | null) => onLayoutButton?.(node)}>
           {(focused) => (
-            <Svg width="24" height="24" viewBox="0 0 24 24" fill={iconColor(focused, true)}>
+            <Svg width="24" height="24" viewBox="0 0 24 24" fill={getIconColor(focused)} opacity={getIconOpacity(focused, true)}>
               <Path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
             </Svg>
           )}
@@ -190,7 +194,7 @@ export const PlaybackControls = React.memo(({
           disabled={isDisabled || isStation}
           nextFocusDown={nextFocusDown}>
           {(focused) => (
-            <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={iconColor(focused, shuffleMode !== ShuffleMode.OFF)} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={getIconColor(focused)} opacity={getIconOpacity(focused, shuffleMode !== ShuffleMode.OFF)} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <Path d="M16 3h5v5" />
               <Path d="M4 20L21 3" />
               <Path d="M21 16v5h-5" />
@@ -207,7 +211,7 @@ export const PlaybackControls = React.memo(({
           disabled={isDisabled || isStation}
           nextFocusDown={nextFocusDown}>
           {(focused) => (
-            <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={iconColor(focused, repeatMode !== RepeatMode.NONE)} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={getIconColor(focused)} opacity={getIconOpacity(focused, repeatMode !== RepeatMode.NONE)} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <Path d="m17 2 4 4-4 4" />
               <Path d="M3 11V9a4 4 0 0 1 4-4h14" />
               <Path d="m7 22-4-4 4-4" />
@@ -225,7 +229,7 @@ export const PlaybackControls = React.memo(({
           disabled={isDisabled}
           nextFocusDown={nextFocusDown}>
           {(focused) => (
-            <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={iconColor(focused, false)} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={getIconColor(focused)} opacity={getIconOpacity(focused, false)} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <Path d="M12 5v14" />
               <Path d="M5 12h14" />
             </Svg>
@@ -244,7 +248,7 @@ export const PlaybackControls = React.memo(({
             if (focused) { favFill = C.onDarkFocusedIcon; }
             else if (rating === 1) { favFill = C.onDarkTextPrimary; }
             return (
-              <Svg width="20" height="20" viewBox="0 0 24 24" fill={favFill} stroke={iconColor(focused, rating === 1)} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <Svg width="20" height="20" viewBox="0 0 24 24" fill={favFill} stroke={getIconColor(focused)} opacity={getIconOpacity(focused, rating === 1)} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <Path d="M12 17.75l-6.172 3.245 1.179-6.873-4.993-4.867 6.9-1.002L12 2l3.086 6.253 6.9 1.002-4.993 4.867 1.179 6.873z" />
               </Svg>
             );

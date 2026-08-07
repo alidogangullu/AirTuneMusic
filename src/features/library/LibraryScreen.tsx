@@ -277,7 +277,17 @@ export function LibraryScreen(): React.JSX.Element {
     hasNextPage,
   } = useLibraryInfiniteItems(activeCategory, limit);
 
-  const items = React.useMemo(() => data?.pages.flatMap((page: any) => page.data) ?? [], [data]);
+  const items = React.useMemo(() => {
+    const allItems = data?.pages.flatMap((page: any) => page.data) ?? [];
+    const seen = new Set<string>();
+    return allItems.filter((item: LibraryItem) => {
+      const catalogItem = item.relationships?.catalog?.data?.[0];
+      const catalogId = item.attributes?.playParams?.catalogId ?? catalogItem?.id ?? item.id;
+      if (seen.has(catalogId)) return false;
+      seen.add(catalogId);
+      return true;
+    });
+  }, [data]);
   const loading = isLoading && items.length === 0;
 
   // Load more (pagination)
@@ -366,15 +376,51 @@ export function LibraryScreen(): React.JSX.Element {
       );
     }
     if (activeCategory === 'songs') {
-      const handlePlayList = async (shuffle: boolean, startIndex = 0) => {
+      const handlePlayList = async (shuffle: boolean, itemIndex?: number) => {
         let source;
         try {
           source = await fetchAllLibrarySongs();
+          source = source.filter(item =>
+            item.type !== 'library-music-videos' &&
+            item.attributes?.name !== 'Unknown Album'
+          );
         } catch {
           source = items;
         }
-        const tracks = source.map((it, idx) => libraryItemToTrackInfo(it, idx));
-        const success = await playTracks(tracks, startIndex, shuffle);
+
+        const seen = new Set<string>();
+        let validSource = source.filter(item => {
+          const catalogItem = item.relationships?.catalog?.data?.[0];
+          const catalogId = item.attributes?.playParams?.catalogId ?? catalogItem?.id ?? item.id;
+          if (!catalogId || catalogId.startsWith('i.') || seen.has(catalogId)) return false;
+          seen.add(catalogId);
+          return true;
+        });
+        if (validSource.length === 0) validSource = source;
+
+        let tracksToPlay: TrackInfo[] = [];
+        let finalStartIndex = 0;
+        const MAX_QUEUE = 500;
+
+        if (shuffle) {
+          const shuffled = [...validSource];
+          for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+          }
+          tracksToPlay = shuffled.slice(0, MAX_QUEUE).map((it, idx) => libraryItemToTrackInfo(it, idx));
+        } else {
+          let startIndex = 0;
+          if (itemIndex !== undefined && items[itemIndex]) {
+            const clickedItem = items[itemIndex];
+            startIndex = validSource.findIndex((it: LibraryItem) => it.id === clickedItem.id);
+            if (startIndex === -1) startIndex = 0;
+          }
+          const sliced = validSource.slice(startIndex, startIndex + MAX_QUEUE);
+          tracksToPlay = sliced.map((it, idx) => libraryItemToTrackInfo(it, startIndex + idx));
+        }
+
+        const success = await playTracks(tracksToPlay, finalStartIndex, shuffle);
         if (success) openNowPlayingFullscreen();
       };
 
