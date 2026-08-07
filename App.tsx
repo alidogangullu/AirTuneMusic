@@ -27,23 +27,12 @@ import { ForceUpdateScreen } from './src/features/bootstrap/ForceUpdateScreen';
 import { SubscriptionRequiredScreen } from './src/features/bootstrap/SubscriptionRequiredScreen';
 import { AppStartupProvider, useAppStartup } from './src/features/bootstrap/components/AppStartupProvider';
 import { handleLogout } from './src/features/player/musicPlayer';
-import * as Updates from 'expo-updates';
 
 function AppContent(): React.JSX.Element {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { isInitialized, hasToken, isAppleMusicSubscriber, setHasToken, updateInfo } = useAppStartup();
   
-  // Expo OTA Updates Listener
-  const { isUpdatePending } = Updates.useUpdates();
-
-  React.useEffect(() => {
-    if (isUpdatePending) {
-      console.log('An OTA update was downloaded and is pending. It will be applied on the next restart.');
-      // TV deneyimini bölmemek için anında reloadAsync YAPMIYORUZ. 
-      // Bir sonraki açılışta güncel bundle yüklenecektir.
-    }
-  }, [isUpdatePending]);
 
   if (!isInitialized || updateInfo === null) {
     return (

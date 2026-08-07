@@ -33,6 +33,17 @@ export function AppStartupProvider({ children }: Readonly<{ children: React.Reac
   const [readAnnouncementIds, setReadAnnouncementIds] = useState<string[]>([]);
   const [needsCancelSubscription, setNeedsCancelSubscription] = useState(() => QuotaService.needsCancelSubscription());
 
+  // Auto-reload app as soon as an OTA update finishes downloading
+  const { isUpdatePending } = Updates.useUpdates();
+  useEffect(() => {
+    if (isUpdatePending) {
+      console.log('[AppStartupProvider] OTA update downloaded and pending. Reloading app immediately...');
+      Updates.reloadAsync().catch(err => {
+        console.error('[AppStartupProvider] Auto reload error:', err);
+      });
+    }
+  }, [isUpdatePending]);
+
   useEffect(() => {
     let mounted = true;
 
@@ -87,18 +98,6 @@ export function AppStartupProvider({ children }: Readonly<{ children: React.Reac
     const unsubStatus = IapService.addSubscriptionStatusListener(refresh);
     return () => { unsubPurchase(); unsubStatus(); };
   }, []);
-
-  // Apply OTA updates only after the app has a user token.
-  // This avoids reloading the auth flow while the local pairing server is active.
-  const { isUpdatePending } = Updates.useUpdates();
-  useEffect(() => {
-    if (isUpdatePending && hasToken) {
-      console.log('[AppStartupProvider] OTA update downloaded and pending. Reloading app immediately...');
-      Updates.reloadAsync().catch(err => {
-        console.error('[AppStartupProvider] Auto reload error:', err);
-      });
-    }
-  }, [hasToken, isUpdatePending]);
 
   const markAnnouncementRead = React.useCallback((id: string) => {
     AnnouncementService.markAsRead(id);
