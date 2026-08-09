@@ -377,16 +377,21 @@ export function LibraryScreen(): React.JSX.Element {
     }
     if (activeCategory === 'songs') {
       const handlePlayList = async (shuffle: boolean, itemIndex?: number) => {
-        let source;
+        let source = items;
+
         try {
-          source = await fetchAllLibrarySongs();
-          source = source.filter(item =>
-            item.type !== 'library-music-videos' &&
-            item.attributes?.name !== 'Unknown Album'
-          );
+          // Fetch all library songs so shuffle/play all covers the whole library
+          // maxPages = 50 (up to 5000 songs)
+          const allSongs = await fetchAllLibrarySongs();
+          if (allSongs.length > 0) source = allSongs;
         } catch {
-          source = items;
+          // fallback to current items
         }
+
+        source = source.filter(item =>
+          item.type !== 'library-music-videos' &&
+          item.attributes?.name !== 'Unknown Album'
+        );
 
         const seen = new Set<string>();
         let validSource = source.filter(item => {

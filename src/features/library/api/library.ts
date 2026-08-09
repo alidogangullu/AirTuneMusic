@@ -99,7 +99,8 @@ export async function fetchLibraryItems(
     category === 'music-videos' ||
     category === 'albums' ||
     category === 'playlists' ||
-    category === 'recently-added'
+    category === 'recently-added' ||
+    category === 'songs'
   ) {
     params.include = 'catalog';
   }
@@ -149,22 +150,40 @@ export async function fetchAllLibrarySongs(
   maxPages = 50,
 ): Promise<LibraryResponse['data']> {
   const all: LibraryResponse['data'] = [];
-  let offset: string | undefined;
-  let page = 0;
 
-  do {
-    const params: Record<string, string | number> = { limit: 100 };
-    if (offset) {
-      params.offset = offset;
+  let currentOffset = 0;
+  const chunkSize = 5;
+  let hasMore = true;
+
+  while (hasMore && (currentOffset / 100) < maxPages) {
+    const promises = [];
+    for (let i = 0; i < chunkSize; i++) {
+      const params: Record<string, string | number> = { limit: 100, include: 'catalog' };
+      const thisOffset = currentOffset + (i * 100);
+      if (thisOffset > 0) {
+        params.offset = thisOffset.toString();
+      }
+      promises.push(
+        appleMusicApi.get<LibraryResponse>(ENDPOINT_MAP.songs, { params }).catch(() => null)
+      );
     }
-    const { data } = await appleMusicApi.get<LibraryResponse>(
-      ENDPOINT_MAP.songs,
-      { params },
-    );
-    all.push(...(data.data ?? []));
-    offset = extractOffset(data.next);
-    page += 1;
-  } while (offset && page < maxPages);
+
+    const results = await Promise.all(promises);
+
+    for (const result of results) {
+      if (!result || !result.data || !result.data.data) {
+        hasMore = false;
+        break;
+      }
+      const items = result.data.data;
+      all.push(...items);
+      if (items.length < 100) {
+        hasMore = false;
+        break;
+      }
+    }
+    currentOffset += chunkSize * 100;
+  }
 
   return all;
 }
