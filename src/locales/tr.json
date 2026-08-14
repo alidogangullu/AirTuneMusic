@@ -200,14 +200,8 @@
     "support": "Destek",
     "aboutInfo": {
       "title": "AirTune Music Hakkında",
-      "message": "AirTune Music, yalnızca resmi Apple Music API'si kullanılarak oluşturulmuş üçüncü taraf bir Apple Music istemcisidir. Kişisel verilerinizin hiçbirini saklamıyoruz; tüm bilgiler doğrudan Apple sunucularından alınır. Senkronize şarkı sözleri, ücretsiz ve açık kaynaklı bir veritabanı olan LRCLib (lrclib.net) tarafından sağlanmaktadır. Reklamlar Yandex Ads aracılığıyla sunulmaktadır.",
+      "message": "AirTune Music, yalnızca resmi Apple Music API'si kullanılarak oluşturulmuş üçüncü taraf bir Apple Music istemcisidir. Kişisel verilerinizin hiçbirini saklamıyoruz; tüm bilgiler doğrudan Apple sunucularından alınır. Senkronize şarkı sözleri, ücretsiz ve açık kaynaklı bir veritabanı olan LRCLib (lrclib.net) tarafından sağlanmaktadır.",
       "website": "Diğer ürünler, genel bilgiler ve yasal metinler için adgn.me adresini ziyaret edebilirsiniz."
-    },
-    "adSettings": {
-      "title": "Reklam Tercihleri",
-      "autoStartAd": "Reklamı Otomatik Başlat",
-      "adHintTitle": "Reklam nasıl geçilir?",
-      "adHint": "Reklamı izleyin. Süre dolunca sağ üstte bir buton belirecek:\n\n• Kapatma (✕) veya İleri (⏭) butonu çıkarsa: kumandanın yön tuşlarıyla butonun üzerine gelin ve basın.\n\n• Açılan son ekranda sağ üstteki kapatma (✕) butonunun üzerine gelip ✕ butonuna basarak reklamı kapatabilirsiniz."
     },
     "supportInfo": {
       "contactTitle": "İletişim",
@@ -271,23 +265,12 @@
   },
   "quotaLimit": {
     "title": "Sınıra Ulaşıldı",
-    "adConfigMissing": "Yandex Reklamları henüz yapılandırılmadı.",
-    "message": "Ücretsiz dinleme sınırı olan {{limit}} şarkıya ulaştınız. Bir reklam izleyerek {{bonus}} ek hak kazanabilir veya Pro'ya geçebilirsiniz.",
-    "watchAd": "Reklam İzle +3",
+    "message": "Ücretsiz dinleme sınırı olan {{limit}} şarkıya ulaştınız. Sınırsız dinleme için Pro'ya geçin.",
     "subscription": "Pro'yu Al",
-    "preparingAd": "Reklam hazırlanıyor...",
-    "adStarting": "Reklam başlıyor",
-    "autoStartCount": "Reklam {{count}} sn içinde",
     "remainingLabel": "Sonraki hak: {{remaining}}",
     "limitLabel": "Kullanım: {{used}}/{{total}}",
-    "rewardLabel": "+{{bonus}} bonus hak",
-    "skipAlertTitle": "Reklam atlandı",
-    "skipNoReward": "Reklamı atlamak bonus hak vermez.",
-    "adErrorFallback": "Reklam başlatılamadı. Lütfen tekrar deneyin veya abonelik seçeneklerini açın.",
     "notificationTitle": "Kota sınırına ulaşıldı",
-    "notificationMessage": "Dinlemeye devam etmek için AirTune Pro'ya geçebilirsiniz.",
-    "adLoadFailed": "Şu anda gösterilecek reklam bulunamadı. Lütfen daha sonra tekrar deneyin.",
-    "adSkipped": "Reklamı tamamlamadınız, kota kazanılmadı"
+    "notificationMessage": "Dinlemeye devam etmek için AirTune Pro'ya geçebilirsiniz."
   },
   "airplay": {
     "warningTitle": "AirPlay Alıcısını Etkinleştir",

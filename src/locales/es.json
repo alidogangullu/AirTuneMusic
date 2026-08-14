@@ -200,14 +200,8 @@
     "support": "Soporte",
     "aboutInfo": {
       "title": "Acerca de AirTune Music",
-      "message": "AirTune Music es un cliente de Apple Music de terceros creado exclusivamente con la API oficial de Apple Music. No almacenamos ninguno de sus datos personales; toda la información se obtiene directamente de los servidores de Apple. Las letras sincronizadas son proporcionadas por LRCLib (lrclib.net), una base de datos de letras gratuita y abierta. Los anuncios se sirven a través de Yandex Ads.",
+      "message": "AirTune Music es un cliente de Apple Music de terceros creado exclusivamente con la API oficial de Apple Music. No almacenamos ninguno de sus datos personales; toda la información se obtiene directamente de los servidores de Apple. Las letras sincronizadas son proporcionadas por LRCLib (lrclib.net), una base de datos de letras gratuita y abierta.",
       "website": "Para otros productos, información general y avisos legales, visite adgn.me"
-    },
-    "adSettings": {
-      "title": "Preferencias de anuncios",
-      "autoStartAd": "Iniciar anuncio automáticamente",
-      "adHintTitle": "¿Cómo saltar el anuncio?",
-      "adHint": "Vea el anuncio hasta el final. Cuando termine el temporizador, aparecerá un botón en la esquina superior derecha:\n\n• Si aparece el botón cerrar (✕) o siguiente (⏭): navegue hasta él con los botones de dirección del mando y púlselo.\n\n• En la pantalla final, navegue hasta el botón cerrar (✕) en la esquina superior derecha y pulse el botón ✕ para salir."
     },
     "supportInfo": {
       "contactTitle": "Contacto",
@@ -271,23 +265,12 @@
   },
   "quotaLimit": {
     "title": "Límite alcanzado",
-    "adConfigMissing": "Los anuncios de Yandex no están configurados todavía.",
-    "message": "Has alcanzado el límite gratuito de {{limit}} canciones. Mira un anuncio para ganar {{bonus}} reproducciones más o cambia a Pro.",
-    "watchAd": "Ver anuncio +3",
+    "message": "Has alcanzado el límite de reproducción gratuita de {{limit}} canciones. Actualiza a Pro para escuchar sin límites.",
     "subscription": "Obtener Pro",
-    "preparingAd": "Preparando anuncio...",
-    "adStarting": "El anuncio está comenzando",
-    "autoStartCount": "El anuncio inicia en {{count}}s",
     "remainingLabel": "Siguiente reproducción: {{remaining}}",
     "limitLabel": "Uso: {{used}}/{{total}}",
-    "rewardLabel": "+{{bonus}} reproducciones extra",
-    "skipAlertTitle": "Anuncio omitido",
-    "skipNoReward": "Saltar el anuncio no otorgará reproducciones extra.",
-    "adErrorFallback": "No se pudo iniciar el anuncio. Inténtalo de nuevo o abre las opciones de suscripción.",
     "notificationTitle": "Límite de cuota alcanzado",
-    "notificationMessage": "Cámbiate a AirTune Pro para continuar escuchando.",
-    "adLoadFailed": "No hay anuncios disponibles en este momento. Inténtalo de nuevo más tarde.",
-    "adSkipped": "No completaste el anuncio, no se ha ganado cuota"
+    "notificationMessage": "Cámbiate a AirTune Pro para continuar escuchando."
   },
   "airplay": {
     "warningTitle": "Activar receptor AirPlay",

@@ -200,14 +200,8 @@
     "support": "Support",
     "aboutInfo": {
       "title": "Über AirTune Music",
-      "message": "AirTune Music ist ein Drittanbieter-Client für Apple Music, der ausschließlich über die offizielle Apple Music API erstellt wurde. Wir speichern keine Ihrer persönlichen Daten; alle Informationen werden direkt von Apple-Servern abgerufen. Synchronisierte Liedtexte werden von LRCLib (lrclib.net), einer freien und offenen Liedtextdatenbank, bereitgestellt. Werbung wird über Yandex Ads ausgeliefert.",
+      "message": "AirTune Music ist ein Drittanbieter-Client für Apple Music, der ausschließlich über die offizielle Apple Music API erstellt wurde. Wir speichern keine Ihrer persönlichen Daten; alle Informationen werden direkt von Apple-Servern abgerufen. Synchronisierte Liedtexte werden von LRCLib (lrclib.net), einer freien und offenen Liedtextdatenbank, bereitgestellt.",
       "website": "Für weitere Produkte, allgemeine Informationen und rechtliche Hinweise besuchen Sie adgn.me"
-    },
-    "adSettings": {
-      "title": "Werbepräferenzen",
-      "autoStartAd": "Werbung automatisch starten",
-      "adHintTitle": "Wie überspringt man die Werbung?",
-      "adHint": "Schauen Sie die Werbung bis zum Ende an. Sobald der Timer abläuft, erscheint oben rechts eine Schaltfläche:\n\n• Wenn eine Schließen- (✕) oder Weiter-Schaltfläche (⏭) erscheint: Navigieren Sie mit den Richtungstasten Ihrer Fernbedienung dorthin und drücken Sie diese.\n\n• Navigieren Sie auf dem Endbildschirm zur Schließen-Schaltfläche (✕) oben rechts und drücken Sie die ✕-Taste, um zu beenden."
     },
     "supportInfo": {
       "contactTitle": "Kontakt",
@@ -271,21 +265,10 @@
   },
   "quotaLimit": {
     "title": "Limit erreicht",
-    "adConfigMissing": "Yandex-Anzeigen sind noch nicht konfiguriert.",
-    "message": "Sie haben das kostenlose Wiedergabelimit von {{limit}} Songs erreicht. Sehen Sie sich eine Anzeige an, um {{bonus}} weitere Wiedergaben zu erhalten, oder wechseln Sie zu Pro.",
-    "watchAd": "Werbung ansehen +3",
+    "message": "Sie haben das kostenlose Wiedergabelimit von {{limit}} Liedern erreicht. Upgraden Sie auf Pro für unbegrenztes Hören.",
     "subscription": "Hol Dir Pro",
-    "preparingAd": "Anzeige wird vorbereitet...",
-    "adStarting": "Anzeige startet",
-    "autoStartCount": "Anzeige startet in {{count}}s",
     "remainingLabel": "Nächste Wiedergabe: {{remaining}}",
-    "limitLabel": "Nutzung: {{used}}/{{total}}",
-    "rewardLabel": "+{{bonus}} Bonus-Wiedergaben",
-    "skipAlertTitle": "Anzeige übersprungen",
-    "skipNoReward": "Das Überspringen der Anzeige gewährt keine Bonus-Wiedergaben.",
-    "adErrorFallback": "Die Anzeige konnte nicht gestartet werden. Bitte versuchen Sie es erneut oder öffnen Sie die Abonnementoptionen.",
-    "adLoadFailed": "Derzeit sind keine Anzeigen verfügbar. Bitte versuchen Sie es später erneut.",
-    "adSkipped": "Anzeige nicht vollständig gesehen, kein Kontingent erhalten"
+    "limitLabel": "Nutzung: {{used}}/{{total}}"
   },
   "airplay": {
     "warningTitle": "AirPlay-Empfänger aktivieren",
