@@ -1,8 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useMemo } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { radius, spacing } from '../../theme/layout';
-import { ADS_TEMPORARILY_DISABLED } from '../settings/adSettingsService';
 
 export type QuotaRecoveryRequest = {
   title: string;
@@ -17,51 +16,9 @@ export type QuotaRecoveryRequest = {
 
 type Props = Readonly<{
   request: QuotaRecoveryRequest;
-  onWatchAd: () => Promise<void>;
   onOpenSubscription: () => void;
   onCancel: () => void;
 }>;
-
-function getAdErrorMessage(errorCode: string, t: ReturnType<typeof useTranslation>['t']): string | null {
-  switch (errorCode) {
-    case 'AD_CONFIGURATION_MISSING':
-      return t('quotaLimit.adConfigMissing');
-    case 'AD_NOT_READY':
-      return 'Ad is not ready yet. Please try again in a moment.';
-    case 'AD_DISPLAY_FAILED':
-      return 'Ad could not be displayed. Please try again.';
-    case 'AD_TIMEOUT':
-    case 'AD_LOAD_FAILED':
-      return t('quotaLimit.adLoadFailed');
-    default:
-      return errorCode ? null : t('quotaLimit.adErrorFallback');
-  }
-}
-
-function handleAdError(
-  error: unknown,
-  t: ReturnType<typeof useTranslation>['t'],
-  setErrorMessage: (value: string | null) => void,
-): void {
-  const errorCode =
-    typeof error === 'object' && error !== null && 'code' in error && typeof (error as {code?: unknown}).code === 'string'
-      ? (error as {code: string}).code
-      : '';
-
-  if (errorCode === 'AD_SKIPPED') {
-    Alert.alert(t('quotaLimit.skipAlertTitle'), t('quotaLimit.skipNoReward'));
-    return;
-  }
-
-  const adErrorMessage = getAdErrorMessage(errorCode, t);
-  if (adErrorMessage) {
-    setErrorMessage(adErrorMessage);
-    return;
-  }
-
-  const message = error instanceof Error ? error.message : t('quotaLimit.adErrorFallback');
-  setErrorMessage(message);
-}
 
 function makeStyles() {
   return StyleSheet.create({
@@ -152,117 +109,15 @@ function makeStyles() {
     actionLabelFocused: {
       color: '#FFFFFF',
     },
-    helperRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: spacing.sm,
-      marginTop: 2,
-      flexWrap: 'wrap',
-    },
     actionSpacer: {
       height: spacing.lg,
-    },
-    countdown: {
-      color: '#FFFFFF',
-      fontSize: 16,
-      fontWeight: '700',
-      opacity: 0.9,
-    },
-    errorText: {
-      color: '#ff8a8f',
-      fontSize: 13,
-      marginTop: 2,
-      lineHeight: 15,
-    },
-    errorSlot: {
-      minHeight: 17,
-      marginTop: 2,
-    },
-    skipNote: {
-      color: 'rgba(255,255,255,0.72)',
-      fontSize: 14,
-      marginTop: 2,
-      lineHeight: 17,
-    },
-    loadingRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.sm,
-      marginTop: spacing.xs,
-      justifyContent: 'flex-end',
-    },
-    loadingText: {
-      color: '#FFFFFF',
-      fontSize: 12,
-      fontWeight: '700',
-    },
-    buttonContent: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.xs,
     },
   });
 }
 
-export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCancel }: Readonly<Props>): React.JSX.Element {
+export function QuotaLimitScreen({ request, onOpenSubscription, onCancel }: Readonly<Props>): React.JSX.Element {
   const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(), []);
-  const autoStartEnabled = !ADS_TEMPORARILY_DISABLED && request.autoWatchAfterMs > 0;
-  const [secondsLeft, setSecondsLeft] = useState(autoStartEnabled ? Math.ceil(request.autoWatchAfterMs / 1000) : 0);
-  const [isStartingAd, setIsStartingAd] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const autoTriggeredRef = useRef(false);
-  const adStartInFlightRef = useRef(false);
-  const onWatchAdRef = useRef(onWatchAd);
-
-  useEffect(() => {
-    onWatchAdRef.current = onWatchAd;
-  }, [onWatchAd]);
-
-  const handleWatchAd = useCallback(async () => {
-    if (adStartInFlightRef.current) return;
-
-    adStartInFlightRef.current = true;
-    setIsStartingAd(true);
-    setErrorMessage(null);
-
-    try {
-      await onWatchAdRef.current();
-    } catch (error) {
-      handleAdError(error, t, setErrorMessage);
-      setIsStartingAd(false);
-    } finally {
-      adStartInFlightRef.current = false;
-    }
-  }, [t]);
-
-  useEffect(() => {
-    autoTriggeredRef.current = false;
-    adStartInFlightRef.current = false;
-    setSecondsLeft(Math.max(1, Math.ceil(request.autoWatchAfterMs / 1000)));
-    setErrorMessage(null);
-    setIsStartingAd(false);
-
-    if (!autoStartEnabled) {
-      return;
-    }
-
-    const startedAt = Date.now();
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startedAt;
-      const remaining = Math.max(0, request.autoWatchAfterMs - elapsed);
-      setSecondsLeft(Math.max(0, Math.ceil(remaining / 1000)));
-
-      if (remaining <= 0 && !autoTriggeredRef.current) {
-        autoTriggeredRef.current = true;
-        clearInterval(interval);
-        handleWatchAd();
-      }
-    }, 250);
-
-    return () => clearInterval(interval);
-  }, [handleWatchAd, request.autoWatchAfterMs, autoStartEnabled]);
 
   return (
     <View style={styles.root}>
@@ -275,23 +130,11 @@ export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCan
               </View>
             </View>
 
-            {autoStartEnabled && (
-              <View style={styles.helperRow}>
-                <Text style={styles.countdown}>{t('quotaLimit.autoStartCount', { count: secondsLeft })}</Text>
-              </View>
-            )}
-
-            <Text style={styles.skipNote}>{t('quotaLimit.skipNoReward')}</Text>
-
-            <View style={styles.errorSlot}>
-              {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
-            </View>
-
             <View style={styles.actionSpacer} />
 
           <View style={styles.actionRow}>
             <Pressable
-              hasTVPreferredFocus={ADS_TEMPORARILY_DISABLED}
+              hasTVPreferredFocus={true}
               onPress={onOpenSubscription}
               style={({ focused }) => [
                 styles.actionButton,
@@ -302,26 +145,6 @@ export function QuotaLimitScreen({ request, onWatchAd, onOpenSubscription, onCan
                 <Text style={[styles.actionLabel, styles.actionLabelSecondary]}>
                   {t('quotaLimit.subscription')}
                 </Text>
-              )}
-            </Pressable>
-
-            <Pressable
-              hasTVPreferredFocus={!ADS_TEMPORARILY_DISABLED}
-              onPress={handleWatchAd}
-              focusable={!ADS_TEMPORARILY_DISABLED}
-              disabled={ADS_TEMPORARILY_DISABLED || isStartingAd}
-              style={({ focused }) => [
-                styles.actionButton,
-                styles.actionButtonSecondary,
-                focused && styles.actionButtonFocused,
-                (ADS_TEMPORARILY_DISABLED || isStartingAd) && { opacity: 0.4 },
-              ]}>
-              {() => (
-                <View style={styles.buttonContent}>
-                  <Text style={[styles.actionLabel, styles.actionLabelSecondary]}>
-                    {isStartingAd ? t('quotaLimit.preparingAd') : t('quotaLimit.watchAd')}
-                  </Text>
-                </View>
               )}
             </Pressable>
 
