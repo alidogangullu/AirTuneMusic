@@ -35,11 +35,13 @@ type Props = {
 export function TVActionSheet({ visible, onClose, items, busyKey, feedback }: Readonly<Props>) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.94)).current;
+  const pressedKeys = useRef(new Set<string>());
   const { height: windowHeight } = useWindowDimensions();
   const maxListHeight = windowHeight * 0.75;
 
   useEffect(() => {
     if (visible) {
+      pressedKeys.current.clear();
       Animated.parallel([
         Animated.timing(fadeAnim, { toValue: 1, duration: 160, useNativeDriver: true }),
         Animated.spring(scaleAnim, { toValue: 1, friction: 8, tension: 140, useNativeDriver: true }),
@@ -75,7 +77,16 @@ export function TVActionSheet({ visible, onClose, items, busyKey, feedback }: Re
                 ]}
                 focusable={!item.disabled}
                 hasTVPreferredFocus={index === firstEnabledIndex}
-                onPress={async () => { if (!item.disabled) { await item.onPress(); } }}>
+                onPressIn={() => {
+                  pressedKeys.current.add(item.key);
+                }}
+                onPress={async () => {
+                  // Prevent long-press release bleed-through:
+                  // Only allow onPress if this element actually received the onPressIn event.
+                  if (!pressedKeys.current.has(item.key)) return;
+                  pressedKeys.current.delete(item.key);
+                  if (!item.disabled) { await item.onPress(); }
+                }}>
                 {({ focused }) => busyKey === item.key ? (
                   <ActivityIndicator size="small" color={focused ? '#1c1c1e' : '#ffffff'} />
                 ) : (
