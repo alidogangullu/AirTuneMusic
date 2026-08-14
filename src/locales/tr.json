@@ -185,7 +185,8 @@
       "currentPlan": "Mevcut Plan",
       "cancelTitle": "Aboneliğinizi İptal Edin",
       "cancelBodyAccess": "AirTune Pro'ya ömür boyu erişiminiz var.",
-      "cancelBody": "Tekrar ücretlendirilmemek için aktif {{plan}} aboneliğinizi Google Play'den iptal edin. Bunun için QR kodu tarayın."
+      "cancelBody": "Tekrar ücretlendirilmemek için aktif {{plan}} aboneliğinizi Google Play'den iptal edin. Bunun için QR kodu tarayın.",
+      "featureSupport": "• Geliştirme için destek"
     },
     "appPreferences": "Uygulama Tercihleri",
     "quotaIndicator": "Kota Göstergesi: {{state}}",

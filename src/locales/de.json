@@ -185,7 +185,8 @@
       "currentPlan": "Aktueller Plan",
       "cancelTitle": "Abo kündigen",
       "cancelBodyAccess": "Sie haben lebenslangen Zugang zu AirTune Pro.",
-      "cancelBody": "Um keine weiteren Kosten zu verursachen, kündigen Sie Ihr aktives {{plan}}-Abo bei Google Play. Scannen Sie dazu den QR-Code."
+      "cancelBody": "Um keine weiteren Kosten zu verursachen, kündigen Sie Ihr aktives {{plan}}-Abo bei Google Play. Scannen Sie dazu den QR-Code.",
+      "featureSupport": "• Unterstützung für die Entwicklung"
     },
     "appPreferences": "App-Einstellungen",
     "quotaIndicator": "Kontingentanzeige: {{state}}",

@@ -185,7 +185,8 @@
       "currentPlan": "Plan actual",
       "cancelTitle": "Cancela tu suscripción",
       "cancelBodyAccess": "Tienes acceso de por vida a AirTune Pro.",
-      "cancelBody": "Para evitar cargos adicionales, cancela tu suscripción {{plan}} activa en Google Play escaneando el código QR."
+      "cancelBody": "Para evitar cargos adicionales, cancela tu suscripción {{plan}} activa en Google Play escaneando el código QR.",
+      "featureSupport": "• Apoyo para el desarrollo"
     },
     "appPreferences": "Preferencias",
     "quotaIndicator": "Indicador de cuota: {{state}}",

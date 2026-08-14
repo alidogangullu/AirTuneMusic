@@ -47,38 +47,35 @@ function makeStyles() {
     topRow: {
       marginBottom: spacing.xs,
     },
-    titleWrap: {
-      flex: 1,
-    },
     title: {
-      fontSize: 26,
-      fontWeight: '800',
+      fontSize: 24,
+      fontWeight: '700',
       color: '#FFFFFF',
-      letterSpacing: -0.1,
+      letterSpacing: 0,
     },
     subtitle: {
-      fontSize: 16,
-      color: 'rgba(255,255,255,0.82)',
-      marginTop: 2,
-      lineHeight: 19,
+      fontSize: 15,
+      color: 'rgba(255,255,255,0.75)',
+      marginTop: 6,
+      lineHeight: 22,
       maxWidth: 520,
     },
     actionRow: {
       flexDirection: 'row',
-      gap: spacing.xs,
+      gap: spacing.sm,
       alignItems: 'center',
       flexWrap: 'wrap',
-      marginTop: spacing.xs,
+      marginTop: spacing.sm,
       justifyContent: 'flex-end',
     },
     actionButton: {
-      minWidth: 120,
-      minHeight: 40,
+      minWidth: 130,
+      minHeight: 44,
       borderRadius: radius.sm,
       alignItems: 'center',
       justifyContent: 'center',
-      paddingHorizontal: spacing.sm,
-      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
       borderWidth: 1,
     },
     actionButtonPrimary: {
@@ -98,8 +95,8 @@ function makeStyles() {
       borderColor: '#FFFFFF',
     },
     actionLabel: {
-      fontSize: 14,
-      fontWeight: '800',
+      fontSize: 16,
+      fontWeight: '700',
       color: '#FFFFFF',
       textAlign: 'center',
     },
@@ -124,7 +121,7 @@ export function QuotaLimitScreen({ request, onOpenSubscription, onCancel }: Read
       <View style={styles.overlay}>
         <View style={styles.card}>
             <View style={styles.topRow}>
-              <View style={styles.titleWrap}>
+              <View>
                 <Text style={styles.title}>{request.title}</Text>
                 <Text style={styles.subtitle}>{request.message}</Text>
               </View>

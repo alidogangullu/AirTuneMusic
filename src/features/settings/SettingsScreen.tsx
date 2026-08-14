@@ -255,12 +255,12 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
                 {([
                   t('settings.pro.featureMusic'),
                   t('settings.pro.featureAirPlay'),
-                  t('settings.pro.featureAdFree'),
+                  t('settings.pro.featureSupport'),
                 ] as string[]).map((feat) => (
                   <Text key={feat} style={[styles.adHintText, styles.textCenter]}>{feat}</Text>
                 ))}
               </View>
-              <View style={{ flex: 1, paddingLeft: spacing.md }}>
+              <View style={{ flex: 1, paddingLeft: spacing.md, marginTop: 4 }}>
                 <Text style={[styles.adHintText, { fontSize: 11, lineHeight: 15, fontStyle: 'italic', textAlign: 'center' }]}>
                   {(t('settings.pro.disclaimer') || "AirTune is an independent Apple Music client, not an official Apple app. Upgrading to Pro removes AirTune's playback and streaming limits and supports development. This purchase is separate from your Apple Music subscription.").replace(/\n/g, ' ')}
                 </Text>
