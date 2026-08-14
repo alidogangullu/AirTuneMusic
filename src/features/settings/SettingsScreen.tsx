@@ -25,7 +25,6 @@ import { GradientBackground } from '../../components/GradientBackground';
 import { useTheme } from '../../theme';
 import type { AppColors } from '../../theme/colors';
 import { QuotaService } from './quotaService';
-import { AdSettingsService } from './adSettingsService';
 import { MotionArtworkService } from './motionArtworkService';
 import { AirPlayQuotaService } from '../airplay/airPlayQuotaService';
 import { QuotaPeriodService } from './quotaPeriodService';
@@ -43,7 +42,7 @@ export type SettingsScreenProps = {
   announcements?: Announcement[];
   readAnnouncementIds?: string[];
   onAnnouncementRead?: (id: string) => void;
-  initialSubMenu?: 'none' | 'language' | 'announcements' | 'adSettings' | 'subscription' | 'appPreferences' | 'about' | 'support';
+  initialSubMenu?: 'none' | 'language' | 'announcements' | 'subscription' | 'appPreferences' | 'about' | 'support';
 };
 
 export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenProps>(function SettingsScreen({
@@ -58,8 +57,7 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
   const { colors, themeMode, setThemeMode } = useTheme();
   const styles = useMemo(() => makeStyles(colors, themeMode), [colors, themeMode]);
   const { t, i18n } = useTranslation();
-  const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language' | 'announcements' | 'adSettings' | 'subscription' | 'appPreferences' | 'about' | 'support'>(initialSubMenu);
-  const [autoStartAd, setAutoStartAd] = React.useState(() => AdSettingsService.getAutoStartAd());
+  const [currentSubMenu, setCurrentSubMenu] = React.useState<'none' | 'language' | 'announcements' | 'subscription' | 'appPreferences' | 'about' | 'support'>(initialSubMenu);
   const [prices, setPrices] = React.useState<Record<string, string>>({});
   const [quotaIndicatorHidden, setQuotaIndicatorHidden] = React.useState(() => QuotaService.isQuotaIndicatorHidden());
   const [motionArtworkEnabled, setMotionArtworkEnabled] = React.useState(() => MotionArtworkService.getEnabled());
@@ -98,7 +96,6 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
     { id: 'Subscription', label: t('settings.subscription') },
     { id: 'AirPlay', label: 'AirPlay: ' + (airPlayEnabled ? t('common.on', 'On') : t('common.off', 'Off')) },
     { id: 'AppPreferences', label: t('settings.appPreferences') },
-    { id: 'AdSettings', label: t('settings.adSettings.title') },
     { id: 'Announcements', label: t('settings.announcements') },
     { id: 'Support', label: t('settings.support') },
     { id: 'About', label: t('settings.about') },
@@ -117,8 +114,6 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
       if (updateInfo?.storeUrl) {
         Linking.openURL(updateInfo.storeUrl);
       }
-    } else if (item === 'AdSettings') {
-      setCurrentSubMenu('adSettings');
     } else if (item === 'Announcements') {
       setCurrentSubMenu('announcements');
     } else if (item === 'Sign Out') {
@@ -401,32 +396,6 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
     if (currentSubMenu === 'subscription') return renderSubscriptionMenu();
     if (currentSubMenu === 'appPreferences') return renderAppPreferencesMenu();
 
-    if (currentSubMenu === 'adSettings') {
-      return (
-        <>
-          <SettingsMenuItem
-            prefix="‹"
-            label={t('common.back')}
-            hasTVPreferredFocus
-            onPress={() => setCurrentSubMenu('none')}
-          />
-          <View style={styles.divider} />
-          <SettingsMenuItem
-            label={t('settings.adSettings.autoStartAd') + ': ' + (autoStartAd ? t('common.on', 'On') : t('common.off', 'Off'))}
-            onPress={() => {
-              const next = !autoStartAd;
-              AdSettingsService.setAutoStartAd(next);
-              setAutoStartAd(next);
-            }}
-          />
-          <View style={styles.adHintContainer}>
-            <Text style={styles.adHintTitle}>{t('settings.adSettings.adHintTitle')}</Text>
-            <Text style={styles.adHintText}>{t('settings.adSettings.adHint')}</Text>
-          </View>
-        </>
-      );
-    }
-
     const renderHighlightedText = (text: string, baseStyle: any, containerStyle?: any) => {
       if (!text) return null;
       const parts = text.split(/(support@adgn\.me|adgn\.me)/g);
@@ -563,12 +532,11 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
 });
 
 function getSubMenuTitle(
-  subMenu: 'none' | 'language' | 'announcements' | 'adSettings' | 'subscription' | 'appPreferences' | 'about' | 'support',
+  subMenu: 'none' | 'language' | 'announcements' | 'subscription' | 'appPreferences' | 'about' | 'support',
   t: (key: string) => string,
 ): string {
   if (subMenu === 'language') return t('settings.language.title');
   if (subMenu === 'announcements') return t('settings.announcements');
-  if (subMenu === 'adSettings') return t('settings.adSettings.title');
   if (subMenu === 'subscription') return t('settings.subscription');
   if (subMenu === 'about') return t('settings.about');
   if (subMenu === 'support') return t('settings.support');

@@ -55,8 +55,6 @@ export function HomeScreen({
     setShowSettings,
     quotaRecoveryRequest,
     dismissQuotaRecovery,
-    startQuotaRewardAd,
-    adInFlight,
     stop,
   } = usePlayer();
   useLibraryMembershipSnapshot();
@@ -183,7 +181,7 @@ export function HomeScreen({
         <Modal
           visible={nowPlayingFullscreen && (lastOpened === 'now-playing' || !isDetailOpen)}
           animationType="none"
-          onRequestClose={() => { if (!adInFlight) closeNowPlayingFullscreen(); }}>
+          onRequestClose={() => { closeNowPlayingFullscreen(); }}>
           <NowPlayingScreen
             onBack={closeNowPlayingFullscreen}
             onOpenSubscription={() => {
@@ -198,7 +196,7 @@ export function HomeScreen({
         <Modal
           visible={isDetailOpen && (lastOpened === 'detail' || !nowPlayingFullscreen)}
           animationType="none"
-          onRequestClose={() => { if (!adInFlight) popContent(); }}>
+          onRequestClose={() => { popContent(); }}>
           {selectedContent !== null && (
             <GradientBackground
               startColor={colors.gradientStart}
@@ -249,9 +247,6 @@ export function HomeScreen({
           {quotaRecoveryRequest ? (
             <QuotaLimitScreen
               request={quotaRecoveryRequest}
-              onWatchAd={async () => {
-                await startQuotaRewardAd();
-              }}
               onOpenSubscription={() => {
                 dismissQuotaRecovery();
                 setSettingsInitialSubMenu('subscription');

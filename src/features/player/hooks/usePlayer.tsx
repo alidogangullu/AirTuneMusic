@@ -11,8 +11,6 @@ import {Alert, BackHandler, ToastAndroid, AppState} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import * as musicPlayer from '../musicPlayer';
 import {QuotaService} from '../../settings/quotaService';
-import {AdSettingsService} from '../../settings/adSettingsService';
-import {RewardAdService} from '../rewardAdService';
 import {getDeveloperToken} from '../../../api/apple-music/getDeveloperToken';
 import {waitForToken, getMusicUserToken} from '../../../api/apple-music/musicUserToken';
 import {airPlayReceiver} from '../../airplay/airPlayReceiver';
@@ -129,8 +127,6 @@ interface PlayerContextValue {
   quotaRecoveryRequest: QuotaRecoveryRequest | null;
   requestQuotaRecovery: (retryAction?: () => Promise<void>) => void;
   dismissQuotaRecovery: () => void;
-  startQuotaRewardAd: () => Promise<boolean>;
-  adInFlight: boolean;
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -217,13 +213,11 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   const [state, setState] = useState<PlayerState>(initialState);
   const [showSettings, setShowSettings] = useState(false);
   const [quotaRecoveryRequest, setQuotaRecoveryRequest] = useState<QuotaRecoveryRequest | null>(null);
-  const [adInFlight, setAdInFlight] = useState(false);
   const stateRef = useRef(state);
   stateRef.current = state;
   const lastTrackIdRef = useRef<number | null>(null);
   const pendingQuotaRetryRef = useRef<(() => Promise<void>) | null>(null);
   const requestQuotaRecoveryRef = useRef<(retryAction?: () => Promise<void>) => void>(() => {});
-  const adInFlightRef = useRef(false);
 
   const activeEngineRef = useRef<'native' | 'web' | 'video'>('native');
   const webPlayerRef = useRef<MusicKitWebPlayerRef>(null);
@@ -237,7 +231,6 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   const webFallbackIsImmediateFailRef = useRef(false);
   const quotaRetryTrackIdRef = useRef<string | null>(null);
   const quotaRecoveryQueueIdRef = useRef<number | null>(null);
-  const suppressAutoStartRef = useRef(false);
   const cancelledQuotaQueueIdRef = useRef<number | null>(null);
   const webFallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastWebProgressRef = useRef<{ position: number; duration: number }>({ position: 0, duration: 0 });
@@ -343,85 +336,8 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     setQuotaRecoveryRequest(null);
   }, []);
 
-  const handleAdResult = useCallback((succeeded: boolean) => {
-    if (!succeeded) {
-      quotaRetryTrackIdRef.current = null;
-      suppressAutoStartRef.current = true;
-      requestQuotaRecoveryRef.current(async () => {
-        if (activeEngineRef.current === 'web') {
-          webPlayerRef.current?.play();
-        } else {
-          musicPlayer.play();
-        }
-      });
-      return;
-    }
-    const failedTrackId = quotaRetryTrackIdRef.current;
-    quotaRetryTrackIdRef.current = null;
-    if (failedTrackId && activeEngineRef.current === 'native') {
-      triggerWebFallback(failedTrackId, true);
-    } else if (activeEngineRef.current === 'web') {
-      webPlayerRef.current?.play();
-    }
-  }, [triggerWebFallback]);
-
-  const startQuotaRewardAd = useCallback(async (): Promise<boolean> => {
-    if (!quotaRecoveryRequest || adInFlightRef.current) return false;
-
-    adInFlightRef.current = true;
-    setAdInFlight(true);
-    const retryAction = pendingQuotaRetryRef.current;
-    dismissQuotaRecovery();
-
-    // Start the track before showing the ad so music plays immediately
-    if (retryAction) {
-      await retryAction();
-    }
-
-    // Block hardware back for the full ad duration (video + end card)
-    const backSub = BackHandler.addEventListener('hardwareBackPress', () => true);
-
-    let adFailed = false;
-
-    try {
-      await RewardAdService.showRewardedAd();
-      // COMPLETED: grant bonus plays
-      QuotaService.addBonusPlays();
-      return true;
-    } catch (err) {
-      const code = (err as {code?: string}).code;
-      adFailed = true;
-
-      // Stop music — optimistic playback is revoked on any ad failure or skip
-      if (activeEngineRef.current === 'web') {
-        webPlayerRef.current?.pause();
-      } else {
-        musicPlayer.pause();
-      }
-
-      if (code === 'AD_SKIPPED') {
-        ToastAndroid.show(t('quotaLimit.adSkipped'), ToastAndroid.LONG);
-      } else {
-        ToastAndroid.show(t('quotaLimit.adLoadFailed'), ToastAndroid.SHORT);
-      }
-
-      return false;
-    } finally {
-      adInFlightRef.current = false;
-      backSub.remove();
-
-      handleAdResult(!adFailed);
-
-      // Delay clearing adInFlight to block the back event that leaks from
-      // Yandex's Activity closing before React can update onRequestClose.
-      setTimeout(() => setAdInFlight(false), 1000);
-    }
-  }, [dismissQuotaRecovery, handleAdResult, quotaRecoveryRequest, t]);
-
   const requestQuotaRecovery = useCallback(
     (retryAction?: () => Promise<void>) => {
-      if (adInFlightRef.current) return;
-
       if (retryAction && !pendingQuotaRetryRef.current) {
         pendingQuotaRetryRef.current = retryAction;
       }
@@ -433,8 +349,6 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
 
         const usage = QuotaService.getUsageInfo();
         const remaining = QuotaService.getRemainingTimeFormatted();
-        const suppress = suppressAutoStartRef.current;
-        suppressAutoStartRef.current = false;
 
         musicPlayer.updateNotificationMetadata(
           t('quotaLimit.notificationTitle', 'Kota sınırına ulaşıldı'),
@@ -452,7 +366,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
             bonus: QuotaService.BONUS_PLAYS_PER_AD,
           }),
           bonusPlays: QuotaService.BONUS_PLAYS_PER_AD,
-          autoWatchAfterMs: (!suppress && AdSettingsService.getAutoStartAd()) ? 5000 : 0,
+          autoWatchAfterMs: 0,
           limit: QuotaService.HOURLY_LIMIT,
           used: usage.used,
           total: usage.total,
@@ -581,7 +495,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
         // and would prevent the fallback from triggering on the next track.
         // Explicit stop/pause UI actions clear the timer directly in their handlers.
         // Only cancel stall timer on a real user-initiated pause, not ad/quota pauses
-        if (data.state === 'paused' && !adInFlightRef.current) {
+        if (data.state === 'paused') {
           if (nativePlaybackTimeoutRef.current) {
             clearTimeout(nativePlaybackTimeoutRef.current);
             nativePlaybackTimeoutRef.current = null;
@@ -597,7 +511,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
           if (QuotaService.canPlayNextSong()) {
             QuotaService.recordSongPlay();
             lastTrackIdRef.current = data.playbackQueueId;
-          } else if (!adInFlightRef.current && !pendingQuotaRetryRef.current) {
+          } else if (!pendingQuotaRetryRef.current) {
             if (data.playbackQueueId === cancelledQuotaQueueIdRef.current) {
               return;
             }
@@ -845,7 +759,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   const checkQuotaAndPlay = useCallback(
     async (playFn: () => Promise<void>): Promise<boolean> => {
       endOfQueueLock.active = false;
-      if (!QuotaService.canPlayNextSong() && !adInFlightRef.current) {
+      if (!QuotaService.canPlayNextSong()) {
         requestQuotaRecovery(playFn);
         return false;
       }
@@ -1075,8 +989,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     stopVideo,
     play: () => {
       endOfQueueLock.active = false;
-      if (!QuotaService.canPlayNextSong() && !adInFlightRef.current) {
-        suppressAutoStartRef.current = true;
+      if (!QuotaService.canPlayNextSong()) {
         requestQuotaRecovery(async () => {
           airPlayReceiver.disconnect();
           if (activeEngineRef.current === 'web') {
@@ -1222,10 +1135,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     quotaRecoveryRequest,
     requestQuotaRecovery,
     dismissQuotaRecovery,
-    startQuotaRewardAd,
-    adInFlight,
   }), [
-    adInFlight,
     dismissQuotaRecovery,
     getQueue,
     playAlbum,
@@ -1239,7 +1149,6 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     seekTo,
     setShowSettings,
     showSettings,
-    startQuotaRewardAd,
     state,
     stopVideo,
   ]);
