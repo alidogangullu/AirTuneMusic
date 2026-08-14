@@ -89,7 +89,6 @@ export const NowPlayingProgressBar = React.memo(({
   const duration = external?.duration ?? (nativeProgress.duration > 0 ? nativeProgress.duration : fallbackDuration);
   const seekTo = external?.onSeekTo ?? nativePlayer.seekTo;
   const play = external?.onPlay ?? nativePlayer.play;
-  const pause = external?.onPause ?? nativePlayer.pause;
 
   const [isFocused, setIsFocused] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
@@ -141,10 +140,8 @@ export const NowPlayingProgressBar = React.memo(({
       setIsScrubbing(false);
       setPendingSeekMs(0);
       if (!isPlaying) play();
-    } else {
-      isPlaying ? pause() : play();
     }
-  }, [isPlaying, isBuffering, isLoading, isAirPlay, seekTo, play, pause]);
+  }, [isPlaying, isBuffering, isLoading, isAirPlay, seekTo, play]);
 
   // Import useTVEventHandler inline — only for D-pad scrubbing
   const { useTVEventHandler } = require('react-native');

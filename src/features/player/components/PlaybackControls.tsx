@@ -44,11 +44,11 @@ function ControlButton({ onPress, active, activeTransparent, children, disabled,
   );
 }
 
-/** When provided, renders AirPlay transport controls (prev / next) wired to DACP.
- * Play/pause is handled by the progress bar (consistent with native player). */
 export interface AirPlayControls {
   onPrev: () => void;
   onNext: () => void;
+  onPlayPause?: () => void;
+  isPlaying?: boolean;
 }
 
 export const PlaybackControls = React.memo(({
@@ -63,7 +63,7 @@ export const PlaybackControls = React.memo(({
   airPlay?: AirPlayControls,
 }) => {
   const { t } = useTranslation();
-  const { state, setShuffleMode, setRepeatMode, toggleRating, skipToPrevious, skipToNext } = usePlayer();
+  const { state, setShuffleMode, setRepeatMode, toggleRating, skipToPrevious, skipToNext, play, pause, isPlaying } = usePlayer();
   const { shuffleMode, repeatMode, rating, track, isLoading, buffering, containerId } = state;
 
   const [playlistPickerVisible, setPlaylistPickerVisible] = useState(false);
@@ -131,9 +131,7 @@ export const PlaybackControls = React.memo(({
     return 0.4;
   };
 
-  // AirPlay mode: sender owns the queue. Show prev/next on the left (matching
-  // normal mode alignment) and AirPlay logo on the right. Play/pause is handled
-  // by the progress bar press, same as the native player.
+  // AirPlay mode: sender owns the queue. Show prev/play/next on the left.
   if (airPlay) {
     return (
       <View style={styles.container}>
@@ -142,6 +140,21 @@ export const PlaybackControls = React.memo(({
             {(focused) => (
               <Svg width="24" height="24" viewBox="0 0 24 24" fill={getIconColor(focused)} opacity={getIconOpacity(focused, true)}>
                 <Path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+              </Svg>
+            )}
+          </ControlButton>
+          <ControlButton
+            onPress={() => airPlay.onPlayPause?.()}
+            nextFocusDown={nextFocusDown}
+            hasTVPreferredFocus
+            onLayout={(node: number | null) => onLayoutButton?.(node)}>
+            {(focused) => (
+              <Svg width="24" height="24" viewBox="0 0 24 24" fill={getIconColor(focused)} opacity={getIconOpacity(focused, true)}>
+                {airPlay.isPlaying ? (
+                  <Path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                ) : (
+                  <Path d="M8 5v14l11-7z" />
+                )}
               </Svg>
             )}
           </ControlButton>
@@ -172,11 +185,25 @@ export const PlaybackControls = React.memo(({
           )}
         </ControlButton>
         <ControlButton
-          onPress={skipToNext}
-          disabled={isNextDisabled}
+          onPress={() => (isPlaying ? pause() : play())}
+          disabled={isDisabled && !isStation} // allow play/pause if station
           nextFocusDown={nextFocusDown}
           hasTVPreferredFocus
           onLayout={(node: number | null) => onLayoutButton?.(node)}>
+          {(focused) => (
+            <Svg width="24" height="24" viewBox="0 0 24 24" fill={getIconColor(focused)} opacity={getIconOpacity(focused, true)}>
+              {isPlaying ? (
+                <Path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+              ) : (
+                <Path d="M8 5v14l11-7z" />
+              )}
+            </Svg>
+          )}
+        </ControlButton>
+        <ControlButton
+          onPress={skipToNext}
+          disabled={isNextDisabled}
+          nextFocusDown={nextFocusDown}>
           {(focused) => (
             <Svg width="24" height="24" viewBox="0 0 24 24" fill={getIconColor(focused)} opacity={getIconOpacity(focused, true)}>
               <Path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />

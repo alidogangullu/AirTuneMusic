@@ -529,6 +529,8 @@ export function NowPlayingScreen({
                   airPlay={{
                     onPrev: airPlay.prev,
                     onNext: airPlay.next,
+                    onPlayPause: airPlay.playPause,
+                    isPlaying: airPlay.isPlaying,
                   }}
                   nextFocusDown={progressBarNode}
                 />
