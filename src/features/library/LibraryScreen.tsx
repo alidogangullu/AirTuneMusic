@@ -142,12 +142,12 @@ function LibraryGridItem({
 
 function libraryItemToTrackInfo(item: LibraryItem, index: number): TrackInfo {
   const catalogItem = item.relationships?.catalog?.data?.[0];
-  const catalogId = item.attributes?.playParams?.catalogId ?? catalogItem?.id ?? item.id;
+  const catalogId = item.attributes?.playParams?.catalogId ?? item.attributes?.playParams?.globalId ?? catalogItem?.id;
   const attrs = item.attributes;
   const artworkObj = attrs?.artwork ?? catalogItem?.attributes?.artwork;
-  
+
   return {
-    id: catalogId,
+    id: catalogId || item.id,
     title: attrs?.name ?? catalogItem?.attributes?.name ?? null,
     artistName: attrs?.artistName ?? catalogItem?.attributes?.artistName ?? null,
     albumTitle: attrs?.albumName ?? catalogItem?.attributes?.albumName ?? null,
@@ -282,7 +282,7 @@ export function LibraryScreen(): React.JSX.Element {
     const seen = new Set<string>();
     return allItems.filter((item: LibraryItem) => {
       const catalogItem = item.relationships?.catalog?.data?.[0];
-      const catalogId = item.attributes?.playParams?.catalogId ?? catalogItem?.id ?? item.id;
+      const catalogId = item.attributes?.playParams?.catalogId ?? item.attributes?.playParams?.globalId ?? catalogItem?.id ?? item.id;
       if (seen.has(catalogId)) return false;
       seen.add(catalogId);
       return true;
@@ -300,7 +300,7 @@ export function LibraryScreen(): React.JSX.Element {
     (item: LibraryItem) => {
       if (item.type === 'library-music-videos') {
         const catalogItem = item.relationships?.catalog?.data?.[0];
-        const catalogId = item.attributes?.playParams?.catalogId ?? catalogItem?.id ?? item.id;
+        const catalogId = item.attributes?.playParams?.catalogId ?? item.attributes?.playParams?.globalId ?? catalogItem?.id ?? item.id;
         const artworkObj = item.attributes?.artwork ?? catalogItem?.attributes?.artwork;
         pushContent({
           id: catalogId,
@@ -321,7 +321,7 @@ export function LibraryScreen(): React.JSX.Element {
         'library-songs': 'songs',
       };
       const catalogItem = item.relationships?.catalog?.data?.[0];
-      const catalogId = item.attributes?.playParams?.catalogId ?? catalogItem?.id ?? item.id;
+      const catalogId = item.attributes?.playParams?.catalogId ?? item.attributes?.playParams?.globalId ?? catalogItem?.id ?? item.id;
       const artworkObj = item.attributes?.artwork ?? catalogItem?.attributes?.artwork;
 
       pushContent({
@@ -396,34 +396,21 @@ export function LibraryScreen(): React.JSX.Element {
         const seen = new Set<string>();
         let validSource = source.filter(item => {
           const catalogItem = item.relationships?.catalog?.data?.[0];
-          const catalogId = item.attributes?.playParams?.catalogId ?? catalogItem?.id ?? item.id;
+          const catalogId = item.attributes?.playParams?.catalogId ?? item.attributes?.playParams?.globalId ?? catalogItem?.id;
           if (!catalogId || catalogId.startsWith('i.') || seen.has(catalogId)) return false;
           seen.add(catalogId);
           return true;
         });
-        if (validSource.length === 0) validSource = source;
 
-        let tracksToPlay: TrackInfo[] = [];
         let finalStartIndex = 0;
-        const MAX_QUEUE = 500;
 
-        if (shuffle) {
-          const shuffled = [...validSource];
-          for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-          }
-          tracksToPlay = shuffled.slice(0, MAX_QUEUE).map((it, idx) => libraryItemToTrackInfo(it, idx));
-        } else {
-          let startIndex = 0;
-          if (itemIndex !== undefined && items[itemIndex]) {
-            const clickedItem = items[itemIndex];
-            startIndex = validSource.findIndex((it: LibraryItem) => it.id === clickedItem.id);
-            if (startIndex === -1) startIndex = 0;
-          }
-          const sliced = validSource.slice(startIndex, startIndex + MAX_QUEUE);
-          tracksToPlay = sliced.map((it, idx) => libraryItemToTrackInfo(it, startIndex + idx));
+        if (!shuffle && itemIndex !== undefined && items[itemIndex]) {
+          const clickedItem = items[itemIndex];
+          finalStartIndex = validSource.findIndex((it: LibraryItem) => it.id === clickedItem.id);
+          if (finalStartIndex === -1) finalStartIndex = 0;
         }
+
+        const tracksToPlay = validSource.map((it, idx) => libraryItemToTrackInfo(it, idx));
 
         const success = await playTracks(tracksToPlay, finalStartIndex, shuffle);
         if (success) openNowPlayingFullscreen();
@@ -431,7 +418,7 @@ export function LibraryScreen(): React.JSX.Element {
 
       const renderTrackRow = ({ item, index }: { item: LibraryItem; index: number }) => {
         const catalogItem = item.relationships?.catalog?.data?.[0];
-        const catalogId = item.attributes?.playParams?.catalogId ?? catalogItem?.id ?? item.id;
+        const catalogId = item.attributes?.playParams?.catalogId ?? item.attributes?.playParams?.globalId ?? catalogItem?.id ?? item.id;
         const isNowPlaying = playerState.track?.id === catalogId;
         return (
           <LibraryTrackRow

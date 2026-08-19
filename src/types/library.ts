@@ -21,7 +21,7 @@ export type LibraryItem = {
     dateAdded?: string;
     releaseDate?: string;
     durationInMillis?: number;
-    playParams?: {id: string; kind: string; catalogId?: string};
+    playParams?: {id: string; kind: string; catalogId?: string; globalId?: string};
     contentRating?: string;
   };
   relationships?: {
