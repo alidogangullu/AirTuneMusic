@@ -208,7 +208,9 @@
       "contactDescription": "Bei Fragen, Feedback oder Fehlerberichten können Sie uns gerne per E-Mail kontaktieren oder unsere Website besuchen.",
       "email": "E-Mail: support@adgn.me",
       "website": "Website: adgn.me",
-      "sendEmail": "E-Mail senden"
+      "sendEmail": "E-Mail senden",
+      "userTokenTitle": "Apple Music-Benutzer-Token",
+      "userTokenDescription": "Dieses Token gewährt Zugriff auf Ihr Apple Music-Konto. Jeder, mit dem Sie es teilen, kann in Ihrem Namen auf Ihr Konto zugreifen. Sofern Sie es nicht ausdrücklich weitergeben, können weder der Entwickler noch Dritte auf dieses Token zugreifen."
     }
   },
   "radio": {

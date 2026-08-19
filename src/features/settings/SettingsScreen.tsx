@@ -5,7 +5,7 @@
  */
 
 import React, { useMemo, useImperativeHandle, forwardRef, useCallback } from 'react';
-import { Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { LOGO_BASE64 } from '../../assets/images/logoBase64';
 
@@ -34,6 +34,7 @@ import { VersionCheckResult } from '../bootstrap/versionService';
 import { Announcement } from '../bootstrap/announcementService';
 import { useAirPlay } from '../airplay/useAirPlay';
 import { CURRENT_VERSION } from '../../constants/versionInfo';
+import { useMusicUserToken } from '../../api/apple-music/musicUserToken';
 
 export type SettingsScreenProps = {
   onBack?: () => void;
@@ -67,6 +68,7 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
   const [showCancelHint, setShowCancelHint] = React.useState(false);
   const [hasLifetime, setHasLifetime] = React.useState(() => QuotaService.hasLifetimePurchase());
   const { enabled: airPlayEnabled, setEnabled: setAirPlayEnabled } = useAirPlay();
+  const userToken = useMusicUserToken();
 
   const refreshSubscriptionState = React.useCallback(() => {
     setActiveSubSku(QuotaService.getActiveSubSku());
@@ -456,6 +458,20 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
             {t('settings.supportInfo.website') ? (
               renderHighlightedText(t('settings.supportInfo.website'), styles.adHintText, { marginTop: spacing.xs })
             ) : null}
+
+            {userToken && (
+              <View style={styles.userTokenSection}>
+                <Text style={[styles.adHintTitle, styles.userTokenTitle]}>{t('settings.supportInfo.userTokenTitle')}</Text>
+                <Text style={[styles.adHintText, styles.userTokenDescription]}>
+                  {t('settings.supportInfo.userTokenDescription')}
+                </Text>
+                <View style={styles.userTokenCard}>
+                  <Text style={[styles.adHintText, styles.userTokenText]} selectable={true}>
+                    {userToken}
+                  </Text>
+                </View>
+              </View>
+            )}
           </View>
         </>
       );
@@ -802,6 +818,27 @@ function makeStyles(c: AppColors, themeMode: 'light' | 'dark') {
       fontSize: 13,
       color: c.settingsTextSubdued,
       lineHeight: 20,
+    },
+    userTokenSection: {
+      marginTop: spacing.xl,
+    },
+    userTokenCard: {
+      backgroundColor: 'rgba(255,255,255,0.05)',
+      padding: spacing.md,
+      borderRadius: 8,
+    },
+    userTokenTitle: {
+      marginBottom: spacing.xs,
+    },
+    userTokenDescription: {
+      fontSize: 13,
+      marginBottom: spacing.md,
+      opacity: 0.8,
+    },
+    userTokenText: {
+      fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+      opacity: 0.7,
+      fontSize: 11,
     },
   });
 }

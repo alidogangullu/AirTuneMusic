@@ -208,7 +208,9 @@
       "contactDescription": "Pour toute question, commentaire ou rapport de bug, n'hésitez pas à nous contacter par e-mail ou à visiter notre site Web.",
       "email": "E-mail : support@adgn.me",
       "website": "Site Web : adgn.me",
-      "sendEmail": "Envoyer un e-mail"
+      "sendEmail": "Envoyer un e-mail",
+      "userTokenTitle": "Jeton d'utilisateur Apple Music",
+      "userTokenDescription": "Ce jeton donne accès à votre compte Apple Music. Toute personne avec qui vous le partagez peut accéder à votre compte en votre nom. À moins que vous ne le partagiez explicitement, ni le développeur ni aucun tiers ne peut accéder à ce jeton."
     }
   },
   "radio": {

@@ -208,7 +208,9 @@
       "contactDescription": "Sorularınız, geri bildiriminiz veya hata raporları için e-posta ile ulaşabilir veya web sitemizi ziyaret edebilirsiniz.",
       "email": "E-posta: support@adgn.me",
       "website": "Web sitesi: adgn.me",
-      "sendEmail": "E-posta Gönder"
+      "sendEmail": "E-posta Gönder",
+      "userTokenTitle": "Apple Music Kullanıcı Token'ı",
+      "userTokenDescription": "Bu token, Apple Music hesabınıza erişim sağlar. Bunu paylaştığınız kişiler hesabınıza erişebilir. Siz paylaşmadığınız sürece geliştirici veya herhangi bir 3. şahıs bu token'a erişemez."
     }
   },
   "radio": {
