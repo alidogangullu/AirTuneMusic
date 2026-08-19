@@ -19,6 +19,7 @@ import { useContentNavigation } from '../home/navigation';
 import { useTheme } from '../../theme';
 import { spacing } from '../../theme/layout';
 import type { AlbumDetail, MusicVideoDetail, SongDetail } from '../../types/catalog';
+import Svg, { Path } from 'react-native-svg';
 
 export type ArtistDetailScreenProps = {
   artistId: string;
@@ -48,7 +49,7 @@ export function ArtistDetailScreen({
   const styles = useStyles(colors);
   const { data, isLoading, error } = useArtistDetail(artistId);
 
-  const { playSong } = usePlayer();
+  const { playSong, playStation } = usePlayer();
   const { openNowPlayingFullscreen, pushContent } = useContentNavigation();
 
   // Hardware back button support for Android TV remote
@@ -62,6 +63,7 @@ export function ArtistDetailScreen({
 
   const artist = data?.data?.[0];
   const attrs = artist?.attributes;
+  const stationId = artist?.relationships?.station?.data?.[0]?.id;
   const topSongs = React.useMemo(() => artist?.views?.['top-songs']?.data ?? [], [artist]);
   const latestRelease = artist?.views?.['latest-release']?.data?.[0];
   const essentialAlbums = artist?.views?.['full-albums']?.data ?? [];
@@ -78,6 +80,16 @@ export function ArtistDetailScreen({
       }
     }
   }, [topSongs, playSong, openNowPlayingFullscreen]);
+
+  const handlePlayStation = useCallback(() => {
+    if (stationId) {
+      playStation(stationId).then((success) => {
+        if (success) {
+          openNowPlayingFullscreen();
+        }
+      }).catch(console.warn);
+    }
+  }, [stationId, playStation, openNowPlayingFullscreen]);
 
   const handleTrackPress = useCallback((song: SongDetail) => {
     const songId = song.attributes?.playParams?.id ?? song.id;
@@ -146,6 +158,15 @@ export function ArtistDetailScreen({
             focusable>
             <View style={styles.playButtonIcon} />
           </Pressable>
+          {stationId && (
+            <Pressable
+              style={({ focused }) => [styles.actionBtn, focused && styles.actionBtnFocused]}
+              onPress={handlePlayStation}
+              focusable>
+              <RadioIcon color={colors.textOnDark} size={20} />
+              <Text style={styles.actionBtnText}>{t('artist.createStation')}</Text>
+            </Pressable>
+          )}
           <Text style={styles.artistNameTitle}>{attrs?.name}</Text>
         </View>
 
@@ -235,6 +256,33 @@ export function ArtistDetailScreen({
 }
 
 // ── Sub-components ───────────────────────────────────────────────
+
+function RadioIcon({ color, size = 20 }: { color: string; size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M7 18C10.3137 18 13 15.3137 13 12C13 8.68629 10.3137 6 7 6C3.68629 6 1 8.68629 1 12C1 15.3137 3.68629 18 7 18ZM8 9V11H10V13H8V15H6V13H4V11H6V9H8Z"
+        fill={color}
+      />
+      <Path
+        d="M15.5 8.5C16.8 9.4 17.5 10.6 17.5 12C17.5 13.4 16.8 14.6 15.5 15.5"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M18.5 5.5C20.8 7.2 22.5 9.5 22.5 12C22.5 14.5 20.8 16.8 18.5 18.5"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
 
 function LatestReleaseCard({
   album,
@@ -450,9 +498,9 @@ function useStyles(c: {
       paddingRight: spacing.xl,
     },
     playButton: {
-      width: 64,
-      height: 64,
-      borderRadius: 32,
+      width: 48,
+      height: 48,
+      borderRadius: 24,
       backgroundColor: c.glassBg,
       justifyContent: 'center',
       alignItems: 'center',
@@ -464,13 +512,32 @@ function useStyles(c: {
     playButtonIcon: {
       width: 0,
       height: 0,
-      borderTopWidth: 12,
-      borderBottomWidth: 12,
-      borderLeftWidth: 22,
+      borderTopWidth: 8,
+      borderBottomWidth: 8,
+      borderLeftWidth: 14,
       borderTopColor: 'transparent',
       borderBottomColor: 'transparent',
       borderLeftColor: c.textOnDark,
-      marginLeft: 6,
+      marginLeft: 4,
+    },
+    actionBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: 48,
+      paddingHorizontal: spacing.xl,
+      borderRadius: 24,
+      backgroundColor: c.glassBg,
+    },
+    actionBtnFocused: {
+      backgroundColor: c.buttonFocusedBg,
+      transform: [{ scale: 1.05 }],
+    },
+    actionBtnText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: c.textOnDark,
+      marginLeft: spacing.sm,
     },
     artistNameTitle: {
       fontSize: 48,
