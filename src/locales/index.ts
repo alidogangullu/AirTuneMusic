@@ -7,12 +7,13 @@ import tr from './tr.json';
 import de from './de.json';
 import es from './es.json';
 import fr from './fr.json';
+import ja from './ja.json';
 import { queryClient } from '../api/queryClient';
 
 const storage = createMMKV({ id: 'i18n-storage' });
 const LANGUAGE_KEY = 'app_language';
 
-const SUPPORTED_LANGUAGES = new Set(['en', 'tr', 'de', 'es', 'fr']);
+const SUPPORTED_LANGUAGES = new Set(['en', 'tr', 'de', 'es', 'fr', 'ja']);
 
 const getDeviceLanguage = () => {
   if (Platform.OS === 'android') {
@@ -63,6 +64,7 @@ i18n
       de: { translation: de },
       es: { translation: es },
       fr: { translation: fr },
+      ja: { translation: ja },
     },
     fallbackLng: 'en',
     debug: false,
@@ -71,7 +73,7 @@ i18n
     },
   });
 
-export const changeLanguage = (lang: 'en' | 'tr' | 'de' | 'es' | 'fr') => {
+export const changeLanguage = (lang: 'en' | 'tr' | 'de' | 'es' | 'fr' | 'ja') => {
   i18n.changeLanguage(lang);
 };
 

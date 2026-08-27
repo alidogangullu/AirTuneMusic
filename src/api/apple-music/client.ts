@@ -41,6 +41,7 @@ function createClient(): AxiosInstance {
       de: 'de',
       es: 'es',
       fr: 'fr',
+      ja: 'ja',
     };
     const lang = localeMap[i18n.language] || 'en-US';
     config.params = { ...(config.params || {}), l: lang };

@@ -22,7 +22,3 @@ In the current implementation, the Android app acts as the server. The `index.ht
 
 - `GET /api/tv-link/developer-token`: Provides the Apple Music developer JWT.
 - `POST /api/tv-link`: Receives the code and Music User Token from the browser.
-
-## Security
-
-The developer token is served by the app's local server. It is fetched dynamically from a remote Gist config (and saved to MMKV) with a fallback to the token injected at build time. In a production web-hosted scenario, you should always serve the token from a secure backend rather than embedding it in the HTML.

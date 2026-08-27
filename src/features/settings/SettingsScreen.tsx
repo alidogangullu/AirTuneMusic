@@ -109,6 +109,7 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
     { id: 'de', label: t('settings.language.german') },
     { id: 'es', label: t('settings.language.spanish') },
     { id: 'fr', label: t('settings.language.french') },
+    { id: 'ja', label: t('settings.language.japanese') },
   ];
 
   const handleItemPress = (item: string) => {
@@ -364,7 +365,7 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
       />
       <View style={styles.divider} />
       <SettingsMenuItem
-        label={t('settings.language.title')}
+        label={`${t('settings.language.title')}: ${LANGUAGES.find(l => l.id === i18n.language)?.label || t('settings.language.english')}`}
         onPress={() => setCurrentSubMenu('language')}
       />
       <SettingsMenuItem

@@ -35,6 +35,7 @@ const LOCALE_MAP: Record<string, string> = {
   de: 'de',
   es: 'es',
   fr: 'fr',
+  ja: 'ja',
 };
 
 function currentLocale(): string {
