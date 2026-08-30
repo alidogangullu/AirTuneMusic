@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {Alert, BackHandler, ToastAndroid, AppState} from 'react-native';
+import {Alert, ToastAndroid, AppState} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import * as musicPlayer from '../musicPlayer';
 import {QuotaService} from '../../settings/quotaService';
@@ -233,6 +233,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   const quotaRecoveryQueueIdRef = useRef<number | null>(null);
   const cancelledQuotaQueueIdRef = useRef<number | null>(null);
   const webFallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSkipTimeRef = useRef<number>(0);
   const lastWebProgressRef = useRef<{ position: number; duration: number }>({ position: 0, duration: 0 });
 
   useEffect(() => {
@@ -701,7 +702,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     return () => {
       subs.forEach(subscription => subscription.remove());
     };
-  }, [t, handleNativePlaybackQueueChanged, handleNativeShuffleModeChanged, startNativeStallTimer]);
+  }, [t, handleNativePlaybackQueueChanged, handleNativeShuffleModeChanged, startNativeStallTimer, triggerWebFallback]);
 
   useEffect(() => {
     let mounted = true;
@@ -979,11 +980,11 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
 
   const playerValue = useMemo<PlayerContextValue>(() => ({
     state,
+    playTracks,
     playAlbum,
     playPlaylist,
     playStation,
     playSong,
-    playTracks,
     playMusicVideo,
     playVideoQueue,
     stopVideo,
@@ -1035,6 +1036,9 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
       musicPlayer.stop();
     },
     skipToNext: () => {
+      const now = Date.now();
+      if (now - lastSkipTimeRef.current < 600) return;
+      lastSkipTimeRef.current = now;
       endOfQueueLock.active = false;
       if (!QuotaService.canPlayNextSong()) {
         if (activeEngineRef.current === 'web') {
@@ -1074,6 +1078,9 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
       }
     },
     skipToPrevious: () => {
+      const now = Date.now();
+      if (now - lastSkipTimeRef.current < 600) return;
+      lastSkipTimeRef.current = now;
       endOfQueueLock.active = false;
       if (!QuotaService.canPlayNextSong()) {
         if (activeEngineRef.current === 'web') {
@@ -1150,6 +1157,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     setShowSettings,
     showSettings,
     state,
+    playTracks,
     stopVideo,
   ]);
 

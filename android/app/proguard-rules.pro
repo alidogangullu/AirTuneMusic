@@ -9,10 +9,26 @@
 
 # Add any project specific keep options here:
 
-# AirPlay (UxPlay JNI bridge) — native methods and the callback methods invoked
-# by name from android_raop_callbacks.c must not be stripped or renamed.
--keep class com.adg.airtune.airplay.AirPlayModule { *; }
--keep class com.adg.airtune.airplay.AudioRenderer { *; }
+# Keep native methods (required for JNI/C++ bridging)
 -keepclasseswithmembernames class * {
     native <methods>;
 }
+
+# AirPlay (UxPlay JNI bridge) & other custom Kotlin native modules for React Native.
+# These are called via reflection by React Native or JNI, so they must not be stripped or renamed.
+-keep class com.adg.airtune.airplay.** { *; }
+-keep class com.adg.airtune.imagecolors.** { *; }
+-keep class com.adg.airtune.musicplayer.** { *; }
+-keep class com.adg.airtune.tv.** { *; }
+
+# Keep Main application classes
+-keep class com.adg.airtune.MainActivity { *; }
+-keep class com.adg.airtune.MainApplication { *; }
+
+# Ignore missing classes from bytedeco javacpp / Maven / SLF4J
+-dontwarn org.apache.maven.**
+-dontwarn org.slf4j.**
+-dontwarn org.bytedeco.javacpp.**
+
+# Ignore stack map table warnings from Apple MusicKit SDK
+-dontwarn com.apple.**

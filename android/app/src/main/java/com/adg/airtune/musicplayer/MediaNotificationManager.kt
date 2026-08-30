@@ -35,6 +35,32 @@ object MediaNotificationManager {
     private var isPlaying: Boolean = false
     private var isServiceRunning: Boolean = false
 
+    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+        val (height: Int, width: Int) = options.outHeight to options.outWidth
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+            val halfHeight: Int = height / 2
+            val halfWidth: Int = width / 2
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+        return inSampleSize
+    }
+
+    private fun decodeSampledBitmapFromBytes(bytes: ByteArray, reqWidth: Int, reqHeight: Int): Bitmap? {
+        val options = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
+        options.inJustDecodeBounds = false
+
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+    }
+
     fun init(ctx: Context) {
         if (context != null) return
         context = ctx.applicationContext
@@ -78,8 +104,11 @@ object MediaNotificationManager {
         if (base64Art != null) {
             thread {
                 try {
+                    // TV ekranlarında yüksek kalite için 1024 kullanıyoruz (eski 512 yerine)
+                    // 1024x1024 bir resim RAM'de sadece 4MB yer kaplar, bu TV için çok güvenli ve nettir.
+                    val targetSize = 1024
                     val decodedBytes = Base64.decode(base64Art, Base64.DEFAULT)
-                    val bmp = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+                    val bmp = decodeSampledBitmapFromBytes(decodedBytes, targetSize, targetSize)
                     if (version == currentMetadataVersion) {
                         currentArtworkBitmap = bmp
                         updateSessionMetadata()
@@ -92,13 +121,15 @@ object MediaNotificationManager {
         } else if (artworkUrl != null) {
             thread {
                 try {
-                    // Quick and dirty image fetch
+                    val targetSize = 1024
                     val url = URL(artworkUrl)
                     val connection = url.openConnection()
                     connection.doInput = true
                     connection.connect()
-                    val input = connection.inputStream
-                    val bmp = BitmapFactory.decodeStream(input)
+
+                    val bytes = connection.inputStream.readBytes()
+                    val bmp = decodeSampledBitmapFromBytes(bytes, targetSize, targetSize)
+
                     if (version == currentMetadataVersion) {
                         currentArtworkBitmap = bmp
                         updateSessionMetadata()
