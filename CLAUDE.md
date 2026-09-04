@@ -82,6 +82,7 @@ Use `src/theme/colors.ts` for all colors and `src/theme/layout.ts` for spacing, 
 
 ## Key Conventions
 
+- **Skill Usage (IMPORTANT):** Before starting any task or writing code, you MUST briefly state which skill(s) (e.g., `frontend-patterns`, `superpowers:systematic-debugging`) you have decided to use to accomplish it better. Always check available skills before asking questions or jumping into implementation.
 - **D-pad first**: Every interactive element must be focusable. Use `hasTVPreferredFocus={true}` on the first element of any new screen or modal.
 - **Modals for overlays**: Screens that overlay others (detail views, dialogs) must use React Native `Modal` — this is required for correct focus trapping on TV.
 - **Localization**: All user-visible strings go through i18next (`src/locales/`). Never hardcode UI copy. Supported locales: `en`, `tr`, `de`, `es`, `fr`.
