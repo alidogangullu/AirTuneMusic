@@ -9,7 +9,7 @@
     "ok": "OK",
     "unknown": "Unbekannt",
     "noItems": "Keine Elemente",
-    "appName": "AirTune Music",
+    "appName": "TINI for Apple Music",
     "availableNow": "Jetzt verfügbar",
     "durationHm": "{{hours}} Std. {{minutes}} Min.",
     "durationH": "{{hours}} Std.",
@@ -161,9 +161,9 @@
     "about": "Über",
     "signOut": "Abmelden",
     "pro": {
-      "title": "AirTune Pro",
-      "activeMessage": "Sie haben ein aktives AirTune Pro-{{plan}}-Abonnement. Genießen Sie unbegrenzt Musik!",
-      "lifetimeMessage": "Sie haben lebenslangen Zugang zu AirTune Pro. Genießen Sie unbegrenzt Musik für immer!",
+      "title": "TINI Pro",
+      "activeMessage": "Sie haben ein aktives TINI Pro-{{plan}}-Abonnement. Genießen Sie unbegrenzt Musik!",
+      "lifetimeMessage": "Sie haben lebenslangen Zugang zu TINI Pro. Genießen Sie unbegrenzt Musik für immer!",
       "upgradeMessage": "Upgrade auf Pro für unbegrenzte Musik und AirPlay-Streaming.\n\n🎵 Musik: {{used}}/{{total}} Titel genutzt\n🛜 AirPlay: {{airPlayUsed}}/{{airPlayTotal}} Min. genutzt\n\n⏱ Zurücksetzen in: {{remaining}}",
       "limitReached": "Limit erreicht",
       "limitReachedMessage": "Sie haben Ihr Limit von {{limit}} Titeln erreicht. Nächstes Abspielen verfügbar in: {{remaining}}.",
@@ -182,11 +182,11 @@
       "resetsIn": "⏱ Zurücksetzen in: {{remaining}}",
       "featureMusic": "∞ Unbegrenzte Musikwiedergabe",
       "featureAirPlay": "∞ Unbegrenztes AirPlay-Streaming",
-      "featuresTitle": "AirTune Music Pro holen",
-      "disclaimer": "AirTune ist ein unabhängiger Apple Music-Client, keine offizielle Apple-App. Ein Upgrade auf Pro entfernt die Wiedergabe- und Streaming-Limits von AirTune und unterstützt die Entwicklung. Dieser Kauf ist unabhängig von Ihrem Apple Music-Abonnement.",
+      "featuresTitle": "TINI for Apple Music Pro holen",
+      "disclaimer": "TINI ist ein unabhängiger Apple Music-Client, keine offizielle Apple-App. Ein Upgrade auf Pro entfernt die Wiedergabe- und Streaming-Limits von TINI und unterstützt die Entwicklung. Dieser Kauf ist unabhängig von Ihrem Apple Music-Abonnement.",
       "currentPlan": "Aktueller Plan",
       "cancelTitle": "Abo kündigen",
-      "cancelBodyAccess": "Sie haben lebenslangen Zugang zu AirTune Pro.",
+      "cancelBodyAccess": "Sie haben lebenslangen Zugang zu TINI Pro.",
       "cancelBody": "Um keine weiteren Kosten zu verursachen, kündigen Sie Ihr aktives {{plan}}-Abo bei Google Play. Scannen Sie dazu den QR-Code.",
       "featureSupport": "• Unterstützung für die Entwicklung"
     },
@@ -201,8 +201,8 @@
     "update": "Update verfügbar",
     "support": "Support",
     "aboutInfo": {
-      "title": "Über AirTune Music",
-      "message": "AirTune Music ist ein Drittanbieter-Client für Apple Music, der ausschließlich über die offizielle Apple Music API erstellt wurde. Wir speichern keine Ihrer persönlichen Daten; alle Informationen werden direkt von Apple-Servern abgerufen. Synchronisierte Liedtexte werden von LRCLib (lrclib.net), einer freien und offenen Liedtextdatenbank, bereitgestellt.",
+      "title": "Über TINI for Apple Music",
+      "message": "TINI for Apple Music ist ein Drittanbieter-Client für Apple Music, der ausschließlich über die offizielle Apple Music API erstellt wurde. Wir speichern keine Ihrer persönlichen Daten; alle Informationen werden direkt von Apple-Servern abgerufen. Synchronisierte Liedtexte werden von LRCLib (lrclib.net), einer freien und offenen Liedtextdatenbank, bereitgestellt.",
       "website": "Für weitere Produkte, allgemeine Informationen und rechtliche Hinweise besuchen Sie adgn.me"
     },
     "supportInfo": {
@@ -229,7 +229,7 @@
   },
   "update": {
     "title": "Update erforderlich",
-    "message": "Eine neue Version von AirTune Music ist verfügbar. Bitte aktualisieren Sie, um die App mit den neuesten Funktionen und Verbesserungen weiter nutzen zu können.",
+    "message": "Eine neue Version von TINI for Apple Music ist verfügbar. Bitte aktualisieren Sie, um die App mit den neuesten Funktionen und Verbesserungen weiter nutzen zu können.",
     "newVersion": "Neue Version: {{version}}",
     "button": "Jetzt aktualisieren"
   },
@@ -237,7 +237,7 @@
     "declined": "Abgelehnt",
     "declinedMessage": "Ihr Kauf war nicht erfolgreich. Bitte versuchen Sie es erneut oder überprüfen Sie Ihr Konto.",
     "restored": "Wiederhergestellt",
-    "restoredMessage": "Ihr AirTune Pro-Status wurde erfolgreich wiederhergestellt! 🎉",
+    "restoredMessage": "Ihr TINI Pro-Status wurde erfolgreich wiederhergestellt! 🎉",
     "notFound": "Nicht gefunden",
     "notFoundMessage": "Kein aktives Abonnement für dieses Konto gefunden.",
     "error": "Fehler",

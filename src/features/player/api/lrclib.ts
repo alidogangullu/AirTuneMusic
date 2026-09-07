@@ -57,8 +57,8 @@ export async function fetchLyrics(
   });
   
   const fetchHeaders = {
-    'User-Agent': `AirTune/${CURRENT_VERSION} (https://github.com/alidogangullu/AirTuneMusic)`,
-    'Lrclib-Client': `AirTune/${CURRENT_VERSION}`,
+    'User-Agent': `TINI/${CURRENT_VERSION} (https://github.com/alidogangullu/TINIMusic)`,
+    'Lrclib-Client': `TINI/${CURRENT_VERSION}`,
   };
 
   try {

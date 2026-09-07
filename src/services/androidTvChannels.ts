@@ -29,7 +29,7 @@ function mapContentToTvPrograms(contents: RecommendationContent[]): TvProgramIte
       item.attributes?.name ??
       (item.attributes as any)?.title?.stringForDisplay ??
       (item.attributes as any)?.artistName ??
-      'AirTune';
+      'TINI for Apple Music';
 
     const subtitle = item.attributes?.artistName ?? item.type ?? '';
     const artworkUrl = getArtworkUrl(item.attributes?.artwork);

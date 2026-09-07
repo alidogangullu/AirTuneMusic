@@ -131,7 +131,7 @@ export function SubscriptionRequiredScreen({ onSignOut }: Readonly<Props>) {
               resizeMode="cover"
             />
           </View>
-          <Text style={styles.logoTitle}>AirTune</Text>
+          <Text style={styles.logoTitle}>TINI Player for Apple Music</Text>
         </View>
 
         {/* Glass card — same shape as auth screen */}

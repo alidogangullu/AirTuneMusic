@@ -9,7 +9,7 @@
     "ok": "OK",
     "unknown": "不明",
     "noItems": "アイテムがありません",
-    "appName": "AirTune Music",
+    "appName": "TINI for Apple Music",
     "availableNow": "今すぐ利用可能",
     "durationHm": "{{hours}}時間 {{minutes}}分",
     "durationH": "{{hours}}時間",
@@ -163,9 +163,9 @@
     "about": "このアプリについて",
     "signOut": "サインアウト",
     "pro": {
-      "title": "AirTune Pro",
-      "activeMessage": "AirTune Proの{{plan}}サブスクリプションが有効です。制限なしで音楽をお楽しみください！",
-      "lifetimeMessage": "AirTune Proへの無期限アクセス権があります。永久に制限なしで音楽をお楽しみください！",
+      "title": "TINI Pro",
+      "activeMessage": "TINI Proの{{plan}}サブスクリプションが有効です。制限なしで音楽をお楽しみください！",
+      "lifetimeMessage": "TINI Proへの無期限アクセス権があります。永久に制限なしで音楽をお楽しみください！",
       "upgradeMessage": "Proにアップグレードすると、音楽の再生とAirPlayストリーミングが制限なしで利用可能になります。\n\n🎵 音楽: {{used}}/{{total}}曲再生済み\n🛜 AirPlay: {{airPlayUsed}}/{{airPlayTotal}}分使用済み\n\n⏱ リセットまで: {{remaining}}",
       "limitReached": "制限に達しました",
       "limitReachedMessage": "{{limit}}曲の制限に達しました。次の再生まで: {{remaining}}。",
@@ -184,11 +184,11 @@
       "resetsIn": "⏱ リセットまで: {{remaining}}",
       "featureMusic": "∞ 音楽の無制限再生",
       "featureAirPlay": "∞ 無制限のAirPlayストリーミング",
-      "featuresTitle": "AirTune Music Proを取得",
-      "disclaimer": "AirTuneは独立したApple Musicクライアントであり、Appleの公式アプリではありません。Proにアップグレードすると、AirTuneの再生およびストリーミング制限が解除され、開発がサポートされます。この購入はApple Musicのサブスクリプションとは別になります。",
+      "featuresTitle": "TINI for Apple Music Proを取得",
+      "disclaimer": "TINIは独立したApple Musicクライアントであり、Appleの公式アプリではありません。Proにアップグレードすると、TINIの再生およびストリーミング制限が解除され、開発がサポートされます。この購入はApple Musicのサブスクリプションとは別になります。",
       "currentPlan": "現在のプラン",
       "cancelTitle": "サブスクリプションをキャンセル",
-      "cancelBodyAccess": "AirTune Proへの無期限アクセス権があります。",
+      "cancelBodyAccess": "TINI Proへの無期限アクセス権があります。",
       "cancelBody": "次回の請求を避けるには、QRコードをスキャンしてGoogle Playで有効な{{plan}}サブスクリプションをキャンセルしてください。",
       "featureSupport": "• 開発へのサポート"
     },
@@ -203,8 +203,8 @@
     "update": "アップデートが利用可能です",
     "support": "サポート",
     "aboutInfo": {
-      "title": "AirTune Musicについて",
-      "message": "AirTune Musicは、公式のApple Music APIのみを使用して構築されたサードパーティ製のApple Musicクライアントです。お客様の個人データは一切保存されず、すべての情報はAppleのサーバーから直接取得されます。同期歌詞は、無料でオープンな歌詞データベースであるLRCLib (lrclib.net)によって提供されています。",
+      "title": "TINI for Apple Musicについて",
+      "message": "TINI for Apple Musicは、公式のApple Music APIのみを使用して構築されたサードパーティ製のApple Musicクライアントです。お客様の個人データは一切保存されず、すべての情報はAppleのサーバーから直接取得されます。同期歌詞は、無料でオープンな歌詞データベースであるLRCLib (lrclib.net)によって提供されています。",
       "website": "その他の製品、一般情報、法的な条件については、adgn.meをご覧ください。"
     },
     "supportInfo": {
@@ -231,7 +231,7 @@
   },
   "update": {
     "title": "アップデートが必要です",
-    "message": "新しいバージョンのAirTune Musicが利用可能です。最新の機能や改善点を含んだアプリを引き続き使用するには、アップデートしてください。",
+    "message": "新しいバージョンのTINI for Apple Musicが利用可能です。最新の機能や改善点を含んだアプリを引き続き使用するには、アップデートしてください。",
     "newVersion": "新しいバージョン: {{version}}",
     "button": "今すぐアップデート"
   },
@@ -239,7 +239,7 @@
     "declined": "拒否されました",
     "declinedMessage": "購入が正常に完了しませんでした。もう一度お試しいただくか、アカウントをご確認ください。",
     "restored": "復元されました",
-    "restoredMessage": "AirTune Proのステータスが正常に復元されました！ 🎉",
+    "restoredMessage": "TINI Proのステータスが正常に復元されました！ 🎉",
     "notFound": "見つかりません",
     "notFoundMessage": "このアカウントの有効なサブスクリプションは見つかりませんでした。",
     "error": "エラー",
@@ -276,7 +276,7 @@
     "remainingLabel": "次の再生まで: {{remaining}}",
     "limitLabel": "使用状況: {{used}}/{{total}}",
     "notificationTitle": "利用制限に達しました",
-    "notificationMessage": "引き続き聴くにはAirTune Proにアップグレードしてください。"
+    "notificationMessage": "引き続き聴くにはTINI Proにアップグレードしてください。"
   },
   "airplay": {
     "warningTitle": "AirPlayレシーバーを有効にする",

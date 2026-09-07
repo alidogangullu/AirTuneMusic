@@ -87,7 +87,7 @@ export const MusicKitVideoWebView = forwardRef<MusicKitVideoWebViewRef, Props>(
         mk.onload = function() {
           MusicKit.configure({
             developerToken: ${JSON.stringify(developerToken)},
-            app: { name: 'AirTuneMusic', build: '1.0' }
+            app: { name: 'TINI', build: '1.0' }
           }).then(function() {
             window.music = MusicKit.getInstance();
             window.music.videoContainerElement = document.getElementById('vc');

@@ -265,7 +265,7 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
               </View>
               <View style={{ flex: 1, paddingLeft: spacing.md, marginTop: 4 }}>
                 <Text style={[styles.adHintText, { fontSize: 11, lineHeight: 15, fontStyle: 'italic', textAlign: 'center' }]}>
-                  {(t('settings.pro.disclaimer') || "AirTune is an independent Apple Music client, not an official Apple app. Upgrading to Pro removes AirTune's playback and streaming limits and supports development. This purchase is separate from your Apple Music subscription.").replace(/\n/g, ' ')}
+                  {(t('settings.pro.disclaimer') || "TINI is an independent Apple Music client, not an official Apple app. Upgrading to Pro removes TINI's playback and streaming limits and supports development. This purchase is separate from your Apple Music subscription.").replace(/\n/g, ' ')}
                 </Text>
               </View>
             </View>
@@ -533,7 +533,7 @@ export const SettingsScreen = forwardRef<SettingsScreenHandle, SettingsScreenPro
                 resizeMode="cover"
               />
             </View>
-            <Text style={styles.appNameText}>AirTune Music</Text>
+            <Text style={styles.appNameText}>TINI for Apple Music</Text>
           </View>
 
           <ScrollView

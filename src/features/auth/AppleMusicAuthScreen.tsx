@@ -682,7 +682,7 @@ export function AppleMusicAuthScreen({
               resizeMode="cover"
             />
           </View>
-          <Text style={styles.logoTitle}>AirTune</Text>
+          <Text style={styles.logoTitle}>TINI Player for Apple Music</Text>
         </Pressable>
 
         <View style={styles.glassCard} focusable={false}>

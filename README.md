@@ -1,4 +1,4 @@
-# 🎵 AirTune Music
+# 🎵 TINI Player for Apple Music
 
 <p align="center">
   <b>An Apple Music client for Android TV</b><br>

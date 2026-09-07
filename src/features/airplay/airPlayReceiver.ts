@@ -29,7 +29,7 @@ function getEmitter(): NativeEventEmitter {
 export const airPlayReceiver = {
   // async so a missing/failed native module surfaces as a rejected promise
   // (catchable) rather than a synchronous throw that could crash the app.
-  start: async (deviceName: string = 'AirTune'): Promise<boolean> => {
+  start: async (deviceName: string = 'TINI'): Promise<boolean> => {
     const mod = getModule();
     if (!mod?.startReceiver) {
       throw new Error('AirPlayReceiver native module unavailable');
