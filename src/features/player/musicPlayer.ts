@@ -265,7 +265,7 @@ export function setKeepAwake(enabled: boolean): void {
   MusicPlayer?.setKeepAwake(enabled);
 }
 
-export function updateNotificationMetadata(title: string, artist: string, album: string = 'TINI for Apple Music'): void {
+export function updateNotificationMetadata(title: string, artist: string, album: string = 'Kaset for Apple Music'): void {
   MusicPlayer?.updateNotificationMetadata(title, artist, album);
 }
 

@@ -113,8 +113,8 @@ android {
         applicationId "com.adg.airtune"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 55
-        versionName "2.0.0"
+        versionCode 56
+        versionName "2.0.1"
 
         def appJsonFile = rootProject.file("../app.json")
         if (appJsonFile.exists()) {

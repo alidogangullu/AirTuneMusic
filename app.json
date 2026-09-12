@@ -1,8 +1,8 @@
 {
-  "name": "TINI",
-  "displayName": "TINI Player for Apple Music",
-  "version": "2.0.0",
-  "runtimeVersion": "2.0.0",
+  "name": "Kaset",
+  "displayName": "Kaset Player for Apple Music",
+  "version": "2.0.1",
+  "runtimeVersion": "2.0.1",
   "scheme": "airtune",
   "extra": {
     "eas": {

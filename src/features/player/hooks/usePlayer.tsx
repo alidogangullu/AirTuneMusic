@@ -353,8 +353,8 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
 
         musicPlayer.updateNotificationMetadata(
           t('quotaLimit.notificationTitle', 'Kota sınırına ulaşıldı'),
-          t('quotaLimit.notificationMessage', "Dinlemeye devam etmek için TINI Pro'ya geçebilirsiniz."),
-          'TINI for Apple Music',
+          t('quotaLimit.notificationMessage', "Dinlemeye devam etmek için Kaset Pro'ya geçebilirsiniz."),
+          'Kaset for Apple Music',
         );
 
         return {

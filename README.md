@@ -1,4 +1,4 @@
-# 🎵 TINI Player for Apple Music
+# 🎵 Kaset Player for Apple Music
 
 <p align="center">
   <b>An Apple Music client for Android TV</b><br>
@@ -23,7 +23,7 @@
 - **📻 Radio**: Listen to Apple Music Radio stations and your personal Apple Music radio directly on your TV.
 - **📺 Music Videos**: Enjoy high-quality music videos from your library and the Apple Music catalog directly on your TV.
 - **🎨 Dynamic Backgrounds**: Stunning visuals that adapt and change color based on the current album art.
-- **📺 Android TV Integration**: Discover content directly from your Android TV home screen with **Recently Played**, **Made for You**, and **New Releases** channels. Fully supports the Google TV "Now Playing" card.
+- **📺 Android TV Integration**: Discover content directly from your Android TV home screen with **Recently Played**, **Made for You**, and **New Releases** channels. Fully supports the Android TV "Now Playing" card.
 - **🎧 Background Playback**: Music continues playing seamlessly even when you navigate away to other apps.
 - **📲 Flexible Sign-in**: Sign in securely via a quick QR code scan (TV-Link) or directly on your TV using the built-in authentication screen.
 - **🖥️ TV-Optimized Interface**: Navigate effortlessly with a UI designed specifically for Android TV remotes (D-pad).

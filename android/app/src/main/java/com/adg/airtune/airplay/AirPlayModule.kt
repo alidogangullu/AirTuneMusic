@@ -55,7 +55,7 @@ class AirPlayModule(private val reactContext: ReactApplicationContext) :
     // ── Server state ──────────────────────────────────────────────────────────
 
     private var serverHandle = 0L
-    private var deviceName = "TINI"
+    private var deviceName = "Kaset"
     private val audioRenderer = AudioRenderer()
     private var nsdManager: NsdManager? = null
     private var raopListener: NsdManager.RegistrationListener? = null
@@ -79,7 +79,7 @@ class AirPlayModule(private val reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun startReceiver(deviceName: String, promise: Promise) {
-        this.deviceName = deviceName.ifBlank { "TINI" }
+        this.deviceName = deviceName.ifBlank { "Kaset" }
         try {
             val port = startEngine()
             if (port < 0) {

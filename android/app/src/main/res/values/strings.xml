@@ -1,5 +1,5 @@
 <resources>
-  <string name="app_name">TINI Player for Apple Music</string>
+  <string name="app_name">Kaset Player for Apple Music</string>
   <string name="airplay_notification_channel">AirPlay</string>
   <string name="airplay_notification_title">AirPlay receiver is running</string>
   <string name="airplay_notification_text">Stream music from iPhone</string>

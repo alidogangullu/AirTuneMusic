@@ -153,7 +153,7 @@ export const MusicKitWebView = forwardRef<MusicKitWebPlayerRef, Props>(
           MusicKit.configure({
             developerToken: ${JSON.stringify(developerToken)},
             app: {
-              name: 'TINI',
+              name: 'Kaset',
               build: '1.0'
             }
           }).then(() => {

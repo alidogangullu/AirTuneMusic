@@ -9,7 +9,7 @@
     "ok": "Aceptar",
     "unknown": "Desconocido",
     "noItems": "No hay elementos",
-    "appName": "TINI for Apple Music",
+    "appName": "Kaset for Apple Music",
     "availableNow": "Disponible ahora",
     "durationHm": "{{hours}} h {{minutes}} min",
     "durationH": "{{hours}} h",
@@ -161,9 +161,9 @@
     "about": "Acerca de",
     "signOut": "Cerrar sesión",
     "pro": {
-      "title": "TINI Pro",
-      "activeMessage": "Tienes una suscripción {{plan}} activa a TINI Pro. ¡Disfruta de música ilimitada!",
-      "lifetimeMessage": "Tienes acceso de por vida a TINI Pro. ¡Disfruta de música ilimitada para siempre!",
+      "title": "Kaset Pro",
+      "activeMessage": "Tienes una suscripción {{plan}} activa a Kaset Pro. ¡Disfruta de música ilimitada!",
+      "lifetimeMessage": "Tienes acceso de por vida a Kaset Pro. ¡Disfruta de música ilimitada para siempre!",
       "upgradeMessage": "Mejora a Pro para música y streaming AirPlay sin límites.\n\n🎵 Música: {{used}}/{{total}} canciones usadas\n🛜 AirPlay: {{airPlayUsed}}/{{airPlayTotal}} min usados\n\n⏱ Se reinicia en: {{remaining}}",
       "limitReached": "Límite alcanzado",
       "limitReachedMessage": "Has alcanzado tu límite de {{limit}} canciones. Próxima reproducción disponible en: {{remaining}}.",
@@ -182,11 +182,11 @@
       "resetsIn": "⏱ Se reinicia en: {{remaining}}",
       "featureMusic": "∞ Reproducción de música ilimitada",
       "featureAirPlay": "∞ Streaming AirPlay ilimitado",
-      "featuresTitle": "Obtén TINI for Apple Music Pro",
-      "disclaimer": "TINI es un cliente de Apple Music independiente, no una aplicación oficial de Apple. Actualizar a Pro elimina los límites de reproducción y transmisión de TINI y apoya el desarrollo. Esta compra es independiente de su suscripción a Apple Music.",
+      "featuresTitle": "Obtén Kaset for Apple Music Pro",
+      "disclaimer": "Kaset es un cliente de Apple Music independiente, no una aplicación oficial de Apple. Actualizar a Pro elimina los límites de reproducción y transmisión de Kaset y apoya el desarrollo. Esta compra es independiente de su suscripción a Apple Music.",
       "currentPlan": "Plan actual",
       "cancelTitle": "Cancela tu suscripción",
-      "cancelBodyAccess": "Tienes acceso de por vida a TINI Pro.",
+      "cancelBodyAccess": "Tienes acceso de por vida a Kaset Pro.",
       "cancelBody": "Para evitar cargos adicionales, cancela tu suscripción {{plan}} activa en Google Play escaneando el código QR.",
       "featureSupport": "• Apoyo para el desarrollo"
     },
@@ -201,8 +201,8 @@
     "update": "Actualización disponible",
     "support": "Soporte",
     "aboutInfo": {
-      "title": "Acerca de TINI for Apple Music",
-      "message": "TINI for Apple Music es un cliente de Apple Music de terceros creado exclusivamente con la API oficial de Apple Music. No almacenamos ninguno de sus datos personales; toda la información se obtiene directamente de los servidores de Apple. Las letras sincronizadas son proporcionadas por LRCLib (lrclib.net), una base de datos de letras gratuita y abierta.",
+      "title": "Acerca de Kaset for Apple Music",
+      "message": "Kaset for Apple Music es un cliente de Apple Music de terceros creado exclusivamente con la API oficial de Apple Music. No almacenamos ninguno de sus datos personales; toda la información se obtiene directamente de los servidores de Apple. Las letras sincronizadas son proporcionadas por LRCLib (lrclib.net), una base de datos de letras gratuita y abierta.",
       "website": "Para otros productos, información general y avisos legales, visite adgn.me"
     },
     "supportInfo": {
@@ -229,7 +229,7 @@
   },
   "update": {
     "title": "Actualización requerida",
-    "message": "Hay una nueva versión de TINI for Apple Music disponible. Por favor, actualiza para seguir usando la aplicación con las últimas funciones y mejoras.",
+    "message": "Hay una nueva versión de Kaset for Apple Music disponible. Por favor, actualiza para seguir usando la aplicación con las últimas funciones y mejoras.",
     "newVersion": "Nueva versión: {{version}}",
     "button": "Actualizar ahora"
   },
@@ -237,7 +237,7 @@
     "declined": "Rechazado",
     "declinedMessage": "Tu compra no se ha realizado correctamente. Por favor, inténtalo de nuevo o comprueba tu cuenta.",
     "restored": "Restaurada",
-    "restoredMessage": "¡Tu estado de TINI Pro se ha restaurado correctamente! 🎉",
+    "restoredMessage": "¡Tu estado de Kaset Pro se ha restaurado correctamente! 🎉",
     "notFound": "No encontrada",
     "notFoundMessage": "No se ha encontrado ninguna suscripción activa para esta cuenta.",
     "error": "Error",
@@ -274,7 +274,7 @@
     "remainingLabel": "Siguiente reproducción: {{remaining}}",
     "limitLabel": "Uso: {{used}}/{{total}}",
     "notificationTitle": "Límite de cuota alcanzado",
-    "notificationMessage": "Cámbiate a TINI Pro para continuar escuchando."
+    "notificationMessage": "Cámbiate a Kaset Pro para continuar escuchando."
   },
   "airplay": {
     "warningTitle": "Activar receptor AirPlay",

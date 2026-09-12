@@ -122,7 +122,7 @@ export function AirPlayProvider({ children }: Readonly<{ children: React.ReactNo
   // Initial mount auto-start — intentionally runs once; enabled changes are handled below
   useEffect(() => {
     if (enabled) {
-      airPlayReceiver.start('TINI').catch(() => {
+      airPlayReceiver.start('Kaset').catch(() => {
         // If it fails on mount, disable it to prevent crashes
         storage.set(AIRPLAY_ENABLED_KEY, false);
         setEnabled(false);
@@ -145,7 +145,7 @@ export function AirPlayProvider({ children }: Readonly<{ children: React.ReactNo
             text: t('common.ok', 'OK'),
             onPress: async () => {
               try {
-                const success = await airPlayReceiver.start('TINI');
+                const success = await airPlayReceiver.start('Kaset');
                 if (success !== false) {
                   storage.set(AIRPLAY_ENABLED_KEY, true);
                   setEnabled(true);

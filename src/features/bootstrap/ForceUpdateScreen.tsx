@@ -152,7 +152,7 @@ export const ForceUpdateScreen: React.FC<ForceUpdateScreenProps> = ({
               resizeMode="cover"
             />
           </View>
-          <Text style={styles.logoTitle}>TINI Player for Apple Music</Text>
+          <Text style={styles.logoTitle}>Kaset Player for Apple Music</Text>
         </View>
 
         <View style={styles.glassCard}>

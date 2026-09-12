@@ -9,7 +9,7 @@
     "ok": "Tamam",
     "unknown": "Bilinmiyor",
     "noItems": "Öğe yok",
-    "appName": "TINI for Apple Music",
+    "appName": "Kaset for Apple Music",
     "availableNow": "Şimdi mevcut",
     "durationHm": "{{hours}}sa {{minutes}}dk",
     "durationH": "{{hours}}sa",
@@ -161,9 +161,9 @@
     "about": "Hakkında",
     "signOut": "Çıkış Yap",
     "pro": {
-      "title": "TINI Pro",
-      "activeMessage": "Aktif bir TINI Pro {{plan}} aboneliğiniz var. Sınırsız müziğin tadını çıkarın!",
-      "lifetimeMessage": "TINI Pro'ya ömür boyu erişiminiz var. Sınırsız müziğin keyfini sonsuza kadar çıkarın!",
+      "title": "Kaset Pro",
+      "activeMessage": "Aktif bir Kaset Pro {{plan}} aboneliğiniz var. Sınırsız müziğin tadını çıkarın!",
+      "lifetimeMessage": "Kaset Pro'ya ömür boyu erişiminiz var. Sınırsız müziğin keyfini sonsuza kadar çıkarın!",
       "upgradeMessage": "Sınırsız müzik ve AirPlay yayını için Pro'ya yükseltin.\n\n🎵 Müzik: {{used}}/{{total}} şarkı kullanıldı\n🛜 AirPlay: {{airPlayUsed}}/{{airPlayTotal}} dk kullanıldı\n\n⏱ Sıfırlanma: {{remaining}}",
       "limitReached": "Sınıra Ulaşıldı",
       "limitReachedMessage": "{{limit}} şarkılık sınırınıza ulaştınız. Bir sonraki şarkı şurada mevcut: {{remaining}}.",
@@ -182,11 +182,11 @@
       "resetsIn": "⏱ Yenileme: {{remaining}}",
       "featureMusic": "∞ Sınırsız müzik dinleme",
       "featureAirPlay": "∞ Sınırsız AirPlay yayını",
-      "featuresTitle": "TINI for Apple Music Pro'yu Edinin",
-      "disclaimer": "TINI, resmi bir Apple uygulaması değil, bağımsız bir Apple Music istemcisidir. Pro sürüme geçmek TINI'un dinleme ve yayın sınırlarını kaldırır ve geliştirmeyi destekler. Bu satın alım Apple Music aboneliğinizi kapsamaz.",
+      "featuresTitle": "Kaset for Apple Music Pro'yu Edinin",
+      "disclaimer": "Kaset, resmi bir Apple uygulaması değil, bağımsız bir Apple Music istemcisidir. Pro sürüme geçmek Kaset'in dinleme ve yayın sınırlarını kaldırır ve geliştirmeyi destekler. Bu satın alım Apple Music aboneliğinizi kapsamaz.",
       "currentPlan": "Mevcut Plan",
       "cancelTitle": "Aboneliğinizi İptal Edin",
-      "cancelBodyAccess": "TINI Pro'ya ömür boyu erişiminiz var.",
+      "cancelBodyAccess": "Kaset Pro'ya ömür boyu erişiminiz var.",
       "cancelBody": "Tekrar ücretlendirilmemek için aktif {{plan}} aboneliğinizi Google Play'den iptal edin. Bunun için QR kodu tarayın.",
       "featureSupport": "• Geliştirme için destek"
     },
@@ -201,8 +201,8 @@
     "update": "Güncelleme Mevcut",
     "support": "Destek",
     "aboutInfo": {
-      "title": "TINI for Apple Music Hakkında",
-      "message": "TINI for Apple Music, yalnızca resmi Apple Music API'si kullanılarak oluşturulmuş üçüncü taraf bir Apple Music istemcisidir. Kişisel verilerinizin hiçbirini saklamıyoruz; tüm bilgiler doğrudan Apple sunucularından alınır. Senkronize şarkı sözleri, ücretsiz ve açık kaynaklı bir veritabanı olan LRCLib (lrclib.net) tarafından sağlanmaktadır.",
+      "title": "Kaset for Apple Music Hakkında",
+      "message": "Kaset for Apple Music, yalnızca resmi Apple Music API'si kullanılarak oluşturulmuş üçüncü taraf bir Apple Music istemcisidir. Kişisel verilerinizin hiçbirini saklamıyoruz; tüm bilgiler doğrudan Apple sunucularından alınır. Senkronize şarkı sözleri, ücretsiz ve açık kaynaklı bir veritabanı olan LRCLib (lrclib.net) tarafından sağlanmaktadır.",
       "website": "Diğer ürünler, genel bilgiler ve yasal metinler için adgn.me adresini ziyaret edebilirsiniz."
     },
     "supportInfo": {
@@ -229,7 +229,7 @@
   },
   "update": {
     "title": "Güncelleme Gerekli",
-    "message": "TINI for Apple Music'in yeni bir sürümü mevcut. En son özellikler ve iyileştirmelerle uygulamayı kullanmaya devam etmek için lütfen güncelleyin.",
+    "message": "Kaset for Apple Music'in yeni bir sürümü mevcut. En son özellikler ve iyileştirmelerle uygulamayı kullanmaya devam etmek için lütfen güncelleyin.",
     "newVersion": "Yeni Sürüm: {{version}}",
     "button": "Şimdi Güncelle"
   },
@@ -237,7 +237,7 @@
     "declined": "Reddedildi",
     "declinedMessage": "Satın alma işleminiz başarılı olmadı. Lütfen tekrar deneyin veya hesabınızı kontrol edin.",
     "restored": "Geri Yüklendi",
-    "restoredMessage": "TINI Pro durumunuz başarıyla geri yüklendi! 🎉",
+    "restoredMessage": "Kaset Pro durumunuz başarıyla geri yüklendi! 🎉",
     "notFound": "Bulunamadı",
     "notFoundMessage": "Bu hesap için aktif bir abonelik bulunamadı.",
     "error": "Hata",
@@ -274,7 +274,7 @@
     "remainingLabel": "Sonraki hak: {{remaining}}",
     "limitLabel": "Kullanım: {{used}}/{{total}}",
     "notificationTitle": "Kota sınırına ulaşıldı",
-    "notificationMessage": "Dinlemeye devam etmek için TINI Pro'ya geçebilirsiniz."
+    "notificationMessage": "Dinlemeye devam etmek için Kaset Pro'ya geçebilirsiniz."
   },
   "airplay": {
     "warningTitle": "AirPlay Alıcısını Etkinleştir",

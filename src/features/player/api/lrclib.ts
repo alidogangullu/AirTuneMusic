@@ -57,8 +57,8 @@ export async function fetchLyrics(
   });
   
   const fetchHeaders = {
-    'User-Agent': `TINI/${CURRENT_VERSION} (https://github.com/alidogangullu/TINIMusic)`,
-    'Lrclib-Client': `TINI/${CURRENT_VERSION}`,
+    'User-Agent': `Kaset/${CURRENT_VERSION} (https://github.com/alidogangullu/KasetMusic)`,
+    'Lrclib-Client': `Kaset/${CURRENT_VERSION}`,
   };
 
   try {
