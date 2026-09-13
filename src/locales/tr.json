@@ -193,6 +193,7 @@
     "appPreferences": "Uygulama Tercihleri",
     "quotaIndicator": "Kota Göstergesi: {{state}}",
     "motionArtwork": "Hareketli Kapaklar: {{state}}",
+    "autoHideControls": "Kontrolleri Otomatik Gizle: {{state}}",
     "theme": "Tema",
     "themeDark": "Koyu",
     "themeLight": "Açık",

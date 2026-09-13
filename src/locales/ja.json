@@ -195,6 +195,7 @@
     "appPreferences": "アプリの設定",
     "quotaIndicator": "利用制限インジケータ: {{state}}",
     "motionArtwork": "アニメーションカバー: {{state}}",
+    "autoHideControls": "コントロールの自動非表示: {{state}}",
     "theme": "テーマ",
     "themeDark": "ダーク",
     "themeLight": "ライト",

@@ -193,6 +193,7 @@
     "appPreferences": "Preferencias",
     "quotaIndicator": "Indicador de cuota: {{state}}",
     "motionArtwork": "Portadas animadas: {{state}}",
+    "autoHideControls": "Ocultar controles automáticamente: {{state}}",
     "theme": "Tema",
     "themeDark": "Oscuro",
     "themeLight": "Claro",

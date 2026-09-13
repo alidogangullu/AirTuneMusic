@@ -193,6 +193,7 @@
     "appPreferences": "Préférences",
     "quotaIndicator": "Indicateur de quota : {{state}}",
     "motionArtwork": "Pochettes animées : {{state}}",
+    "autoHideControls": "Masquer les commandes automatiquement : {{state}}",
     "theme": "Thème",
     "themeDark": "Sombre",
     "themeLight": "Clair",

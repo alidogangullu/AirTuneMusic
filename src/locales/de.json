@@ -193,6 +193,7 @@
     "appPreferences": "App-Einstellungen",
     "quotaIndicator": "Kontingentanzeige: {{state}}",
     "motionArtwork": "Animierte Cover: {{state}}",
+    "autoHideControls": "Steuerelemente automatisch ausblenden: {{state}}",
     "theme": "Design",
     "themeDark": "Dunkel",
     "themeLight": "Hell",

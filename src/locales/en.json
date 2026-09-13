@@ -193,6 +193,7 @@
     "appPreferences": "App Preferences",
     "quotaIndicator": "Quota Indicator: {{state}}",
     "motionArtwork": "Animated Covers: {{state}}",
+    "autoHideControls": "Auto-Hide Controls: {{state}}",
     "theme": "Theme",
     "themeDark": "Dark",
     "themeLight": "Light",

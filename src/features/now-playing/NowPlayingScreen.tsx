@@ -8,7 +8,7 @@
  *   - D-pad Right → scrub +5 s
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   BackHandler,
@@ -21,6 +21,7 @@ import {
   FlatList,
   Dimensions,
   findNodeHandle,
+  useTVEventHandler,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import LinearGradient from 'react-native-linear-gradient';
@@ -39,6 +40,7 @@ import { NowPlayingTrackInfo, ARTWORK_SIZE } from '../player/components/NowPlayi
 import { useAirPlay } from '../airplay/useAirPlay';
 import { AirPlayQuotaService } from '../airplay/airPlayQuotaService';
 import { QuotaService } from '../settings/quotaService';
+import { NowPlayingSettingsService } from '../settings/nowPlayingSettingsService';
 
 // ── Component ────────────────────────────────────────────────────
 
@@ -57,7 +59,6 @@ interface QueueItemProps {
   isLoading: boolean;
   isBuffering: boolean;
   accentColor: string;
-  showInfo: boolean;
 }
 
 const QueueItem = React.memo(({
@@ -67,7 +68,6 @@ const QueueItem = React.memo(({
   isLoading,
   isBuffering,
   accentColor,
-  showInfo,
 }: QueueItemProps) => {
   return (
     <View style={styles.queueItemContainer}>
@@ -79,7 +79,6 @@ const QueueItem = React.memo(({
         accentColor={accentColor}
         showBars={isCurrent}
         align="center"
-        style={showInfo ? styles.trackInfoHidden : styles.trackInfoVisible}
       />
     </View>
   );
@@ -185,6 +184,63 @@ export function NowPlayingScreen({
   const [playbackControlsNode, setPlaybackControlsNode] = useState<number | null>(null);
   const [infoButtonNode, setInfoButtonNode] = useState<number | null>(null);
 
+  // Auto-hide controls when idle during music playback
+  const [showControls, setShowControls] = useState(true);
+  const controlsAnim = useRef(new Animated.Value(1)).current;
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const resetIdleTimer = useCallback(() => {
+    setShowControls(true);
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
+
+    // Do not auto-hide if disabled in App Preferences, or if paused, loading, live radio, or overlays active
+    if (
+      !NowPlayingSettingsService.getAutoHideControls() ||
+      !isPlaying ||
+      state.isLoading ||
+      isLiveRadio ||
+      showLyrics ||
+      showQueue ||
+      showInfo
+    ) {
+      return;
+    }
+
+    idleTimerRef.current = setTimeout(() => {
+      setShowControls(false);
+    }, 6000);
+  }, [isPlaying, state.isLoading, isLiveRadio, showLyrics, showQueue, showInfo]);
+
+  useTVEventHandler((evt) => {
+    // Show controls on any remote interaction
+    if (evt.eventType && !['blur', 'focus'].includes(evt.eventType)) {
+      resetIdleTimer();
+    }
+  });
+
+  useEffect(() => {
+    resetIdleTimer();
+    return () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    };
+  }, [resetIdleTimer]);
+
+  useEffect(() => {
+    Animated.timing(controlsAnim, {
+      toValue: showControls ? 1 : 0,
+      duration: showControls ? 250 : 400,
+      useNativeDriver: true,
+    }).start();
+  }, [showControls, controlsAnim]);
+
+  const controlsTranslateY = controlsAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [24, 0],
+  });
+
   if (!track) {
     const isActuallyLoading = state.isLoading || state.playbackState !== 'stopped';
     if (isActuallyLoading) {
@@ -272,7 +328,6 @@ export function NowPlayingScreen({
               isLoading={state.isLoading}
               isBuffering={state.buffering}
               accentColor={accentColor}
-              showInfo={showInfo}
             />
           )}
         />
@@ -372,7 +427,7 @@ export function NowPlayingScreen({
       )}
 
       {/* Centered content: artwork OR queue OR lyrics */}
-      <View style={styles.content}>
+      <View style={[styles.content, isTabView && styles.tabViewContent]}>
         {centerContent}
       </View>
 
@@ -524,16 +579,23 @@ export function NowPlayingScreen({
           {isAirPlayMode ? (
             !showInfo && (
               <>
-                {airPlayQuotaRowNode}
-                <PlaybackControls
-                  airPlay={{
-                    onPrev: airPlay.prev,
-                    onNext: airPlay.next,
-                    onPlayPause: airPlay.playPause,
-                    isPlaying: airPlay.isPlaying,
+                <Animated.View
+                  style={{
+                    opacity: controlsAnim,
+                    transform: [{ translateY: controlsTranslateY }],
                   }}
-                  nextFocusDown={progressBarNode}
-                />
+                  pointerEvents={showControls ? 'auto' : 'none'}>
+                  {airPlayQuotaRowNode}
+                  <PlaybackControls
+                    airPlay={{
+                      onPrev: airPlay.prev,
+                      onNext: airPlay.next,
+                      onPlayPause: airPlay.playPause,
+                      isPlaying: airPlay.isPlaying,
+                    }}
+                    nextFocusDown={progressBarNode}
+                  />
+                </Animated.View>
                 <NowPlayingProgressBar
                   isLiveRadio={false}
                   isLoading={false}
@@ -548,7 +610,7 @@ export function NowPlayingScreen({
                     onPause: airPlay.playPause,
                   }}
                   isAirPlay={true}
-                  showExtras={true}
+                  showExtras={showControls}
                   onOpenInfo={() => setShowInfo(true)}
                   showLyrics={showLyrics}
                   onToggleLyrics={() => setShowLyrics(!showLyrics)}
@@ -562,15 +624,22 @@ export function NowPlayingScreen({
           ) : (
             !showInfo && (
               <>
-                {musicQuotaRowNode}
-                <View
-                  ref={playbackControlsRef}
-                  onLayout={() => setPlaybackControlsNode(findNodeHandle(playbackControlsRef.current))}>
-                  <PlaybackControls
-                    nextFocusDown={progressBarNode}
-                    onLayoutButton={(node) => setPlaybackControlsNode(node)}
-                  />
-                </View>
+                <Animated.View
+                  style={{
+                    opacity: controlsAnim,
+                    transform: [{ translateY: controlsTranslateY }],
+                  }}
+                  pointerEvents={showControls ? 'auto' : 'none'}>
+                  {musicQuotaRowNode}
+                  <View
+                    ref={playbackControlsRef}
+                    onLayout={() => setPlaybackControlsNode(findNodeHandle(playbackControlsRef.current))}>
+                    <PlaybackControls
+                      nextFocusDown={progressBarNode}
+                      onLayoutButton={(node) => setPlaybackControlsNode(node)}
+                    />
+                  </View>
+                </Animated.View>
 
                 <NowPlayingProgressBar
                   isLiveRadio={isLiveRadio}
@@ -580,6 +649,7 @@ export function NowPlayingScreen({
                   playbackControlsNode={playbackControlsNode}
                   infoButtonNode={infoButtonNode}
                   onSetInfoButtonNode={setInfoButtonNode}
+                  showExtras={showControls}
                   onOpenInfo={() => setShowInfo(true)}
                   showLyrics={showLyrics}
                   onToggleLyrics={() => setShowLyrics(!showLyrics)}
@@ -620,12 +690,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  trackInfoVisible: {
-    opacity: 1,
-  },
-  trackInfoHidden: {
-    opacity: 0,
-  },
   lyricsBackdrop: {
     backgroundColor: 'rgba(0, 0, 0, 0.45)',
   },
@@ -634,6 +698,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingBottom: 25, // Match typical footer height to keep centering consistent
+  },
+  tabViewContent: {
+    paddingTop: 32,
   },
   headerSection: {
     height: 60,

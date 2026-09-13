@@ -188,22 +188,32 @@ export function PlaybackProgressProvider({children}: Readonly<{children: React.R
   );
 }
 
-// ── Queue builder ─────────────────────────────────────────────────
+// ── Queue builder & Shuffle ───────────────────────────────────────
+function shuffleTracks<T>(array: T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+const NATIVE_WINDOW_SIZE = 30;
+
 /**
  * Builds the full visual queue for NowPlayingScreen.
- * - Non-shuffle: containerTracks[0..containerIndex-1] + SDK queue (current+upcoming)
- * - Shuffle / no containerTracks: SDK queue as-is
+ * - When containerTracks exists, returns full containerTracks with correct index IDs.
+ * - Otherwise falls back to SDK queue.
  */
 function buildVisualQueue(s: PlayerState, sdkQueue: TrackInfo[]): TrackInfo[] {
-  if (s.shuffleMode !== 0 || !s.containerTracks || s.containerTracks.length === 0) {
-    return sdkQueue;
+  if (s.containerTracks && s.containerTracks.length > 0) {
+    return s.containerTracks.map((t, idx) => ({
+      ...t,
+      playbackQueueId: idx,
+      trackIndex: idx,
+    }));
   }
-  // Tracks before current position in container order
-  const previous = s.containerTracks.slice(0, s.containerIndex);
-  // Combine: previous (from API list) + SDK queue (current+upcoming)
-  const sdkIds = new Set(sdkQueue.map(t => t.id).filter(Boolean));
-  const filteredPrevious = previous.filter(t => !sdkIds.has(t.id));
-  return [...filteredPrevious, ...sdkQueue];
+  return sdkQueue;
 }
 
 // ── Provider ────────────────────────────────────────────────────
@@ -218,6 +228,11 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   const lastTrackIdRef = useRef<number | null>(null);
   const pendingQuotaRetryRef = useRef<(() => Promise<void>) | null>(null);
   const requestQuotaRecoveryRef = useRef<(retryAction?: () => Promise<void>) => void>(() => {});
+
+  const originalTracksRef = useRef<TrackInfo[] | null>(null);
+  const nativeWindowStartRef = useRef<number>(0);
+  const queueNeedsWindowRefreshRef = useRef<boolean>(false);
+  const playWindowRef = useRef<((tracksList: TrackInfo[], targetIndex: number, containerId?: string, shuffleMode?: number) => Promise<boolean>) | null>(null);
 
   const activeEngineRef = useRef<'native' | 'web' | 'video'>('native');
   const webPlayerRef = useRef<MusicKitWebPlayerRef>(null);
@@ -396,8 +411,9 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
 
   const updateNativeShuffleState = useCallback((sdkQueue: TrackInfo[], shuffleMode: number) => {
     setState(s => {
-      const merged = buildVisualQueue({...s, shuffleMode}, sdkQueue);
-      return {...s, queue: merged, shuffleMode};
+      const effectiveShuffle = (s.containerTracks && s.containerTracks.length > 0) ? s.shuffleMode : shuffleMode;
+      const merged = buildVisualQueue({...s, shuffleMode: effectiveShuffle}, sdkQueue);
+      return {...s, queue: merged, shuffleMode: effectiveShuffle};
     });
   }, []);
 
@@ -553,32 +569,61 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
           startNativeStallTimer(data.id);
         }
 
-        // Rebuild visual queue and update state atomically to prevent NowPlaying jitter
-        musicPlayer.getQueue().then(sdkQueue => {
-          setState(s => {
-            const newContainerId = (data as any).containerStoreId ?? s.containerId;
-            const newContainerIndex = (data as any).containerIndex ?? s.containerIndex;
+        const cTracks = stateRef.current.containerTracks;
+        if (cTracks && cTracks.length > 0) {
+          let trueIndex = -1;
+          if (data.id) {
+            const startSearch = Math.max(0, stateRef.current.containerIndex);
+            for (let i = startSearch; i < Math.min(startSearch + NATIVE_WINDOW_SIZE, cTracks.length); i++) {
+              if (cTracks[i].id === data.id) {
+                trueIndex = i;
+                break;
+              }
+            }
+          }
+          if (trueIndex === -1) {
+            trueIndex = Math.min(cTracks.length - 1, nativeWindowStartRef.current + (data.trackIndex ?? 0));
+          }
 
-            // Build the merged queue using the NEW state properties locally
-            const tempState = {
-              ...s,
-              track: data,
-              containerId: newContainerId,
-              containerIndex: newContainerIndex,
-              shuffleMode: s.shuffleMode, // explicit for buildVisualQueue
-            };
-            const merged = buildVisualQueue(tempState, sdkQueue);
+          const matchedTrack = cTracks[trueIndex] ?? data;
+          setState(s => ({
+            ...s,
+            track: { ...matchedTrack, playbackQueueId: trueIndex, trackIndex: trueIndex },
+            containerIndex: trueIndex,
+            queueIndex: trueIndex,
+            queue: s.queue.length === cTracks.length ? s.queue : cTracks.map((t, idx) => ({ ...t, playbackQueueId: idx, trackIndex: idx })),
+            canSkipToPrevious: trueIndex > 0,
+            canSkipToNext: trueIndex < cTracks.length - 1 || s.repeatMode === 1,
+            isLoading: s.isLoading,
+          }));
+        } else {
+          // Rebuild visual queue and update state atomically to prevent NowPlaying jitter
+          musicPlayer.getQueue().then(sdkQueue => {
+            setState(s => {
+              const newContainerId = (data as any).containerStoreId ?? s.containerId;
+              const newContainerIndex = (data as any).containerIndex ?? s.containerIndex;
 
-            return {
-              ...tempState,
-              queueIndex: data.trackIndex ?? s.queueIndex,
-              queue: merged,
-              canSkipToPrevious: (data as any).canSkipToPrevious ?? s.canSkipToPrevious,
-              canSkipToNext: (data as any).canSkipToNext ?? s.canSkipToNext,
-              isLoading: s.isLoading, // cleared only when real progress (pos>0) arrives
-            };
+              // Build the merged queue using the NEW state properties locally
+              const tempState = {
+                ...s,
+                track: data,
+                containerId: newContainerId,
+                containerIndex: newContainerIndex,
+                shuffleMode: s.shuffleMode, // explicit for buildVisualQueue
+              };
+              const merged = buildVisualQueue(tempState, sdkQueue);
+
+              return {
+                ...tempState,
+                queueIndex: data.trackIndex ?? s.queueIndex,
+                queue: merged,
+                canSkipToPrevious: (data as any).canSkipToPrevious ?? s.canSkipToPrevious,
+                canSkipToNext: (data as any).canSkipToNext ?? s.canSkipToNext,
+                isLoading: s.isLoading, // cleared only when real progress (pos>0) arrives
+              };
+            });
           });
-        });
+        }
 
         // Fetch rating in background (doesn't affect layout)
         if (data.id) {
@@ -652,6 +697,37 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
           triggerWebFallback(data.id, true);
           return;
         }
+
+        const currentS = stateRef.current;
+        const cTracks = currentS.containerTracks;
+        if (cTracks && cTracks.length > 0 && data.endPosition > 0) {
+          const nextIdx = currentS.containerIndex + 1;
+          const isLastInWindow = currentS.containerIndex >= nativeWindowStartRef.current + NATIVE_WINDOW_SIZE - 1;
+          if (isLastInWindow || queueNeedsWindowRefreshRef.current) {
+            queueNeedsWindowRefreshRef.current = false;
+            if (nextIdx < cTracks.length) {
+              console.log('[MusicPlayer] Transitioning sliding window from onItemEnded to index:', nextIdx);
+              playWindowRef.current?.(cTracks, nextIdx);
+              return;
+            } else if (currentS.repeatMode === 1 /* ALL */) {
+              playWindowRef.current?.(cTracks, 0);
+              return;
+            }
+          }
+
+          if (nextIdx >= cTracks.length && currentS.repeatMode === 0) {
+            console.log('[MusicPlayer] Reached end of playlist (repeat off), stopping cleanly');
+            endOfQueueLock.active = true;
+            if (nativePlaybackTimeoutRef.current) {
+              clearTimeout(nativePlaybackTimeoutRef.current);
+              nativePlaybackTimeoutRef.current = null;
+            }
+            musicPlayer.stop();
+            setState(s => ({...s, playbackState: 'stopped', isLoading: false, buffering: false}));
+            return;
+          }
+        }
+
         // Clean end of the queue (single/last track, repeat off): the Apple Music
         // SDK auto-rewinds the finished item to a paused+buffering state at
         // position 0. Lock the UI to a stopped-at-end state and ignore the rewind
@@ -675,12 +751,26 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
       }),
       musicPlayer.addEventListener('onTrackStuckAtEnd', () => {
         if (activeEngineRef.current !== 'native') return;
-        const nextContainerIndex = stateRef.current.containerIndex + 1;
-        const nextTrack = stateRef.current.containerTracks?.[nextContainerIndex];
-        if (nextTrack && restartContainerFromIndexRef.current) {
-          console.log('[MusicPlayer] Track stuck at end, rebuilding queue from next track');
-          restartContainerFromIndexRef.current(nextContainerIndex);
-        } else if (stateRef.current.canSkipToNext || stateRef.current.repeatMode !== 0) {
+        const currentS = stateRef.current;
+        const cTracks = currentS.containerTracks;
+        if (cTracks && cTracks.length > 0) {
+          const nextContainerIndex = currentS.containerIndex + 1;
+          if (nextContainerIndex < cTracks.length) {
+            console.log('[MusicPlayer] Track stuck at end, advancing sliding window to index:', nextContainerIndex);
+            playWindowRef.current?.(cTracks, nextContainerIndex);
+          } else if (currentS.repeatMode === 1 /* ALL */) {
+            console.log('[MusicPlayer] Track stuck at end of playlist with repeat ALL, wrapping to 0');
+            playWindowRef.current?.(cTracks, 0);
+          } else {
+            console.log('[MusicPlayer] Track stuck at end of playlist (repeat off), stopping cleanly');
+            endOfQueueLock.active = true;
+            musicPlayer.stop();
+            setState(s => ({...s, playbackState: 'stopped', isLoading: false, buffering: false}));
+          }
+          return;
+        }
+
+        if (stateRef.current.canSkipToNext || stateRef.current.repeatMode !== 0) {
           // Real next item in the SDK queue, or repeat is on → advance/wrap.
           console.log('[MusicPlayer] Track stuck at end, skipping to next');
           musicPlayer.skipToNext();
@@ -789,48 +879,100 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     [requestQuotaRecovery],
   );
 
+  const playWindow = useCallback(
+    async (
+      tracksList: TrackInfo[],
+      targetIndex: number,
+      containerId?: string,
+      shuffleMode?: number,
+    ): Promise<boolean> => {
+      if (!tracksList || tracksList.length === 0) return false;
+      const clampedIndex = Math.max(0, Math.min(targetIndex, tracksList.length - 1));
+      const windowSlice = tracksList.slice(clampedIndex, clampedIndex + NATIVE_WINDOW_SIZE);
+      if (windowSlice.length === 0) return false;
+
+      const trackIds = windowSlice.map(t => t.id).filter(Boolean) as string[];
+      if (trackIds.length === 0) return false;
+
+      nativeWindowStartRef.current = clampedIndex;
+      queueNeedsWindowRefreshRef.current = false;
+
+      const currentTrack = tracksList[clampedIndex];
+      setState(s => ({
+        ...s,
+        shuffleMode: shuffleMode !== undefined ? shuffleMode : s.shuffleMode,
+        containerId: containerId ?? s.containerId,
+        containerTracks: tracksList,
+        containerIndex: clampedIndex,
+        track: currentTrack ? { ...currentTrack, playbackQueueId: clampedIndex, trackIndex: clampedIndex } : s.track,
+        queue: tracksList.map((t, idx) => ({ ...t, playbackQueueId: idx, trackIndex: idx })),
+        isLoading: true,
+      }));
+
+      return checkQuotaAndPlay(() => musicPlayer.playTracks(trackIds, 0, false));
+    },
+    [checkQuotaAndPlay],
+  );
+  playWindowRef.current = playWindow;
+
   const playAlbum = useCallback(
     async (albumId: string, startIndex = 0, shuffle = false, tracks?: TrackInfo[]) => {
       restartContainerFromIndexRef.current = (idx: number) =>
         playAlbum(albumId, idx, false, tracks);
+
+      if (tracks && tracks.length > 0) {
+        originalTracksRef.current = tracks;
+        let listToPlay = tracks;
+        let actualStartIndex = startIndex;
+
+        if (shuffle) {
+          listToPlay = shuffleTracks(tracks);
+          actualStartIndex = 0;
+        }
+
+        return playWindow(listToPlay, actualStartIndex, albumId, shuffle ? 1 : 0);
+      }
+
       setState(s => ({
         ...s,
         containerId: albumId,
-        containerTracks: tracks ?? null,
+        containerTracks: null,
         containerIndex: startIndex,
         isLoading: true,
       }));
-      return checkQuotaAndPlay(() => {
-        if (albumId.startsWith('l.') && tracks && tracks.length > 0) {
-          const trackIds = tracks.map(track => track.id).filter(Boolean) as string[];
-          return musicPlayer.playTracks(trackIds, startIndex, shuffle);
-        }
-        return musicPlayer.playAlbum(albumId, startIndex, shuffle);
-      });
+      return checkQuotaAndPlay(() => musicPlayer.playAlbum(albumId, startIndex, shuffle));
     },
-    [checkQuotaAndPlay],
+    [checkQuotaAndPlay, playWindow],
   );
 
   const playPlaylist = useCallback(
     async (playlistId: string, startIndex = 0, shuffle = false, tracks?: TrackInfo[]) => {
       restartContainerFromIndexRef.current = (idx: number) =>
         playPlaylist(playlistId, idx, false, tracks);
+
+      if (tracks && tracks.length > 0) {
+        originalTracksRef.current = tracks;
+        let listToPlay = tracks;
+        let actualStartIndex = startIndex;
+
+        if (shuffle) {
+          listToPlay = shuffleTracks(tracks);
+          actualStartIndex = 0;
+        }
+
+        return playWindow(listToPlay, actualStartIndex, playlistId, shuffle ? 1 : 0);
+      }
+
       setState(s => ({
         ...s,
         containerId: playlistId,
-        containerTracks: tracks ?? null,
+        containerTracks: null,
         containerIndex: startIndex,
         isLoading: true,
       }));
-      return checkQuotaAndPlay(() => {
-        if (playlistId.startsWith('p.') && tracks && tracks.length > 0) {
-          const trackIds = tracks.map(track => track.id).filter(Boolean) as string[];
-          return musicPlayer.playTracks(trackIds, startIndex, shuffle);
-        }
-        return musicPlayer.playPlaylist(playlistId, startIndex, shuffle);
-      });
+      return checkQuotaAndPlay(() => musicPlayer.playPlaylist(playlistId, startIndex, shuffle));
     },
-    [checkQuotaAndPlay],
+    [checkQuotaAndPlay, playWindow],
   );
 
   const playStation = useCallback(
@@ -905,19 +1047,72 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   const playTracks = useCallback(
     async (tracks: TrackInfo[], startIndex = 0, shuffle = false) => {
       if (!tracks.length) return false;
-      const trackIds = tracks.map(t => t.id).filter(Boolean) as string[];
+      originalTracksRef.current = tracks;
+      let listToPlay = tracks;
+      let actualStartIndex = startIndex;
+
+      if (shuffle) {
+        listToPlay = shuffleTracks(tracks);
+        actualStartIndex = 0;
+      }
+
+      return playWindow(listToPlay, actualStartIndex, 'library-songs', shuffle ? 1 : 0);
+    },
+    [playWindow],
+  );
+
+  const handleSetShuffleMode = useCallback((mode: number) => {
+    const currentS = stateRef.current;
+    const cTracks = currentS.containerTracks;
+
+    if (!cTracks || cTracks.length <= 1) {
+      setState(s => ({ ...s, shuffleMode: mode }));
+      try {
+        musicPlayer.setShuffleMode(mode);
+      } catch (e) {
+        console.warn('[Player] setShuffleMode error:', e);
+      }
+      return;
+    }
+
+    const currentIdx = currentS.containerIndex;
+    const currentTrack = cTracks[currentIdx];
+
+    if (mode === 1 /* SONGS */) {
+      if (!originalTracksRef.current || originalTracksRef.current.length === 0) {
+        originalTracksRef.current = [...cTracks];
+      }
+      const played = cTracks.slice(0, currentIdx + 1);
+      const upcoming = cTracks.slice(currentIdx + 1);
+      const shuffledUpcoming = shuffleTracks(upcoming);
+
+      const newContainerTracks = [...played, ...shuffledUpcoming];
+      queueNeedsWindowRefreshRef.current = true;
+
       setState(s => ({
         ...s,
-        containerId: 'library-songs',
-        containerTracks: tracks,
-        containerIndex: startIndex,
-        track: tracks[startIndex] ?? s.track,
-        isLoading: true,
+        shuffleMode: 1,
+        containerTracks: newContainerTracks,
+        queue: newContainerTracks.map((t, idx) => ({ ...t, playbackQueueId: idx, trackIndex: idx })),
       }));
-      return checkQuotaAndPlay(() => musicPlayer.playTracks(trackIds, startIndex, shuffle));
-    },
-    [checkQuotaAndPlay],
-  );
+    } else {
+      // Turning shuffle OFF (mode === 0)
+      const original = originalTracksRef.current ?? cTracks;
+      let origIdx = original.findIndex(t => t.id === currentTrack?.id);
+      if (origIdx === -1) origIdx = currentIdx;
+
+      queueNeedsWindowRefreshRef.current = true;
+
+      setState(s => ({
+        ...s,
+        shuffleMode: 0,
+        containerTracks: original,
+        containerIndex: origIdx,
+        track: currentTrack ? { ...currentTrack, playbackQueueId: origIdx, trackIndex: origIdx } : s.track,
+        queue: original.map((t, idx) => ({ ...t, playbackQueueId: idx, trackIndex: idx })),
+      }));
+    }
+  }, []);
 
   const playVideoQueue = useCallback((queue: VideoQueue) => {
     endOfQueueLock.active = false;
@@ -1040,6 +1235,46 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
       if (now - lastSkipTimeRef.current < 600) return;
       lastSkipTimeRef.current = now;
       endOfQueueLock.active = false;
+
+      const currentS = stateRef.current;
+      const cTracks = currentS.containerTracks;
+
+      if (activeEngineRef.current === 'native' && cTracks && cTracks.length > 0) {
+        if (!QuotaService.canPlayNextSong()) {
+          musicPlayer.pause();
+          requestQuotaRecovery(async () => {
+            const nextIdx = currentS.containerIndex + 1;
+            if (nextIdx < cTracks.length) {
+              playWindow(cTracks, nextIdx);
+            } else if (currentS.repeatMode === 1 /* ALL */) {
+              playWindow(cTracks, 0);
+            }
+          });
+          return;
+        }
+
+        const nextIdx = currentS.containerIndex + 1;
+        if (nextIdx >= cTracks.length) {
+          if (currentS.repeatMode === 1 /* ALL */) {
+            playWindow(cTracks, 0);
+          } else {
+            console.log('[Player] Reached end of playlist/container, stopping');
+            musicPlayer.stop();
+            setState(s => ({ ...s, playbackState: 'stopped', isLoading: false }));
+          }
+          return;
+        }
+
+        const remainingInWindow = (nativeWindowStartRef.current + NATIVE_WINDOW_SIZE) - nextIdx;
+        if (queueNeedsWindowRefreshRef.current || remainingInWindow <= 2 || nextIdx < nativeWindowStartRef.current) {
+          playWindow(cTracks, nextIdx);
+        } else {
+          musicPlayer.skipToNext();
+          musicPlayer.play();
+        }
+        return;
+      }
+
       if (!QuotaService.canPlayNextSong()) {
         if (activeEngineRef.current === 'web') {
           webPlayerRef.current?.pause();
@@ -1082,6 +1317,34 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
       if (now - lastSkipTimeRef.current < 600) return;
       lastSkipTimeRef.current = now;
       endOfQueueLock.active = false;
+
+      const currentS = stateRef.current;
+      const cTracks = currentS.containerTracks;
+
+      if (activeEngineRef.current === 'native' && cTracks && cTracks.length > 0) {
+        if (!QuotaService.canPlayNextSong()) {
+          musicPlayer.pause();
+          requestQuotaRecovery(async () => {
+            const prevIdx = Math.max(0, currentS.containerIndex - 1);
+            playWindow(cTracks, prevIdx);
+          });
+          return;
+        }
+
+        const prevIdx = currentS.containerIndex - 1;
+        if (prevIdx >= 0) {
+          if (prevIdx >= nativeWindowStartRef.current && prevIdx < nativeWindowStartRef.current + NATIVE_WINDOW_SIZE) {
+            musicPlayer.skipToPrevious();
+            musicPlayer.play();
+          } else {
+            playWindow(cTracks, prevIdx);
+          }
+        } else {
+          musicPlayer.seekTo(0);
+        }
+        return;
+      }
+
       if (!QuotaService.canPlayNextSong()) {
         if (activeEngineRef.current === 'web') {
           webPlayerRef.current?.pause();
@@ -1121,7 +1384,7 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
     },
     seekTo,
     getQueue,
-    setShuffleMode: musicPlayer.setShuffleMode,
+    setShuffleMode: handleSetShuffleMode,
     setRepeatMode: musicPlayer.setRepeatMode,
     toggleRating: async () => {
       const {track, rating} = stateRef.current;
@@ -1145,12 +1408,14 @@ export function PlayerProvider({children}: Readonly<{children: React.ReactNode}>
   }), [
     dismissQuotaRecovery,
     getQueue,
+    handleSetShuffleMode,
     playAlbum,
     playMusicVideo,
     playPlaylist,
     playSong,
     playStation,
     playVideoQueue,
+    playWindow,
     quotaRecoveryRequest,
     requestQuotaRecovery,
     seekTo,

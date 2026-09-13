@@ -58,6 +58,16 @@ export function LyricsView(): React.JSX.Element {
   const { lyrics, currentLineIndex, isLoading } = useLyrics(true);
   const flatListRef = useRef<FlatList>(null);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lyricsRef = useRef(lyrics);
+  lyricsRef.current = lyrics;
+
+  // Clear any pending scroll retry whenever lyrics change (new song loaded)
+  useEffect(() => {
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+      scrollTimeoutRef.current = null;
+    }
+  }, [lyrics]);
 
   // Clean up the timeout on unmount
   useEffect(() => {
@@ -106,10 +116,10 @@ export function LyricsView(): React.JSX.Element {
   }
 
   return (
-    <View 
-      style={styles.container} 
-      {...({ descendantFocusability: 'blocksDescendants' } as any)} 
-      focusable={false} 
+    <View
+      style={styles.container}
+      {...({ descendantFocusability: 'blocksDescendants' } as any)}
+      focusable={false}
       pointerEvents="none"
     >
       <FlatList
@@ -125,8 +135,15 @@ export function LyricsView(): React.JSX.Element {
             clearTimeout(scrollTimeoutRef.current);
           }
           scrollTimeoutRef.current = setTimeout(() => {
-            flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
-          }, 500);
+            const currentLyrics = lyricsRef.current;
+            if (flatListRef.current && info.index >= 0 && info.index < currentLyrics.length) {
+              try {
+                flatListRef.current.scrollToIndex({ index: info.index, animated: true, viewPosition: 0.28 });
+              } catch (e) {
+                console.warn('[LyricsView] Retry scroll failed:', e);
+              }
+            }
+          }, 300);
         }}
         // On TV, focus is handled elsewhere, so we just want a passive scrollable list
         focusable={false}
