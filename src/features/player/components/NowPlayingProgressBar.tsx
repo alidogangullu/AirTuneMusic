@@ -56,6 +56,9 @@ interface NowPlayingProgressBarProps {
   onLayoutProgress?: () => void;
   focusable?: boolean;
   isAirPlay?: boolean;
+  controlsAnim?: Animated.Value;
+  controlsTranslateY?: Animated.AnimatedInterpolation<number | string>;
+  showControls?: boolean;
 }
 
 export const NowPlayingProgressBar = React.memo(({
@@ -77,6 +80,9 @@ export const NowPlayingProgressBar = React.memo(({
   onLayoutProgress,
   focusable = true,
   isAirPlay = false,
+  controlsAnim,
+  controlsTranslateY,
+  showControls = true,
 }: NowPlayingProgressBarProps) => {
   const { t } = useTranslation();
 
@@ -226,19 +232,30 @@ export const NowPlayingProgressBar = React.memo(({
             {isScrubbing ? formatTime(pendingSeekMs) : formatTime(position)}
           </Text>
           {showExtras && onOpenInfo && (
-            <Pressable
-              ref={infoButtonRef}
-              onLayout={() => onSetInfoButtonNode?.(findNodeHandle(infoButtonRef.current))}
-              style={({ focused }) => [styles.infoButton, focused && styles.infoButtonFocused]}
-              nextFocusUp={findNodeHandle(progressBarRef.current)}
-              onPress={onOpenInfo}
-              focusable={true}>
-              {({ focused }) => (
-                <Text style={[styles.infoButtonText, focused && styles.infoButtonTextFocused]}>
-                  {t('nowPlaying.info')}
-                </Text>
-              )}
-            </Pressable>
+            <Animated.View
+              style={
+                controlsAnim
+                  ? {
+                      opacity: controlsAnim,
+                      transform: controlsTranslateY ? [{ translateY: controlsTranslateY }] : undefined,
+                    }
+                  : undefined
+              }
+              pointerEvents={showControls ? 'auto' : 'none'}>
+              <Pressable
+                ref={infoButtonRef}
+                onLayout={() => onSetInfoButtonNode?.(findNodeHandle(infoButtonRef.current))}
+                style={({ focused }) => [styles.infoButton, focused && styles.infoButtonFocused]}
+                nextFocusUp={findNodeHandle(progressBarRef.current)}
+                onPress={onOpenInfo}
+                focusable={showControls}>
+                {({ focused }) => (
+                  <Text style={[styles.infoButtonText, focused && styles.infoButtonTextFocused]}>
+                    {t('nowPlaying.info')}
+                  </Text>
+                )}
+              </Pressable>
+            </Animated.View>
           )}
         </View>
 
@@ -247,7 +264,17 @@ export const NowPlayingProgressBar = React.memo(({
             {isScrubbing ? formatTime(pendingSeekMs) : `-${formatTime(remainingMs)}`}
           </Text>
           {showExtras && (
-            <View style={styles.footerButtonsRight}>
+            <Animated.View
+              style={[
+                styles.footerButtonsRight,
+                controlsAnim
+                  ? {
+                      opacity: controlsAnim,
+                      transform: controlsTranslateY ? [{ translateY: controlsTranslateY }] : undefined,
+                    }
+                  : undefined,
+              ]}
+              pointerEvents={showControls ? 'auto' : 'none'}>
               {onToggleLyrics && (
                 <Pressable
                   style={({ focused }) => [
@@ -258,7 +285,7 @@ export const NowPlayingProgressBar = React.memo(({
                   ]}
                   nextFocusUp={findNodeHandle(progressBarRef.current)}
                   onPress={onToggleLyrics}
-                  focusable={true}>
+                  focusable={showControls}>
                   {({ focused }) => (
                     <LyricIcon active={!!showLyrics} focused={focused} color={focused ? C.onDarkFocusedIcon : undefined} />
                   )}
@@ -274,7 +301,8 @@ export const NowPlayingProgressBar = React.memo(({
                     { alignSelf: 'flex-end', marginRight: -spacing.sm },
                   ]}
                   nextFocusUp={findNodeHandle(progressBarRef.current)}
-                  onPress={onToggleQueue}>
+                  onPress={onToggleQueue}
+                  focusable={showControls}>
                   {({ focused }) => {
                     let iconColor = C.onDarkTextFaint;
                     if (showQueue) {
@@ -293,7 +321,7 @@ export const NowPlayingProgressBar = React.memo(({
                   }}
                 </Pressable>
               )}
-            </View>
+            </Animated.View>
           )}
         </View>
       </View>

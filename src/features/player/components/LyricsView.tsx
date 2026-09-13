@@ -24,14 +24,31 @@ interface LyricLineItemProps {
 }
 
 const LyricLineItem = React.memo(({ line, isActive }: LyricLineItemProps) => {
-  const opacity = useRef(new Animated.Value(0.4)).current;
+  const animValue = useRef(new Animated.Value(isActive ? 1 : 0)).current;
+
   useEffect(() => {
-    Animated.timing(opacity, {
-      toValue: isActive ? 1 : 0.4,
-      duration: 350,
+    Animated.spring(animValue, {
+      toValue: isActive ? 1 : 0,
+      friction: 8,
+      tension: 40,
       useNativeDriver: true,
     }).start();
-  }, [isActive, opacity]);
+  }, [isActive, animValue]);
+
+  const scale = animValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.96, 1.03],
+  });
+
+  const opacity = animValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.35, 1],
+  });
+
+  const translateX = animValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 12], // Expands and nudges softly to the right, never creeps left
+  });
 
   return (
     <Animated.View
@@ -39,6 +56,7 @@ const LyricLineItem = React.memo(({ line, isActive }: LyricLineItemProps) => {
         styles.lineWrapper,
         {
           opacity,
+          transform: [{ scale }, { translateX }],
         },
       ]}>
       <Text
@@ -53,13 +71,15 @@ const LyricLineItem = React.memo(({ line, isActive }: LyricLineItemProps) => {
   );
 });
 
-export function LyricsView(): React.JSX.Element {
+export function LyricsView({ showControls = true }: Readonly<{ showControls?: boolean }>): React.JSX.Element {
   const { t } = useTranslation();
   const { lyrics, currentLineIndex, isLoading } = useLyrics(true);
   const flatListRef = useRef<FlatList>(null);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lyricsRef = useRef(lyrics);
   lyricsRef.current = lyrics;
+
+  const viewPosition = showControls ? 0.33 : 0.38; // Positions the active line slightly further down when only progressbar is shown
 
   // Clear any pending scroll retry whenever lyrics change (new song loaded)
   useEffect(() => {
@@ -84,13 +104,13 @@ export function LyricsView(): React.JSX.Element {
         flatListRef.current.scrollToIndex({
           index: currentLineIndex,
           animated: true,
-          viewPosition: 0.28, // Positions the active line further down to show previous lines
+          viewPosition,
         });
       } catch (error) {
         console.warn('[LyricsView] Scroll failed:', error);
       }
     }
-  }, [currentLineIndex, lyrics.length]);
+  }, [currentLineIndex, lyrics.length, viewPosition]);
 
   const renderItem = useCallback(
     ({ item, index }: { item: LyricLine; index: number }) => (
@@ -138,7 +158,7 @@ export function LyricsView(): React.JSX.Element {
             const currentLyrics = lyricsRef.current;
             if (flatListRef.current && info.index >= 0 && info.index < currentLyrics.length) {
               try {
-                flatListRef.current.scrollToIndex({ index: info.index, animated: true, viewPosition: 0.28 });
+                flatListRef.current.scrollToIndex({ index: info.index, animated: true, viewPosition });
               } catch (e) {
                 console.warn('[LyricsView] Retry scroll failed:', e);
               }
@@ -165,24 +185,26 @@ const styles = StyleSheet.create({
   lineWrapper: {
     minHeight: LINE_HEIGHT,
     justifyContent: 'center',
-    marginVertical: spacing.sm,
+    marginVertical: spacing.md,
     paddingHorizontal: spacing.md,
   },
   lineText: {
     fontSize: 22,
-    fontWeight: '600',
+    fontWeight: '700',
     color: C.onDarkTextPrimary,
-    opacity: 0.8,
+    opacity: 0.85,
     textAlign: 'left',
     textAlignVertical: 'center',
+    letterSpacing: -0.3,
   },
   activeLineText: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '800',
-    color: C.onDarkTextPrimary,
+    color: '#FFFFFF',
     opacity: 1,
     textAlign: 'left',
     textAlignVertical: 'center',
+    letterSpacing: -0.5,
   },
   emptyContainer: {
     flex: 1,

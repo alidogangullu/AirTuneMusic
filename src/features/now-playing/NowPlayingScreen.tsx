@@ -196,13 +196,12 @@ export function NowPlayingScreen({
       idleTimerRef.current = null;
     }
 
-    // Do not auto-hide if disabled in App Preferences, or if paused, loading, live radio, or overlays active
+    // Do not auto-hide if disabled in App Preferences, or if paused, loading, live radio, or queue/info modals active
     if (
       !NowPlayingSettingsService.getAutoHideControls() ||
       !isPlaying ||
       state.isLoading ||
       isLiveRadio ||
-      showLyrics ||
       showQueue ||
       showInfo
     ) {
@@ -212,7 +211,7 @@ export function NowPlayingScreen({
     idleTimerRef.current = setTimeout(() => {
       setShowControls(false);
     }, 6000);
-  }, [isPlaying, state.isLoading, isLiveRadio, showLyrics, showQueue, showInfo]);
+  }, [isPlaying, state.isLoading, isLiveRadio, showQueue, showInfo]);
 
   useTVEventHandler((evt) => {
     // Show controls on any remote interaction
@@ -239,6 +238,11 @@ export function NowPlayingScreen({
   const controlsTranslateY = controlsAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [24, 0],
+  });
+
+  const progressBarTranslateY = controlsAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [36, 0],
   });
 
   if (!track) {
@@ -294,8 +298,13 @@ export function NowPlayingScreen({
             align="center"
           />
         </View>
-        <View style={[styles.lyricsSection, isTabView && styles.lyricsTabPadding]}>
-          <LyricsView />
+        <View
+          style={[
+            styles.lyricsSection,
+            isTabView && styles.lyricsTabPadding,
+            !showControls && styles.lyricsSectionControlsHidden,
+          ]}>
+          <LyricsView showControls={showControls} />
         </View>
       </View>
     );
@@ -596,29 +605,34 @@ export function NowPlayingScreen({
                     nextFocusDown={progressBarNode}
                   />
                 </Animated.View>
-                <NowPlayingProgressBar
-                  isLiveRadio={false}
-                  isLoading={false}
-                  isBuffering={false}
-                  isPlaying={airPlay.isPlaying}
-                  external={{
-                    position: airPlay.positionMs,
-                    duration: airPlayDurationMs,
-                    isPlaying: airPlay.isPlaying,
-                    onSeekTo: () => { },
-                    onPlay: airPlay.playPause,
-                    onPause: airPlay.playPause,
-                  }}
-                  isAirPlay={true}
-                  showExtras={showControls}
-                  onOpenInfo={() => setShowInfo(true)}
-                  showLyrics={showLyrics}
-                  onToggleLyrics={() => setShowLyrics(!showLyrics)}
-                  showQueue={showQueue}
-                  onToggleQueue={() => setShowQueue(!showQueue)}
-                  progressBarRef={progressBarRef}
-                  onLayoutProgress={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
-                />
+                <Animated.View style={{ transform: [{ translateY: progressBarTranslateY }] }}>
+                  <NowPlayingProgressBar
+                    isLiveRadio={false}
+                    isLoading={false}
+                    isBuffering={false}
+                    isPlaying={airPlay.isPlaying}
+                    external={{
+                      position: airPlay.positionMs,
+                      duration: airPlayDurationMs,
+                      isPlaying: airPlay.isPlaying,
+                      onSeekTo: () => { },
+                      onPlay: airPlay.playPause,
+                      onPause: airPlay.playPause,
+                    }}
+                    isAirPlay={true}
+                    showExtras={true}
+                    controlsAnim={controlsAnim}
+                    controlsTranslateY={controlsTranslateY}
+                    showControls={showControls}
+                    onOpenInfo={() => setShowInfo(true)}
+                    showLyrics={showLyrics}
+                    onToggleLyrics={() => setShowLyrics(!showLyrics)}
+                    showQueue={showQueue}
+                    onToggleQueue={() => setShowQueue(!showQueue)}
+                    progressBarRef={progressBarRef}
+                    onLayoutProgress={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
+                  />
+                </Animated.View>
               </>
             )
           ) : (
@@ -641,23 +655,28 @@ export function NowPlayingScreen({
                   </View>
                 </Animated.View>
 
-                <NowPlayingProgressBar
-                  isLiveRadio={isLiveRadio}
-                  isLoading={state.isLoading}
-                  isBuffering={state.buffering}
-                  isPlaying={isPlaying}
-                  playbackControlsNode={playbackControlsNode}
-                  infoButtonNode={infoButtonNode}
-                  onSetInfoButtonNode={setInfoButtonNode}
-                  showExtras={showControls}
-                  onOpenInfo={() => setShowInfo(true)}
-                  showLyrics={showLyrics}
-                  onToggleLyrics={() => setShowLyrics(!showLyrics)}
-                  showQueue={showQueue}
-                  onToggleQueue={() => setShowQueue(!showQueue)}
-                  progressBarRef={progressBarRef}
-                  onLayoutProgress={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
-                />
+                <Animated.View style={{ transform: [{ translateY: progressBarTranslateY }] }}>
+                  <NowPlayingProgressBar
+                    isLiveRadio={isLiveRadio}
+                    isLoading={state.isLoading}
+                    isBuffering={state.buffering}
+                    isPlaying={isPlaying}
+                    playbackControlsNode={playbackControlsNode}
+                    infoButtonNode={infoButtonNode}
+                    onSetInfoButtonNode={setInfoButtonNode}
+                    showExtras={true}
+                    controlsAnim={controlsAnim}
+                    controlsTranslateY={controlsTranslateY}
+                    showControls={showControls}
+                    onOpenInfo={() => setShowInfo(true)}
+                    showLyrics={showLyrics}
+                    onToggleLyrics={() => setShowLyrics(!showLyrics)}
+                    showQueue={showQueue}
+                    onToggleQueue={() => setShowQueue(!showQueue)}
+                    progressBarRef={progressBarRef}
+                    onLayoutProgress={() => setProgressBarNode(findNodeHandle(progressBarRef.current))}
+                  />
+                </Animated.View>
               </>
             )
           )}
@@ -852,6 +871,9 @@ const styles = StyleSheet.create({
     paddingLeft: spacing.xxl,
     paddingRight: 80,
     paddingBottom: 100, // Clear the progress bar and footer buttons
+  },
+  lyricsSectionControlsHidden: {
+    paddingBottom: 40, // Expanded downwards when controls are hidden
   },
   statusRow: {
     flexDirection: 'row',
