@@ -304,7 +304,7 @@ export function NowPlayingScreen({
             isTabView && styles.lyricsTabPadding,
             !showControls && styles.lyricsSectionControlsHidden,
           ]}>
-          <LyricsView showControls={showControls} />
+          <LyricsView showControls={showControls} isTabView={isTabView} />
         </View>
       </View>
     );
@@ -857,7 +857,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   lyricsTabPadding: {
-    paddingTop: 80, // Account for TopBar height when viewed as a tab
+    paddingTop: 32, // Minimal offset below TopBar when viewed as a tab
   },
   artworkSectionSide: {
     flex: 0.45,

@@ -71,7 +71,13 @@ const LyricLineItem = React.memo(({ line, isActive }: LyricLineItemProps) => {
   );
 });
 
-export function LyricsView({ showControls = true }: Readonly<{ showControls?: boolean }>): React.JSX.Element {
+export function LyricsView({
+  showControls = true,
+  isTabView = false,
+}: Readonly<{
+  showControls?: boolean;
+  isTabView?: boolean;
+}>): React.JSX.Element {
   const { t } = useTranslation();
   const { lyrics, currentLineIndex, isLoading } = useLyrics(true);
   const flatListRef = useRef<FlatList>(null);
@@ -79,7 +85,11 @@ export function LyricsView({ showControls = true }: Readonly<{ showControls?: bo
   const lyricsRef = useRef(lyrics);
   lyricsRef.current = lyrics;
 
-  const viewPosition = showControls ? 0.33 : 0.38; // Positions the active line slightly further down when only progressbar is shown
+  // Fixed at 0.33 when viewed from topbar (tabView), dynamically adjusted (0.33 vs 0.38) in fullscreen modal
+  let viewPosition = 0.33;
+  if (!isTabView && !showControls) {
+    viewPosition = 0.38;
+  }
 
   // Clear any pending scroll retry whenever lyrics change (new song loaded)
   useEffect(() => {
